@@ -49,6 +49,10 @@
   .mini:hover{background:var(--rose);color:#fff}
   .mini.del{color:#96566f;border-color:#e9d3dc}
   .hidden{display:none}
+  /* 클릭 시 브라우저 기본 사각형 포커스 링 제거 (지역 모양으로만 강조) */
+  #map path{outline:none !important;}
+  #map path:focus,#map path:focus-visible{outline:none !important;}
+  .leaflet-interactive:focus{outline:none !important;}
 </style>
 
 <a class="home" href="../">← 목록</a>
@@ -57,7 +61,7 @@
   <main class="card">
     <span class="emoji">🗺️</span>
     <h1>우리 추억 지도</h1>
-    <p class="sub">지역을 눌러 사진을 넣으면 그 지역 모양대로 꽉 채워져 📸 (발리는 위 버튼)</p>
+    <p class="sub">국내·해외 어디든 눌러서 사진을 넣으면 그 모양대로 꽉 채워져 📸</p>
 
     <p class="prog" id="prog">지도 준비 중…</p>
 
@@ -65,6 +69,7 @@
       <button class="btn-ghost" id="fitKr" type="button">한국 전체 🇰🇷</button>
       <button class="btn-ghost" id="metro" type="button">수도권</button>
       <button class="btn-ghost" id="goBali" type="button">발리 🌴</button>
+      <button class="btn-ghost" id="world" type="button">세계 🌏</button>
       <button class="btn-ghost" id="toggle" type="button">지역 경계 끄기</button>
     </div>
 
@@ -94,6 +99,14 @@
   var KEY='surprise.stamp.';          // 지역 코드별 사진 (도장깨기와 공용)
   var OLDKEY='surprise.map.photo.';   // 예전 장소별 사진 → 코드로 옮김
   var GEO='https://cdn.jsdelivr.net/gh/southkorea/southkorea-maps@master/kostat/2013/json/skorea_municipalities_geo_simple.json';
+  var WORLD='https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json';
+  /* 나라 이름 한글 (없으면 영문 그대로) */
+  var KO={Indonesia:'인도네시아',Japan:'일본',Vietnam:'베트남',Thailand:'태국',Philippines:'필리핀',
+    Taiwan:'대만',China:'중국','United States of America':'미국',France:'프랑스',Italy:'이탈리아',
+    Spain:'스페인',Switzerland:'스위스',Germany:'독일','United Kingdom':'영국',Australia:'호주',
+    'New Zealand':'뉴질랜드',Canada:'캐나다',Turkey:'튀르키예',Greece:'그리스',Portugal:'포르투갈',
+    Singapore:'싱가포르',Malaysia:'말레이시아',India:'인도',Mexico:'멕시코',Brazil:'브라질',
+    Netherlands:'네덜란드',Austria:'오스트리아','Czech Republic':'체코',Croatia:'크로아티아'};
   var SITE_CODES=['11140','11160','11230','32030'];   // photos/region-<code>.jpg 로 올려둔 지역
 
   /* 우리 추억 장소 (확정된 사실만) */
@@ -172,9 +185,13 @@
 
   function styleFor(code){
     var has=!!photoOf(code);
-    return { color: has?'#e11d5b':'#b9c0c8', weight: has?2:(showBorders?0.7:0),
-             opacity: showBorders||has?0.95:0, fillColor:'#ffffff',
-             fillOpacity: has?1:(showBorders?0.25:0) };
+    var isSel=sel&&sel.code===code;
+    return { color: isSel?'#e11d5b':(has?'#e11d5b':'#b9c0c8'),
+             weight: isSel?3.5:(has?2:(showBorders?0.7:0)),
+             opacity: (showBorders||has||isSel)?0.98:0,
+             fillColor: isSel?'#ffd9e5':'#ffffff',
+             fillOpacity: has?1:(isSel?0.55:(showBorders?0.25:0)),
+             dashArray: isSel&&!has?'6 4':null };
   }
 
   function paint(code){
@@ -186,14 +203,16 @@
   }
 
   function updateProg(){
-    var n=0;
-    for(var c in layers){ if(photoOf(c)) n++; }
-    if(photoOf('bali')) n++;
-    prog.innerHTML='전국 '+total+'곳 중 <b>'+n+'곳</b> 도장 깼어 💗';
+    var kr=0, ov=0;
+    for(var c in layers){ if(photoOf(c)){ if(c.indexOf('C-')===0) ov++; else kr++; } }
+    prog.innerHTML='국내 <b>'+kr+'곳</b>'+(ov?' · 해외 <b>'+ov+'개국</b>':'')+' 도장 깼어 💗';
   }
 
   function select(code,name){
+    var prev=sel&&sel.code;
     sel={code:code,name:name};
+    if(prev&&layers[prev]) layers[prev].setStyle(styleFor(prev));
+    if(layers[code]) layers[code].setStyle(styleFor(code));
     pnm.textContent=name;
     pst.textContent=MEMO[code] || (photoOf(code)?'우리 추억이 담긴 곳':'아직 사진이 없어');
     var src=photoOf(code);
@@ -234,6 +253,23 @@
     prog.textContent='지역 경계를 불러오지 못했어요 (핀은 그대로 써도 돼요)';
     loadSitePhotos(function(){ drawBali(); });
   });
+
+  /* 해외 국가 경계 */
+  fetch(WORLD).then(function(r){ return r.json(); }).then(function(w){
+    w.features.forEach(function(f){
+      if(f.id==='KOR') return;                       // 한국은 시군구 레이어로 대체
+      var code='C-'+(f.id||f.properties.name);
+      var name=KO[f.properties.name]||f.properties.name;
+      names[code]=name;
+      var lyr=L.geoJSON(f,{style:styleFor(code)}).getLayers()[0];
+      lyr.on('click',function(){ select(code,name); });
+      lyr.bindTooltip(name,{sticky:true});
+      lyr.addTo(group);
+      layers[code]=lyr;
+      if(photoOf(code)) paint(code);
+    });
+    updateProg();
+  }).catch(function(){});
 
   map.on('zoomend', function(){
     for(var c in layers){ if(photoOf(c) && layers[c]._path) patternFill(layers[c]._path, c, photoOf(c)); }
@@ -281,9 +317,11 @@
   document.getElementById('fitKr').addEventListener('click', fitKr);
   document.getElementById('metro').addEventListener('click', function(){ map.setView([37.55,126.99],10); });
   document.getElementById('goBali').addEventListener('click', function(){
-    map.setView([-8.65,115.2167],9);
-    select('bali','발리');     // 마커 없이도 발리 사진을 넣을 수 있게
+    map.setView([-8.65,115.2167],7);
+    if(layers['C-IDN']) select('C-IDN','인도네시아 (발리)');
+    else select('bali','발리');
   });
+  document.getElementById('world').addEventListener('click', function(){ map.setView([20,60],2); });
   document.getElementById('toggle').addEventListener('click', function(){
     showBorders=!showBorders;
     this.textContent=showBorders?'지역 경계 끄기':'지역 경계 켜기';
