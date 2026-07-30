@@ -16,9 +16,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # 러너가 4코어라 그래들 병렬 + 코틀린 데몬 여럿이 붙으면 스왑에 들어가
-    # 몇십 분씩 매달립니다. 걸리면 매달리지 말고 실패하도록 시간을 자릅니다.
-    timeout-minutes: 35
+    # 모듈 13개(그중 5개가 Compose)를 콜드로 컴파일하면 4코어 러너에서 오래 걸립니다.
+    # --no-parallel 은 오히려 더 느려서 되돌렸고, 설정 캐시만 끕니다.
+    # 그래도 매달리면 하염없이 두지 말고 자릅니다.
+    timeout-minutes: 60
     defaults:
       run:
         working-directory: android
@@ -38,13 +39,13 @@ jobs:
       - name: 단위 테스트
         run: |
           set -o pipefail
-          ./gradlew test --console=plain --no-parallel --no-configuration-cache \
+          ./gradlew test --console=plain --no-configuration-cache \
             -Dkotlin.daemon.jvmargs=-Xmx2g 2>&1 | tee /tmp/gradle-test.log
 
       - name: 디버그 빌드
         run: |
           set -o pipefail
-          ./gradlew assembleDebug --console=plain --no-parallel --no-configuration-cache \
+          ./gradlew assembleDebug --console=plain --no-configuration-cache \
             -Dkotlin.daemon.jvmargs=-Xmx2g 2>&1 | tee /tmp/gradle-build.log
 
       - name: 컴파일 오류만 모아 보기
