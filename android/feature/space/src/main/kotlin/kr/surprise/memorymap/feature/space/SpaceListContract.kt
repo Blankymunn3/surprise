@@ -1,0 +1,54 @@
+package kr.surprise.memorymap.feature.space
+
+import kr.surprise.memorymap.core.common.Failure
+import kr.surprise.memorymap.core.model.Space
+import kr.surprise.memorymap.core.model.SpaceId
+
+/** 화면을 그리는 데 필요한 전부. 불변입니다. */
+data class SpaceListState(
+    val spaces: SpacesUi = SpacesUi.Loading,
+    val sheet: SpaceListSheet = SpaceListSheet.None,
+    val pendingName: String = "",
+    val pendingCode: String = "",
+    val working: Boolean = false,
+)
+
+/**
+ * 로딩과 에러를 따로 두지 않는 이유: `isLoading = true` 이면서 `error != null` 같은
+ * 모순된 상태를 애초에 만들 수 없게 하려는 것입니다 (`docs/app/MVI.md`).
+ */
+sealed interface SpacesUi {
+    data object Loading : SpacesUi
+    data class Ready(val items: List<Space>) : SpacesUi
+    data class Failed(val reason: Failure) : SpacesUi
+}
+
+sealed interface SpaceListSheet {
+    data object None : SpaceListSheet
+    data object Create : SpaceListSheet
+    data object Join : SpaceListSheet
+    /** 만들자마자 뜨는 초대 코드 — 다시 찾게 하지 않으려고 */
+    data class Invited(val spaceName: String, val code: String) : SpaceListSheet
+}
+
+/** 사용자가 **한 일**입니다. 무엇을 하라는 명령이 아닙니다. */
+sealed interface SpaceListIntent {
+    data object Appeared : SpaceListIntent
+    data object PullToRefresh : SpaceListIntent
+    data class SpaceTapped(val id: SpaceId) : SpaceListIntent
+    data object CreateTapped : SpaceListIntent
+    data object JoinTapped : SpaceListIntent
+    data object SheetDismissed : SpaceListIntent
+    data class NameTyped(val value: String) : SpaceListIntent
+    data class CodeTyped(val value: String) : SpaceListIntent
+    data object CreateConfirmed : SpaceListIntent
+    data object JoinConfirmed : SpaceListIntent
+    data class InviteCopied(val code: String) : SpaceListIntent
+}
+
+/** 한 번만 일어나는 일. 화면에 남아 있어야 하는 건 State 로 갑니다. */
+sealed interface SpaceListEffect {
+    data class OpenSpace(val id: SpaceId) : SpaceListEffect
+    data class ShowMessage(val text: String) : SpaceListEffect
+    data class ShareInvite(val code: String) : SpaceListEffect
+}

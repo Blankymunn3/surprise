@@ -58,6 +58,20 @@ class AssetRegionCatalog(private val context: Context) : RegionCatalog {
         return world.firstOrNull { it.contains(longitude, latitude) }?.let { find(it.code) }
     }
 
+    override suspend fun centerOf(code: RegionCode): DoubleArray? {
+        val shapes = if (code.value.startsWith("C-")) {
+            lock.withLock { shapesWorld ?: loadShapes("boundaries_world.json").also { shapesWorld = it } }
+        } else {
+            lock.withLock { shapesKorea ?: loadShapes("boundaries_kr.json").also { shapesKorea = it } }
+        }
+        val shape = shapes.firstOrNull { it.code == code.value } ?: return null
+        // 경계 상자의 가운데. 정확한 무게중심은 필요 없고 "그 지역 어딘가" 면 됩니다.
+        return doubleArrayOf(
+            (shape.bounds[1] + shape.bounds[3]) / 2,
+            (shape.bounds[0] + shape.bounds[2]) / 2,
+        )
+    }
+
     private suspend fun loadRegions(): List<Region> = withContext(Dispatchers.IO) {
         val text = context.assets.open("regions.json").bufferedReader().use { it.readText() }
         json.decodeFromString<List<RegionRow>>(text)

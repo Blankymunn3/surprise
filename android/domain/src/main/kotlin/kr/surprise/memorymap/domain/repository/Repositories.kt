@@ -8,6 +8,7 @@ import kr.surprise.memorymap.core.model.Invite
 import kr.surprise.memorymap.core.model.Photo
 import kr.surprise.memorymap.core.model.PhotoId
 import kr.surprise.memorymap.core.model.Region
+import kr.surprise.memorymap.core.model.RegionCode
 import kr.surprise.memorymap.core.model.Space
 import kr.surprise.memorymap.core.model.SpaceId
 import kr.surprise.memorymap.domain.model.NewPhoto
@@ -47,4 +48,7 @@ interface RegionCatalog {
      * **네트워크를 쓰지 않습니다** — 좌표를 서버에 보내 "여기가 어디죠?" 하고 묻지 않으려는 것.
      */
     suspend fun regionAt(latitude: Double, longitude: Double): Region?
+
+    /** 지도에 표시할 자리 (위도, 경도). 경계가 없는 지역은 null. */
+    suspend fun centerOf(code: RegionCode): DoubleArray?
 }
