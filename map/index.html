@@ -96,6 +96,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="../assets/fx.js"></script>
+<script src="../assets/firebase.js"></script>
 <script>
 (function(){
   var KEY='surprise.stamp.';          // 지역 코드별 사진 (도장깨기와 공용)
@@ -131,6 +132,10 @@
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
 
   var layers={}, names={}, baliOverlay=null, sitePhotos={}, sel=null, total=0, showBorders=true;
+  /* 클라우드(Firebase Storage) 사진 — 설정 전이면 그냥 비어 있고 예전처럼 기기에만 저장됨 */
+  var CLOUD=!!(window.CloudPhotos && CloudPhotos.configured);
+  var cloud=CLOUD?CloudPhotos.cached():{};
+  function CK(c){ return CLOUD?CloudPhotos.key(c):c; }
   var picker=document.getElementById('picker'), note=document.getElementById('note');
   var panel=document.getElementById('panel'), pth=document.getElementById('pth');
   var pnm=document.getElementById('pnm'), pst=document.getElementById('pst');
@@ -149,7 +154,9 @@
   })();
 
   function localPhoto(c){ try{ return localStorage.getItem(KEY+c); }catch(e){ return null; } }
-  function photoOf(c){ return localPhoto(c) || sitePhotos[c] || null; }
+  function cloudPhoto(c){ return cloud[CK(c)] || null; }
+  /* 클라우드 → 이 기기 → 사이트에 올려둔 사진 순으로 */
+  function photoOf(c){ return cloudPhoto(c) || localPhoto(c) || sitePhotos[c] || null; }
 
   function loadSitePhotos(done){
     var left=SITE_CODES.length; if(!left){ done(); return; }
@@ -220,7 +227,7 @@
     var src=photoOf(code);
     pth.style.backgroundImage=src?('url('+src+')'):'';
     pth.innerHTML=src?'':'<span>📍</span>';
-    document.getElementById('pdel').className='mini del'+(localPhoto(code)?'':' hidden');
+    document.getElementById('pdel').className='mini del'+((localPhoto(code)||cloudPhoto(code))?'':' hidden');
     document.getElementById('ppick').textContent=src?'사진 바꾸기':'사진 넣기';
     var sp=document.getElementById('psplit');
     var isCountry=code.indexOf('C-')===0 && !(layers[code]&&layers[code]._split);
@@ -234,6 +241,20 @@
     var d=0.09;
     baliOverlay=L.imageOverlay(src,[[-8.65-d,115.2167-d*1.25],[-8.65+d,115.2167+d*1.25]],
       {opacity:.9,interactive:false}).addTo(map);
+  }
+
+  function repaintAll(){
+    for(var c in layers) paint(c);
+    drawBali(); updateProg();
+    if(sel) select(sel.code, sel.name);
+  }
+
+  /* 클라우드에 올라와 있는 사진 목록 받아오기 (실패해도 기존 사진은 그대로) */
+  function syncCloud(){
+    if(!CLOUD) return;
+    CloudPhotos.list().then(function(found){
+      cloud=found; repaintAll();
+    }).catch(function(){});
   }
 
   /* 시군구 경계 불러오기 */
@@ -333,11 +354,46 @@
   document.getElementById('ppick').addEventListener('click',function(){ if(sel){ picker.value=''; picker.click(); } });
   document.getElementById('pdel').addEventListener('click',function(){
     if(!sel) return;
-    try{ localStorage.removeItem(KEY+sel.code); }catch(e){}
-    if(sel.code==='bali') drawBali(); else paint(sel.code);
-    updateProg(); select(sel.code, sel.name);
-    note.textContent=sel.name+' 사진을 지웠어';
+    var s=sel, wasCloud=!!cloudPhoto(s.code);
+    try{ localStorage.removeItem(KEY+s.code); }catch(e){}
+    delete cloud[CK(s.code)];
+    if(s.code==='bali') drawBali(); else paint(s.code);
+    updateProg(); select(s.code, s.name);
+    note.textContent=s.name+' 사진을 지웠어';
+    if(wasCloud){
+      CloudPhotos.remove(s.code).catch(function(){
+        note.textContent='이 기기에서는 지웠는데 클라우드에서는 못 지웠어. 잠시 후 다시 해줘 🥲';
+        syncCloud();
+      });
+    }
   });
+
+  function toBlob(cv, cb){
+    if(cv.toBlob){ cv.toBlob(cb,'image/jpeg',0.72); return; }
+    try{
+      var d=cv.toDataURL('image/jpeg',0.72), bin=atob(d.split(',')[1]);
+      var u=new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+      cb(new Blob([u],{type:'image/jpeg'}));
+    }catch(e){ cb(null); }
+  }
+
+  function celebrate(s,msg){
+    if(s.code==='bali') drawBali(); else paint(s.code);
+    updateProg(); select(s.code,s.name);
+    note.textContent=msg;
+    var r=mapEl.getBoundingClientRect();
+    FX.burst(r.left+r.width/2, r.top+r.height/2, 60);
+    for(var k=0;k<5;k++) setTimeout(FX.heart,k*130);
+  }
+
+  /* 클라우드가 안 될 때(설정 전·오프라인) 쓰는 이 기기 저장 */
+  function saveLocal(s,dataUrl,msg){
+    try{
+      localStorage.setItem(KEY+s.code, dataUrl);
+      celebrate(s, msg || (s.name+' 도장 깼다! 📸'));
+    }catch(e){ note.textContent='저장 공간이 부족해. 사진 하나 지우고 다시 해줘 🙏'; }
+  }
 
   picker.addEventListener('change',function(){
     var f=picker.files&&picker.files[0]; if(!f||!sel) return;
@@ -350,15 +406,21 @@
         else if(h>=w&&h>max){ w=Math.round(w*max/h); h=max; }
         var cv=document.createElement('canvas'); cv.width=w; cv.height=h;
         cv.getContext('2d').drawImage(im,0,0,w,h);
-        try{
-          localStorage.setItem(KEY+s.code, cv.toDataURL('image/jpeg',0.72));
-          if(s.code==='bali') drawBali(); else paint(s.code);
-          updateProg(); select(s.code,s.name);
-          note.textContent=s.name+' 도장 깼다! 📸';
-          var r=mapEl.getBoundingClientRect();
-          FX.burst(r.left+r.width/2, r.top+r.height/2, 60);
-          for(var k=0;k<5;k++) setTimeout(FX.heart,k*130);
-        }catch(e){ note.textContent='저장 공간이 부족해. 사진 하나 지우고 다시 해줘 🙏'; }
+        var dataUrl=cv.toDataURL('image/jpeg',0.72);
+
+        if(!CLOUD){ saveLocal(s,dataUrl); return; }
+
+        note.textContent=s.name+' 사진 올리는 중… ☁️';
+        toBlob(cv,function(blob){
+          if(!blob){ saveLocal(s,dataUrl); return; }
+          CloudPhotos.upload(s.code, blob).then(function(url){
+            cloud[CK(s.code)]=url;
+            try{ localStorage.removeItem(KEY+s.code); }catch(e){}   // 클라우드에 있으니 기기 저장은 비움
+            celebrate(s, s.name+' 도장 깼다! 📸 자기야 폰에서도 보여 💗');
+          }).catch(function(){
+            saveLocal(s,dataUrl, s.name+' 도장 깼다! 📸 (인터넷이 안 돼서 이 기기에만 저장했어)');
+          });
+        });
       };
       im.onerror=function(){ note.textContent='이 사진은 못 읽었어 🥲'; };
       im.src=rd.result;
@@ -381,6 +443,11 @@
     this.textContent=showBorders?'지역 경계 끄기':'지역 경계 켜기';
     for(var c in layers) paint(c);
   });
+
+  if(CLOUD){
+    note.textContent='사진을 넣으면 자동으로 올라가서 자기야 폰에서도 바로 보여요 ☁️';
+    syncCloud();
+  }
 
   fitKr();
   var card=document.querySelector('.card');
