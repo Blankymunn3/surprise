@@ -12,29 +12,21 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Google Maven 에서 쓸 수 있는 버전 확인
+      - name: AGP 8.x 마지막 버전
         run: |
-          for a in \
-            com/android/tools/build/gradle \
-            androidx/compose/compose-bom \
-            androidx/activity/activity-compose \
-            androidx/lifecycle/lifecycle-viewmodel-compose \
-            androidx/lifecycle/lifecycle-runtime-compose \
-            androidx/navigation/navigation-compose \
-            androidx/exifinterface/exifinterface \
-            androidx/core/core-ktx \
-            androidx/datastore/datastore-preferences \
-            androidx/compose/material3/material3 \
-            androidx/activity/activity-ktx
-          do
-            echo "=== $a ==="
-            curl -sS "https://dl.google.com/dl/android/maven2/$a/maven-metadata.xml" \
-              | grep -oP '(?<=<version>)[^<]+' | tail -14 | tr '\n' ' '
-            echo
-          done
-      - name: 러너 도구 확인
+          curl -sS "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/maven-metadata.xml" \
+            | grep -oP '(?<=<version>)8\.[^<]+' | grep -vE 'alpha|beta|rc' | tail -8 | tr '\n' ' '; echo
+      - name: Compose BOM 이 물고 오는 것 확인
         run: |
-          java -version 2>&1
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          ls "$ANDROID_HOME/platforms" 2>/dev/null || true
-          ls "$ANDROID_HOME/build-tools" 2>/dev/null || true
+          curl -sS "https://dl.google.com/dl/android/maven2/androidx/compose/compose-bom/2026.06.01/compose-bom-2026.06.01.pom" | head -60
+      - name: 코틀린 그래들 플러그인
+        run: |
+          curl -sS "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin/maven-metadata.xml" \
+            | grep -oP '(?<=<version>)2\.[0-9.]+(?=</version>)' | grep -vE 'Beta|RC|M[0-9]' | tail -6 | tr '\n' ' '; echo
+          curl -sS "https://repo1.maven.org/maven2/org/jetbrains/kotlin/compose-compiler-gradle-plugin/maven-metadata.xml" \
+            | grep -oP '(?<=<version>)2\.[0-9.]+(?=</version>)' | tail -4 | tr '\n' ' '; echo
+      - name: AGP 최신 8.x 가 요구하는 Gradle
+        run: |
+          A=$(curl -sS "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/maven-metadata.xml" | grep -oP '(?<=<version>)8\.[^<]+' | grep -vE 'alpha|beta|rc' | tail -1)
+          echo "AGP=$A"
+          curl -sS "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/$A/gradle-$A.pom" | head -40
