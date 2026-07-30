@@ -205,7 +205,7 @@
     var im=document.createElementNS(NS,'image');
     im.setAttribute('href',src);
     im.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href',src);
-    im.setAttribute('x',bb.x); im.setAttribute('y',bb.y);
+    im.setAttribute('x','0'); im.setAttribute('y','0');   // 패턴 내부 좌표는 타일 로컬 기준
     im.setAttribute('width',bb.width); im.setAttribute('height',bb.height);
     im.setAttribute('preserveAspectRatio','xMidYMid slice');
     pat.appendChild(im); defs.appendChild(pat);
