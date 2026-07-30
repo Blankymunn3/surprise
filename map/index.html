@@ -45,6 +45,22 @@
     .bar .btn-ghost:nth-child(-n+3){grid-column:span 2}
     .bar .btn-ghost:nth-child(n+4){grid-column:span 3}
   }
+  /* 지역 검색 */
+  .search{position:relative;margin:0 0 10px;z-index:500}
+  .search input{width:100%;font-size:15px;text-align:left;padding:11px 38px 11px 14px;border-radius:14px}
+  .search input::-webkit-search-cancel-button{display:none}
+  .qclear{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:none;
+    color:var(--ink-soft);font-size:15px;cursor:pointer;padding:6px 8px;line-height:1}
+  .qres{list-style:none;margin:6px 0 0;padding:6px;position:absolute;left:0;right:0;top:100%;
+    background:rgba(255,255,255,.97);border:1px solid #ffdce7;border-radius:16px;text-align:left;
+    box-shadow:0 18px 40px -18px rgba(190,30,80,.55);max-height:250px;overflow-y:auto;display:none}
+  .qres.show{display:block}
+  .qres li{padding:9px 12px;border-radius:11px;cursor:pointer;font-size:14.5px;color:var(--ink)}
+  .qres li:hover,.qres li.on{background:#ffe3ee}
+  .qres li .tag{font-family:var(--font-hand);font-size:12.5px;color:var(--ink-soft);margin-left:6px}
+  .qres li .dot{color:var(--rose-deep);margin-left:5px}
+  .qres .none{color:var(--ink-soft);font-family:var(--font-hand);cursor:default}
+  .qres .none:hover{background:none}
   .panel{background:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.95);border-radius:18px;
     padding:12px 14px;margin-top:4px;display:none;align-items:center;gap:12px;text-align:left}
   .panel.show{display:flex}
@@ -80,6 +96,13 @@
       <button class="btn-ghost" id="goBali" type="button">발리 🌴</button>
       <button class="btn-ghost" id="world" type="button">세계 🌏</button>
       <button class="btn-ghost" id="toggle" type="button">지역 경계 끄기</button>
+    </div>
+
+    <div class="search">
+      <input id="q" type="search" autocomplete="off" enterkeyhint="search"
+             placeholder="지역 이름으로 찾기 (예: 강릉, 일본)" />
+      <button class="qclear hidden" id="qclear" type="button" aria-label="지우기">✕</button>
+      <ul class="qres" id="qres"></ul>
     </div>
 
     <div id="map"></div>
@@ -255,15 +278,105 @@
      (사진 갱신·복원 때는 부르지 않고, 사용자가 직접 누른 경우에만) */
   function zoomTo(code){
     var lyr=layers[code];
-    if(!lyr || !lyr.getBounds) return;
-    try{
-      var b=lyr.getBounds();
-      if(!b || !b.isValid()) return;
-      map.flyToBounds(b,{padding:[26,26],maxZoom:12,duration:.6});
-    }catch(e){}
+    if(lyr && lyr.getBounds){
+      try{
+        var b=lyr.getBounds();
+        if(b && b.isValid()){ map.flyToBounds(b,{padding:[26,26],maxZoom:12,duration:.6}); return; }
+      }catch(e){}
+    }
+    /* 경계가 없는 곳(발리 등)은 좌표로 */
+    var p=PLACES.filter(function(x){ return x.code===code; })[0];
+    if(p) map.flyTo([p.lat,p.lng],10,{duration:.6});
   }
 
   function pick(code,name){ select(code,name); zoomTo(code); }
+
+  /* ── 지역 검색 ─────────────────────────────────────────────────
+     지도에 올라온 이름(국내 시군구·나라·해외 시도)과 추억 메모를 함께 찾습니다.
+     그래서 '공덕'처럼 메모에만 있는 말로도 찾아집니다. */
+  var q=document.getElementById('q'), qres=document.getElementById('qres');
+  var qclear=document.getElementById('qclear'), hits=[], cur=-1;
+
+  function kindOf(code){
+    if(code.indexOf('P-')===0) return '해외 시도';
+    if(code.indexOf('C-')===0) return '나라';
+    return /^\d+$/.test(code) ? '국내' : '우리 추억';   // 발리처럼 경계 없는 곳
+  }
+
+  function search(v){
+    v=(v||'').trim().toLowerCase();
+    if(!v) return [];
+    var out=[], seen={};
+    function add(code,name){
+      if(seen[code] || !name) return;
+      var nm=name.toLowerCase(), i=nm.indexOf(v);
+      var rank = i===0 ? 0 : (i>0 ? 1 : ((MEMO[code]||'').toLowerCase().indexOf(v)>=0 ? 2 : -1));
+      if(rank<0) return;
+      seen[code]=1;
+      out.push({code:code,name:name,rank:rank,photo:!!photoOf(code)});
+    }
+    for(var c in names) add(c,names[c]);
+    PLACES.forEach(function(p){ add(p.code,p.name); });   // 발리처럼 경계가 없는 곳
+    out.sort(function(a,b){
+      if(a.rank!==b.rank) return a.rank-b.rank;           // 이름 앞부분 일치 우선
+      if(a.photo!==b.photo) return a.photo?-1:1;          // 사진 있는 곳 우선
+      return a.name.length-b.name.length;
+    });
+    return out.slice(0,8);
+  }
+
+  function closeRes(){ qres.classList.remove('show'); cur=-1; }
+
+  function renderRes(){
+    qres.innerHTML='';
+    if(!hits.length){
+      if((q.value||'').trim()){
+        var no=document.createElement('li');
+        no.className='none'; no.textContent='그런 지역은 못 찾았어 🥲';
+        qres.appendChild(no); qres.classList.add('show');
+      } else closeRes();
+      return;
+    }
+    hits.forEach(function(h,i){
+      var li=document.createElement('li');
+      li.appendChild(document.createTextNode(h.name));    // 이름은 텍스트로만 (지도 데이터 그대로 신뢰하지 않음)
+      var t=document.createElement('span'); t.className='tag'; t.textContent=kindOf(h.code); li.appendChild(t);
+      if(h.photo){ var d=document.createElement('span'); d.className='dot'; d.textContent='📸'; li.appendChild(d); }
+      if(i===cur) li.className='on';
+      li.addEventListener('click',function(){ choose(h); });
+      qres.appendChild(li);
+    });
+    qres.classList.add('show');
+  }
+
+  function choose(h){
+    q.value=h.name;
+    qclear.className='qclear';
+    closeRes(); q.blur();
+    pick(h.code,h.name);
+  }
+
+  q.addEventListener('input',function(){
+    qclear.className='qclear'+(q.value?'':' hidden');
+    hits=search(q.value); cur=-1; renderRes();
+  });
+  q.addEventListener('focus',function(){ if(hits.length) qres.classList.add('show'); });
+  q.addEventListener('keydown',function(e){
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+      if(!hits.length) return;
+      e.preventDefault();
+      cur=(cur+(e.key==='ArrowDown'?1:hits.length-1)+hits.length)%hits.length;
+      renderRes();
+    } else if(e.key==='Enter'){
+      if(hits.length) choose(hits[cur<0?0:cur]);
+    } else if(e.key==='Escape'){ closeRes(); }
+  });
+  qclear.addEventListener('click',function(){
+    q.value=''; hits=[]; qclear.className='qclear hidden'; closeRes(); q.focus();
+  });
+  document.addEventListener('click',function(e){
+    if(!(e.target.closest && e.target.closest('.search'))) closeRes();
+  });
 
   function drawBali(){
     if(baliOverlay){ map.removeLayer(baliOverlay); baliOverlay=null; }
