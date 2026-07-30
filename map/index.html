@@ -485,9 +485,14 @@
     return koLoading;
   }
 
+  /* 나라별로 쓸 행정 단계. 기본은 ADM1.
+     이탈리아는 ADM1 이 5개 광역권(북서부·남부…)뿐이라 실제 20개 주가 있는 ADM2 를 씁니다. */
+  var ADM_LEVEL={ITA:'ADM2'};
+
   function adm1Url(iso){
+    var lv=ADM_LEVEL[iso]||'ADM1';
     return 'https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/'+ADM1_SHA+
-           '/releaseData/gbOpen/'+iso+'/ADM1/geoBoundaries-'+iso+'-ADM1_simplified.geojson';
+           '/releaseData/gbOpen/'+iso+'/'+lv+'/geoBoundaries-'+iso+'-'+lv+'_simplified.geojson';
   }
 
   function splitCountry(iso, label){
