@@ -40,7 +40,7 @@ android/
   app/                     앱 조립·DI 그래프·네비게이션
   core/model/              도메인 모델 (순수 코틀린)
   core/common/             Result, 디스패처, 확장함수
-  core/designsystem/       색·타이포·공용 Composable (웹의 핑크 글라스와 맞춤)
+  core/designsystem/       색·타이포·공용 Composable ([design.html](design.html) 그대로)
   domain/                  UseCase + Repository 인터페이스
   data/auth/               구글 로그인
   data/space/              공간·멤버·초대 (Firestore)
@@ -153,6 +153,7 @@ ios/
 
 ## 참고
 
+- 화면 디자인(색·글씨·여섯 화면) → [design.html](design.html)
 - 화면 명세(지도·달력·사진 올리기) → [SCREENS.md](SCREENS.md)
 - 공간·초대·보안 규칙 → [SPACES.md](SPACES.md)
 - MVI 세부 규칙 → [MVI.md](MVI.md)
