@@ -61,7 +61,7 @@
   <main class="card">
     <span class="emoji">🗺️</span>
     <h1>우리 추억 지도</h1>
-    <p class="sub">국내·해외 어디든 눌러서 사진을 넣으면 그 모양대로 꽉 채워져 📸</p>
+    <p class="sub">국내·해외 어디든 눌러 사진을 넣어봐 📸 나라는 '시도 나누기'로 더 잘게!</p>
 
     <p class="prog" id="prog">지도 준비 중…</p>
 
@@ -83,6 +83,7 @@
       </div>
       <div class="acts">
         <button class="mini" id="ppick" type="button">사진 넣기</button>
+        <button class="mini hidden" id="psplit" type="button">시도 나누기 🧩</button>
         <button class="mini del hidden" id="pdel" type="button">지우기</button>
       </div>
     </div>
@@ -204,7 +205,7 @@
 
   function updateProg(){
     var kr=0, ov=0;
-    for(var c in layers){ if(photoOf(c)){ if(c.indexOf('C-')===0) ov++; else kr++; } }
+    for(var c in layers){ if(photoOf(c)){ if(c.indexOf('C-')===0||c.indexOf('P-')===0) ov++; else kr++; } }
     prog.innerHTML='국내 <b>'+kr+'곳</b>'+(ov?' · 해외 <b>'+ov+'개국</b>':'')+' 도장 깼어 💗';
   }
 
@@ -220,6 +221,9 @@
     pth.innerHTML=src?'':'<span>📍</span>';
     document.getElementById('pdel').className='mini del'+(localPhoto(code)?'':' hidden');
     document.getElementById('ppick').textContent=src?'사진 바꾸기':'사진 넣기';
+    var sp=document.getElementById('psplit');
+    var isCountry=code.indexOf('C-')===0 && !(layers[code]&&layers[code]._split);
+    sp.className='mini'+(isCountry?'':' hidden');
     panel.classList.add('show');
   }
 
@@ -254,6 +258,54 @@
     loadSitePhotos(function(){ drawBali(); });
   });
 
+  /* ── 해외: 나라를 시도(주) 단위로 나누기 ───────────────────────── */
+  var ADM1_SHA='9469f09592ced973a3448cf66b6100b741b64c0d';
+  var EXP_KEY='surprise.map.expanded';
+  var expanded={}, loadingIso=null;
+  try{ expanded=JSON.parse(localStorage.getItem(EXP_KEY)||'{}')||{}; }catch(e){ expanded={}; }
+
+  function adm1Url(iso){
+    return 'https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/'+ADM1_SHA+
+           '/releaseData/gbOpen/'+iso+'/ADM1/geoBoundaries-'+iso+'-ADM1_simplified.geojson';
+  }
+
+  function splitCountry(iso, label){
+    if(loadingIso) return;
+    if(layers['C-'+iso] && layers['C-'+iso]._split) return;
+    loadingIso=iso;
+    note.textContent=(label||iso)+' 시도 불러오는 중… 🧩';
+    fetch(adm1Url(iso)).then(function(r){
+      if(!r.ok) throw 0; return r.json();
+    }).then(function(g){
+      var country=layers['C-'+iso];
+      if(country){ group.removeLayer(country); country._split=true; }
+      (g.features||[]).forEach(function(f,i){
+        var nm=(f.properties&&(f.properties.shapeName||f.properties.name))||(iso+' '+(i+1));
+        var code='P-'+iso+'-'+i;
+        names[code]=nm;
+        var lyr=L.geoJSON(f,{style:styleFor(code)}).getLayers()[0];
+        lyr.on('click',function(){ select(code,nm); });
+        lyr.bindTooltip(nm,{sticky:true});
+        lyr.addTo(group);
+        layers[code]=lyr;
+        if(photoOf(code)) paint(code);
+      });
+      expanded[iso]=1;
+      try{ localStorage.setItem(EXP_KEY, JSON.stringify(expanded)); }catch(e){}
+      note.textContent=(label||iso)+' 시도로 나눴어! 이제 지역별로 사진을 넣을 수 있어 🧩';
+      updateProg(); loadingIso=null;
+      var b=document.getElementById('psplit'); if(b) b.className='mini hidden';
+    }).catch(function(){
+      note.textContent='이 나라는 시도 정보를 못 찾았어 🥲 (나라 전체로는 채울 수 있어)';
+      loadingIso=null;
+    });
+  }
+
+  document.getElementById('psplit').addEventListener('click', function(){
+    if(!sel || sel.code.indexOf('C-')!==0) return;
+    splitCountry(sel.code.slice(2), sel.name);
+  });
+
   /* 해외 국가 경계 */
   fetch(WORLD).then(function(r){ return r.json(); }).then(function(w){
     w.features.forEach(function(f){
@@ -269,6 +321,7 @@
       if(photoOf(code)) paint(code);
     });
     updateProg();
+    for(var iso in expanded){ if(layers['C-'+iso]) splitCountry(iso, names['C-'+iso]); }
   }).catch(function(){});
 
   map.on('zoomend', function(){
