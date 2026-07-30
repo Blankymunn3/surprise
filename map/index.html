@@ -251,6 +251,20 @@
     panel.classList.add('show');
   }
 
+  /* 지역을 눌렀을 때 그 지역이 화면에 꽉 차게 줌인
+     (사진 갱신·복원 때는 부르지 않고, 사용자가 직접 누른 경우에만) */
+  function zoomTo(code){
+    var lyr=layers[code];
+    if(!lyr || !lyr.getBounds) return;
+    try{
+      var b=lyr.getBounds();
+      if(!b || !b.isValid()) return;
+      map.flyToBounds(b,{padding:[26,26],maxZoom:12,duration:.6});
+    }catch(e){}
+  }
+
+  function pick(code,name){ select(code,name); zoomTo(code); }
+
   function drawBali(){
     if(baliOverlay){ map.removeLayer(baliOverlay); baliOverlay=null; }
     var src=photoOf('bali'); if(!src) return;
@@ -280,7 +294,7 @@
       var code=f.properties.code, name=f.properties.name;
       names[code]=name;
       var lyr=L.geoJSON(f,{style:styleFor(code)}).getLayers()[0];
-      lyr.on('click',function(){ select(code,name); });
+      lyr.on('click',function(){ pick(code,name); });
       lyr.bindTooltip(MEMO[code]? (name+' · '+PLACES.filter(function(x){return x.code===code;})[0].desc) : name, {sticky:true});
       lyr.addTo(group);
       layers[code]=lyr;
@@ -322,7 +336,7 @@
         var code='P-'+iso+'-'+i;
         names[code]=nm;
         var lyr=L.geoJSON(f,{style:styleFor(code)}).getLayers()[0];
-        lyr.on('click',function(){ select(code,nm); });
+        lyr.on('click',function(){ pick(code,nm); });
         lyr.bindTooltip(nm,{sticky:true});
         lyr.addTo(group);
         layers[code]=lyr;
@@ -353,7 +367,7 @@
       var name=KO[f.properties.name]||f.properties.name;
       names[code]=name;
       var lyr=L.geoJSON(f,{style:styleFor(code)}).getLayers()[0];
-      lyr.on('click',function(){ select(code,name); });
+      lyr.on('click',function(){ pick(code,name); });
       lyr.bindTooltip(name,{sticky:true});
       lyr.addTo(group);
       layers[code]=lyr;
