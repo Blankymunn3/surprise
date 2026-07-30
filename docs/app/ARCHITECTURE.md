@@ -45,9 +45,11 @@ android/
   data/auth/               구글 로그인
   data/space/              공간·멤버·초대 (Firestore)
   data/region/             지역 경계·한글 이름 (GeoJSON, 에셋)
-  data/photo/              사진 (Firebase Storage)
+  data/photo/              사진 문서(Firestore) + 파일(Storage) + EXIF 읽기
   feature/space/           공간 목록·만들기·참여·초대 (MVI)
-  feature/map/             지도 화면 (MVI)
+  feature/map/             지도 탭 (MVI)
+  feature/calendar/        달력 탭 (MVI)
+  feature/upload/          사진 올리기 시트 (MVI)
 ```
 
 ### iOS (Swift Package Manager)
@@ -65,7 +67,9 @@ ios/
     DataRegion/
     DataPhoto/
     FeatureSpace/          공간 목록·만들기·참여·초대 (MVI)
-    FeatureMap/            지도 화면 (MVI)
+    FeatureMap/            지도 탭 (MVI)
+    FeatureCalendar/       달력 탭 (MVI)
+    FeatureUpload/         사진 올리기 시트 (MVI)
 ```
 
 **같은 이름을 쓰는 이유**: `data/photo` 를 고쳤으면 iOS `DataPhoto` 도 봐야 한다는 걸
@@ -104,8 +108,10 @@ ios/
 | 해외 시도 경계 | geoBoundaries ADM1 (이탈리아만 ADM2) |
 | 나라 한글 이름 | `assets/countries-ko.js` 를 JSON 으로 변환해 앱에 동봉 |
 | 시도 한글 이름 | `assets/subdivisions-ko.js` 를 JSON 으로 변환해 앱에 동봉 |
-| 사진 | Firebase Storage (`spaces/<공간ID>/regions/<지역코드>.jpg`) |
+| 사진 | Firebase Storage (`spaces/<공간ID>/photos/<사진ID>.jpg`) |
+| 사진의 지역·날짜·대표 여부 | Firestore ([SCREENS.md](SCREENS.md)) |
 | 계정·공간·멤버·초대 | Firebase Auth(구글) + Firestore |
+| 사진 찍은 날짜·위치 | 사진 파일의 EXIF (안드로이드 `androidx.exifinterface` / iOS ImageIO) |
 
 **지역 코드 규칙은 웹과 반드시 같아야 합니다.** 웹에서 넣은 사진이 앱에서도 보여야 하니까요.
 
@@ -113,7 +119,9 @@ ios/
 방식이라, 사진 경로 앞에 공간 ID 가 붙습니다. 자세한 규칙은 [SPACES.md](SPACES.md).
 
 **앱의 시작 화면은 공간 목록입니다.** 공간이 하나뿐이어도 건너뛰지 않습니다
-(이유는 [SPACES.md](SPACES.md) 화면 흐름 참고). 지도는 목록에서 공간을 고른 뒤 들어갑니다.
+(이유는 [SPACES.md](SPACES.md) 화면 흐름 참고). 목록에서 공간을 고르면
+**지도 | 달력** 탭으로 들어갑니다. 같은 사진을 *어디*로 보느냐, *언제*로 보느냐의
+차이일 뿐이라 탭을 옮겨도 사진을 다시 받지 않습니다 — [SCREENS.md](SCREENS.md).
 
 | 코드 | 뜻 |
 |---|---|
@@ -145,6 +153,7 @@ ios/
 
 ## 참고
 
+- 화면 명세(지도·달력·사진 올리기) → [SCREENS.md](SCREENS.md)
 - 공간·초대·보안 규칙 → [SPACES.md](SPACES.md)
 - MVI 세부 규칙 → [MVI.md](MVI.md)
 - 코딩 규칙 → [CONVENTIONS.md](CONVENTIONS.md)
