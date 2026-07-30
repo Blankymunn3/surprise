@@ -100,7 +100,31 @@ window.SUBDIV_KO = {
 window.SUBDIV_KO_NAME = {
   /* 베트남: 꼰다오는 바리아붕따우와 같은 VN-43 코드를 씀 */
   'Côn Đảo':'꼰다오',
+
   /* 싱가포르: shapeISO 가 비어 있음 */
   'CENTRAL REGION':'중부','EAST REGION':'동부','NORTH REGION':'북부',
-  'NORTH-EAST REGION':'북동부','WEST REGION':'서부'
+  'NORTH-EAST REGION':'북동부','WEST REGION':'서부',
+
+  /* 중국 34: 시도 전부 shapeISO 가 'CHN' 이라 코드로는 구분이 안 됨 → 이름으로 맞춤 */
+  'Beijing Municipality':'베이징시','Shanghai Municipality':'상하이시',
+  'Tianjin Municipality':'톈진시','Chongqing Municipality':'충칭시',
+  'Hebei Province':'허베이성','Shanxi Province':'산시성(산서)',
+  'Shaanxi Province':'산시성(섬서)','Liaoning Province':'랴오닝성',
+  'Jilin Province':'지린성','Heilongjiang Province':'헤이룽장성',
+  'Jiangsu Province':'장쑤성','Zhejiang Province':'저장성',
+  'Anhui Province':'안후이성','Fujian Province':'푸젠성',
+  'Jiangxi Province':'장시성','Shandong Province':'산둥성',
+  'Henan Province':'허난성','Hubei Province':'후베이성',
+  'Hunan Province':'후난성','Guangzhou Province':'광둥성',   /* 원본 이름이 '광저우'로 잘못돼 있음 */
+  'Hainan Province':'하이난성','Sichuan Province':'쓰촨성',
+  'Guizhou Province':'구이저우성','Yunnan Province':'윈난성',
+  'Gansu Province':'간쑤성','Qinghai Province':'칭하이성',
+  'Guangxi Zhuang Autonomous Region':'광시좡족자치구',
+  'Inner Mongolia Autonomous Region':'내몽골자치구',
+  'Ningxia Ningxia Hui Autonomous Region':'닝샤후이족자치구',   /* 원본에 Ningxia 가 두 번 */
+  'Tibet Autonomous Region':'시짱자치구(티베트)',
+  'Xinjiang Uyghur Autonomous Region':'신장위구르자치구',
+  'Hong Kong Special Administrative Region':'홍콩',
+  'Macau Special Administrative Region':'마카오',
+  'Taiwan Province':'대만'
 };
