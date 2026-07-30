@@ -72,7 +72,7 @@ class FirebaseStorage(
 
     private fun enc(value: String) = URLEncoder.encode(value, "UTF-8").replace("+", "%20")
 
-    private inline fun <T> call(request: Request, timeoutMs: Long, parse: (String) -> T): Outcome<T> =
+    private fun <T> call(request: Request, timeoutMs: Long, parse: (String) -> T): Outcome<T> =
         try {
             client.newBuilder()
                 .callTimeout(timeoutMs, TimeUnit.MILLISECONDS)

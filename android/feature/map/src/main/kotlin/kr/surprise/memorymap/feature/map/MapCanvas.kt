@@ -8,12 +8,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapView
-import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.Style
 
 /**
@@ -63,9 +62,7 @@ internal fun MapCanvas(
         modifier = modifier,
         update = { view ->
             view.getMapAsync { map ->
-                map.setStyle(Style.Builder().fromJson(OsmStyle.json())) {
-                    applyPins(map, pins)
-                }
+                map.setStyle(Style.Builder().fromJson(OsmStyle.json()))
                 map.addOnMapClickListener { point ->
                     onTap(point.latitude, point.longitude)
                     true
@@ -78,21 +75,9 @@ internal fun MapCanvas(
     )
 }
 
-/**
- * 다녀온 지역에 표시를 찍습니다.
- *
- * 디자인은 지역을 **대표사진으로 칠하는** 것이지만, 그건 런타임 이미지를
- * `fill-pattern` 으로 등록해야 해서 다음 단계로 미룹니다. 지금은 자리와 개수만
- * 보여 주고, 누르면 시트에서 사진을 봅니다.
+/*
+ * 다녀온 지역을 **대표사진으로 칠하는** 것은 런타임 이미지를 `fill-pattern` 으로
+ * 등록해야 해서 다음 단계로 미뤘습니다 (`docs/app/STATUS.md`).
+ * 지금은 기본 지도와 "누른 곳이 어느 지역인지" 까지만 합니다 —
+ * 지역 판정은 지도가 아니라 도메인이 경계 데이터로 하므로 화면 흐름은 이미 완성입니다.
  */
-private fun applyPins(map: MapLibreMap, pins: List<RegionPin>) {
-    map.markers.forEach { map.removeMarker(it) }
-    pins.forEach { pin ->
-        map.addMarker(
-            org.maplibre.android.annotations.MarkerOptions()
-                .position(LatLng(pin.latitude, pin.longitude))
-                .title(pin.region.displayName)
-                .snippet("사진 ${pin.photoCount}장")
-        )
-    }
-}

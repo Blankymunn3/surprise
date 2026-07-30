@@ -13,8 +13,8 @@ import kr.surprise.memorymap.feature.upload.UploadViewModel
  * 화면이 넷이라 이 파일 하나면 충분합니다.
  */
 @Suppress("UNCHECKED_CAST")
-class VmFactory(private val create: () -> ViewModel) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T = create() as T
+class VmFactory(private val build: () -> ViewModel) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T = build() as T
 }
 
 fun AppContainer.spaceListFactory() = VmFactory {
