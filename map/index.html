@@ -78,11 +78,11 @@
   var KEY='surprise.map.photo.';
   /* 우리 추억 장소 (확정된 사실만 — 새로 만들어내지 않음) */
   var PLACES=[
-    {id:'gongdeok', name:'공덕',      emoji:'💘', desc:'처음 만난 곳 (2023)',      lat:37.5445, lng:126.9516, kr:true},
-    {id:'botanic',  name:'서울식물원', emoji:'🌿', desc:'사귀고 첫 데이트',          lat:37.5695, lng:126.8355, kr:true},
-    {id:'gangnam',  name:'강남',      emoji:'💍', desc:"프로포즈 — 김동률 '감사'",   lat:37.4979, lng:127.0276, kr:true},
-    {id:'bali',     name:'발리',      emoji:'🌴', desc:'신혼여행',                 lat:-8.6500, lng:115.2167, kr:false},
-    {id:'jeongdong',name:'정동진',    emoji:'🌅', desc:'2026년 여름 강릉 여행',     lat:37.6906, lng:129.0335, kr:true}
+    {id:'gongdeok', name:'공덕',      emoji:'💘', desc:'처음 만난 곳 (2023)',      lat:37.5445, lng:126.9516, kr:true, code:'11140'},
+    {id:'botanic',  name:'서울식물원', emoji:'🌿', desc:'사귀고 첫 데이트',          lat:37.5695, lng:126.8355, kr:true, code:'11160'},
+    {id:'gangnam',  name:'강남',      emoji:'💍', desc:"프로포즈 — 김동률 '감사'",   lat:37.4979, lng:127.0276, kr:true, code:'11230'},
+    {id:'bali',     name:'발리',      emoji:'🌴', desc:'신혼여행',                 lat:-8.6500, lng:115.2167, kr:false, code:null},
+    {id:'jeongdong',name:'정동진',    emoji:'🌅', desc:'2026년 여름 강릉 여행',     lat:37.6906, lng:129.0335, kr:true, code:'32030'}
   ];
 
   if(typeof L==='undefined'){
@@ -96,6 +96,8 @@
   }).addTo(map);
 
   var markers={}, overlays={}, current=null;
+  var GEO='https://cdn.jsdelivr.net/gh/southkorea/southkorea-maps@master/kostat/2013/json/skorea_municipalities_geo_simple.json';
+  var districts={};   // 코드 → 행정구역 도형
   var sitePhotos={};      // 사이트에 올려둔 공유 사진 (모든 기기에서 보임)
   var picker=document.getElementById('picker'), note=document.getElementById('note');
   var listEl=document.getElementById('places');
@@ -127,14 +129,47 @@
     });
   }
 
-  /* 사진이 있으면 그 지역(약 1km 사각형)을 사진으로 덮는다 */
+  /* 사진을 '행정구역 모양'대로 꽉 채워 크롭한다 (구역 데이터가 없으면 사각형으로) */
+  function patternFill(path, id, src){
+    var svg=path.ownerSVGElement; if(!svg) return false;
+    var NS='http://www.w3.org/2000/svg';
+    var defs=svg.querySelector('defs');
+    if(!defs){ defs=document.createElementNS(NS,'defs'); svg.insertBefore(defs, svg.firstChild); }
+    var pid='dpat-'+id, old=document.getElementById(pid);
+    if(old) old.parentNode.removeChild(old);
+    var pat=document.createElementNS(NS,'pattern');
+    pat.setAttribute('id',pid);
+    pat.setAttribute('patternUnits','objectBoundingBox');
+    pat.setAttribute('patternContentUnits','objectBoundingBox');
+    pat.setAttribute('width','1'); pat.setAttribute('height','1');
+    var im=document.createElementNS(NS,'image');
+    im.setAttribute('href',src);
+    im.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href',src);
+    im.setAttribute('x','0'); im.setAttribute('y','0');
+    im.setAttribute('width','1'); im.setAttribute('height','1');
+    im.setAttribute('preserveAspectRatio','xMidYMid slice');   // 비율 유지하며 꽉 채우기
+    pat.appendChild(im); defs.appendChild(pat);
+    path.style.fill='url(#'+pid+')';
+    path.style.fillOpacity='1';
+    return true;
+  }
+
   function drawOverlay(p){
     if(overlays[p.id]){ map.removeLayer(overlays[p.id]); delete overlays[p.id]; }
     var src=photoOf(p.id);
     if(!src) return;
-    var d=0.0055;
+    var feat=p.code && districts[p.code];
+    if(feat){
+      var layer=L.geoJSON(feat,{style:{color:'#e11d5b',weight:2,opacity:.95,fillOpacity:1}}).addTo(map);
+      overlays[p.id]=layer;
+      layer.eachLayer(function(l){ if(l._path) patternFill(l._path, p.id, src); });
+      // 확대/축소 후에도 유지
+      map.on('zoomend', function(){ layer.eachLayer(function(l){ if(l._path) patternFill(l._path, p.id, src); }); });
+      return;
+    }
+    var d=0.0055;   // 구역 데이터가 없는 곳(발리)은 기존 사각형
     overlays[p.id]=L.imageOverlay(src,[[p.lat-d,p.lng-d*1.25],[p.lat+d,p.lng+d*1.25]],
-      {opacity:0.82, interactive:false}).addTo(map);
+      {opacity:0.85, interactive:false}).addTo(map);
   }
 
   function refresh(p){ markers[p.id].setIcon(iconFor(p)); drawOverlay(p); renderList(); }
@@ -237,6 +272,11 @@
   loadSitePhotos(function(){
     PLACES.forEach(function(p){ if(sitePhotos[p.id]) refresh(p); });
   });
+  // 시군구 경계를 받아 사진을 지역 모양으로 크롭
+  fetch(GEO).then(function(r){ return r.json(); }).then(function(geo){
+    geo.features.forEach(function(f){ districts[f.properties.code]=f; });
+    PLACES.forEach(function(p){ if(photoOf(p.id)) drawOverlay(p); });
+  }).catch(function(){});
   /* 카드 등장 애니메이션(scale) 뒤에 지도 크기 재계산 */
   var card=document.querySelector('.card');
   if(card) card.addEventListener('animationend', function(){ map.invalidateSize(); fitKr(); });
