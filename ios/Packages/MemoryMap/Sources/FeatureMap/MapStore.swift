@@ -1,5 +1,6 @@
 import CoreModel
 import Domain
+import Foundation
 import Observation
 
 public struct RegionPin: Equatable, Sendable, Identifiable {

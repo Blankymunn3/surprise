@@ -1,4 +1,5 @@
 import CoreModel
+import Foundation
 
 /// 지역 검색 순서. 안드로이드 `RegionSearch` 와 같아야 두 앱이 같은 결과를 냅니다.
 ///

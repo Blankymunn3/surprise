@@ -1,4 +1,5 @@
 import CoreModel
+import Foundation
 import SwiftUI
 
 /// 콘텐츠 **위에 떠 있는** 조작 층. 유리는 여기에만 씁니다 —

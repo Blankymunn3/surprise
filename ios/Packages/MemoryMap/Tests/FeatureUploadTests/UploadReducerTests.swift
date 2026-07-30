@@ -1,5 +1,6 @@
 import CoreModel
 import Domain
+import Foundation
 import Testing
 @testable import FeatureUpload
 

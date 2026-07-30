@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 /// 색·글씨·모서리는 `docs/app/design.html` 이 원본입니다.

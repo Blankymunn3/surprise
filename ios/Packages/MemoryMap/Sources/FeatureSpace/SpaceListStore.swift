@@ -1,6 +1,7 @@
 import CoreCommon
 import CoreModel
 import Domain
+import Foundation
 import Observation
 
 public enum SpacesUi: Equatable, Sendable {

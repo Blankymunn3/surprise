@@ -1,4 +1,5 @@
 import CoreModel
+import Foundation
 
 /// 대표사진을 고르는 규칙. 안드로이드 `Covers` 와 같습니다.
 public enum Covers {

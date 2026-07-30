@@ -1,6 +1,7 @@
 import CoreCommon
 import CoreModel
 import Domain
+import Foundation
 import Observation
 
 /// 고른 사진 한 장. 화면 상태에 플랫폼 타입(PHAsset/URL)을 넣지 않습니다 —

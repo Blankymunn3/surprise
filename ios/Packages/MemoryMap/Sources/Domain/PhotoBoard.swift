@@ -1,4 +1,5 @@
 import CoreModel
+import Foundation
 
 /// 한 공간의 사진 전부를 지도용·달력용으로 갈라 둔 것.
 /// 지도 Store 와 달력 Store 가 **같은 이것**을 봅니다 — 탭을 옮길 때 다시 받지 않으려고.

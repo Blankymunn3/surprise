@@ -1,5 +1,6 @@
 import CoreModel
 import DesignSystem
+import Foundation
 import SwiftUI
 
 /// 앱의 메인. **공간이 하나뿐이어도 여기서 시작합니다.**

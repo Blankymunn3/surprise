@@ -1,5 +1,6 @@
 import CoreCommon
 import CoreModel
+import Foundation
 import Testing
 @testable import FeatureSpace
 

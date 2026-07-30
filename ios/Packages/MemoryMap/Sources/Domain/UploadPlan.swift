@@ -1,4 +1,5 @@
 import CoreModel
+import Foundation
 
 /// 여러 장을 한 번에 올릴 때 지역·날짜 기본값을 정합니다.
 /// 안드로이드 `UploadPlan` 과 같은 규칙 — 두 앱이 다르게 채우면 안 됩니다.

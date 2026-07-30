@@ -1,5 +1,6 @@
 import CoreModel
 import DesignSystem
+import Foundation
 import SwiftUI
 
 private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
