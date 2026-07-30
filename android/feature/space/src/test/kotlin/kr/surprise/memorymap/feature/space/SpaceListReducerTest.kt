@@ -49,6 +49,23 @@ class SpaceListReducerTest {
         assertFalse(after.working)
     }
 
+    /**
+     * 공간을 만들면 저장소가 먼저 목록에 넣고(흐름으로 `spacesLoaded` 가 돌고), 그 다음
+     * `created` 가 또 넣습니다. 그래서 같은 공간이 두 번 들어가 목록이 죽었습니다
+     * (`Key "7M8FRY" was already used`).
+     */
+    @Test
+    fun `저장소가 먼저 넣어 둔 공간을 만들어도 목록에 두 번 나오지 않는다`() {
+        val made = space("7M8FRY")
+        val alreadyInList = SpaceListReducer.spacesLoaded(SpaceListState(), listOf(made))
+
+        val after = SpaceListReducer.created(alreadyInList, made, "7M8FRY")
+
+        val items = (after.spaces as SpacesUi.Ready).items
+        assertEquals(1, items.size)
+        assertEquals(items.size, items.distinctBy { it.id }.size)
+    }
+
     @Test
     fun `이미 들어가 있는 공간에 다시 참여해도 목록에 두 번 나오지 않는다`() {
         val state = SpaceListReducer.spacesLoaded(SpaceListState(), listOf(space("A", "가족 여행")))

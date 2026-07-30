@@ -84,9 +84,12 @@ public enum SpaceListReducer {
         return next
     }
 
+    /// 저장소도 목록에 넣고 여기서도 넣기 때문에 **같은 공간이 두 번 들어갈 수 있습니다.**
+    /// 목록은 `id` 를 키로 그리므로 그러면 화면이 죽습니다. `joined` 와 같은 방식으로
+    /// 같은 id 를 먼저 걷어냅니다.
     public static func created(_ state: SpaceListState, _ space: Space, _ code: String) -> SpaceListState {
         var next = state
-        next.spaces = .ready(state.items + [space])
+        next.spaces = .ready(state.items.filter { $0.spaceId != space.spaceId } + [space])
         next.sheet = .invited(spaceName: space.name, code: code)
         next.pendingName = ""
         next.working = false
