@@ -8,8 +8,9 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>ko</string>
+	<!-- 홈 화면에 보이는 이름. 폴더·모듈 이름(MemoryMap)은 코드 안쪽이라 그대로 둡니다. -->
 	<key>CFBundleDisplayName</key>
-	<string>추억 지도</string>
+	<string>짜국</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -17,7 +18,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>Jjaguk</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

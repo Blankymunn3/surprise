@@ -5,7 +5,7 @@
 빌드할 필요 없습니다. CI 가 만들어 둔 파일을 받으면 됩니다.
 
 1. **폰 브라우저**로 [릴리스 페이지](https://github.com/Blankymunn3/surprise/releases) 를 엽니다
-2. 맨 위 `추억 지도 apk-…` 를 열고 `memorymap-….apk` 를 누릅니다
+2. 맨 위 `짜국 apk-…` 를 열고 `memorymap-….apk` 를 누릅니다
 3. "이 출처의 앱 설치 허용" 을 켜라고 하면 켭니다 (그 브라우저에 한 번만)
 4. 설치 후 열기
 
