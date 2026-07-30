@@ -21,16 +21,18 @@ struct MemberDocument: Codable, Sendable {
 public actor SharedSpaceRepository: SpaceRepository {
 
     private let storage: FirebaseStorage
-    private let defaults: UserDefaults
     private var cached: [Space] = []
+
+    /// UserDefaults 를 밖에서 받지 않고 여기서 씁니다 — actor 로 넘기면
+    /// Swift 6 에서 Sendable 검사에 걸립니다.
+    private var defaults: UserDefaults { .standard }
 
     private static let idsKey = "memorymap.spaceIds"
     private static let uidKey = "memorymap.uid"
     private static let nameKey = "memorymap.displayName"
 
-    public init(storage: FirebaseStorage, defaults: UserDefaults = .standard) {
+    public init(storage: FirebaseStorage) {
         self.storage = storage
-        self.defaults = defaults
     }
 
     public func spaces() async -> [Space] { cached }

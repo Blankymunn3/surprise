@@ -129,10 +129,9 @@ public final class UploadStore {
         for item in items { hints.append(await readHints(item.uri)) }
 
         let defaults = UploadPlan.defaults(hints: hints, today: today)
-        let region: Region? = if let code = defaults.regionCode {
-            await catalog.find(code.value)
-        } else {
-            nil
+        var region: Region?
+        if let code = defaults.regionCode {
+            region = await catalog.find(code.value)
         }
         state = UploadReducer.hintsRead(state, defaults, region: region)
     }

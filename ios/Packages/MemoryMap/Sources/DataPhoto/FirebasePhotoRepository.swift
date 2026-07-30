@@ -44,9 +44,10 @@ public actor FirebasePhotoRepository: PhotoRepository {
                     storagePath: item.fullPath,
                     downloadURL: storage.downloadURL(item.fullPath),
                     uploadedBy: uploaderUid,
-                    // 목록 API 가 시각을 안 줍니다. 대표사진 기본값이 매번 흔들리지만
-                    // 않으면 되므로 이름에서 안정적인 값을 뽑아 씁니다.
-                    uploadedAt: abs(item.name.hashValue % 1_000_000)
+                    // 목록 API 가 올린 시각을 주지 않습니다. 대표사진 기본값("가장 최근")이
+                    // 실행할 때마다 흔들리면 안 되므로 **결정적인** 값을 만들어 씁니다.
+                    // Swift 의 hashValue 는 실행마다 씨앗이 달라 쓸 수 없습니다.
+                    uploadedAt: Self.stableOrder(parsed)
                 )
             }
             await loadCovers(spaceId)
@@ -119,6 +120,13 @@ public actor FirebasePhotoRepository: PhotoRepository {
             guard let key = Self.key(from: documentId) else { return nil }
             return Cover(key: key, photoId: PhotoId(photoId))
         }
+    }
+
+    /// 찍은 날짜가 먼저, 같은 날이면 사진 ID 순. 안드로이드와 같은 규칙입니다.
+    static func stableOrder(_ parsed: PhotoObjectName.Parsed) -> Int {
+        let day = parsed.takenOn.year * 10_000 + parsed.takenOn.month * 100 + parsed.takenOn.day
+        let tail = parsed.id.value.unicodeScalars.reduce(0) { ($0 &* 31 &+ Int($1.value)) % 9_973 }
+        return day * 10_000 + tail
     }
 
     static func key(from documentId: String) -> CoverKey? {

@@ -63,9 +63,9 @@ class FirebasePhotoRepository(
                             storagePath = item.fullPath,
                             downloadUrl = storage.downloadUrl(item.fullPath),
                             uploadedBy = uploaderUid,
-                            // 목록 API 가 시각을 안 주므로 사진 ID 순서를 안정적인 대용으로 씁니다.
-                            // 대표사진 기본값(가장 최근)이 매번 흔들리지 않기만 하면 됩니다.
-                            uploadedAtEpochSeconds = item.name.hashCode().toLong() and 0xFFFFFFFFL,
+                            // 목록 API 가 올린 시각을 주지 않습니다. 대표사진 기본값("가장 최근")이
+                            // 흔들리지 않도록 결정적인 값을 만들어 씁니다. iOS 와 같은 규칙.
+                            uploadedAtEpochSeconds = stableOrder(p),
                         )
                     }
                 }
@@ -166,6 +166,14 @@ class FirebasePhotoRepository(
             null
         }
         else -> null
+    }
+
+    /** 찍은 날짜가 먼저, 같은 날이면 사진 ID 순. iOS `stableOrder` 와 같은 규칙입니다. */
+    private fun stableOrder(parsed: PhotoObjectName.Parsed): Long {
+        val day = parsed.takenOn.year * 10_000L + parsed.takenOn.monthValue * 100L + parsed.takenOn.dayOfMonth
+        var tail = 0L
+        for (c in parsed.id.value) tail = (tail * 31 + c.code) % 9_973
+        return day * 10_000L + tail
     }
 
     private fun photoDir(spaceId: SpaceId) = "spaces/${spaceId.value}/photos/"
