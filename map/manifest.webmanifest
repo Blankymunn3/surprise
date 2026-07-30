@@ -1,0 +1,16 @@
+{
+  "name": "우리 추억 지도",
+  "short_name": "추억 지도",
+  "description": "우리가 가본 곳을 사진으로 채우는 지도",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fff0f5",
+  "theme_color": "#ffc2d6",
+  "icons": [
+    { "src": "app/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "app/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "app/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

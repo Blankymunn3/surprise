@@ -1,0 +1,16 @@
+{
+  "name": "our-memory-map",
+  "version": "1.0.0",
+  "private": true,
+  "description": "우리 추억 지도 — 안드로이드/iOS 앱 껍데기 (Capacitor)",
+  "scripts": {
+    "build:www": "node build-www.mjs",
+    "sync": "npm run build:www && cap sync"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.6.8",
+    "@capacitor/cli": "^7.6.8",
+    "@capacitor/core": "^7.6.8",
+    "@capacitor/ios": "^7.6.8"
+  }
+}
