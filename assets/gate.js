@@ -14,6 +14,8 @@
   st.textContent =
     'body>*{visibility:hidden!important}' +
     '#gate,#gate *{visibility:visible!important}' +
+    // base.css보다 먼저 뜨는 화면이라 여기서도 라이트 고정 (다크모드 반전 방지)
+    ':root{color-scheme:only light}' +
     '#gate{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:24px;' +
     'background:radial-gradient(120% 90% at 15% 0%,#ffe3ee,transparent 55%),' +
     'radial-gradient(120% 100% at 100% 100%,#ffd9c9,transparent 55%),' +

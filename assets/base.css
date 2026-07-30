@@ -1,5 +1,8 @@
 /* 공통 디자인 — 핑크 글라스 (surprise 사이트 전 페이지 공용) */
 :root{
+  /* 이 사이트는 라이트 전용. 폰이 다크모드여도 브라우저가 색을 뒤집지 않게 막습니다
+     (안 막으면 크롬·삼성인터넷의 강제 다크모드가 핑크 배경을 자주색으로 반전시킴) */
+  color-scheme: only light;
   --rose:#ff4d78;--rose-deep:#e11d5b;--pink-1:#ffe3ee;--pink-2:#ffc2d6;--pink-3:#ffd9c9;
   --ink:#5a2740;--ink-soft:#96566f;--card:rgba(255,255,255,.62);
   --font:"Jua","Apple SD Gothic Neo","Pretendard",system-ui,sans-serif;
