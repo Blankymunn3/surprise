@@ -153,7 +153,7 @@
       regions.push(o); byCode[code]=o;
       // 수도권(서울11·인천23·경기31) 범위 누적
       var pre=code.substring(0,2);
-      if(pre==='11'||pre==='23'||pre==='31'){
+      if(pre==='11'){
         each(f.geometry,function(ring){
           ring.forEach(function(c){
             var q=px(c);
@@ -165,7 +165,7 @@
     });
 
     HOME={x:0,y:0,w:W,h:H};
-    var pad=(mx1-mx0)*0.08;
+    var pad=(mx1-mx0)*0.55;
     META={x:mx0-pad, y:my0-pad, w:(mx1-mx0)+pad*2, h:(my1-my0)+pad*2};
     setVB(HOME);
     loading.style.display='none';
@@ -191,7 +191,7 @@
     var id='pat-'+r.code, old=document.getElementById(id);
     if(!src){
       if(old) old.parentNode.removeChild(old);
-      r.el.removeAttribute('fill'); r.el.classList.remove('done');
+      r.el.style.fill=''; r.el.removeAttribute('fill'); r.el.classList.remove('done');
       return;
     }
     if(old) old.parentNode.removeChild(old);
@@ -209,7 +209,7 @@
     im.setAttribute('width',bb.width); im.setAttribute('height',bb.height);
     im.setAttribute('preserveAspectRatio','xMidYMid slice');
     pat.appendChild(im); defs.appendChild(pat);
-    r.el.setAttribute('fill','url(#'+id+')');
+    r.el.style.fill='url(#'+id+')';
     r.el.classList.add('done');
   }
 
