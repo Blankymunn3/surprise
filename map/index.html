@@ -132,7 +132,6 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="../assets/fx.js?v=3"></script>
 <script src="../assets/countries-ko.js?v=3"></script>
-<script src="../assets/subdivisions-ko.js?v=3"></script>
 <script src="../assets/firebase.js?v=3"></script>
 <script>
 (function(){
@@ -470,6 +469,22 @@
   var expanded={}, loading={};   // 나라별로 따로 관리 (새로고침 때 여러 나라를 동시에 복원해야 함)
   try{ expanded=JSON.parse(localStorage.getItem(EXP_KEY)||'{}')||{}; }catch(e){ expanded={}; }
 
+  /* 시도 한글 이름표는 110KB 가 넘어서, '시도 나누기'를 누를 때 한 번만 받습니다.
+     못 받아도 원본 이름으로 그냥 진행합니다. */
+  var koLoading=null;
+  function loadSubdivKo(){
+    if(window.SUBDIV_KO) return Promise.resolve();
+    if(koLoading) return koLoading;
+    koLoading=new Promise(function(done){
+      var s=document.createElement('script');
+      s.src='../assets/subdivisions-ko.js?v=4';
+      s.onload=function(){ done(); };
+      s.onerror=function(){ done(); };
+      document.head.appendChild(s);
+    });
+    return koLoading;
+  }
+
   function adm1Url(iso){
     return 'https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/'+ADM1_SHA+
            '/releaseData/gbOpen/'+iso+'/ADM1/geoBoundaries-'+iso+'-ADM1_simplified.geojson';
@@ -480,9 +495,11 @@
     if(layers['C-'+iso] && layers['C-'+iso]._split) return;
     loading[iso]=1;
     note.textContent=(label||iso)+' 시도 불러오는 중… 🧩';
-    fetch(adm1Url(iso)).then(function(r){
-      if(!r.ok) throw 0; return r.json();
-    }).then(function(g){
+    Promise.all([
+      fetch(adm1Url(iso)).then(function(r){ if(!r.ok) throw 0; return r.json(); }),
+      loadSubdivKo()
+    ]).then(function(res){
+      var g=res[0];
       var country=layers['C-'+iso];
       if(country){ group.removeLayer(country); country._split=true; }
       (g.features||[]).forEach(function(f,i){
