@@ -16,6 +16,13 @@
 <script src="../assets/gate.js?v=3"></script>
 <script src="../assets/lockui.js?v=3"></script>
 <meta name="color-scheme" content="light" />
+<!-- 홈 화면에 설치해서 앱처럼 쓰기 (PWA) -->
+<link rel="manifest" href="./manifest.webmanifest" />
+<meta name="theme-color" content="#ffc2d6" />
+<link rel="apple-touch-icon" href="./app/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="추억 지도" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -78,6 +85,8 @@
   .mini:hover{background:var(--rose);color:#fff}
   .mini.del{color:#96566f;border-color:#e9d3dc}
   .hidden{display:none}
+  /* 홈 화면에서 앱으로 연 경우: 지도만 쓰는 앱이라 '목록' 링크는 감춤 */
+  @media (display-mode: standalone){ .home{display:none} }
   /* 클릭 시 브라우저 기본 사각형 포커스 링 제거 (지역 모양으로만 강조) */
   #map path{outline:none !important;}
   #map path:focus,#map path:focus-visible{outline:none !important;}
@@ -133,6 +142,14 @@
 <script src="../assets/fx.js?v=3"></script>
 <script src="../assets/countries-ko.js?v=3"></script>
 <script src="../assets/firebase.js?v=3"></script>
+<script>
+/* 앱으로 설치했을 때 오프라인에서도 열리도록 (실패해도 사이트는 그대로 동작) */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').catch(function(){});
+  });
+}
+</script>
 <script>
 (function(){
   var KEY='surprise.stamp.';          // 지역 코드별 사진 (도장깨기와 공용)
