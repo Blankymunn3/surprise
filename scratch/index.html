@@ -20,7 +20,7 @@
   .prize{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,#fff,#fff2f6)}
   .prize .pico{font-size:58px;line-height:1}
   .prize .ptxt{font-size:clamp(20px,5.4vw,26px);color:var(--rose-deep)}
-  .foil{position:absolute;inset:0;display:block;cursor:grab}
+  .foil{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
   .foil:active{cursor:grabbing}
   .btn{font-family:var(--font);border:none;cursor:pointer;border-radius:999px;padding:14px 26px;font-size:clamp(17px,4.4vw,20px);color:#fff;background:linear-gradient(135deg,var(--rose),var(--rose-deep));box-shadow:0 14px 30px -10px rgba(225,29,91,.7),inset 0 2px 0 rgba(255,255,255,.35);transition:transform .12s}
   .btn:active{transform:scale(.96)}.btn:hover{transform:scale(1.04)}
@@ -70,9 +70,11 @@ window.FX=(function(){
   function setPrize(){ var i; do{i=(Math.random()*prizes.length)|0;}while(i===last&&prizes.length>1); last=i; pico.textContent=prizes[i][0]; ptxt.textContent=prizes[i][1]; }
 
   function paintFoil(){
-    var r=box.getBoundingClientRect(); W=r.width; H=r.height;
+    // 캔버스 자체 크기로 측정 (CSS inset:0 + 100%로 카드에 딱 맞음)
+    var r=foil.getBoundingClientRect();
+    W=Math.round(r.width); H=Math.round(r.height);
+    if(!W||!H){ requestAnimationFrame(paintFoil); return; }  // 레이아웃 확정 전이면 다음 프레임에
     foil.width=Math.round(W*DPR); foil.height=Math.round(H*DPR);
-    foil.style.width=W+'px'; foil.style.height=H+'px';
     ctx.setTransform(DPR,0,0,DPR,0,0);
     var g=ctx.createLinearGradient(0,0,W,H);
     g.addColorStop(0,'#e9c7d6'); g.addColorStop(.5,'#f6d9e4'); g.addColorStop(1,'#dcb6c9');
@@ -113,6 +115,10 @@ window.FX=(function(){
   window.addEventListener('resize', function(){ if(!revealed) paintFoil(); });
   // 폰트 로드 후 텍스트 선명하게 재그리기
   if(document.fonts&&document.fonts.ready) document.fonts.ready.then(function(){ if(!revealed) paintFoil(); });
+  // 카드 등장 애니메이션(scale)이 끝난 '최종 크기'로 다시 그리기 — 캔버스 어긋남 방지
+  var cardEl=document.querySelector('.card');
+  if(cardEl) cardEl.addEventListener('animationend', function(){ if(!revealed) paintFoil(); });
+  setTimeout(function(){ if(!revealed) paintFoil(); }, 800);
   setPrize(); paintFoil();
 })();
 </script>
