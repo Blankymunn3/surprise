@@ -1,0 +1,31 @@
+name: ios
+
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths: ['ios/**', '.github/workflows/ios.yml']
+  pull_request:
+    paths: ['ios/**', '.github/workflows/ios.yml']
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ios/Packages/MemoryMap
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 스위프트 버전 확인
+        run: swift --version
+
+      - name: 빌드
+        run: swift build
+
+      - name: 테스트
+        run: swift test
