@@ -45,8 +45,11 @@
     .bar .btn-ghost:nth-child(-n+3){grid-column:span 2}
     .bar .btn-ghost:nth-child(n+4){grid-column:span 3}
   }
-  /* 지역 검색 */
-  .search{position:relative;margin:0 0 10px;z-index:500}
+  /* 내 위치 버튼 (확대/축소 바로 아래, 왼쪽 하단) */
+  .me-ctl{margin-top:6px !important}
+  .me-ctl a{font-size:15px;line-height:30px !important;text-align:center;text-decoration:none}
+  /* 지역 검색 — Leaflet 컨트롤(z-index 1000)보다 위에 떠야 결과가 가려지지 않음 */
+  .search{position:relative;margin:0 0 10px;z-index:1200}
   .search input{width:100%;font-size:15px;text-align:left;padding:11px 38px 11px 14px;border-radius:14px}
   .search input::-webkit-search-cancel-button{display:none}
   .qclear{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:none;
@@ -159,8 +162,15 @@
     return;
   }
 
-  var map=L.map('map',{zoomControl:true,scrollWheelZoom:false});
+  /* 확대/축소는 왼쪽 아래 (오른쪽 위는 검색 결과창과 겹침) */
+  var map=L.map('map',{zoomControl:false,scrollWheelZoom:false});
+  L.control.zoom({position:'bottomleft',zoomInTitle:'확대',zoomOutTitle:'축소'}).addTo(map);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
+
+  /* 마우스가 지도 위에 있을 때만 휠 확대/축소
+     (항상 켜두면 페이지를 스크롤하다가 지도에서 걸림) */
+  mapEl.addEventListener('mouseenter',function(){ map.scrollWheelZoom.enable(); });
+  mapEl.addEventListener('mouseleave',function(){ map.scrollWheelZoom.disable(); });
 
   var layers={}, names={}, baliOverlay=null, sitePhotos={}, sel=null, total=0, showBorders=true;
   /* 클라우드(Firebase Storage) 사진 — 설정 전이면 그냥 비어 있고 예전처럼 기기에만 저장됨 */
@@ -377,6 +387,36 @@
   document.addEventListener('click',function(e){
     if(!(e.target.closest && e.target.closest('.search'))) closeRes();
   });
+
+  /* ── 내 위치 ───────────────────────────────────────────── */
+  var meDot=null;
+  function goMe(){
+    if(!navigator.geolocation){ note.textContent='이 브라우저는 위치를 알려주지 못해 🥲'; return; }
+    note.textContent='내 위치 찾는 중… 📍';
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var ll=[pos.coords.latitude,pos.coords.longitude];
+      if(meDot) map.removeLayer(meDot);
+      meDot=L.circleMarker(ll,{radius:8,color:'#fff',weight:3,
+        fillColor:'#e11d5b',fillOpacity:1,interactive:false}).addTo(map);
+      map.flyTo(ll,13,{duration:.8});
+      note.textContent='여기 있네! 📍';
+    },function(err){
+      note.textContent = (err && err.code===1)
+        ? '위치 권한을 켜줘야 찾을 수 있어 🙏'
+        : '위치를 못 찾았어 🥲';
+    },{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+  }
+
+  var meCtl=L.control({position:'bottomleft'});
+  meCtl.onAdd=function(){
+    var box=L.DomUtil.create('div','leaflet-bar me-ctl');
+    var a=L.DomUtil.create('a','',box);
+    a.href='#'; a.title='내 위치'; a.setAttribute('role','button'); a.textContent='📍';
+    L.DomEvent.on(a,'click',function(e){ L.DomEvent.stop(e); goMe(); });
+    L.DomEvent.disableClickPropagation(box);
+    return box;
+  };
+  meCtl.addTo(map);
 
   function drawBali(){
     if(baliOverlay){ map.removeLayer(baliOverlay); baliOverlay=null; }

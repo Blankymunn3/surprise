@@ -14,6 +14,8 @@ service firebase.storage {
 
     // 사진 목록 조회(list)는 파일이 아니라 '폴더 경로'에 대한 읽기 권한을 봅니다.
     // 이게 없으면 사진이 올라가도 다른 기기에서 목록을 못 받아옵니다.
+    // ⚠️ 클라이언트가 delimiter 를 같이 보내야 이 규칙이 적용됩니다.
+    //    안 보내면 '버킷 전체 목록'으로 취급돼 아래 catch-all 에서 막힙니다(403).
     match /regions {
       allow read: if true;
     }
