@@ -59,7 +59,11 @@
     var stop = need(); if (stop) return stop;
     var map = {};
     function page(token) {
-      var url = base() + '?prefix=' + encodeURIComponent(DIR + '/') + '&maxResults=1000' +
+      /* delimiter 를 반드시 같이 보냅니다.
+         이게 없으면 Firebase가 '버킷 전체 목록'으로 보고 규칙에서 막습니다(403).
+         붙이면 'regions 폴더 목록'이 되어 storage.rules 의 match /regions 가 적용됩니다. */
+      var url = base() + '?prefix=' + encodeURIComponent(DIR + '/') +
+                '&delimiter=' + encodeURIComponent('/') + '&maxResults=1000' +
                 (token ? '&pageToken=' + encodeURIComponent(token) : '');
       return ask(url, null, 15000).then(function (r) {
         if (!r.ok) throw new Error('list ' + r.status);
