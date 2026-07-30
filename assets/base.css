@@ -7,6 +7,11 @@
   --font-hand:"Gaegu","Apple SD Gothic Neo",sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* 길게 눌러 나오는 메뉴·이미지 저장 팝업 막기 */
+*{-webkit-touch-callout:none}
+img{-webkit-user-drag:none}
+/* 두 번 눌러 확대 안 되게. 지도는 leaflet 이 자기 touch-action 을 써서 영향 없음 */
+body{touch-action:pan-x pan-y}
 html,body{margin:0}
 body{
   font-family:var(--font);color:var(--ink);min-height:100svh;overflow-x:hidden;
