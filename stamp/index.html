@@ -129,6 +129,7 @@
         if(c[1]<minLat)minLat=c[1]; if(c[1]>maxLat)maxLat=c[1];
       });
     });});
+    var mx0=1e9,mx1=-1e9,my0=1e9,my1=-1e9;   // 수도권 범위
     var midLat=(minLat+maxLat)/2, kx=Math.cos(midLat*Math.PI/180);
     var W=1000, H=Math.round(W*((maxLat-minLat)/((maxLon-minLon)*kx)));
     function px(c){ return [ (c[0]-minLon)*kx/((maxLon-minLon)*kx)*W, (maxLat-c[1])/(maxLat-minLat)*H ]; }
@@ -150,9 +151,22 @@
       svg.appendChild(path);
       var o={code:code,name:name,el:path};
       regions.push(o); byCode[code]=o;
+      // 수도권(서울11·인천23·경기31) 범위 누적
+      var pre=code.substring(0,2);
+      if(pre==='11'||pre==='23'||pre==='31'){
+        each(f.geometry,function(ring){
+          ring.forEach(function(c){
+            var q=px(c);
+            if(q[0]<mx0)mx0=q[0]; if(q[0]>mx1)mx1=q[0];
+            if(q[1]<my0)my0=q[1]; if(q[1]>my1)my1=q[1];
+          });
+        });
+      }
     });
 
-    HOME={x:0,y:0,w:W,h:H}; META={x:W*0.03,y:H*0.03,w:W*0.36,h:H*0.30};
+    HOME={x:0,y:0,w:W,h:H};
+    var pad=(mx1-mx0)*0.08;
+    META={x:mx0-pad, y:my0-pad, w:(mx1-mx0)+pad*2, h:(my1-my0)+pad*2};
     setVB(HOME);
     loading.style.display='none';
     loadSitePhotos(function(){ regions.forEach(function(r){ paint(r); }); updateProg(); });
@@ -181,14 +195,18 @@
       return;
     }
     if(old) old.parentNode.removeChild(old);
+    var bb=r.el.getBBox();
+    if(!bb.width||!bb.height) return;
     var pat=document.createElementNS(NS,'pattern');
     pat.setAttribute('id',id);
-    pat.setAttribute('patternContentUnits','objectBoundingBox');
-    pat.setAttribute('width','1'); pat.setAttribute('height','1');
+    pat.setAttribute('patternUnits','userSpaceOnUse');
+    pat.setAttribute('x',bb.x); pat.setAttribute('y',bb.y);
+    pat.setAttribute('width',bb.width); pat.setAttribute('height',bb.height);
     var im=document.createElementNS(NS,'image');
     im.setAttribute('href',src);
     im.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href',src);
-    im.setAttribute('width','1'); im.setAttribute('height','1');
+    im.setAttribute('x',bb.x); im.setAttribute('y',bb.y);
+    im.setAttribute('width',bb.width); im.setAttribute('height',bb.height);
     im.setAttribute('preserveAspectRatio','xMidYMid slice');
     pat.appendChild(im); defs.appendChild(pat);
     r.el.setAttribute('fill','url(#'+id+')');
