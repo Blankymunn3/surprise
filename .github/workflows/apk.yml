@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['android/**']
+    paths: ['android/**', '.github/workflows/apk.yml']
 
 permissions:
   contents: write
