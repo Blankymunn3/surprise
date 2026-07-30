@@ -45,10 +45,9 @@ public actor FirebaseStorage {
         guard data.count <= Limits.maxUploadBytes else { return .fail(.tooLarge) }
 
         var components = URLComponents(string: base)!
-        components.queryItems = [
-            .init(name: "uploadType", value: "media"),
-            .init(name: "name", value: path),
-        ]
+        // 웹(assets/firebase.js)·안드로이드와 **같은 주소**여야 합니다.
+        // uploadType 은 GCS JSON API 용 파라미터라 넣지 않습니다.
+        components.queryItems = [.init(name: "name", value: path)]
         guard let url = components.url else { return .fail(.unknown) }
 
         var request = URLRequest(url: url)

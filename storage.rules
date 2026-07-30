@@ -28,6 +28,36 @@ service firebase.storage {
                        && request.resource.contentType == 'image/jpeg');
     }
 
+    // ── 앱(안드로이드·iOS)이 쓰는 공간 단위 경로 ──
+    //
+    // 앱은 사진을 공간별로 모읍니다: spaces/<공간ID>/…
+    // 공간 ID 는 초대 코드(대문자·숫자 6글자)라 경로에 그대로 쓰입니다.
+    //
+    // ⚠️ 여기도 '주소를 아는 사람은 누구나' 입니다. 로그인이 붙어야 멤버인지 확인할 수
+    //    있고, 그 목표 규칙은 docs/app/SPACES.md 에 적어 뒀습니다.
+
+    // 공간 정보 (이름·멤버) 와 대표사진 목록 — 작은 JSON 두 개
+    match /spaces/{spaceId}/{doc} {
+      allow read: if true;
+      allow write: if doc in ['space.json', 'covers.json']
+                   && request.resource != null
+                   && request.resource.size < 256 * 1024;
+    }
+
+    // 사진 목록 조회(list). regions 와 같은 이유로 폴더 경로에 읽기 권한이 필요하고,
+    // 클라이언트가 delimiter 를 같이 보내야 이 규칙이 적용됩니다.
+    match /spaces/{spaceId}/photos {
+      allow read: if true;
+    }
+
+    // 사진 한 장: spaces/<공간ID>/photos/<날짜>_<지역코드>_<사진ID>.jpg
+    match /spaces/{spaceId}/photos/{file} {
+      allow read: if true;
+      allow write: if request.resource == null                       // 삭제
+                   || (request.resource.size < 5 * 1024 * 1024       // 5MB 이하
+                       && request.resource.contentType == 'image/jpeg');
+    }
+
     // 그 외 경로는 전부 차단
     match /{allPaths=**} {
       allow read, write: if false;

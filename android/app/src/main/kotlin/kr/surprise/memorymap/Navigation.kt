@@ -64,17 +64,32 @@ fun MemoryMapNavHost(container: AppContainer) {
         composable(ROUTE_SPACES) {
             val vm: SpaceListViewModel = viewModel(factory = container.spaceListFactory())
             val state by vm.state.collectAsStateWithLifecycle()
+            val snackbar = remember { SnackbarHostState() }
 
-            LaunchedEffect(Unit) {
-                vm.onIntent(SpaceListIntent.Appeared)
+            LaunchedEffect(Unit) { vm.onIntent(SpaceListIntent.Appeared) }
+
+            // 실패를 조용히 삼키면 사용자에게는 "눌러도 아무 일이 없다" 로 보입니다.
+            // Effect 를 하나도 빠뜨리지 않도록 when 으로 받습니다.
+            LaunchedEffect(vm) {
                 vm.effect.collect { effect ->
-                    if (effect is SpaceListEffect.OpenSpace) {
-                        navController.navigate("space/${effect.id.value}")
+                    when (effect) {
+                        is SpaceListEffect.OpenSpace ->
+                            navController.navigate("space/${effect.id.value}")
+                        is SpaceListEffect.ShowMessage ->
+                            snackbar.showSnackbar(effect.text)
+                        is SpaceListEffect.ShareInvite ->
+                            snackbar.showSnackbar("초대 코드: ${effect.code}")
                     }
                 }
             }
 
-            SpaceListScreen(state = state, myInitial = "나", onIntent = vm::onIntent)
+            Box(Modifier.fillMaxSize()) {
+                SpaceListScreen(state = state, myInitial = "나", onIntent = vm::onIntent)
+                SnackbarHost(
+                    snackbar,
+                    Modifier.align(Alignment.BottomCenter).systemBarsPadding().padding(bottom = 16.dp),
+                )
+            }
         }
 
         composable(

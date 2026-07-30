@@ -50,7 +50,9 @@ class FirebaseStorage(
         withContext(Dispatchers.IO) {
             if (bytes.size > Limits.MAX_UPLOAD_BYTES) return@withContext Outcome.Fail(Failure.TooLarge)
             val request = Request.Builder()
-                .url(base() + "?uploadType=media&name=" + enc(path))
+                // 웹(assets/firebase.js)과 **같은 주소**여야 합니다.
+                // uploadType 은 GCS JSON API 용 파라미터라 넣지 않습니다.
+                .url(base() + "?name=" + enc(path))
                 .post(bytes.toRequestBody(contentType.toMediaType()))
                 .build()
             call(request, Limits.UPLOAD_TIMEOUT_MS) { }
