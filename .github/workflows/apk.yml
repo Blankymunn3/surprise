@@ -1,0 +1,73 @@
+# 폰에 설치할 APK 를 만들어 릴리스에 올립니다.
+#
+# 안드로이드 앱은 폰에서 빌드할 수 없어서, 여기서 만든 파일을 폰으로 받아 설치합니다.
+# 아티팩트가 아니라 **릴리스**에 올리는 이유: 아티팩트는 zip 으로 내려와 폰에서 풀기
+# 번거롭고 로그인이 필요합니다. 릴리스 파일은 폰 브라우저에서 눌러 바로 설치됩니다.
+name: apk
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['android/**']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: 디버그 APK 빌드
+        working-directory: android
+        run: ./gradlew assembleDebug --console=plain --no-configuration-cache
+
+      - name: 파일 이름에 날짜와 커밋 넣기
+        id: name
+        run: |
+          # 어느 시점 것인지 폰에서 파일 이름만 보고 알 수 있게
+          STAMP="$(date -u +%Y%m%d-%H%M)"
+          SHORT="$(git rev-parse --short HEAD)"
+          mkdir -p out
+          cp android/app/build/outputs/apk/debug/app-debug.apk \
+             "out/memorymap-${STAMP}-${SHORT}.apk"
+          echo "tag=apk-${STAMP}" >> "$GITHUB_OUTPUT"
+          echo "file=out/memorymap-${STAMP}-${SHORT}.apk" >> "$GITHUB_OUTPUT"
+
+      - name: 릴리스에 올리기
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.name.outputs.tag }}
+          name: 추억 지도 ${{ steps.name.outputs.tag }}
+          # 정식 배포가 아니라 '폰에 넣어보는 것' 이라는 표시
+          prerelease: true
+          files: ${{ steps.name.outputs.file }}
+          body: |
+            폰에 설치해 보는 디버그 빌드입니다. 스토어 배포본이 아닙니다.
+
+            **설치 방법 (안드로이드)**
+            1. 폰 브라우저로 이 페이지를 열고 아래 `.apk` 파일을 누릅니다
+            2. "이 출처의 앱 설치 허용" 을 켜라고 하면 켭니다 (브라우저에 한 번만)
+            3. 설치 후 열기
+
+            **아직 아닌 것** — `docs/app/STATUS.md` 참고
+            - 지도에 지역이 사진으로 칠해지지 않습니다 (기본 지도 + 누른 곳 지역 판정까지)
+            - 로그인이 없어 초대 코드를 아는 사람은 누구나 그 공간을 봅니다
+            - iOS 는 아직 앱 껍데기(Xcode 프로젝트)가 없어 설치본을 못 만듭니다
+
+            커밋: ${{ github.sha }}
