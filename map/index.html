@@ -57,7 +57,7 @@
   <main class="card">
     <span class="emoji">🗺️</span>
     <h1>우리 추억 지도</h1>
-    <p class="sub">지역을 눌러 사진을 넣으면 그 지역 모양대로 꽉 채워져 📸</p>
+    <p class="sub">지역을 눌러 사진을 넣으면 그 지역 모양대로 꽉 채워져 📸 (발리는 위 버튼)</p>
 
     <p class="prog" id="prog">지도 준비 중…</p>
 
@@ -115,7 +115,7 @@
   var map=L.map('map',{zoomControl:true,scrollWheelZoom:false});
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
 
-  var layers={}, names={}, markers={}, baliOverlay=null, sitePhotos={}, sel=null, total=0, showBorders=true;
+  var layers={}, names={}, baliOverlay=null, sitePhotos={}, sel=null, total=0, showBorders=true;
   var picker=document.getElementById('picker'), note=document.getElementById('note');
   var panel=document.getElementById('panel'), pth=document.getElementById('pth');
   var pnm=document.getElementById('pnm'), pst=document.getElementById('pst');
@@ -183,16 +183,6 @@
     var src=photoOf(code);
     if(src && lyr._path) patternFill(lyr._path, code, src);
     else if(lyr._path){ lyr._path.style.fill=''; lyr._path.style.fillOpacity=''; }
-    // 핀도 사진으로
-    PLACES.forEach(function(p){ if(p.code===code && markers[p.id]) markers[p.id].setIcon(iconFor(p)); });
-  }
-
-  function iconFor(p){
-    var src=photoOf(p.code);
-    var style=src?(' style="background-image:url('+src+')"'):'';
-    return L.divIcon({className:'pinwrap',
-      html:'<div class="pin'+(src?' has-photo':'')+'"'+style+'><span>'+p.emoji+'</span></div>',
-      iconSize:[46,46], iconAnchor:[23,23], popupAnchor:[0,-26]});
   }
 
   function updateProg(){
@@ -214,13 +204,6 @@
     panel.classList.add('show');
   }
 
-  /* 지도 위 핀 */
-  PLACES.forEach(function(p){
-    markers[p.id]=L.marker([p.lat,p.lng],{icon:iconFor(p),title:p.name}).addTo(map);
-    markers[p.id].bindPopup('<b>'+p.name+'</b><br>'+p.desc);
-    markers[p.id].on('click',function(){ select(p.code,p.name); });
-  });
-
   function drawBali(){
     if(baliOverlay){ map.removeLayer(baliOverlay); baliOverlay=null; }
     var src=photoOf('bali'); if(!src) return;
@@ -237,7 +220,7 @@
       names[code]=name;
       var lyr=L.geoJSON(f,{style:styleFor(code)}).getLayers()[0];
       lyr.on('click',function(){ select(code,name); });
-      lyr.bindTooltip(name,{sticky:true});
+      lyr.bindTooltip(MEMO[code]? (name+' · '+PLACES.filter(function(x){return x.code===code;})[0].desc) : name, {sticky:true});
       lyr.addTo(group);
       layers[code]=lyr;
     });
@@ -297,7 +280,10 @@
   function fitKr(){ map.fitBounds([[33.1,125.9],[38.6,129.6]],{padding:[20,20]}); }
   document.getElementById('fitKr').addEventListener('click', fitKr);
   document.getElementById('metro').addEventListener('click', function(){ map.setView([37.55,126.99],10); });
-  document.getElementById('goBali').addEventListener('click', function(){ map.setView([-8.65,115.2167],9); });
+  document.getElementById('goBali').addEventListener('click', function(){
+    map.setView([-8.65,115.2167],9);
+    select('bali','발리');     // 마커 없이도 발리 사진을 넣을 수 있게
+  });
   document.getElementById('toggle').addEventListener('click', function(){
     showBorders=!showBorders;
     this.textContent=showBorders?'지역 경계 끄기':'지역 경계 켜기';
