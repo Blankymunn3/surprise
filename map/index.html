@@ -1,0 +1,227 @@
+<meta charset="utf-8" />
+<title>우리 추억 지도 🗺️</title>
+<!-- share -->
+<meta name="robots" content="noindex, nofollow" />
+<meta name="description" content="지도에 사진을 넣으면 그 자리가 사진으로 채워지는 우리 추억 지도" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="오늘의 서프라이즈" />
+<meta property="og:title" content="우리 추억 지도 🗺️" />
+<meta property="og:description" content="지도에 사진을 넣으면 그 자리가 사진으로 채워지는 우리 추억 지도" />
+<meta property="og:url" content="https://blankymunn3.github.io/surprise/map/" />
+<meta property="og:image" content="https://blankymunn3.github.io/surprise/assets/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<!-- /share -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="../assets/base.css" />
+<style>
+  .card{width:min(96vw,620px)}
+  #map{height:min(60vh,440px);border-radius:22px;border:1px solid rgba(255,255,255,.9);
+    box-shadow:0 18px 40px -20px rgba(190,30,80,.5);margin:4px 0 14px;background:#e9f1f4}
+  .leaflet-container{font-family:var(--font)}
+  .pinwrap{position:relative}
+  .pin{width:52px;height:52px;border-radius:50%;border:3px solid #fff;overflow:hidden;position:relative;
+    background:linear-gradient(140deg,#ff8fab,#e11d5b);display:grid;place-items:center;
+    box-shadow:0 8px 18px -6px rgba(190,30,80,.65);cursor:pointer;transition:transform .2s}
+  .pin:hover{transform:scale(1.08)}
+  .pin span{font-size:24px;line-height:1}
+  .pin.has-photo{background-size:cover;background-position:center}
+  .pin.has-photo span{display:none}
+  .places{display:grid;gap:10px;text-align:left;margin-top:4px}
+  .place{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.72);
+    border:1px solid rgba(255,255,255,.9);border-radius:16px;padding:11px 13px;
+    box-shadow:0 10px 24px -16px rgba(190,30,80,.45);cursor:pointer}
+  .place .thumb{width:52px;height:52px;flex:none;border-radius:13px;background:#ffe3ee;
+    display:grid;place-items:center;font-size:24px;background-size:cover;background-position:center;overflow:hidden}
+  .place .thumb.filled span{display:none}
+  .place .nm{font-size:16px;color:var(--rose-deep)}
+  .place .ds{font-family:var(--font-hand);font-size:13.5px;color:var(--ink-soft);margin-top:1px}
+  .place .acts{margin-left:auto;display:flex;flex-direction:column;gap:5px;flex:none}
+  .mini{font-family:var(--font);font-size:11.5px;border:1px solid #ffc2d6;
+    background:#fff;color:var(--rose-deep);border-radius:999px;padding:5px 10px;cursor:pointer;white-space:nowrap}
+  .mini:hover{background:var(--rose);color:#fff}
+  .mini.del{color:#96566f;border-color:#e9d3dc}
+  .bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:2px 0 12px}
+  .hidden{display:none}
+</style>
+
+<a class="home" href="../">← 목록</a>
+
+<div class="stage">
+  <main class="card">
+    <span class="emoji">🗺️</span>
+    <h1>우리 추억 지도</h1>
+    <p class="sub">핀을 누르고 사진을 넣으면 그 자리가 사진으로 채워져 📸</p>
+
+    <div class="bar">
+      <button class="btn-ghost" id="fitKr" type="button">한국 전체 보기 🇰🇷</button>
+      <button class="btn-ghost" id="goBali" type="button">발리로 가기 🌴</button>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="places" id="places"></div>
+    <div class="note" id="note">사진은 이 기기에만 저장돼요 (인터넷에 올라가지 않아요)</div>
+    <input type="file" id="picker" accept="image/*" class="hidden" />
+  </main>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../assets/fx.js"></script>
+<script>
+(function(){
+  var KEY='surprise.map.photo.';
+  /* 우리 추억 장소 (확정된 사실만 — 새로 만들어내지 않음) */
+  var PLACES=[
+    {id:'gongdeok', name:'공덕',      emoji:'💘', desc:'처음 만난 곳 (2023)',      lat:37.5445, lng:126.9516, kr:true},
+    {id:'botanic',  name:'서울식물원', emoji:'🌿', desc:'사귀고 첫 데이트',          lat:37.5695, lng:126.8355, kr:true},
+    {id:'gangnam',  name:'강남',      emoji:'💍', desc:"프로포즈 — 김동률 '감사'",   lat:37.4979, lng:127.0276, kr:true},
+    {id:'bali',     name:'발리',      emoji:'🌴', desc:'신혼여행',                 lat:-8.6500, lng:115.2167, kr:false},
+    {id:'jeongdong',name:'정동진',    emoji:'🌅', desc:'2026년 여름 강릉 여행',     lat:37.6906, lng:129.0335, kr:true}
+  ];
+
+  if(typeof L==='undefined'){
+    document.getElementById('map').innerHTML='<div style="padding:24px;font-family:var(--font-hand)">지도를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요 🙏</div>';
+    return;
+  }
+
+  var map=L.map('map',{zoomControl:true,scrollWheelZoom:false});
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19, attribution:'&copy; OpenStreetMap'
+  }).addTo(map);
+
+  var markers={}, overlays={}, current=null;
+  var picker=document.getElementById('picker'), note=document.getElementById('note');
+  var listEl=document.getElementById('places');
+
+  function photoOf(id){ try{ return localStorage.getItem(KEY+id); }catch(e){ return null; } }
+
+  function iconFor(p){
+    var src=photoOf(p.id);
+    var style=src?(' style="background-image:url('+src+')"'):'';
+    return L.divIcon({
+      className:'pinwrap',
+      html:'<div class="pin'+(src?' has-photo':'')+'"'+style+'><span>'+p.emoji+'</span></div>',
+      iconSize:[52,52], iconAnchor:[26,26], popupAnchor:[0,-30]
+    });
+  }
+
+  /* 사진이 있으면 그 지역(약 1km 사각형)을 사진으로 덮는다 */
+  function drawOverlay(p){
+    if(overlays[p.id]){ map.removeLayer(overlays[p.id]); delete overlays[p.id]; }
+    var src=photoOf(p.id);
+    if(!src) return;
+    var d=0.0055;
+    overlays[p.id]=L.imageOverlay(src,[[p.lat-d,p.lng-d*1.25],[p.lat+d,p.lng+d*1.25]],
+      {opacity:0.82, interactive:false}).addTo(map);
+  }
+
+  function refresh(p){ markers[p.id].setIcon(iconFor(p)); drawOverlay(p); renderList(); }
+
+  PLACES.forEach(function(p){
+    markers[p.id]=L.marker([p.lat,p.lng],{icon:iconFor(p),title:p.name}).addTo(map);
+    markers[p.id].bindPopup('<b>'+p.name+'</b><br>'+p.desc);
+    drawOverlay(p);
+  });
+
+  function fitKr(){
+    var pts=[];
+    PLACES.forEach(function(p){ if(p.kr) pts.push([p.lat,p.lng]); });
+    map.fitBounds(pts,{padding:[38,38]});
+  }
+  document.getElementById('fitKr').addEventListener('click', fitKr);
+  document.getElementById('goBali').addEventListener('click', function(){ map.setView([-8.6500,115.2167],9); });
+
+  /* ---------- 사진 넣기 (이 기기에만 저장) ---------- */
+  function pick(p){ current=p; picker.value=''; picker.click(); }
+
+  picker.addEventListener('change', function(){
+    var f=picker.files && picker.files[0];
+    if(!f || !current) return;
+    var p=current, rd=new FileReader();
+    rd.onload=function(){
+      var im=new Image();
+      im.onload=function(){
+        var max=760, w=im.width, h=im.height;
+        if(w>h && w>max){ h=Math.round(h*max/w); w=max; }
+        else if(h>=w && h>max){ w=Math.round(w*max/h); h=max; }
+        var cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+        cv.getContext('2d').drawImage(im,0,0,w,h);
+        var data=cv.toDataURL('image/jpeg',0.72);
+        try{
+          localStorage.setItem(KEY+p.id, data);
+          note.textContent=p.name+' 사진이 채워졌어 📸 (이 기기에만 저장)';
+          refresh(p);
+          map.setView([p.lat,p.lng], Math.max(map.getZoom(),14));
+          var r=document.getElementById('map').getBoundingClientRect();
+          FX.burst(r.left+r.width/2, r.top+r.height/2, 60);
+          for(var k=0;k<5;k++) setTimeout(FX.heart, k*130);
+        }catch(e){
+          note.textContent='앗, 저장 공간이 부족해. 사진 하나를 지우고 다시 해줘 🙏';
+        }
+      };
+      im.onerror=function(){ note.textContent='이 사진은 못 읽었어. 다른 사진으로 해볼래? 🥲'; };
+      im.src=rd.result;
+    };
+    rd.onerror=function(){ note.textContent='사진을 읽는 데 실패했어 🥲'; };
+    rd.readAsDataURL(f);
+  });
+
+  function removePhoto(p){
+    try{ localStorage.removeItem(KEY+p.id); }catch(e){}
+    note.textContent=p.name+' 사진을 지웠어';
+    refresh(p);
+  }
+
+  /* ---------- 장소 목록 ---------- */
+  function renderList(){
+    listEl.innerHTML='';
+    PLACES.forEach(function(p){
+      var src=photoOf(p.id);
+      var row=document.createElement('div'); row.className='place';
+
+      var th=document.createElement('div');
+      th.className='thumb'+(src?' filled':'');
+      if(src) th.style.backgroundImage='url('+src+')';
+      th.innerHTML='<span>'+p.emoji+'</span>';
+
+      var txt=document.createElement('div');
+      var nm=document.createElement('div'); nm.className='nm'; nm.textContent=p.name;
+      var ds=document.createElement('div'); ds.className='ds'; ds.textContent=p.desc;
+      txt.appendChild(nm); txt.appendChild(ds);
+
+      var acts=document.createElement('div'); acts.className='acts';
+      var b1=document.createElement('button'); b1.className='mini'; b1.type='button';
+      b1.textContent=src?'사진 바꾸기':'사진 넣기';
+      b1.addEventListener('click', function(ev){ ev.stopPropagation(); pick(p); });
+      acts.appendChild(b1);
+      if(src){
+        var b2=document.createElement('button'); b2.className='mini del'; b2.type='button';
+        b2.textContent='지우기';
+        b2.addEventListener('click', function(ev){ ev.stopPropagation(); removePhoto(p); });
+        acts.appendChild(b2);
+      }
+
+      row.appendChild(th); row.appendChild(txt); row.appendChild(acts);
+      row.addEventListener('click', function(){
+        map.setView([p.lat,p.lng], p.kr?14:9);
+        markers[p.id].openPopup();
+      });
+      listEl.appendChild(row);
+    });
+  }
+
+  fitKr();
+  renderList();
+  /* 카드 등장 애니메이션(scale) 뒤에 지도 크기 재계산 */
+  var card=document.querySelector('.card');
+  if(card) card.addEventListener('animationend', function(){ map.invalidateSize(); fitKr(); });
+  setTimeout(function(){ map.invalidateSize(); fitKr(); }, 400);
+  window.addEventListener('resize', function(){ map.invalidateSize(); });
+})();
+</script>

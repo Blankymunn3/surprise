@@ -1,0 +1,300 @@
+<meta charset="utf-8" />
+<title>오늘의 커플 미션 🎯</title>
+<!-- share -->
+<meta name="robots" content="noindex, nofollow" />
+<meta name="description" content="오늘의 커플 미션" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="오늘의 서프라이즈" />
+<meta property="og:title" content="오늘의 커플 미션 🎯" />
+<meta property="og:description" content="오늘의 커플 미션" />
+<meta property="og:url" content="https://blankymunn3.github.io/surprise/mission/" />
+<meta property="og:image" content="https://blankymunn3.github.io/surprise/assets/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<!-- /share -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/base.css" />
+<style>
+  .today{font-family:var(--font-hand);font-size:15px;color:var(--ink-soft);margin:-10px 0 14px}
+  .mission{position:relative;background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.95);
+    border-radius:24px;padding:24px 18px;margin:0 0 16px;
+    box-shadow:0 14px 30px -18px rgba(190,30,80,.6);
+    animation:pop2 .45s cubic-bezier(.16,1.2,.3,1) both}
+  @keyframes pop2{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+  .mission .me{font-size:40px;line-height:1;display:block;margin-bottom:8px}
+  .mission .mt{font-size:clamp(20px,5.4vw,25px);color:var(--rose-deep);line-height:1.35}
+  .mission .done{position:absolute;right:12px;top:10px;font-size:22px}
+  .acts{display:grid;gap:10px;justify-items:center}
+  .peek{background:rgba(255,255,255,.6);border:1px dashed rgba(225,29,91,.3);border-radius:20px;
+    padding:14px 14px;margin:14px 0 0}
+  .peek .pk{display:block;font-family:var(--font-hand);font-size:13px;color:var(--ink-soft);margin-bottom:4px}
+  .peek .pt{font-size:clamp(16px,4.4vw,19px);color:var(--ink);line-height:1.35}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 0}
+  .stat{background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);border-radius:20px;
+    padding:12px 8px 10px}
+  .stat b{display:block;font-size:clamp(26px,7vw,34px);color:var(--rose-deep);font-weight:400;
+    font-variant-numeric:tabular-nums;line-height:1.1}
+  .stat span{font-family:var(--font-hand);font-size:13px;color:var(--ink-soft)}
+  .hide{display:none}
+</style>
+
+<a class="home" href="../">← 목록</a>
+
+<div class="stage">
+  <main class="card">
+    <span class="emoji" id="topEmoji">🎯</span>
+    <h1>오늘의 커플 미션</h1>
+    <p class="sub">자기야, 오늘은 이것만 같이 하자 😊</p>
+
+    <div class="today" id="todayText"></div>
+
+    <div class="mission" id="missionBox">
+      <span class="done hide" id="doneMark">✅</span>
+      <span class="me" id="missionEmoji">💗</span>
+      <span class="mt" id="missionText"></span>
+    </div>
+
+    <div class="acts">
+      <button class="btn" id="doneBtn" type="button">완료했어 ✅</button>
+      <button class="btn-ghost" id="peekBtn" type="button">다른 미션 보여줘 🎲</button>
+    </div>
+
+    <div class="peek hide" id="peek">
+      <span class="pk">미리보기 (오늘 미션은 그대로!)</span>
+      <span class="pt" id="peekText"></span>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b id="streakNum">0</b><span id="streakLabel">연속 달성</span></div>
+      <div class="stat"><b id="totalNum">0</b><span>총 완료</span></div>
+    </div>
+
+    <div class="note" id="note"></div>
+  </main>
+</div>
+
+<script src="../assets/fx.js"></script>
+<script>
+(function(){
+
+  /* 돈 안 드는 미션 30개 */
+  var MISSIONS = [
+    { e:"🚶", t:"손잡고 동네 한 바퀴 산책하기" },
+    { e:"💖", t:"서로 칭찬 3개씩 말해주기" },
+    { e:"📸", t:"오늘 사진 한 장 같이 찍기" },
+    { e:"🏪", t:"손잡고 편의점 다녀오기" },
+    { e:"🤗", t:"서로 안아주고 속으로 10초 세기" },
+    { e:"🙏", t:"오늘 제일 고마웠던 일 하나씩 말하기" },
+    { e:"🛏️", t:"이불 같이 정리하고 누워서 5분 수다" },
+    { e:"🎧", t:"요즘 제일 좋은 노래 한 곡씩 들려주기" },
+    { e:"🧼", t:"저녁 설거지 같이 하기" },
+    { e:"💬", t:"처음 만난 날 이야기 다시 해보기" },
+    { e:"🧘", t:"같이 스트레칭 5분 하기" },
+    { e:"💆", t:"서로 어깨 3분씩 주물러주기" },
+    { e:"😆", t:"오늘 하루 중 웃겼던 일 하나씩 말하기" },
+    { e:"✈️", t:"다음에 가고 싶은 곳 하나씩 말하기" },
+    { e:"🍳", t:"냉장고 털어서 야식 하나 만들어 먹기" },
+    { e:"🖼️", t:"앨범 열어서 옛날 사진 같이 보기" },
+    { e:"✍️", t:"서로 이름으로 삼행시 지어주기" },
+    { e:"🌙", t:"불 끄고 누워서 서로 하루 얘기 들어주기" },
+    { e:"☕", t:"커피나 차 한 잔 만들어서 같이 마시기" },
+    { e:"💌", t:"짧은 메모 한 장 써서 서로 주기" },
+    { e:"☁️", t:"창밖 하늘 같이 보고 사진 찍기" },
+    { e:"😳", t:"서로 첫인상 솔직하게 말해주기" },
+    { e:"📺", t:"좋아하는 예능 한 편 같이 보기" },
+    { e:"👀", t:"손잡고 눈 보면서 30초 버티기" },
+    { e:"🌱", t:"오늘 서로에게 미안했던 것 하나씩 말하기" },
+    { e:"🧹", t:"집 한 군데만 같이 정리하기" },
+    { e:"🤳", t:"서로 마음에 드는 셀카 한 장 골라주기" },
+    { e:"🍪", t:"집에 있는 간식 하나 나눠 먹기" },
+    { e:"💯", t:"오늘 하루 점수 매기고 이유 말하기" },
+    { e:"💗", t:"자기 전에 “사랑해” 한 번씩 말하기" }
+  ];
+  var N = MISSIONS.length;
+  var WD = ["일", "월", "화", "수", "목", "금", "토"];
+  var KEY = "surprise.mission.done.v1";
+
+  var topEmoji = document.getElementById('topEmoji');
+  var todayText = document.getElementById('todayText');
+  var doneMark = document.getElementById('doneMark');
+  var missionEmoji = document.getElementById('missionEmoji');
+  var missionText = document.getElementById('missionText');
+  var doneBtn = document.getElementById('doneBtn');
+  var peekBtn = document.getElementById('peekBtn');
+  var peek = document.getElementById('peek');
+  var peekText = document.getElementById('peekText');
+  var streakNum = document.getElementById('streakNum');
+  var streakLabel = document.getElementById('streakLabel');
+  var totalNum = document.getElementById('totalNum');
+  var note = document.getElementById('note');
+
+  /* ---------- 날짜 유틸 ---------- */
+  function pad2(n){ return n < 10 ? '0' + n : '' + n; }
+  function keyOf(d){ return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  function partsOf(k){
+    var p = k.split('-');
+    return [parseInt(p[0], 10), parseInt(p[1], 10), parseInt(p[2], 10)];
+  }
+  function prevKey(k){
+    var p = partsOf(k);
+    var d = new Date(p[0], p[1] - 1, p[2]);
+    d.setDate(d.getDate() - 1);
+    return keyOf(d);
+  }
+  function dayNo(k){
+    var p = partsOf(k);
+    return Math.floor(Date.UTC(p[0], p[1] - 1, p[2]) / 86400000);
+  }
+
+  /* ---------- 날짜 문자열 해시 → 그날의 미션 고정 ---------- */
+  function hashStr(s){
+    var h = 5381, i;
+    for(i = 0; i < s.length; i++){ h = (((h << 5) + h) ^ s.charCodeAt(i)) | 0; }
+    h = (h ^ (h >>> 15)) | 0;
+    h = (h ^ (h << 7)) | 0;
+    h = (h ^ (h >>> 9)) | 0;
+    return h >>> 0;
+  }
+  function rngFrom(seed){
+    var s = seed | 0;
+    if(s === 0) s = 0x1a2b3c4d;
+    return function(){
+      s = (s ^ (s << 13)) | 0;
+      s = (s ^ (s >>> 17)) | 0;
+      s = (s ^ (s << 5)) | 0;
+      return (s >>> 0) / 4294967296;
+    };
+  }
+  /* N일을 한 바퀴로 보고, 바퀴마다 순서를 섞어둠 → 같은 날은 항상 같은 미션,
+     한 바퀴 안에서는 겹치지 않으니 날짜가 바뀌면 미션도 바뀜 */
+  function rawPerm(cycle){
+    var arr = [], i, j, t;
+    for(i = 0; i < N; i++) arr.push(i);
+    var rnd = rngFrom(hashStr('mission-cycle|' + cycle));
+    for(i = N - 1; i > 0; i--){
+      j = (rnd() * (i + 1)) | 0;
+      t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+  function permFor(cycle){
+    var p = rawPerm(cycle), t;
+    var prevLast = rawPerm(cycle - 1)[N - 1];   // 바퀴가 넘어갈 때도 안 겹치게
+    if(N > 1 && p[0] === prevLast){ t = p[0]; p[0] = p[1]; p[1] = t; }
+    return p;
+  }
+  function missionIndexFor(k){
+    var d = dayNo(k);
+    var cycle = Math.floor(d / N);
+    var pos = d - cycle * N;
+    return permFor(cycle)[pos];
+  }
+
+  /* ---------- 완료 기록 (localStorage) ---------- */
+  var mem = null;
+  function load(){
+    if(mem) return mem;
+    var raw = null, obj = {}, parsed;
+    try { raw = window.localStorage.getItem(KEY); } catch(e){ raw = null; }
+    if(raw){
+      try {
+        parsed = JSON.parse(raw);
+        if(parsed && typeof parsed === 'object') obj = parsed;
+      } catch(e2){ obj = {}; }
+    }
+    mem = obj;
+    return mem;
+  }
+  function save(obj){
+    mem = obj;
+    try { window.localStorage.setItem(KEY, JSON.stringify(obj)); } catch(e){}
+  }
+  /* k일에서 하루씩 거꾸로 세다가 기록이 없으면 멈춤 → 어제가 없으면 오늘은 1일 */
+  function streakEndingAt(k, map){
+    var c = 0, cur = k;
+    while(map[cur]){
+      c++;
+      cur = prevKey(cur);
+      if(c > 4000) break;
+    }
+    return c;
+  }
+
+  var todayKey = keyOf(new Date());
+  var todayIdx = missionIndexFor(todayKey);
+
+  function paint(){
+    var map = load(), total = 0, k;
+    for(k in map){ if(map.hasOwnProperty(k)) total++; }
+    var doneToday = map[todayKey] ? true : false;
+    var streak = doneToday
+      ? streakEndingAt(todayKey, map)
+      : streakEndingAt(prevKey(todayKey), map);
+
+    streakNum.textContent = String(streak);
+    totalNum.textContent = String(total);
+    streakLabel.textContent = doneToday ? '연속 달성 🔥' : '연속 달성';
+
+    if(doneToday){
+      doneMark.classList.remove('hide');
+      topEmoji.textContent = '🎉';
+      doneBtn.classList.add('off');
+      doneBtn.disabled = true;
+      doneBtn.textContent = '오늘 미션 완료! 💗';
+      note.textContent = '오늘 건 다 했어. 내일 열면 새 미션 나와 😉';
+    } else {
+      doneMark.classList.add('hide');
+      topEmoji.textContent = '🎯';
+      doneBtn.classList.remove('off');
+      doneBtn.disabled = false;
+      doneBtn.textContent = '완료했어 ✅';
+      note.textContent = streak > 0
+        ? ('어제까지 ' + streak + '일 연속! 오늘 하면 ' + (streak + 1) + '일 🔥')
+        : '오늘의 미션은 날짜로 정해져 있어서 몇 번 열어도 그대로야 😊';
+    }
+  }
+
+  function complete(){
+    var map = load();
+    if(map[todayKey]) return;
+    map[todayKey] = 1;
+    save(map);
+    paint();
+    var r = doneBtn.getBoundingClientRect();
+    FX.burst(r.left + r.width / 2, r.top + r.height / 2, 50);
+    FX.party();
+  }
+
+  /* 오늘의 미션은 안 건드리고, 다른 미션만 구경 */
+  var lastPeek = -1;
+  function showPeek(){
+    var i = todayIdx;
+    var guard = 0;
+    while((i === todayIdx || i === lastPeek) && guard < 40){
+      i = (Math.random() * N) | 0;
+      guard++;
+    }
+    lastPeek = i;
+    peekText.textContent = MISSIONS[i].e + '  ' + MISSIONS[i].t;
+    peek.classList.remove('hide');
+    note.textContent = '이건 그냥 구경용이야. 오늘의 미션은 위에 그대로 고정! 🔒';
+  }
+
+  function init(){
+    var p = partsOf(todayKey);
+    var d = new Date(p[0], p[1] - 1, p[2]);
+    todayText.textContent = p[0] + '년 ' + p[1] + '월 ' + p[2] + '일 (' + WD[d.getDay()] + ')';
+    missionEmoji.textContent = MISSIONS[todayIdx].e;
+    missionText.textContent = MISSIONS[todayIdx].t;
+    paint();
+  }
+
+  doneBtn.addEventListener('click', complete);
+  peekBtn.addEventListener('click', showPeek);
+  init();
+})();
+</script>

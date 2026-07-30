@@ -1,0 +1,337 @@
+<meta charset="utf-8" />
+<title>커플 밸런스 게임 ⚖️</title>
+<!-- share -->
+<meta name="robots" content="noindex, nofollow" />
+<meta name="description" content="커플 밸런스 게임 20문항" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="오늘의 서프라이즈" />
+<meta property="og:title" content="커플 밸런스 게임 ⚖️" />
+<meta property="og:description" content="커플 밸런스 게임 20문항" />
+<meta property="og:url" content="https://blankymunn3.github.io/surprise/balance/" />
+<meta property="og:image" content="https://blankymunn3.github.io/surprise/assets/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<!-- /share -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/base.css" />
+<style>
+  .prog{display:flex;align-items:center;justify-content:center;gap:10px;margin:-8px 0 16px;
+    font-family:var(--font-hand);font-size:15px;color:var(--ink-soft)}
+  .bar{position:relative;width:140px;height:9px;border-radius:999px;background:rgba(225,29,91,.14);overflow:hidden}
+  .bar i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;
+    background:linear-gradient(90deg,var(--rose),var(--rose-deep));transition:width .35s ease}
+  .step{animation:slidein .32s cubic-bezier(.16,1.1,.3,1) both}
+  @keyframes slidein{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+  .qtext{font-size:clamp(19px,5.2vw,24px);color:var(--ink);margin:2px 0 16px;line-height:1.4}
+  .opts{display:grid;gap:8px}
+  .opt{font-family:var(--font);font-size:clamp(16px,4.4vw,19px);cursor:pointer;
+    display:flex;align-items:center;gap:12px;text-align:left;min-height:62px;
+    border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.86);color:var(--ink);
+    border-radius:20px;padding:14px 16px;transition:transform .12s,background .2s;
+    box-shadow:0 10px 22px -14px rgba(190,30,80,.6)}
+  .opt:hover{transform:scale(1.02)}
+  .opt:active{transform:scale(.97)}
+  .opt:focus-visible{outline:3px solid var(--rose-deep);outline-offset:2px}
+  .opt .ab{flex:0 0 30px;height:30px;border-radius:50%;display:grid;place-items:center;
+    font-size:14px;color:#fff;background:linear-gradient(135deg,var(--rose),var(--rose-deep))}
+  .opt .ot{flex:1;line-height:1.3}
+  .orv{font-family:var(--font-hand);font-size:15px;color:var(--ink-soft);margin:1px 0}
+  .type{font-size:clamp(24px,6.6vw,33px);color:var(--rose-deep);margin:4px 0 4px;line-height:1.25}
+  .typesub{font-family:var(--font-hand);font-size:clamp(16px,4.4vw,19px);color:var(--ink);margin:0 0 18px}
+  .list{text-align:left;max-height:250px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);border-radius:20px;
+    padding:12px 14px;margin:0 0 18px}
+  .row{display:flex;gap:9px;align-items:baseline;padding:7px 0;border-bottom:1px dashed rgba(225,29,91,.16)}
+  .row:last-child{border-bottom:none}
+  .row .rb{flex:0 0 20px;height:20px;border-radius:50%;display:grid;place-items:center;
+    font-size:11px;color:#fff;background:var(--rose);margin-top:2px}
+  .row .rq{font-family:var(--font-hand);font-size:13px;color:var(--ink-soft);flex:0 0 auto}
+  .row .rt{font-size:14px;color:var(--ink);line-height:1.35}
+  .acts{display:grid;gap:10px;justify-items:center}
+  .hide{display:none}
+</style>
+
+<a class="home" href="../">← 목록</a>
+
+<div class="stage">
+  <main class="card">
+    <span class="emoji" id="topEmoji">⚖️</span>
+    <h1>커플 밸런스 게임</h1>
+    <p class="sub" id="sub">정답 없는 20문제. 자기야 마음 가는 대로 골라 😉</p>
+
+    <div class="prog" id="prog">
+      <span id="progText">1 / 20</span>
+      <span class="bar"><i id="progBar"></i></span>
+    </div>
+
+    <div id="game">
+      <div class="qtext" id="qtext"></div>
+      <div class="opts">
+        <button class="opt" id="optA" type="button"></button>
+        <span class="orv">아니면…</span>
+        <button class="opt" id="optB" type="button"></button>
+      </div>
+    </div>
+
+    <div class="hide" id="result">
+      <div class="type" id="typeText"></div>
+      <p class="typesub" id="typeSub"></p>
+      <div class="list" id="list"></div>
+      <div class="acts">
+        <button class="btn" id="again" type="button">다시 하기 🔄</button>
+        <button class="btn-ghost" id="copyBtn" type="button">결과 복사하기 📋</button>
+      </div>
+    </div>
+
+    <div class="note" id="note"></div>
+  </main>
+</div>
+
+<script src="../assets/fx.js"></script>
+<script>
+(function(){
+
+  /* 성향 축 — [0번 극, 1번 극] */
+  var AXES = {
+    plan:  ["계획", "즉흥"],
+    out:   ["집콕", "외출"],
+    night: ["아침형", "밤형"],
+    spicy: ["순한맛", "매운맛"],
+    money: ["저축", "경험"],
+    crowd: ["조용한 곳", "북적한 곳"],
+    sea:   ["바다", "산"]
+  };
+  /* 동점일 때 우선순위 (앞쪽이 먼저) */
+  var AXORDER = ["plan", "out", "night", "spicy", "money", "crowd", "sea"];
+  var AXEMOJI = {
+    plan:  ["🗒️", "🎲"],
+    out:   ["🏠", "🚗"],
+    night: ["🌅", "🌙"],
+    spicy: ["🍚", "🌶️"],
+    money: ["💰", "✨"],
+    crowd: ["🤫", "🎉"],
+    sea:   ["🌊", "🏔️"]
+  };
+  var AXLINE = {
+    plan:  ["미리 정해두면 마음이 편한 우리 ✏️", "일단 나가서 정하는 게 재밌는 우리 🚀"],
+    out:   ["집이 제일 좋은 우리 🛋️", "일단 나가야 사는 우리 👟"],
+    night: ["아침 공기 좋아하는 우리 ☀️", "밤에 더 잘 노는 우리 🌃"],
+    spicy: ["순한 맛으로 오래 먹는 우리 🥄", "매운 거 먹고 같이 물 찾는 우리 🥤"],
+    money: ["차곡차곡 모으는 게 든든한 우리 🐷", "남는 건 추억이라는 우리 📷"],
+    crowd: ["둘만 있는 조용한 게 좋은 우리 🤍", "사람 많은 데서 신나는 우리 🎈"],
+    sea:   ["파도 소리 좋아하는 우리 🐚", "산 공기 좋아하는 우리 🌲"]
+  };
+
+  /* 정답 없는 A/B 20문제 (pole: 위 AXES 배열의 0 또는 1) */
+  var QUESTIONS = [
+    { axis:"plan",  q:"여행은?",             a:{ t:"며칠 전부터 계획 세우기", p:0 }, b:{ t:"일단 떠나서 그때그때", p:1 } },
+    { axis:"out",   q:"주말은?",             a:{ t:"집콕이 최고", p:0 },            b:{ t:"무조건 나가기", p:1 } },
+    { axis:"spicy", q:"치킨은?",             a:{ t:"후라이드", p:0 },               b:{ t:"양념", p:1 } },
+    { axis:"money", q:"돈은?",               a:{ t:"일단 모으기", p:0 },            b:{ t:"경험에 쓰기", p:1 } },
+    { axis:"night", q:"여행지에서 아침은?",   a:{ t:"일찍 일어나 일출 보기", p:0 },   b:{ t:"늦잠 자고 브런치", p:1 } },
+    { axis:"sea",   q:"여행지는?",           a:{ t:"파도 보이는 바다", p:0 },        b:{ t:"공기 좋은 산", p:1 } },
+    { axis:"crowd", q:"저녁 먹을 집은?",      a:{ t:"조용한 동네 가게", p:0 },        b:{ t:"웨이팅 있는 유명한 집", p:1 } },
+    { axis:"plan",  q:"여행 짐은?",           a:{ t:"목록 적어서 미리 싸기", p:0 },   b:{ t:"나가기 전날 몰아 싸기", p:1 } },
+    { axis:"out",   q:"비 오는 날엔?",        a:{ t:"집에서 영화 보기", p:0 },        b:{ t:"우산 쓰고 산책", p:1 } },
+    { axis:"night", q:"야식은?",             a:{ t:"참고 그냥 자기", p:0 },          b:{ t:"일단 먹고 내일 후회", p:1 } },
+    { axis:"spicy", q:"라면은?",             a:{ t:"순한 맛", p:0 },                b:{ t:"매운 맛", p:1 } },
+    { axis:"money", q:"여행 숙소는?",         a:{ t:"아껴서 알뜰하게", p:0 },         b:{ t:"조금 더 써서 편하게", p:1 } },
+    { axis:"crowd", q:"여행 마지막 밤은?",    a:{ t:"숙소에서 둘이 조용히", p:0 },     b:{ t:"사람 많은 번화가로", p:1 } },
+    { axis:"plan",  q:"약속 시간은?",         a:{ t:"10분 먼저 도착", p:0 },          b:{ t:"딱 맞춰 도착", p:1 } },
+    { axis:"out",   q:"긴 연휴에는?",         a:{ t:"숙소에서 뒹굴뒹굴", p:0 },       b:{ t:"하루 종일 돌아다니기", p:1 } },
+    { axis:"night", q:"우리 데이트는?",       a:{ t:"아침 브런치", p:0 },             b:{ t:"밤 산책", p:1 } },
+    { axis:"spicy", q:"떡볶이는?",           a:{ t:"간장 떡볶이", p:0 },             b:{ t:"빨간 떡볶이", p:1 } },
+    { axis:"money", q:"기념일 선물은?",       a:{ t:"오래 쓸 실용적인 것", p:0 },      b:{ t:"기억에 남을 것", p:1 } },
+    { axis:"crowd", q:"노래방 가면?",         a:{ t:"둘이서 조용히", p:0 },           b:{ t:"다 같이 우르르", p:1 } },
+    { axis:"sea",   q:"숙소 창밖은?",         a:{ t:"파도 소리", p:0 },               b:{ t:"나무 소리", p:1 } }
+  ];
+
+  var topEmoji = document.getElementById('topEmoji');
+  var sub = document.getElementById('sub');
+  var progWrap = document.getElementById('prog');
+  var progText = document.getElementById('progText');
+  var progBar = document.getElementById('progBar');
+  var gameEl = document.getElementById('game');
+  var qtext = document.getElementById('qtext');
+  var optA = document.getElementById('optA');
+  var optB = document.getElementById('optB');
+  var resultEl = document.getElementById('result');
+  var typeText = document.getElementById('typeText');
+  var typeSub = document.getElementById('typeSub');
+  var listEl = document.getElementById('list');
+  var againBtn = document.getElementById('again');
+  var copyBtn = document.getElementById('copyBtn');
+  var note = document.getElementById('note');
+
+  var deck = [], at = 0, picks = [], locked = false, summary = null;
+
+  function shuffle(arr){
+    var a = arr.slice(), i, j, t;
+    for(i = a.length - 1; i > 0; i--){
+      j = (Math.random() * (i + 1)) | 0;
+      t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function render(){
+    var item = deck[at];
+    locked = false;
+    progText.textContent = (at + 1) + ' / ' + deck.length;
+    progBar.style.width = (at / deck.length * 100) + '%';
+    qtext.textContent = item.q;
+    optA.innerHTML = '<span class="ab">A</span><span class="ot">' + item.a.t + '</span>';
+    optB.innerHTML = '<span class="ab">B</span><span class="ot">' + item.b.t + '</span>';
+    gameEl.classList.remove('step');
+    void gameEl.offsetWidth;      // 애니메이션 재시작
+    gameEl.classList.add('step');
+  }
+
+  function choose(which){
+    if(locked) return;
+    locked = true;
+    var item = deck[at];
+    var side = which === 0 ? item.a : item.b;
+    var btn = which === 0 ? optA : optB;
+    var r = btn.getBoundingClientRect();
+    FX.burst(r.left + r.width / 2, r.top + r.height / 2, 18);
+
+    picks.push({ axis: item.axis, pole: side.p, q: item.q, t: side.t, ab: which === 0 ? 'A' : 'B' });
+    note.textContent = '“' + side.t + '” 선택 ✔️';
+    at++;
+    setTimeout(function(){
+      if(at < deck.length) render();
+      else finish();
+    }, 240);
+  }
+
+  /* 고른 조합으로 성향 계산 — 축마다 기울기를 세고, 많이 기운 3개를 뽑음 */
+  function summarize(){
+    var tally = {}, i, k, key;
+    for(i = 0; i < AXORDER.length; i++) tally[AXORDER[i]] = [0, 0];
+    for(i = 0; i < picks.length; i++){
+      key = picks[i].axis;
+      if(tally[key]) tally[key][picks[i].pole]++;
+    }
+    var rows = [];
+    for(i = 0; i < AXORDER.length; i++){
+      k = AXORDER[i];
+      rows.push({
+        axis: k,
+        pole: tally[k][1] > tally[k][0] ? 1 : 0,
+        diff: Math.abs(tally[k][0] - tally[k][1]),
+        ord: i
+      });
+    }
+    rows.sort(function(x, y){
+      if(y.diff !== x.diff) return y.diff - x.diff;
+      return x.ord - y.ord;
+    });
+    var top = rows.slice(0, 3), words = [];
+    for(i = 0; i < top.length; i++) words.push(AXES[top[i].axis][top[i].pole]);
+    return {
+      line: words.join('·') + '파 ' + AXEMOJI[top[0].axis][top[0].pole],
+      emoji: AXEMOJI[top[0].axis][top[0].pole],
+      msg: AXLINE[top[0].axis][top[0].pole]
+    };
+  }
+
+  function drawList(){
+    var i, html = '';
+    for(i = 0; i < picks.length; i++){
+      html += '<div class="row">' +
+                '<span class="rb">' + picks[i].ab + '</span>' +
+                '<span class="rq">' + picks[i].q + '</span>' +
+                '<span class="rt">' + picks[i].t + '</span>' +
+              '</div>';
+    }
+    listEl.innerHTML = html;
+  }
+
+  function buildText(){
+    var i, t = '커플 밸런스 게임 결과 💞\n';
+    t += '우리 성향: ' + summary.line + '\n';
+    t += summary.msg + '\n\n';
+    for(i = 0; i < picks.length; i++){
+      t += (i + 1) + '. ' + picks[i].q + ' → ' + picks[i].t + ' (' + picks[i].ab + ')\n';
+    }
+    return t;
+  }
+
+  function copyFallback(text){
+    var ok = false;
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', 'readonly');
+    ta.style.position = 'fixed';
+    ta.style.left = '0';
+    ta.style.top = '0';
+    ta.style.width = '1px';
+    ta.style.height = '1px';
+    ta.style.opacity = '0';
+    ta.style.userSelect = 'text';
+    ta.style.webkitUserSelect = 'text';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    if(ta.setSelectionRange) ta.setSelectionRange(0, text.length);
+    try { ok = document.execCommand('copy'); } catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    note.textContent = ok
+      ? '복사했어! 이제 붙여넣기 하면 돼 📋'
+      : '복사가 안 되네 😅 결과 화면 캡처해서 보내줘!';
+  }
+
+  function copyResult(){
+    var text = buildText();
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){
+        note.textContent = '복사했어! 이제 붙여넣기 하면 돼 📋';
+      }, function(){
+        copyFallback(text);
+      });
+      return;
+    }
+    copyFallback(text);
+  }
+
+  function finish(){
+    summary = summarize();
+    progBar.style.width = '100%';
+    progWrap.classList.add('hide');
+    gameEl.classList.add('hide');
+    topEmoji.textContent = summary.emoji;
+    sub.textContent = '자기야, 20개 다 골랐어! 결과 나왔다 🎉';
+    typeText.textContent = summary.line;
+    typeSub.textContent = summary.msg;
+    drawList();
+    note.textContent = '정답 없는 게임이야. 나랑 다르게 골랐으면 그게 더 재밌지 😆';
+    resultEl.classList.remove('hide');
+    resultEl.classList.add('step');
+    FX.party();
+  }
+
+  function start(){
+    deck = shuffle(QUESTIONS);
+    at = 0; picks = []; summary = null; locked = false;
+    topEmoji.textContent = '⚖️';
+    sub.textContent = '정답 없는 20문제. 자기야 마음 가는 대로 골라 😉';
+    resultEl.classList.add('hide');
+    resultEl.classList.remove('step');
+    gameEl.classList.remove('hide');
+    progWrap.classList.remove('hide');
+    note.textContent = '문항 순서는 할 때마다 섞여 🎲';
+    render();
+  }
+
+  optA.addEventListener('click', function(){ choose(0); });
+  optB.addEventListener('click', function(){ choose(1); });
+  againBtn.addEventListener('click', start);
+  copyBtn.addEventListener('click', copyResult);
+  start();
+})();
+</script>

@@ -1,0 +1,229 @@
+<meta charset="utf-8" />
+<title>다음 여행지 이상형 월드컵 🗺️</title>
+<!-- share -->
+<meta name="robots" content="noindex, nofollow" />
+<meta name="description" content="다음 여행지 이상형 월드컵" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="오늘의 서프라이즈" />
+<meta property="og:title" content="다음 여행지 이상형 월드컵 🗺️" />
+<meta property="og:description" content="다음 여행지 이상형 월드컵" />
+<meta property="og:url" content="https://blankymunn3.github.io/surprise/worldcup/" />
+<meta property="og:image" content="https://blankymunn3.github.io/surprise/assets/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<!-- /share -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/base.css" />
+<style>
+  .prog{display:flex;align-items:center;justify-content:center;gap:10px;margin:-8px 0 14px;
+    font-family:var(--font-hand);font-size:15px;color:var(--ink-soft)}
+  .bar{position:relative;width:130px;height:9px;border-radius:999px;background:rgba(225,29,91,.14);overflow:hidden}
+  .bar i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;
+    background:linear-gradient(90deg,var(--rose),var(--rose-deep));transition:width .35s ease}
+  .round{font-size:clamp(20px,5.4vw,25px);color:var(--rose-deep);margin:0 0 12px}
+  .match{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .match.anim{animation:slidein .34s cubic-bezier(.16,1.1,.3,1) both}
+  @keyframes slidein{from{transform:translateY(18px);opacity:0}to{transform:none;opacity:1}}
+  .pick{font-family:var(--font);cursor:pointer;border:1px solid rgba(255,255,255,.9);
+    background:rgba(255,255,255,.86);color:var(--ink);border-radius:22px;padding:20px 10px 18px;
+    min-height:172px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+    box-shadow:0 12px 26px -16px rgba(190,30,80,.6);transition:transform .12s,background .2s}
+  .pick:hover{transform:scale(1.03)}
+  .pick:active{transform:scale(.95)}
+  .pick:focus-visible{outline:3px solid var(--rose-deep);outline-offset:2px}
+  .pick .pe{font-size:44px;line-height:1}
+  .pick .pn{font-size:clamp(19px,5.2vw,23px);color:var(--rose-deep);line-height:1.1}
+  .pick .pd{font-family:var(--font-hand);font-size:13px;color:var(--ink-soft);line-height:1.35}
+  .vs{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;
+    width:42px;height:42px;border-radius:50%;display:grid;place-items:center;
+    font-size:14px;color:#fff;background:linear-gradient(135deg,var(--rose),var(--rose-deep));
+    box-shadow:0 8px 18px -8px rgba(225,29,91,.8)}
+  .cn{font-size:clamp(30px,8.4vw,40px);color:var(--rose-deep);margin:6px 0 2px}
+  .cd{font-family:var(--font-hand);font-size:clamp(15px,4.2vw,18px);color:var(--ink);margin:0 0 20px}
+  .acts{display:grid;gap:10px;justify-items:center}
+  a.btn{display:inline-block;text-decoration:none;text-align:center}
+  .hide{display:none}
+</style>
+
+<a class="home" href="../">← 목록</a>
+
+<div class="stage">
+  <main class="card">
+    <span class="emoji" id="topEmoji">🗺️</span>
+    <h1>다음 여행지 월드컵</h1>
+    <p class="sub" id="sub">자기야, 둘 중에 더 가고 싶은 데 하나만 골라 😊</p>
+
+    <div class="prog" id="prog">
+      <span id="progText">1 / 7 경기</span>
+      <span class="bar"><i id="progBar"></i></span>
+    </div>
+
+    <div id="game">
+      <div class="round" id="roundText">8강 1경기</div>
+      <div class="match anim" id="match">
+        <button class="pick" id="p0" type="button"></button>
+        <span class="vs" aria-hidden="true">VS</span>
+        <button class="pick" id="p1" type="button"></button>
+      </div>
+    </div>
+
+    <div class="hide" id="result">
+      <div class="round">🏆 우승</div>
+      <div class="cn" id="champName"></div>
+      <p class="cd" id="champDesc"></p>
+      <div class="acts">
+        <a class="btn" id="mapLink" href="https://map.kakao.com/" target="_blank" rel="noopener">카카오맵에서 보기 🗺️</a>
+        <button class="btn-ghost" id="again" type="button">다시 하기 🔄</button>
+      </div>
+    </div>
+
+    <div class="note" id="note"></div>
+  </main>
+</div>
+
+<script src="../assets/fx.js"></script>
+<script>
+(function(){
+
+  /* 국내 여행지 8곳 → 8강(4경기) → 4강(2경기) → 결승(1경기) = 총 7경기 */
+  var PLACES = [
+    { n: "제주", e: "🏝️", d: "비행기 타고 훌쩍 떠나는 제주" },
+    { n: "여수", e: "🌉", d: "밤바다 보러 가는 여수" },
+    { n: "부산", e: "🌊", d: "바다도 시장도 있는 부산" },
+    { n: "경주", e: "🏯", d: "천천히 걷기 좋은 경주" },
+    { n: "통영", e: "⛵", d: "배 타고 섬 구경하는 통영" },
+    { n: "속초", e: "🐟", d: "가까운 동해 보러 가는 속초" },
+    { n: "전주", e: "🍚", d: "먹으러 가는 전주" },
+    { n: "남해", e: "🌅", d: "드라이브하기 좋은 남해" }
+  ];
+  var TOTAL = PLACES.length - 1;   // 7경기
+
+  var topEmoji = document.getElementById('topEmoji');
+  var sub = document.getElementById('sub');
+  var progWrap = document.getElementById('prog');
+  var progText = document.getElementById('progText');
+  var progBar = document.getElementById('progBar');
+  var gameEl = document.getElementById('game');
+  var roundText = document.getElementById('roundText');
+  var matchEl = document.getElementById('match');
+  var p0 = document.getElementById('p0');
+  var p1 = document.getElementById('p1');
+  var resultEl = document.getElementById('result');
+  var champName = document.getElementById('champName');
+  var champDesc = document.getElementById('champDesc');
+  var mapLink = document.getElementById('mapLink');
+  var againBtn = document.getElementById('again');
+  var note = document.getElementById('note');
+
+  var pool = [], winners = [], matchIdx = 0, doneCount = 0, finalists = null, locked = false;
+
+  function shuffle(arr){
+    var a = arr.slice(), i, j, t;
+    for(i = a.length - 1; i > 0; i--){
+      j = (Math.random() * (i + 1)) | 0;
+      t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function roundLabel(n){
+    if(n === 2) return '결승';
+    return n + '강';
+  }
+
+  /* 받침 있으면 '이었어', 없으면 '였어' */
+  function wasWord(name){
+    var code = name.charCodeAt(name.length - 1) - 0xAC00;
+    var hasJong = code >= 0 && code <= 11171 && (code % 28) !== 0;
+    return name + (hasJong ? '이었어' : '였어');
+  }
+
+  function fill(btn, place){
+    btn.innerHTML = '<span class="pe">' + place.e + '</span>' +
+                    '<span class="pn">' + place.n + '</span>' +
+                    '<span class="pd">' + place.d + '</span>';
+    btn.setAttribute('aria-label', place.n + ' — ' + place.d);
+  }
+
+  function render(){
+    if(pool.length === 1){ finish(); return; }
+    var a = pool[matchIdx * 2], b = pool[matchIdx * 2 + 1];
+    if(pool.length === 2) finalists = [a, b];
+
+    roundText.textContent = pool.length === 2
+      ? '결승'
+      : roundLabel(pool.length) + ' ' + (matchIdx + 1) + '경기';
+
+    fill(p0, a); fill(p1, b);
+    progText.textContent = (doneCount + 1) + ' / ' + TOTAL + ' 경기';
+    progBar.style.width = (doneCount / TOTAL * 100) + '%';
+
+    matchEl.classList.remove('anim');
+    void matchEl.offsetWidth;      // 애니메이션 재시작
+    matchEl.classList.add('anim');
+    locked = false;
+  }
+
+  function pick(which){
+    if(locked) return;
+    locked = true;
+    var a = pool[matchIdx * 2], b = pool[matchIdx * 2 + 1];
+    var w = which === 0 ? a : b;
+    var btn = which === 0 ? p0 : p1;
+    var r = btn.getBoundingClientRect();
+    FX.burst(r.left + r.width / 2, r.top + r.height / 2, 28);
+
+    winners.push(w);
+    doneCount++;
+    matchIdx++;
+    note.textContent = w.n + ' 통과! ' + w.e;
+
+    if(matchIdx * 2 >= pool.length){
+      pool = winners; winners = []; matchIdx = 0;
+    }
+    setTimeout(render, 280);
+  }
+
+  function finish(){
+    var w = pool[0], other = null;
+    if(finalists) other = finalists[0] === w ? finalists[1] : finalists[0];
+
+    progBar.style.width = '100%';
+    progText.textContent = TOTAL + ' / ' + TOTAL + ' 경기';
+    progWrap.classList.add('hide');
+    gameEl.classList.add('hide');
+
+    topEmoji.textContent = w.e;
+    sub.textContent = '자기야, 우리 다음엔 여기로 가자 🥰';
+    champName.textContent = w.n;
+    champDesc.textContent = w.d;
+    mapLink.href = 'https://map.kakao.com/?q=' + encodeURIComponent(w.n);
+    mapLink.textContent = '카카오맵에서 ' + w.n + ' 보기 🗺️';
+    note.textContent = other ? ('결승 상대는 ' + wasWord(other.n) + '. 거기는 그다음에 가자 😗') : '';
+
+    resultEl.classList.remove('hide');
+    FX.party();
+  }
+
+  function start(){
+    pool = shuffle(PLACES);
+    winners = []; matchIdx = 0; doneCount = 0; finalists = null; locked = false;
+    topEmoji.textContent = '🗺️';
+    sub.textContent = '자기야, 둘 중에 더 가고 싶은 데 하나만 골라 😊';
+    resultEl.classList.add('hide');
+    gameEl.classList.remove('hide');
+    progWrap.classList.remove('hide');
+    note.textContent = '8강부터 시작! 대진은 열 때마다 새로 섞여 🎲';
+    render();
+  }
+
+  p0.addEventListener('click', function(){ pick(0); });
+  p1.addEventListener('click', function(){ pick(1); });
+  againBtn.addEventListener('click', start);
+  start();
+})();
+</script>

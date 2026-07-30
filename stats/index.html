@@ -1,0 +1,286 @@
+<meta charset="utf-8" />
+<title>숫자로 보는 우리 💯</title>
+<!-- share -->
+<meta name="robots" content="noindex, nofollow" />
+<meta name="description" content="숫자로 보는 우리 — 사귄 날부터 오늘까지" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="오늘의 서프라이즈" />
+<meta property="og:title" content="숫자로 보는 우리 💯" />
+<meta property="og:description" content="숫자로 보는 우리 — 사귄 날부터 오늘까지" />
+<meta property="og:url" content="https://blankymunn3.github.io/surprise/stats/" />
+<meta property="og:image" content="https://blankymunn3.github.io/surprise/assets/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<!-- /share -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/base.css" />
+<style>
+  .card{width:min(94vw,560px)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;text-align:left}
+  .cell{
+    min-width:0;background:rgba(255,255,255,.74);border:1px solid rgba(255,255,255,.9);border-radius:20px;
+    padding:14px 15px 13px;box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 12px 26px -20px rgba(190,30,80,.75);
+  }
+  .cell.wide{grid-column:1/-1}
+  .ico{font-size:22px;line-height:1}
+  .lbl{font-family:var(--font-hand);font-size:14.5px;color:var(--rose-deep);margin-top:3px}
+  .big{margin-top:2px;color:var(--rose-deep);line-height:1.15;white-space:nowrap;font-size:clamp(24px,7vw,32px)}
+  .cell.wide .big{font-size:clamp(30px,8.8vw,42px)}
+  .big .pre{font-size:.6em;opacity:.9;margin-right:2px}
+  .big .val{font-feature-settings:"tnum"}
+  .big .unit{font-size:.52em;margin-left:2px;color:var(--ink-soft)}
+  .cs{font-family:var(--font-hand);font-size:13.5px;color:var(--ink-soft);margin-top:4px;word-break:keep-all}
+  .sect{display:flex;align-items:center;gap:10px;margin:20px 0 10px;text-align:left}
+  .sect .st{font-size:15px;color:var(--rose-deep)}
+  .sect .line{flex:1;height:1px;background:rgba(225,29,91,.22)}
+  .rows{list-style:none;margin:0;padding:0;display:grid;gap:9px;text-align:left}
+  .rowcard{
+    display:flex;align-items:center;gap:11px;min-width:0;
+    background:rgba(255,255,255,.66);border:1px solid rgba(255,255,255,.88);border-radius:18px;padding:12px 14px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 10px 22px -18px rgba(190,30,80,.75);
+  }
+  .rowcard .ico{font-size:25px;flex:none}
+  .rowcard .txt{flex:1;min-width:0}
+  .lbl2{font-size:16.5px;color:var(--ink);word-break:keep-all}
+  .rowcard .big{margin-top:1px;flex:none;font-size:clamp(20px,5.6vw,25px)}
+  .rowcard.today{
+    border-color:var(--rose-deep);
+    background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(255,194,214,.95));
+  }
+  .btnrow{margin-top:22px}
+  .mine{font-family:var(--font-hand);font-size:clamp(16px,4.6vw,20px);color:var(--rose-deep);margin:16px 0 0}
+</style>
+
+<a class="home" href="../">← 목록</a>
+
+<div class="stage">
+  <main class="card">
+    <span class="emoji">💯</span>
+    <h1>숫자로 보는 우리</h1>
+    <p class="sub">오늘까지 쌓인 우리 기록. 가만히 있어도 매일 늘어나 😌</p>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="sect"><span class="st">🗓️ 다가오는 기념일</span><span class="line"></span></div>
+    <div class="rows" id="soon"></div>
+
+    <div class="sect"><span class="st">💯 다가오는 100일 단위</span><span class="line"></span></div>
+    <ol class="rows" id="mile"></ol>
+
+    <div class="btnrow">
+      <button class="btn" id="again" type="button">다시 세어보기 🔢</button>
+    </div>
+
+    <p class="mine">숫자로 세어도 부족해, 자기야 💕</p>
+    <div class="note" id="note"></div>
+  </main>
+</div>
+
+<script src="../assets/fx.js"></script>
+<script>
+(function(){
+  var DAY = 86400000, DUR = 1200, WD = ['일','월','화','수','목','금','토'];
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- 날짜 계산: 전부 '로컬 자정' Date로만 다뤄서 시차·DST·윤년에 안 흔들리게 ---- */
+  function mkDate(y, m, d){ return new Date(y, m - 1, d); }
+  function today0(){
+    var n = new Date();
+    return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+  }
+  function dayDiff(a, b){
+    return Math.round((b.getTime() - a.getTime()) / DAY);   // round → DST 1시간 밀림도 흡수
+  }
+  function addDays(d, k){
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate() + k);
+  }
+  function fmtShort(d){
+    var m = d.getMonth() + 1, day = d.getDate();
+    return d.getFullYear() + '.' + (m < 10 ? '0' : '') + m + '.' + (day < 10 ? '0' : '') + day;
+  }
+  function fmtDate(d){
+    return fmtShort(d) + ' (' + WD[d.getDay()] + ')';
+  }
+  function nextAnniv(base, t){
+    var n = new Date(t.getFullYear(), base.getMonth(), base.getDate());
+    if(dayDiff(t, n) < 0) n = new Date(t.getFullYear() + 1, base.getMonth(), base.getDate());
+    return n;   // 오늘이 그 날이면 오늘을 그대로 돌려줌 (D-DAY)
+  }
+  function comma(n){
+    var neg = (n < 0), s = String(neg ? -n : n), out = '', c = 0, i;
+    for(i = s.length - 1; i >= 0; i--){
+      out = s.charAt(i) + out;
+      c++;
+      if(c % 3 === 0 && i > 0) out = ',' + out;
+    }
+    return (neg ? '-' : '') + out;
+  }
+  function yearTag(y){ return y > 0 ? (' · ' + y + '주년') : ''; }
+
+  /* ---- 우리 날짜 ---- */
+  var START = mkDate(2023, 3, 25);   // 처음 사귄 날
+  var WED   = mkDate(2025, 4, 12);   // 결혼기념일
+  var T = today0();
+
+  // 첫날을 1일로 세는 방식 (100일·1000일 세는 우리 방식과 같게).
+  // 기기 시계가 과거로 잘못 맞춰져 있어도 음수가 안 나오게 최소 1일로 붙잡아둠
+  var loveDays = Math.max(1, dayDiff(START, T) + 1);
+  var wedDays  = Math.max(1, dayDiff(WED, T) + 1);
+  var hours = loveDays * 24;
+  var mins  = loveDays * 1440;
+
+  var wedNext  = nextAnniv(WED, T);
+  var wedLeft  = dayDiff(T, wedNext);
+  var wedYear  = wedNext.getFullYear() - WED.getFullYear();
+
+  var loveNext = nextAnniv(START, T);
+  var loveLeft = dayDiff(T, loveNext);
+  var loveYear = loveNext.getFullYear() - START.getFullYear();
+  var loveNextCount = loveDays + loveLeft;   // 그날이 되면 며칠째
+
+  // 다가오는 100일 단위 (지난 건 제외, 오늘이 딱 그 날이면 포함)
+  function milestones(count){
+    var out = [], first, i, n, d;
+    first = (loveDays % 100 === 0) ? loveDays : (Math.floor(loveDays / 100) * 100 + 100);
+    for(i = 0; i < count; i++){
+      n = first + i * 100;
+      d = addDays(START, n - 1);
+      out.push({ n: n, date: d, left: dayDiff(T, d) });
+    }
+    return out;
+  }
+
+  /* ---- 그리기 ---- */
+  var anims = [];
+  function txtEl(tag, cls, text, hide){
+    var n = document.createElement(tag);
+    n.className = cls;
+    n.textContent = text;
+    if(hide) n.setAttribute('aria-hidden', 'true');
+    return n;
+  }
+  function bigEl(o){
+    var big = document.createElement('div');
+    big.className = 'big';
+    if(o.dday){
+      big.appendChild(txtEl('span', 'val', 'D-DAY 🎉'));
+      return big;
+    }
+    big.appendChild(txtEl('span', 'pre', o.pre || ''));
+    var val = txtEl('span', 'val', '0');
+    big.appendChild(val);
+    big.appendChild(txtEl('span', 'unit', o.unit || ''));
+    anims.push({ el: val, to: o.num });
+    return big;
+  }
+  function cell(o){
+    var box = document.createElement('div');
+    box.className = o.wide ? 'cell wide' : 'cell';
+    box.appendChild(txtEl('div', 'ico', o.ico, true));
+    box.appendChild(txtEl('div', 'lbl', o.lbl));
+    box.appendChild(bigEl(o));
+    box.appendChild(txtEl('div', 'cs', o.sub));
+    return box;
+  }
+  function row(tag, o){
+    var box = document.createElement(tag);
+    box.className = o.dday ? 'rowcard today' : 'rowcard';
+    box.appendChild(txtEl('div', 'ico', o.ico, true));
+    var t = document.createElement('div');
+    t.className = 'txt';
+    t.appendChild(txtEl('div', 'lbl2', o.lbl));
+    t.appendChild(txtEl('div', 'cs', o.sub));
+    box.appendChild(t);
+    box.appendChild(bigEl(o));
+    return box;
+  }
+
+  var gridEl = document.getElementById('grid');
+  var soonEl = document.getElementById('soon');
+  var mileEl = document.getElementById('mile');
+  var note   = document.getElementById('note');
+  var again  = document.getElementById('again');
+
+  gridEl.appendChild(cell({
+    ico:'💗', lbl:'사귄 지', pre:'D+', num:loveDays, unit:'일', wide:true,
+    sub:'2023.03.25부터 하루도 안 빼고'
+  }));
+  gridEl.appendChild(cell({
+    ico:'💍', lbl:'결혼한 지', pre:'D+', num:wedDays, unit:'일',
+    sub:'2025.04.12부터'
+  }));
+  gridEl.appendChild(cell({
+    ico:'⏰', lbl:'함께한 시간', pre:'약 ', num:hours, unit:'시간',
+    sub:'지금도 계속 늘어나는 중'
+  }));
+  gridEl.appendChild(cell({
+    ico:'⏱️', lbl:'분으로 세면', pre:'약 ', num:mins, unit:'분', wide:true,
+    sub:'그중에 아까운 1분은 없었어'
+  }));
+
+  soonEl.appendChild(row('div', {
+    ico: loveLeft === 0 ? '🎉' : '💞',
+    lbl:'다음 사귄 기념일',
+    sub: fmtDate(loveNext) + yearTag(loveYear) + ' · ' + comma(loveNextCount) + '일째',
+    pre:'D-', num:loveLeft, unit:'', dday:(loveLeft === 0)
+  }));
+  soonEl.appendChild(row('div', {
+    ico: wedLeft === 0 ? '🎉' : '💍',
+    lbl:'다음 결혼기념일',
+    sub: fmtDate(wedNext) + yearTag(wedYear),
+    pre:'D-', num:wedLeft, unit:'', dday:(wedLeft === 0)
+  }));
+
+  var ms = milestones(3), i, todayCount = 0;
+  for(i = 0; i < ms.length; i++){
+    mileEl.appendChild(row('li', {
+      ico: ms[i].left === 0 ? '🎉' : '💯',
+      lbl: comma(ms[i].n) + '일',
+      sub: fmtDate(ms[i].date),
+      pre:'D-', num:ms[i].left, unit:'', dday:(ms[i].left === 0)
+    }));
+    if(ms[i].left === 0) todayCount++;
+  }
+  if(loveLeft === 0) todayCount++;
+  if(wedLeft === 0) todayCount++;
+
+  /* ---- 카운트업 (약 1.2초, ease-out) ---- */
+  function run(){
+    var i;
+    if(reduce){
+      for(i = 0; i < anims.length; i++) anims[i].el.textContent = comma(anims[i].to);
+      return;
+    }
+    for(i = 0; i < anims.length; i++) anims[i].el.textContent = '0';
+    var t0 = null;
+    function frame(ts){
+      if(t0 === null) t0 = ts;
+      var t = Math.min(1, (ts - t0) / DUR), e = 1 - Math.pow(1 - t, 3), j;
+      for(j = 0; j < anims.length; j++) anims[j].el.textContent = comma(Math.round(anims[j].to * e));
+      if(t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  again.addEventListener('click', function(){
+    run();
+    var r = gridEl.getBoundingClientRect();
+    FX.burst(r.left + r.width / 2, r.top + r.height / 2, 60);
+    for(var k = 0; k < 5; k++) setTimeout(FX.heart, k * 130);
+  });
+
+  if(todayCount){
+    note.textContent = '오늘 ' + fmtShort(T) + ', 딱 그날이야. 축하해 🎉';
+  }else{
+    note.textContent = '오늘 ' + fmtShort(T) + ' 기준이야. 자고 일어나면 또 하나 늘어 🙂';
+  }
+
+  run();
+  if(todayCount) FX.party(7000);
+  else for(i = 0; i < 4; i++) setTimeout(FX.heart, i * 220);
+})();
+</script>
