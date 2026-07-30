@@ -70,11 +70,11 @@ window.FX=(function(){
   function setPrize(){ var i; do{i=(Math.random()*prizes.length)|0;}while(i===last&&prizes.length>1); last=i; pico.textContent=prizes[i][0]; ptxt.textContent=prizes[i][1]; }
 
   function paintFoil(){
-    // 캔버스 자체 크기로 측정 (CSS inset:0 + 100%로 카드에 딱 맞음)
-    var r=foil.getBoundingClientRect();
-    W=Math.round(r.width); H=Math.round(r.height);
+    // clientWidth/Height는 transform(카드 등장 scale)에 영향받지 않는 '레이아웃' 크기 → 어긋남 방지
+    W=box.clientWidth; H=box.clientHeight;
     if(!W||!H){ requestAnimationFrame(paintFoil); return; }  // 레이아웃 확정 전이면 다음 프레임에
     foil.width=Math.round(W*DPR); foil.height=Math.round(H*DPR);
+    foil.style.width=W+'px'; foil.style.height=H+'px';       // 표시 크기를 카드에 정확히 고정
     ctx.setTransform(DPR,0,0,DPR,0,0);
     var g=ctx.createLinearGradient(0,0,W,H);
     g.addColorStop(0,'#e9c7d6'); g.addColorStop(.5,'#f6d9e4'); g.addColorStop(1,'#dcb6c9');
@@ -88,7 +88,11 @@ window.FX=(function(){
     ctx.globalCompositeOperation='destination-out';
   }
 
-  function pos(e){ var r=foil.getBoundingClientRect(); var t=(e.touches&&e.touches[0])||e; return {x:t.clientX-r.left, y:t.clientY-r.top}; }
+  function pos(e){
+    var r=foil.getBoundingClientRect(); var t=(e.touches&&e.touches[0])||e;
+    var sx=W/(r.width||W), sy=H/(r.height||H);   // 확대/축소 중에도 좌표가 정확하도록
+    return {x:(t.clientX-r.left)*sx, y:(t.clientY-r.top)*sy};
+  }
   function erase(p){ ctx.beginPath(); ctx.arc(p.x,p.y,24,0,6.28); ctx.fill(); }
 
   function ratio(){
