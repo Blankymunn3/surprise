@@ -4,6 +4,9 @@ name: probe-versions
 
 on:
   workflow_dispatch:
+  push:
+    branches: [claude/workspace-check-xfcars]
+    paths: ['.github/workflows/probe-versions.yml']
 
 jobs:
   probe:
