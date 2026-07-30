@@ -167,7 +167,17 @@
      위아래 ±85도는 웹 지도(메르카토르)가 그릴 수 있는 한계입니다. */
   var WORLD_BOUNDS=L.latLngBounds([[-85,-180],[85,180]]);
   var map=L.map('map',{zoomControl:false,scrollWheelZoom:false,
-    worldCopyJump:false, maxBounds:WORLD_BOUNDS, maxBoundsViscosity:1, minZoom:1});
+    worldCopyJump:false, maxBounds:WORLD_BOUNDS, maxBoundsViscosity:1});
+
+  /* 가장 축소했을 때 지도 옆에 빈 여백이 생기지 않도록, 세계가 지도 영역을
+     덮는 최소 줌을 화면 크기에서 계산합니다. (세계 폭 = 256 x 2^줌 픽셀)
+     폰은 화면이 좁아 1이면 충분하고, PC는 보통 2가 됩니다. */
+  function applyMinZoom(){
+    var need=Math.max(mapEl.clientWidth||0, mapEl.clientHeight||0);
+    if(!need) return;
+    var z=Math.max(0, Math.ceil(Math.log(need/256)/Math.LN2));
+    if(z!==map.getMinZoom()) map.setMinZoom(z);
+  }
   L.control.zoom({position:'bottomleft',zoomInTitle:'확대',zoomOutTitle:'축소'}).addTo(map);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     {maxZoom:19,noWrap:true,bounds:WORLD_BOUNDS,attribution:'&copy; OpenStreetMap'}).addTo(map);
@@ -673,8 +683,8 @@
 
   fitKr();
   var card=document.querySelector('.card');
-  if(card) card.addEventListener('animationend', function(){ map.invalidateSize(); fitKr(); });
-  setTimeout(function(){ map.invalidateSize(); fitKr(); }, 400);
-  window.addEventListener('resize', function(){ map.invalidateSize(); });
+  if(card) card.addEventListener('animationend', function(){ map.invalidateSize(); applyMinZoom(); fitKr(); });
+  setTimeout(function(){ map.invalidateSize(); applyMinZoom(); fitKr(); }, 400);
+  window.addEventListener('resize', function(){ map.invalidateSize(); applyMinZoom(); });
 })();
 </script>
