@@ -131,6 +131,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="../assets/fx.js?v=3"></script>
 <script src="../assets/countries-ko.js?v=3"></script>
+<script src="../assets/subdivisions-ko.js?v=3"></script>
 <script src="../assets/firebase.js?v=3"></script>
 <script>
 (function(){
@@ -484,7 +485,12 @@
       var country=layers['C-'+iso];
       if(country){ group.removeLayer(country); country._split=true; }
       (g.features||[]).forEach(function(f,i){
-        var nm=(f.properties&&(f.properties.shapeName||f.properties.name))||(iso+' '+(i+1));
+        var pr=f.properties||{};
+        var raw=pr.shapeName||pr.name||(iso+' '+(i+1));
+        /* 한글 이름표(assets/subdivisions-ko.js)에 있으면 한글로, 없으면 원본 그대로 */
+        var nm=(window.SUBDIV_KO_NAME && SUBDIV_KO_NAME[raw])
+               || (pr.shapeISO && window.SUBDIV_KO && SUBDIV_KO[pr.shapeISO])
+               || raw;
         var code='P-'+iso+'-'+i;
         names[code]=nm;
         var lyr=L.geoJSON(f,{style:styleFor(code)}).getLayers()[0];
