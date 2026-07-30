@@ -42,10 +42,14 @@ class SharedSpaceRepository(
 
     override fun observeSpaces(): Flow<List<Space>> = spaces.asStateFlow()
 
-    /** 내 uid. 로그인이 없으니 기기에서 한 번 만들어 두고 계속 씁니다. */
-    suspend fun me(): LocalMembership = lock.withLock { readLocal() }
+    /**
+     * 내 uid. 로그인이 없으니 기기에서 한 번 만들어 두고 계속 씁니다.
+     * `LocalMembership` 이 모듈 안쪽 타입이라 이 함수도 internal 입니다 —
+     * 밖에서 필요해지면 그때 도메인 모델로 올립니다.
+     */
+    internal suspend fun me(): LocalMembership = lock.withLock { readLocal() }
 
-    suspend fun rename(displayName: String) = lock.withLock {
+    suspend fun renameMe(displayName: String) = lock.withLock {
         writeLocal(readLocal().copy(displayName = displayName.trim().ifBlank { "나" }))
     }
 
