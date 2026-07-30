@@ -35,6 +35,16 @@ struct SpaceListReducerTests {
         #expect(!after.working)
     }
 
+    /// 저장소가 먼저 목록에 넣고 `created` 가 또 넣어서 같은 공간이 두 번 들어갔습니다.
+    /// 안드로이드에서는 그 상태로 목록이 죽었습니다 (`Key "7M8FRY" was already used`).
+    @Test("저장소가 먼저 넣어 둔 공간을 만들어도 목록에 두 번 나오지 않는다")
+    func createIsIdempotent() {
+        let made = space("7M8FRY")
+        let alreadyInList = SpaceListReducer.loaded(SpaceListState(), [made])
+        let after = SpaceListReducer.created(alreadyInList, made, "7M8FRY")
+        #expect(after.items.count == 1)
+    }
+
     @Test("이미 들어가 있는 공간에 다시 참여해도 목록에 두 번 나오지 않는다")
     func joinIsIdempotent() {
         let state = SpaceListReducer.loaded(SpaceListState(), [space("A", "가족 여행")])

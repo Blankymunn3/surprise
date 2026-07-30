@@ -34,9 +34,14 @@ internal object SpaceListReducer {
 
     fun working(state: SpaceListState): SpaceListState = state.copy(working = true)
 
+    /**
+     * 저장소도 목록에 넣고 여기서도 넣기 때문에 **같은 공간이 두 번 들어갈 수 있습니다.**
+     * 목록은 `id` 를 키로 그리므로 그러면 화면이 죽습니다. `joined` 와 같은 방식으로
+     * 같은 id 를 먼저 걷어냅니다.
+     */
     fun created(state: SpaceListState, space: Space, code: String): SpaceListState =
         state.copy(
-            spaces = SpacesUi.Ready(state.currentItems() + space),
+            spaces = SpacesUi.Ready(state.currentItems().filterNot { it.id == space.id } + space),
             sheet = SpaceListSheet.Invited(space.name, code),
             pendingName = "",
             working = false,
