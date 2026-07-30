@@ -130,6 +130,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="../assets/fx.js?v=3"></script>
+<script src="../assets/countries-ko.js?v=3"></script>
 <script src="../assets/firebase.js?v=3"></script>
 <script>
 (function(){
@@ -137,13 +138,11 @@
   var OLDKEY='surprise.map.photo.';   // 예전 장소별 사진 → 코드로 옮김
   var GEO='https://cdn.jsdelivr.net/gh/southkorea/southkorea-maps@master/kostat/2013/json/skorea_municipalities_geo_simple.json';
   var WORLD='https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json';
-  /* 나라 이름 한글 (없으면 영문 그대로) */
-  var KO={Indonesia:'인도네시아',Japan:'일본',Vietnam:'베트남',Thailand:'태국',Philippines:'필리핀',
-    Taiwan:'대만',China:'중국','United States of America':'미국',France:'프랑스',Italy:'이탈리아',
-    Spain:'스페인',Switzerland:'스위스',Germany:'독일','United Kingdom':'영국',Australia:'호주',
-    'New Zealand':'뉴질랜드',Canada:'캐나다',Turkey:'튀르키예',Greece:'그리스',Portugal:'포르투갈',
-    Singapore:'싱가포르',Malaysia:'말레이시아',India:'인도',Mexico:'멕시코',Brazil:'브라질',
-    Netherlands:'네덜란드',Austria:'오스트리아','Czech Republic':'체코',Croatia:'크로아티아'};
+  /* ISO 코드가 없는 지역(id 가 -99)용 이름.
+     그 외 나라 이름은 assets/countries-ko.js 에서 ISO 코드로 찾습니다. */
+  var KO_ALT={Kosovo:'코소보',Somaliland:'소말릴란드','Northern Cyprus':'북키프로스',
+    'N. Cyprus':'북키프로스','West Bank':'요르단강 서안','Western Sahara':'서사하라',
+    'W. Sahara':'서사하라','Republic of Serbia':'세르비아'};
   var SITE_CODES=[];   // photos/region-<code>.jpg 로 올려둔 지역
 
   /* 우리 추억 장소 (확정된 사실만) */
@@ -515,9 +514,11 @@
   /* 해외 국가 경계 */
   fetch(WORLD).then(function(r){ return r.json(); }).then(function(w){
     w.features.forEach(function(f){
-      if(f.id==='KOR') return;                       // 한국은 시군구 레이어로 대체
-      var code='C-'+(f.id||f.properties.name);
-      var name=KO[f.properties.name]||f.properties.name;
+      var iso=(f.id && f.id!=='-99') ? f.id : null;  // -99 = ISO 코드가 없는 지역(코소보 등)
+      if(iso==='KOR') return;                        // 한국은 시군구 레이어로 대체
+      var code='C-'+(iso||f.properties.name);
+      var name=(iso && window.COUNTRY_KO && COUNTRY_KO[iso])
+               || KO_ALT[f.properties.name] || f.properties.name;
       names[code]=name;
       var lyr=L.geoJSON(f,{style:styleFor(code)}).getLayers()[0];
       lyr.on('click',function(){ pick(code,name); });
