@@ -220,9 +220,17 @@
   }
 
   function updateProg(){
-    var kr=0, ov=0;
-    for(var c in layers){ if(photoOf(c)){ if(c.indexOf('C-')===0||c.indexOf('P-')===0) ov++; else kr++; } }
-    prog.innerHTML='국내 <b>'+kr+'곳</b>'+(ov?' · 해외 <b>'+ov+'개국</b>':'')+' 도장 깼어 💗';
+    var kr=0, ov=0, pv=0;
+    for(var c in layers){
+      if(!photoOf(c)) continue;
+      if(c.indexOf('C-')===0) ov++;           // 나라 전체
+      else if(c.indexOf('P-')===0) pv++;      // 해외 시도(주) — 나라로 세면 안 됨
+      else kr++;                              // 국내 시군구
+    }
+    var s='국내 <b>'+kr+'곳</b>';
+    if(ov) s+=' · 해외 <b>'+ov+'개국</b>';
+    if(pv) s+=(ov?' ':' · 해외 ')+'<b>'+pv+'개 지역</b>';
+    prog.innerHTML=s+' 도장 깼어 💗';
   }
 
   function select(code,name){
@@ -291,7 +299,7 @@
   /* ── 해외: 나라를 시도(주) 단위로 나누기 ───────────────────────── */
   var ADM1_SHA='9469f09592ced973a3448cf66b6100b741b64c0d';
   var EXP_KEY='surprise.map.expanded';
-  var expanded={}, loadingIso=null;
+  var expanded={}, loading={};   // 나라별로 따로 관리 (새로고침 때 여러 나라를 동시에 복원해야 함)
   try{ expanded=JSON.parse(localStorage.getItem(EXP_KEY)||'{}')||{}; }catch(e){ expanded={}; }
 
   function adm1Url(iso){
@@ -300,9 +308,9 @@
   }
 
   function splitCountry(iso, label){
-    if(loadingIso) return;
+    if(loading[iso]) return;                                  // 같은 나라 중복 요청만 차단
     if(layers['C-'+iso] && layers['C-'+iso]._split) return;
-    loadingIso=iso;
+    loading[iso]=1;
     note.textContent=(label||iso)+' 시도 불러오는 중… 🧩';
     fetch(adm1Url(iso)).then(function(r){
       if(!r.ok) throw 0; return r.json();
@@ -323,11 +331,12 @@
       expanded[iso]=1;
       try{ localStorage.setItem(EXP_KEY, JSON.stringify(expanded)); }catch(e){}
       note.textContent=(label||iso)+' 시도로 나눴어! 이제 지역별로 사진을 넣을 수 있어 🧩';
-      updateProg(); loadingIso=null;
-      var b=document.getElementById('psplit'); if(b) b.className='mini hidden';
+      updateProg(); delete loading[iso];
+      /* 지금 그 나라를 보고 있을 때만 패널 갱신 (다른 나라 복원 중에 버튼이 사라지지 않게) */
+      if(sel && sel.code==='C-'+iso) select(sel.code, sel.name);
     }).catch(function(){
-      note.textContent='이 나라는 시도 정보를 못 찾았어 🥲 (나라 전체로는 채울 수 있어)';
-      loadingIso=null;
+      note.textContent=(label||iso)+' 시도 정보를 못 찾았어 🥲 (나라 전체로는 채울 수 있어)';
+      delete loading[iso];
     });
   }
 
