@@ -149,8 +149,8 @@
 
 <div id="win" role="dialog" aria-label="사랑 확인">
   <div class="win-inner">
-    <div class="big">사랑해 ❤️</div>
-    <div class="msg" id="winMsg">역시… 내 그럴 줄 알았어 😘<br>평생 아껴줄게, 고마워 💕</div>
+    <div class="big" id="winBig">사랑해 ❤️</div>
+    <div class="msg" id="winMsg">내 하루의 시작도 끝도 늘 너야.<br>세상에서 제일 사랑해, 내 사람 🥰</div>
     <button class="again" id="again" type="button">한 번 더 물어보기 🔁</button>
   </div>
 </div>
@@ -316,7 +316,21 @@
   /* ---------- WIN ---------- */
   var win = document.getElementById("win");
   var heartTimer = null;
+  var winBig = document.getElementById("winBig");
+  var winMsg = document.getElementById("winMsg");
+  var sweetBig = ["사랑해 ❤️", "역시 내 사랑 💖", "너뿐이야 🥰", "나도 사랑해 💕", "내 사람 ❤️"];
+  var sweetMsg = [
+    "내 하루의 시작도 끝도 늘 너야.<br>세상에서 제일 사랑해, 내 사람 🥰",
+    "네 옆이 내가 제일 좋아하는 자리야.<br>평생 손 꼭 잡고 걸을게 💞",
+    "오늘도, 내일도, 그다음 날도 —<br>변함없이 너만 사랑할게 💕",
+    "너를 만난 게 내 인생에서 제일 잘한 일이야.<br>고맙고, 또 사랑해 😘",
+    "우린 역시 운명인가 봐 💫<br>남은 날들 전부 너랑 웃고 싶어 🥰",
+    "네 웃음 하나에 내 하루가 다 환해져.<br>사랑해, 아주 많이 ❤️",
+    "설레는 것도, 편한 것도 너 하나뿐.<br>더 아끼고 더 사랑할게 💗"
+  ];
   function celebrate() {
+    if (winBig) winBig.textContent = sweetBig[(Math.random() * sweetBig.length) | 0];
+    if (winMsg) winMsg.innerHTML = sweetMsg[(Math.random() * sweetMsg.length) | 0];
     win.classList.add("show");
     var cx = window.innerWidth / 2, cy = window.innerHeight * 0.42;
     burst(cx, cy, reduce ? 60 : 180);
