@@ -1,8 +1,10 @@
 name: android
 
+# PR 이 열려 있으면 push 와 pull_request 가 둘 다 돌아 같은 빌드를 두 번 합니다.
+# 브랜치는 pull_request 로만 보고, push 는 main 에서만 봅니다.
 on:
   push:
-    branches: [main, 'claude/**']
+    branches: [main]
     paths: ['android/**', '.github/workflows/android.yml']
   pull_request:
     paths: ['android/**', '.github/workflows/android.yml']
@@ -28,11 +30,22 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # 실패했을 때 로그 끝에서 바로 원인을 보려고 컴파일 오류만 따로 모읍니다.
+      # 그래들 스택트레이스가 수백 줄이라 그냥 두면 원인이 파묻힙니다.
       - name: 단위 테스트
-        run: ./gradlew test --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew test --console=plain 2>&1 | tee /tmp/gradle-test.log
 
       - name: 디버그 빌드
-        run: ./gradlew assembleDebug --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew assembleDebug --console=plain 2>&1 | tee /tmp/gradle-build.log
+
+      - name: 컴파일 오류만 모아 보기
+        if: failure()
+        run: |
+          grep -hE "^e: |^\s+e: " /tmp/gradle-*.log | head -60 || echo "컴파일 오류 줄은 없습니다 (다른 원인)"
 
       - name: 테스트 결과 남기기
         if: always()
