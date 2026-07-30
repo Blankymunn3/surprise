@@ -1,0 +1,364 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4E12C3A9B678996AA420305D /* CoreModel in Frameworks */ = {isa = PBXBuildFile; productRef = AFF0D399698FDD1287AA25EE /* CoreModel */; };
+		83F6C5DE2D242686EFBA6958 /* CoreCommon in Frameworks */ = {isa = PBXBuildFile; productRef = 11CA26CF2FC0B40046F4D05E /* CoreCommon */; };
+		0E6864231FCCDE61389A5297 /* CoreNetwork in Frameworks */ = {isa = PBXBuildFile; productRef = CB933EC0B25274A34EB2A3AF /* CoreNetwork */; };
+		8E95087C0F4232E1CB5AD54B /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = F3684779C5A4BA8F390AC418 /* DesignSystem */; };
+		4706375632C01D13DCF7D156 /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = 84765E591670663B50BD7481 /* Domain */; };
+		7841657A6581AFC813162778 /* DataPhoto in Frameworks */ = {isa = PBXBuildFile; productRef = E050AA3F162CCDC1C2B7AE0A /* DataPhoto */; };
+		DDF6AC523D04EC794E8945BD /* DataSpace in Frameworks */ = {isa = PBXBuildFile; productRef = 84E19CDDFAEE2F82788463D0 /* DataSpace */; };
+		56FE4FB80EAFA8F18BD811C9 /* DataRegion in Frameworks */ = {isa = PBXBuildFile; productRef = 22E7645577B945935F19B293 /* DataRegion */; };
+		14B3F7AF3841FADA7BFED3DE /* FeatureSpace in Frameworks */ = {isa = PBXBuildFile; productRef = 3F058FA1B13BA9089F354830 /* FeatureSpace */; };
+		3B0769C9DF3F1FF456846988 /* FeatureMap in Frameworks */ = {isa = PBXBuildFile; productRef = 5F0294C80A10DB384E83587C /* FeatureMap */; };
+		8C983EA5067D21AEA1C35114 /* FeatureCalendar in Frameworks */ = {isa = PBXBuildFile; productRef = 764D403AA97D342B241AD041 /* FeatureCalendar */; };
+		E69A1936B4529F8D4814F087 /* FeatureUpload in Frameworks */ = {isa = PBXBuildFile; productRef = 3E1B4FEA9CD8C438A715C619 /* FeatureUpload */; };
+		8B9633259C3E2A508D98C129 /* pretendard_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 03BD3A80AC0D0DA57B0C203B /* pretendard_regular.ttf */; };
+		C63C04185F7DF5F92C906B30 /* pretendard_medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C6D49719AD2289733043CB97 /* pretendard_medium.ttf */; };
+		88FC64417B15DBA557E664BB /* pretendard_semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD7E02C571198367730E50E3 /* pretendard_semibold.ttf */; };
+		C2349A3A554CABB63AF8DE25 /* pretendard_bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DBEC52726113CEE4966866F7 /* pretendard_bold.ttf */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		29F285785C6D15FDD42F5D9A /* MemoryMap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MemoryMap.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1FB17298817DFBADB5742754 /* MemoryMap-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "MemoryMap-Info.plist"; sourceTree = "<group>"; };
+		03BD3A80AC0D0DA57B0C203B /* pretendard_regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_regular.ttf; path = "../android/core/designsystem/src/main/res/font/pretendard_regular.ttf"; sourceTree = "<group>"; };
+		C6D49719AD2289733043CB97 /* pretendard_medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_medium.ttf; path = "../android/core/designsystem/src/main/res/font/pretendard_medium.ttf"; sourceTree = "<group>"; };
+		AD7E02C571198367730E50E3 /* pretendard_semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_semibold.ttf; path = "../android/core/designsystem/src/main/res/font/pretendard_semibold.ttf"; sourceTree = "<group>"; };
+		DBEC52726113CEE4966866F7 /* pretendard_bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_bold.ttf; path = "../android/core/designsystem/src/main/res/font/pretendard_bold.ttf"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		3B4E8024C1CA35625FB0689C /* App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = App;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1F2E5B53596CB54C1003EF6C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4E12C3A9B678996AA420305D /* CoreModel in Frameworks */,
+				83F6C5DE2D242686EFBA6958 /* CoreCommon in Frameworks */,
+				0E6864231FCCDE61389A5297 /* CoreNetwork in Frameworks */,
+				8E95087C0F4232E1CB5AD54B /* DesignSystem in Frameworks */,
+				4706375632C01D13DCF7D156 /* Domain in Frameworks */,
+				7841657A6581AFC813162778 /* DataPhoto in Frameworks */,
+				DDF6AC523D04EC794E8945BD /* DataSpace in Frameworks */,
+				56FE4FB80EAFA8F18BD811C9 /* DataRegion in Frameworks */,
+				14B3F7AF3841FADA7BFED3DE /* FeatureSpace in Frameworks */,
+				3B0769C9DF3F1FF456846988 /* FeatureMap in Frameworks */,
+				8C983EA5067D21AEA1C35114 /* FeatureCalendar in Frameworks */,
+				E69A1936B4529F8D4814F087 /* FeatureUpload in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A5F8FF998DCD9CD73935B534 = {
+			isa = PBXGroup;
+			children = (
+				3B4E8024C1CA35625FB0689C /* App */,
+				DB8EA493A86C9A653446861D /* Fonts */,
+				1FB17298817DFBADB5742754 /* MemoryMap-Info.plist */,
+				174F6EF85BAA9168B3CF6C0C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DB8EA493A86C9A653446861D /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				03BD3A80AC0D0DA57B0C203B /* pretendard_regular.ttf */,
+				C6D49719AD2289733043CB97 /* pretendard_medium.ttf */,
+				AD7E02C571198367730E50E3 /* pretendard_semibold.ttf */,
+				DBEC52726113CEE4966866F7 /* pretendard_bold.ttf */,
+			);
+			name = Fonts;
+			sourceTree = "<group>";
+		};
+		174F6EF85BAA9168B3CF6C0C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				29F285785C6D15FDD42F5D9A /* MemoryMap.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3288345CB1725006CD73F038 /* MemoryMap */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC852A14064A75B988091B82 /* Build configuration list for PBXNativeTarget "MemoryMap" */;
+			buildPhases = (
+				D1016E6F1A51392E046B1B0B /* Sources */,
+				1F2E5B53596CB54C1003EF6C /* Frameworks */,
+				267DDC42C966CF34C356DA7E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				3B4E8024C1CA35625FB0689C /* App */,
+			);
+			name = MemoryMap;
+			packageProductDependencies = (
+				AFF0D399698FDD1287AA25EE /* CoreModel */,
+				11CA26CF2FC0B40046F4D05E /* CoreCommon */,
+				CB933EC0B25274A34EB2A3AF /* CoreNetwork */,
+				F3684779C5A4BA8F390AC418 /* DesignSystem */,
+				84765E591670663B50BD7481 /* Domain */,
+				E050AA3F162CCDC1C2B7AE0A /* DataPhoto */,
+				84E19CDDFAEE2F82788463D0 /* DataSpace */,
+				22E7645577B945935F19B293 /* DataRegion */,
+				3F058FA1B13BA9089F354830 /* FeatureSpace */,
+				5F0294C80A10DB384E83587C /* FeatureMap */,
+				764D403AA97D342B241AD041 /* FeatureCalendar */,
+				3E1B4FEA9CD8C438A715C619 /* FeatureUpload */,
+			);
+			productName = MemoryMap;
+			productReference = 29F285785C6D15FDD42F5D9A /* MemoryMap.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FF26F320DC9004255231CD42 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					3288345CB1725006CD73F038 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = 9A90925F3B8866294462F476 /* Build configuration list for PBXProject "MemoryMap" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = ko;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				ko,
+				Base,
+			);
+			mainGroup = A5F8FF998DCD9CD73935B534;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D920F27FFE40764D4C347036 /* XCLocalSwiftPackageReference "Packages/MemoryMap" */,
+			);
+			productRefGroup = 174F6EF85BAA9168B3CF6C0C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3288345CB1725006CD73F038 /* MemoryMap */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		267DDC42C966CF34C356DA7E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8B9633259C3E2A508D98C129 /* pretendard_regular.ttf in Resources */,
+				C63C04185F7DF5F92C906B30 /* pretendard_medium.ttf in Resources */,
+				88FC64417B15DBA557E664BB /* pretendard_semibold.ttf in Resources */,
+				C2349A3A554CABB63AF8DE25 /* pretendard_bold.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D1016E6F1A51392E046B1B0B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D6D19B3D94C47E36DC8AAE67 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		91A576C05E0941FFD3530405 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		59D203CE66AF2B0772F7C88C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "MemoryMap-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = kr.surprise.memorymap;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5BFB9FF696687A54ECAAC0A6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "MemoryMap-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = kr.surprise.memorymap;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9A90925F3B8866294462F476 /* Build configuration list for PBXProject "MemoryMap" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D6D19B3D94C47E36DC8AAE67 /* Debug */,
+				91A576C05E0941FFD3530405 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC852A14064A75B988091B82 /* Build configuration list for PBXNativeTarget "MemoryMap" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				59D203CE66AF2B0772F7C88C /* Debug */,
+				5BFB9FF696687A54ECAAC0A6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		D920F27FFE40764D4C347036 /* XCLocalSwiftPackageReference "Packages/MemoryMap" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/MemoryMap;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AFF0D399698FDD1287AA25EE /* CoreModel */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CoreModel;
+		};
+		11CA26CF2FC0B40046F4D05E /* CoreCommon */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CoreCommon;
+		};
+		CB933EC0B25274A34EB2A3AF /* CoreNetwork */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CoreNetwork;
+		};
+		F3684779C5A4BA8F390AC418 /* DesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DesignSystem;
+		};
+		84765E591670663B50BD7481 /* Domain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Domain;
+		};
+		E050AA3F162CCDC1C2B7AE0A /* DataPhoto */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DataPhoto;
+		};
+		84E19CDDFAEE2F82788463D0 /* DataSpace */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DataSpace;
+		};
+		22E7645577B945935F19B293 /* DataRegion */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DataRegion;
+		};
+		3F058FA1B13BA9089F354830 /* FeatureSpace */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FeatureSpace;
+		};
+		5F0294C80A10DB384E83587C /* FeatureMap */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FeatureMap;
+		};
+		764D403AA97D342B241AD041 /* FeatureCalendar */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FeatureCalendar;
+		};
+		3E1B4FEA9CD8C438A715C619 /* FeatureUpload */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FeatureUpload;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = FF26F320DC9004255231CD42 /* Project object */;
+}

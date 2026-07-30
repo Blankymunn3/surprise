@@ -47,6 +47,9 @@ class CalendarViewModel(
             CalendarIntent.NextMonth -> {
                 setState { CalendarReducer.monthChanged(this, 1) }; rebuild()
             }
+            is CalendarIntent.MonthSelected -> {
+                setState { CalendarReducer.monthSelected(this, intent.month) }; rebuild()
+            }
             is CalendarIntent.DayTapped -> setState { CalendarReducer.daySelected(this, intent.date) }
             CalendarIntent.CollapseToggled -> setState { CalendarReducer.collapseToggled(this) }
             CalendarIntent.AddTapped -> sendEffect(CalendarEffect.OpenUpload)

@@ -28,8 +28,6 @@ public actor SharedSpaceRepository: SpaceRepository {
     private var defaults: UserDefaults { .standard }
 
     private static let idsKey = "memorymap.spaceIds"
-    private static let uidKey = "memorymap.uid"
-    private static let nameKey = "memorymap.displayName"
 
     public init(storage: FirebaseStorage) {
         self.storage = storage
@@ -114,13 +112,8 @@ public actor SharedSpaceRepository: SpaceRepository {
         defaults.set(spaceIds() + [id.value], forKey: Self.idsKey)
     }
 
-    /// 로그인이 없으니 기기에서 한 번 만들어 두고 계속 씁니다.
-    private func uid() -> String {
-        if let existing = defaults.string(forKey: Self.uidKey) { return existing }
-        let fresh = String(UUID().uuidString.prefix(12))
-        defaults.set(fresh, forKey: Self.uidKey)
-        return fresh
-    }
+    /// 사진 저장소도 **같은 값**을 써야 해서 `DeviceIdentity` 한 곳에 두었습니다.
+    private func uid() -> String { DeviceIdentity.uid }
 
-    private func displayName() -> String { defaults.string(forKey: Self.nameKey) ?? "나" }
+    private func displayName() -> String { DeviceIdentity.displayName }
 }

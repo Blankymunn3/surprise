@@ -41,6 +41,14 @@ public struct ObserveSpaces: Sendable {
     public func callAsFunction() async -> [Space] { await spaces.spaces() }
 }
 
+/// 저장소에서 내 공간들을 **다시 받아옵니다.** `ObserveSpaces` 는 받아 둔 것을 읽을 뿐이라
+/// 이걸 부르지 않으면 앱을 켰을 때 목록이 늘 비어 보입니다.
+public struct RefreshSpaces: Sendable {
+    private let spaces: any SpaceRepository
+    public init(spaces: any SpaceRepository) { self.spaces = spaces }
+    public func callAsFunction() async -> Outcome<Void> { await spaces.refresh() }
+}
+
 public struct CreateSpace: Sendable {
     private let spaces: any SpaceRepository
     public init(spaces: any SpaceRepository) { self.spaces = spaces }

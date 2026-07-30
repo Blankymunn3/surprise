@@ -34,6 +34,9 @@ data class DayGroup(
 sealed interface CalendarIntent {
     data object PreviousMonth : CalendarIntent
     data object NextMonth : CalendarIntent
+
+    /** 옆으로 넘겨서 고른 달. 몇 칸을 건너뛰었는지 모르므로 달을 그대로 받습니다. */
+    data class MonthSelected(val month: YearMonth) : CalendarIntent
     data class DayTapped(val date: LocalDate) : CalendarIntent
     data object CollapseToggled : CalendarIntent
     data class PhotoLongPressed(val date: LocalDate, val id: PhotoId) : CalendarIntent

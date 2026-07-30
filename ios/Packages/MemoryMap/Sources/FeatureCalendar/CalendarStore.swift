@@ -108,6 +108,7 @@ public final class CalendarStore {
     public private(set) var state: CalendarState
 
     private let observeBoard: ObservePhotoBoard
+    private let refreshPhotos: RefreshPhotos
     private let setCoverPhoto: SetCoverPhoto
     private let catalog: any RegionCatalog
 
@@ -116,15 +117,19 @@ public final class CalendarStore {
 
     public init(
         spaceId: SpaceId, today: CalendarDate,
-        observeBoard: ObservePhotoBoard, setCoverPhoto: SetCoverPhoto, catalog: any RegionCatalog
+        observeBoard: ObservePhotoBoard, refreshPhotos: RefreshPhotos,
+        setCoverPhoto: SetCoverPhoto, catalog: any RegionCatalog
     ) {
         self.state = CalendarState(spaceId: spaceId, today: today)
         self.observeBoard = observeBoard
+        self.refreshPhotos = refreshPhotos
         self.setCoverPhoto = setCoverPhoto
         self.catalog = catalog
     }
 
     public func refresh() async {
+        // 받아 둔 것만 읽으면 앱을 켰을 때 늘 비어 있습니다. 먼저 받아옵니다.
+        _ = await refreshPhotos(state.spaceId)
         if names.isEmpty {
             names = Dictionary(
                 (await catalog.all()).map { ($0.code.value, $0) },
