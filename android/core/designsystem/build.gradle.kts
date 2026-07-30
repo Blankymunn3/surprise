@@ -35,4 +35,8 @@ dependencies {
     api(libs.compose.ui.tooling.preview)
     debugImplementation(libs.compose.ui.tooling)
 
+    // PhotoThumb·SpaceCard·DayCell 이 사진을 그립니다
+    api(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
 }
