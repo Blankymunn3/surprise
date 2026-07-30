@@ -1,0 +1,37 @@
+# 이 컨테이너에서는 dl.google.com 이 막혀 있어 안드로이드 의존성 버전을 확인할 수 없습니다.
+# 러너에서 한 번 찍어 보고 버전을 고정한 뒤 이 워크플로는 지웁니다.
+name: probe-versions
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Google Maven 에서 쓸 수 있는 버전 확인
+        run: |
+          for a in \
+            com/android/tools/build/gradle \
+            androidx/compose/compose-bom \
+            androidx/activity/activity-compose \
+            androidx/lifecycle/lifecycle-viewmodel-compose \
+            androidx/lifecycle/lifecycle-runtime-compose \
+            androidx/navigation/navigation-compose \
+            androidx/exifinterface/exifinterface \
+            androidx/core/core-ktx \
+            androidx/datastore/datastore-preferences \
+            androidx/compose/material3/material3 \
+            androidx/activity/activity-ktx
+          do
+            echo "=== $a ==="
+            curl -sS "https://dl.google.com/dl/android/maven2/$a/maven-metadata.xml" \
+              | grep -oP '(?<=<version>)[^<]+' | tail -14 | tr '\n' ' '
+            echo
+          done
+      - name: 러너 도구 확인
+        run: |
+          java -version 2>&1
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms" 2>/dev/null || true
+          ls "$ANDROID_HOME/build-tools" 2>/dev/null || true
