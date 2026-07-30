@@ -1,0 +1,166 @@
+<meta charset="utf-8" />
+<title>오늘의 포춘쿠키 🥠</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/base.css" />
+<style>
+  .cwrap{position:relative;width:min(76vw,272px);height:min(52vw,182px);
+    margin:10px auto 26px;cursor:pointer;outline:none}
+  .cwrap:focus-visible{outline:3px solid var(--rose-deep);outline-offset:8px;border-radius:26px}
+  .cookie{position:absolute;inset:0;animation:wob 3.2s ease-in-out infinite}
+  @keyframes wob{0%,100%{transform:rotate(-3deg) translateY(0)}50%{transform:rotate(3deg) translateY(-6px)}}
+  .cwrap.open .cookie{animation:none}
+  .half{position:absolute;top:6%;height:88%;width:56%;
+    background:linear-gradient(145deg,#ffe8bd 0%,#f6c274 44%,#dd9e46 100%);
+    box-shadow:0 16px 28px -14px rgba(190,30,80,.5),
+      inset 0 -9px 15px rgba(160,100,30,.22),inset 0 5px 9px rgba(255,255,255,.55);
+    transition:transform .75s cubic-bezier(.2,1.05,.3,1)}
+  .half.l{left:0;border-radius:66% 16% 26% 70%/58% 28% 72% 42%;transform-origin:88% 50%}
+  .half.r{right:0;border-radius:16% 66% 70% 26%/28% 58% 42% 72%;transform-origin:12% 50%}
+  .cwrap.open .half.l{transform:translate(-17%,5%) rotate(-27deg)}
+  .cwrap.open .half.r{transform:translate(17%,5%) rotate(27deg)}
+  .crack{position:absolute;left:50%;top:14%;bottom:14%;width:0;transform:translateX(-50%);
+    border-left:2px dashed rgba(150,92,30,.38);transition:opacity .25s}
+  .cwrap.open .crack{opacity:0}
+  .paper{position:absolute;left:50%;top:44%;width:86%;min-height:76px;
+    transform:translate(-50%,-50%) scale(.55);opacity:0;
+    background:#fffdf6;border:1px solid #f1e2ca;border-radius:12px;padding:13px 12px;
+    display:grid;place-items:center;text-align:center;
+    font-family:var(--font-hand);font-size:clamp(16px,4.3vw,20px);color:var(--ink);line-height:1.45;
+    box-shadow:0 14px 26px -14px rgba(190,30,80,.55);
+    transition:transform .6s cubic-bezier(.2,1.2,.3,1) .2s,opacity .35s .2s}
+  .cwrap.open .paper{transform:translate(-50%,-74%) scale(1) rotate(-2deg);opacity:1}
+  .hint{font-family:var(--font-hand);font-size:clamp(15px,4.2vw,18px);color:var(--ink-soft);
+    margin:0 0 18px;min-height:24px}
+  .hide{display:none}
+  @media (prefers-reduced-motion: reduce){
+    .cookie{animation:none}
+  }
+</style>
+
+<a class="home" href="../">← 목록</a>
+
+<div class="stage">
+  <main class="card">
+    <span class="emoji">🥠</span>
+    <h1>오늘의 포춘쿠키</h1>
+    <p class="sub">쿠키 하나에 달달한 한마디 🍪</p>
+
+    <div class="cwrap" id="cwrap" role="button" tabindex="0" aria-label="포춘쿠키 쪼개기">
+      <div class="paper" id="paper"></div>
+      <div class="cookie">
+        <div class="half l"></div>
+        <div class="half r"></div>
+        <div class="crack" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <p class="hint" id="hint">쿠키를 톡! 눌러봐 👆</p>
+    <button class="btn hide" id="more" type="button">하나 더 열기 🥠</button>
+    <div class="note" id="note"></div>
+  </main>
+</div>
+
+<script src="../assets/fx.js"></script>
+<script>
+(function(){
+
+  /* 쿠키에서 나오는 한마디 — 마음대로 추가/수정하세요 (연속으로 같은 게 안 나옵니다) */
+  var LINES = [
+    "오늘도 내가 제일 좋아하는 사람은 너야 💗",
+    "지금 이 순간 누가 네 생각 하는 중. 나야 나 🙋",
+    "오늘 네 하루가 나보다 더 잘 풀리길 🍀",
+    "우리 그때 처음 만난 날, 나 아직도 기억해 😊",
+    "밥 잘 챙겨 먹었어? 안 먹었으면 지금 먹으러 가자 🍚",
+    "네가 웃으면 내 하루가 다 해결돼 ☀️",
+    "고생한 거 다 알아. 오늘은 나한테 좀 기대 🤗",
+    "오늘 저녁은 내가 알아서 할게. 넌 쉬어 🍳",
+    "너랑 있는 소파가 세상에서 제일 좋은 자리야 🛋️",
+    "잔소리도 다 사랑이라는 걸 우리 둘만 알지 ㅋㅋ",
+    "오늘의 운세: 퇴근 후 좋은 일 생김. 내가 만들 거임 😎",
+    "우리 다음 여행지, 오늘 밤에 같이 정해보자 ✈️",
+    "네 손 잡고 걷는 산책이 제일 좋은 운동이야 🚶",
+    "고마워. 이 말 요즘 자주 안 한 것 같아서 💐",
+    "오늘 하루도 무사히. 집에서 기다릴게 🏠",
+    "네가 좋아하는 커피 사 갈까? 말만 해 ☕",
+    "우리 십 년 뒤에도 이러고 있을 거 같아 😆",
+    "오늘 예쁘다는 말 아직 안 했네. 예뻐 🥰",
+    "우리 팀 승률 100%. 앞으로도 그럴 예정 🏆",
+    "화나는 일 있으면 나한테 다 말해. 같이 욕해줄게 😤",
+    "우리 집 최고 복덩이는 너야 🍀",
+    "오늘은 설거지 내 담당. 이건 확정 🧼",
+    "네 목소리 듣는 게 아직도 좋아 📞",
+    "우리 둘이 붙어서 아무것도 안 하는 시간이 제일 비싸 ⏳",
+    "요즘 잘 버텨줘서 정말 고마워 🫶",
+    "다음에 뭐 먹고 싶은지 생각해 둬. 다 사줄게 🍰",
+    "오늘 하루 중에 제일 좋았던 일, 이따 나한테 얘기해 줘 🗣️",
+    "너랑 결혼한 게 내 인생 최고 결정 💍",
+    "우리 오늘도 무조건 화해로 끝나기로 약속 🤝",
+    "괜히 보고 싶어서 여기까지 열어봤지? 나도 그래 💞"
+  ];
+
+  var cwrap = document.getElementById('cwrap');
+  var paper = document.getElementById('paper');
+  var hint = document.getElementById('hint');
+  var more = document.getElementById('more');
+  var note = document.getElementById('note');
+
+  var open = false, busy = false, last = -1, count = 0;
+
+  function nextLine(){
+    var i = (Math.random() * LINES.length) | 0;
+    if(LINES.length > 1){
+      while(i === last) i = (Math.random() * LINES.length) | 0;
+    }
+    last = i;
+    return LINES[i];
+  }
+
+  function crack(){
+    if(open || busy) return;
+    open = true;
+    paper.textContent = nextLine();
+    cwrap.classList.add('open');
+    hint.textContent = '오늘의 한마디가 나왔다 ✨';
+    more.classList.remove('hide');
+    count++;
+    note.textContent = '열어본 쿠키: ' + count + '개';
+
+    var r = cwrap.getBoundingClientRect();
+    var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    FX.burst(cx, cy, 34);
+    setTimeout(function(){ FX.burst(cx - r.width * 0.3, cy, 16); }, 180);
+    setTimeout(function(){ FX.burst(cx + r.width * 0.3, cy, 16); }, 300);
+    for(var k = 0; k < 6; k++) setTimeout(FX.heart, 120 + k * 160);
+  }
+
+  // 쿠키를 새로 하나 놓고(닫기) → 바로 다시 쪼개기
+  function again(){
+    if(busy) return;
+    busy = true;
+    cwrap.classList.remove('open');
+    open = false;
+    hint.textContent = '새 쿠키 준비 중… 🥠';
+    setTimeout(function(){ paper.textContent = ''; }, 200);
+    setTimeout(function(){
+      busy = false;
+      crack();
+    }, 560);
+  }
+
+  cwrap.addEventListener('click', function(){
+    if(open) again();
+    else crack();
+  });
+  cwrap.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){
+      e.preventDefault();
+      if(open) again();
+      else crack();
+    }
+  });
+  more.addEventListener('click', again);
+})();
+</script>

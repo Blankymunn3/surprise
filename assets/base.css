@@ -1,0 +1,78 @@
+/* 공통 디자인 — 핑크 글라스 (surprise 사이트 전 페이지 공용) */
+:root{
+  --rose:#ff4d78;--rose-deep:#e11d5b;--pink-1:#ffe3ee;--pink-2:#ffc2d6;--pink-3:#ffd9c9;
+  --ink:#5a2740;--ink-soft:#96566f;--card:rgba(255,255,255,.62);
+  --font:"Jua","Apple SD Gothic Neo","Pretendard",system-ui,sans-serif;
+  --font-hand:"Gaegu","Apple SD Gothic Neo",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{
+  font-family:var(--font);color:var(--ink);min-height:100svh;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;background-attachment:fixed;
+  user-select:none;-webkit-user-select:none;
+  background:
+    radial-gradient(120% 90% at 15% 0%,var(--pink-1),transparent 55%),
+    radial-gradient(120% 100% at 100% 100%,var(--pink-3),transparent 55%),
+    linear-gradient(160deg,#fff0f5 0%,var(--pink-2) 60%,#ffb3c9 100%);
+}
+.stage{position:relative;z-index:2;min-height:100svh;display:grid;place-items:center;padding:24px}
+.card{
+  position:relative;width:min(92vw,480px);background:var(--card);
+  backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);
+  border:1px solid rgba(255,255,255,.75);border-radius:34px;
+  box-shadow:0 30px 70px -30px rgba(190,30,80,.5),inset 0 1px 0 rgba(255,255,255,.9);
+  padding:38px 26px;text-align:center;animation:pop .6s cubic-bezier(.16,1.2,.3,1) both;
+}
+@keyframes pop{from{transform:scale(.7) translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.emoji{font-size:56px;line-height:1;display:block;animation:bob 2.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(4deg)}}
+h1{font-size:clamp(26px,6.4vw,38px);margin:12px 0 6px;color:var(--rose-deep);text-shadow:0 2px 0 rgba(255,255,255,.6)}
+.sub{font-family:var(--font-hand);font-size:clamp(15px,4.2vw,19px);color:var(--ink-soft);margin:0 0 22px}
+.btn{
+  font-family:var(--font);border:none;cursor:pointer;border-radius:999px;padding:16px 30px;
+  font-size:clamp(18px,4.6vw,22px);color:#fff;
+  background:linear-gradient(135deg,var(--rose),var(--rose-deep));
+  box-shadow:0 14px 30px -10px rgba(225,29,91,.7),inset 0 2px 0 rgba(255,255,255,.35);
+  transition:transform .12s;
+}
+.btn:hover{transform:scale(1.04)}
+.btn:active{transform:scale(.96)}
+.btn.off{background:#eccdda;color:#fffdfe;box-shadow:none;transform:none}
+.btn.off:hover{transform:none}
+.btn:focus-visible{outline:3px solid var(--rose-deep);outline-offset:3px}
+.btn-ghost{
+  font-family:var(--font);cursor:pointer;border:none;background:rgba(255,255,255,.9);
+  color:var(--rose-deep);font-size:16px;padding:12px 24px;border-radius:999px;
+  box-shadow:0 10px 24px -10px rgba(225,29,91,.6);transition:transform .12s;
+}
+.btn-ghost:hover{transform:scale(1.04)}
+.btn-ghost:active{transform:scale(.96)}
+.hand{font-family:var(--font-hand)}
+.note{margin-top:16px;font-family:var(--font-hand);font-size:14px;color:var(--ink-soft);opacity:.9;min-height:20px}
+input,textarea{
+  font-family:var(--font);font-size:17px;text-align:center;color:var(--ink);
+  border:1px solid #ffc2d6;background:rgba(255,255,255,.85);border-radius:14px;padding:12px 10px;outline:none;
+}
+input:focus,textarea:focus{border-color:var(--rose)}
+/* 뒤로(허브) 링크 */
+.home{
+  position:fixed;left:14px;top:14px;z-index:60;text-decoration:none;
+  font-family:var(--font);font-size:14px;color:var(--rose-deep);
+  background:rgba(255,255,255,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.9);border-radius:999px;padding:8px 14px;
+  box-shadow:0 8px 20px -10px rgba(190,30,80,.5);
+}
+.home:hover{background:#fff}
+/* 효과 레이어 (fx.js가 자동 생성) */
+#confetti{position:fixed;inset:0;z-index:45;pointer-events:none}
+#hearts{position:fixed;inset:0;z-index:44;pointer-events:none;overflow:hidden}
+.heart-b{position:fixed;bottom:-8%;will-change:transform,opacity;animation:floatUp var(--dur) linear forwards}
+@keyframes floatUp{
+  0%{transform:translateY(0) translateX(0) rotate(0);opacity:0}
+  12%{opacity:1}88%{opacity:1}
+  100%{transform:translateY(-118vh) translateX(var(--sway)) rotate(var(--rot));opacity:0}
+}
+@media (prefers-reduced-motion: reduce){
+  .emoji,.card{animation:none}
+}

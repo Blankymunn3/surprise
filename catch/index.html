@@ -1,0 +1,234 @@
+<title>떨어지는 하트 받기 💖</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/base.css" />
+<style>
+  .hud{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 8px;
+    font-family:var(--font-hand);font-size:17px;color:var(--ink-soft);
+  }
+  .hud b{font-family:var(--font);font-size:21px;color:var(--rose-deep)}
+  .field{position:relative;width:100%;margin:0 0 10px}
+  .field canvas{
+    display:block;border-radius:24px;touch-action:none;
+    background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,214,226,.6));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 14px 30px -22px rgba(190,30,80,.7);
+  }
+  .veil{
+    position:absolute;inset:0;display:grid;place-items:center;border-radius:24px;padding:18px;
+    background:rgba(255,255,255,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+    font-family:var(--font-hand);font-size:19px;line-height:1.5;color:var(--ink-soft);text-align:center;
+  }
+  .veil.hide{display:none}
+  .veil .big{display:block;font-size:38px;margin-bottom:4px}
+  .bar{height:9px;border-radius:999px;background:rgba(255,255,255,.75);overflow:hidden;margin:0 0 14px}
+  .bar i{display:block;height:100%;width:100%;border-radius:999px;background:linear-gradient(90deg,var(--rose),var(--rose-deep))}
+  .win{min-height:38px;margin:0 0 14px;font-size:clamp(19px,5.2vw,26px);color:var(--rose-deep)}
+  .win .sm{display:block;font-family:var(--font-hand);font-size:15px;color:var(--ink-soft)}
+</style>
+
+<a class="home" href="../">← 목록</a>
+
+<div class="stage">
+  <main class="card">
+    <span class="emoji">💖</span>
+    <h1>떨어지는 하트 받기</h1>
+    <p class="sub">15초 안에 하트 10개! 손가락 준비됐지? 👆</p>
+
+    <div class="hud">
+      <span>점수 <b id="score">0</b> / 10</span>
+      <span>남은 시간 <b id="time">15</b>초</span>
+    </div>
+
+    <div class="field">
+      <canvas id="game"></canvas>
+      <div class="veil" id="veil"><span><span class="big">💗</span>준비되면 아래 시작 버튼!</span></div>
+    </div>
+
+    <div class="bar"><i id="fill"></i></div>
+
+    <div class="win" id="win"></div>
+    <button class="btn" id="start" type="button">시작하기 💖</button>
+    <div class="note" id="note">하트를 톡톡 눌러서 잡아줘</div>
+  </main>
+</div>
+
+<script src="../assets/fx.js"></script>
+<script>
+(function(){
+  var cv=document.getElementById('game'), ctx=cv.getContext('2d');
+  var field=document.querySelector('.field');
+  var scoreEl=document.getElementById('score'), timeEl=document.getElementById('time');
+  var fillEl=document.getElementById('fill'), veil=document.getElementById('veil');
+  var winEl=document.getElementById('win'), note=document.getElementById('note');
+  var btn=document.getElementById('start');
+  var DPR=Math.min(window.devicePixelRatio||1,2);
+  var EM=['❤️','💕','💖','💘','💗','🥰','😘','💞'];
+  var TARGET=10, DUR=15000;
+  var W=300, H=320;
+  var hearts=[], pops=[], score=0, left=DUR, spawn=0, last=0;
+  var playing=false, raf=null, best=0;
+
+  function fit(){
+    var w=field.clientWidth||300;
+    if(w<160) w=160;
+    var h=Math.round(Math.max(270, Math.min(360, w)));
+    W=w; H=h;
+    cv.style.width=w+'px'; cv.style.height=h+'px';
+    cv.width=Math.round(w*DPR); cv.height=Math.round(h*DPR);
+    for(var i=0;i<hearts.length;i++){
+      if(hearts[i].x>W-24) hearts[i].x=W-24;
+      if(hearts[i].x<24) hearts[i].x=24;
+    }
+    draw();
+  }
+
+  function draw(){
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.clearRect(0,0,W,H);
+    var i;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    for(i=0;i<hearts.length;i++){
+      var h=hearts[i];
+      ctx.save();
+      ctx.translate(h.x,h.y);
+      ctx.rotate(h.rot);
+      ctx.font=h.size+'px serif';
+      ctx.fillText(h.e,0,0);
+      ctx.restore();
+    }
+    for(i=0;i<pops.length;i++){
+      var p=pops[i];
+      ctx.save();
+      ctx.globalAlpha=Math.max(0,1-p.t/600);
+      ctx.font='700 21px "Jua","Apple SD Gothic Neo",sans-serif';
+      ctx.fillStyle='#e11d5b';
+      ctx.fillText('+1', p.x, p.y-p.t*0.05);
+      ctx.restore();
+    }
+  }
+
+  function addHeart(){
+    var size=30+Math.random()*16;
+    hearts.push({
+      x:24+Math.random()*Math.max(1,W-48),
+      y:-30,
+      size:size,
+      v:100+Math.random()*100,
+      rot:(Math.random()-0.5)*0.5,
+      vr:(Math.random()-0.5)*1.2,
+      e:EM[(Math.random()*EM.length)|0]
+    });
+  }
+
+  function step(ts){
+    if(!playing) return;
+    if(!last) last=ts;
+    var dt=Math.min(64, ts-last);
+    last=ts;
+    left-=dt; spawn-=dt;
+    if(spawn<=0){ addHeart(); spawn=340+Math.random()*260; }
+    var i;
+    for(i=hearts.length-1;i>=0;i--){
+      var h=hearts[i];
+      h.y+=h.v*dt/1000;
+      h.rot+=h.vr*dt/1000;
+      if(h.y>H+40) hearts.splice(i,1);
+    }
+    for(i=pops.length-1;i>=0;i--){
+      pops[i].t+=dt;
+      if(pops[i].t>600) pops.splice(i,1);
+    }
+    draw();
+    var ratio=Math.max(0,left/DUR);
+    fillEl.style.width=(ratio*100)+'%';
+    timeEl.textContent=Math.ceil(Math.max(0,left)/1000);
+    if(left<=0){ end(); return; }
+    raf=requestAnimationFrame(step);
+  }
+
+  function hit(clientX, clientY){
+    var r=cv.getBoundingClientRect();
+    var sx=W/(r.width||W), sy=H/(r.height||H);
+    var x=(clientX-r.left)*sx, y=(clientY-r.top)*sy;
+    for(var i=hearts.length-1;i>=0;i--){
+      var h=hearts[i], dx=x-h.x, dy=y-h.y, rad=h.size*0.66;
+      if(dx*dx+dy*dy<=rad*rad){
+        hearts.splice(i,1);
+        pops.push({x:h.x,y:h.y,t:0});
+        score++;
+        scoreEl.textContent=score;
+        FX.burst(clientX, clientY, 14);
+        if(score===TARGET) note.textContent='10개 달성! 남은 시간 동안 더 모아 💘';
+        return;
+      }
+    }
+  }
+
+  function onDown(e){
+    if(!playing) return;
+    var t=e.changedTouches||e.touches;
+    if(t){
+      for(var i=0;i<t.length;i++) hit(t[i].clientX, t[i].clientY);
+      if(e.preventDefault) e.preventDefault();
+    }else{
+      hit(e.clientX, e.clientY);
+    }
+  }
+
+  function start(){
+    if(playing) return;
+    hearts=[]; pops=[]; score=0; left=DUR; spawn=0; last=0; playing=true;
+    scoreEl.textContent='0';
+    timeEl.textContent=Math.round(DUR/1000);
+    fillEl.style.width='100%';
+    winEl.innerHTML='';
+    veil.className='veil hide';
+    btn.classList.add('off');
+    btn.textContent='잡는 중… 💨';
+    note.textContent='하트를 톡톡! 놓쳐도 괜찮아';
+    raf=requestAnimationFrame(step);
+  }
+
+  function end(){
+    playing=false;
+    if(raf) cancelAnimationFrame(raf);
+    raf=null;
+    hearts=[]; pops=[];
+    draw();
+    fillEl.style.width='0%';
+    timeEl.textContent='0';
+    btn.classList.remove('off');
+    if(score>best) best=score;
+    if(score>=TARGET){
+      veil.className='veil';
+      veil.innerHTML='<span><span class="big">💖</span>하트 '+score+'개 성공!</span>';
+      winEl.innerHTML='클리어! 💘 <span class="sm">이만큼 좋아한다는 뜻이야. 오늘도 사랑해 💗</span>';
+      btn.textContent='한 번 더 💖';
+      note.textContent='최고 기록 '+best+'개 — 다음엔 더 갈 수 있지?';
+      FX.party(7000);
+    }else{
+      veil.className='veil';
+      veil.innerHTML='<span><span class="big">😵</span>'+score+'개… 아쉽다!</span>';
+      winEl.innerHTML=(TARGET-score)+'개 부족! <span class="sm">한 번만 더 해보자, 응? 🥺</span>';
+      btn.textContent='한 번만 더! 🔁';
+      note.textContent='최고 기록 '+best+'개 / 목표 '+TARGET+'개';
+    }
+  }
+
+  btn.addEventListener('click', start);
+  if(window.PointerEvent){
+    cv.addEventListener('pointerdown', onDown);
+  }else{
+    cv.addEventListener('touchstart', onDown, false);
+    cv.addEventListener('mousedown', onDown);
+  }
+  window.addEventListener('resize', fit);
+  var card=document.querySelector('.card');
+  if(card) card.addEventListener('animationend', fit);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+  fit();
+})();
+</script>

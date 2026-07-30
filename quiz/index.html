@@ -1,0 +1,253 @@
+<meta charset="utf-8" />
+<title>커플 퀴즈 🧠</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/base.css" />
+<style>
+  .prog{display:flex;align-items:center;justify-content:center;gap:10px;margin:-8px 0 16px;
+    font-family:var(--font-hand);font-size:15px;color:var(--ink-soft)}
+  .bar{position:relative;width:140px;height:9px;border-radius:999px;background:rgba(225,29,91,.14);overflow:hidden}
+  .bar i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;
+    background:linear-gradient(90deg,var(--rose),var(--rose-deep));transition:width .35s ease}
+  .step{animation:slidein .34s cubic-bezier(.16,1.1,.3,1) both}
+  @keyframes slidein{from{transform:translateX(26px);opacity:0}to{transform:none;opacity:1}}
+  .qtext{font-size:clamp(19px,5.2vw,24px);color:var(--ink);margin:2px 0 18px;line-height:1.4}
+  .opts{display:grid;gap:10px}
+  .opt{font-family:var(--font);font-size:clamp(16px,4.4vw,18px);cursor:pointer;text-align:center;
+    border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.86);color:var(--ink);
+    border-radius:18px;padding:15px 12px;transition:transform .12s,background .2s,color .2s;
+    box-shadow:0 10px 22px -14px rgba(190,30,80,.6)}
+  .opt:hover{transform:scale(1.02)}
+  .opt:active{transform:scale(.97)}
+  .opt:focus-visible{outline:3px solid var(--rose-deep);outline-offset:2px}
+  .opt.lock{cursor:default}
+  .opt.lock:hover{transform:none}
+  .opt.ok{background:linear-gradient(135deg,#ffd9e5,#ffbdd3);color:var(--rose-deep);border-color:#ffb3c9}
+  .opt.no{background:#f2e3ea;color:var(--ink-soft);opacity:.72}
+  .hide{display:none}
+  .score{font-size:clamp(34px,9vw,46px);color:var(--rose-deep);margin:2px 0 2px;font-variant-numeric:tabular-nums}
+  .score small{font-size:.45em;color:var(--ink-soft)}
+  .verdict{font-size:clamp(22px,6vw,30px);color:var(--rose-deep);margin:6px 0 4px}
+  .msg{font-family:var(--font-hand);font-size:clamp(16px,4.4vw,19px);color:var(--ink);margin:0 0 22px;
+    line-height:1.5;white-space:pre-line}
+</style>
+
+<a class="home" href="../">← 목록</a>
+
+<div class="stage">
+  <main class="card">
+    <span class="emoji" id="topEmoji">🧠</span>
+    <h1>커플 퀴즈</h1>
+    <p class="sub">우리 서로 얼마나 알고 있을까? 🤔</p>
+
+    <div class="prog" id="prog">
+      <span id="progText">1 / 5</span>
+      <span class="bar"><i id="progBar"></i></span>
+    </div>
+
+    <div id="quiz">
+      <div class="qtext" id="qtext"></div>
+      <div class="opts" id="opts"></div>
+    </div>
+
+    <div id="result" class="hide">
+      <div class="score" id="scoreText"></div>
+      <div class="verdict" id="verdict"></div>
+      <p class="msg" id="msg"></p>
+      <button class="btn" id="again" type="button">다시 풀기 🔄</button>
+    </div>
+
+    <div class="note" id="note"></div>
+  </main>
+</div>
+
+<script src="../assets/fx.js"></script>
+<script>
+(function(){
+
+  /* ==========================================================================
+     ✏️ 여기 질문과 정답(answer: 0~3)을 원하는 대로 바꾸세요!
+     --------------------------------------------------------------------------
+       q      : 질문 문장
+       opts   : 선택지 4개 (앞에서부터 0번, 1번, 2번, 3번)
+       answer : 정답 선택지의 번호 → 0 = 첫 번째, 1 = 두 번째, 2 = 세 번째, 3 = 네 번째
+                예) answer: 2  이면  opts의 세 번째 값이 정답
+
+     아래 기본 질문/선택지는 그냥 예시예요.
+     우리 얘기로 자유롭게 고쳐 쓰고, answer 숫자도 꼭 맞게 바꿔주세요 😊
+     (문제 수를 늘리거나 줄여도 알아서 굴러갑니다 — 진행도도 같이 바뀜)
+     ========================================================================== */
+  var QUESTIONS = [
+    {
+      q: "내가 제일 좋아하는 음식은?",
+      opts: ["순두부", "삼겹살", "초밥", "떡볶이"],
+      answer: 0   // ← 0번(순두부)이 정답이라는 뜻. 바꿔주세요!
+    },
+    {
+      q: "내가 제일 좋아하는 계절은?",
+      opts: ["봄", "여름", "가을", "겨울"],
+      answer: 2   // ← 2번(가을)
+    },
+    {
+      q: "주말에 내가 제일 하고 싶은 건?",
+      opts: ["집에서 뒹굴기", "드라이브", "맛집 투어", "영화 보기"],
+      answer: 0   // ← 0번(집에서 뒹굴기)
+    },
+    {
+      q: "내가 스트레스 받을 때 하는 건?",
+      opts: ["단 거 먹기", "산책하기", "일단 자기", "수다 떨기"],
+      answer: 1   // ← 1번(산책하기)
+    },
+    {
+      q: "내가 제일 좋아하는 데이트는?",
+      opts: ["바다 보러 가기", "카페에서 수다", "집콕 넷플릭스", "시장 구경"],
+      answer: 0   // ← 0번(바다 보러 가기)
+    }
+  ];
+  /* ====================== 여기까지만 고치면 끝! ============================= */
+
+  var VERDICTS = [
+    { min: 5, emoji: "💯", title: "완벽한 부부 💯",
+      msg: "만점이라니… 우리 서로 통째로 외웠나 봐.\n이런 사람이랑 사는 나는 복 받았지 🥰" },
+    { min: 3, emoji: "😏", title: "제법인데? 😏",
+      msg: "꽤 아네? 나머지는 오늘 밤에 알려줄게.\n어차피 앞으로 알아갈 시간 아주 많잖아 😙" },
+    { min: 0, emoji: "🤭", title: "공부 좀 하자 ㅋㅋ",
+      msg: "괜찮아, 점수는 점수일 뿐이고 마음은 만점이니까.\n오늘은 내 얘기 잔뜩 들려줄게. 물어봐 줘서 고마워 💕" }
+  ];
+
+  var topEmoji = document.getElementById('topEmoji');
+  var progWrap = document.getElementById('prog');
+  var progText = document.getElementById('progText');
+  var progBar = document.getElementById('progBar');
+  var quizEl = document.getElementById('quiz');
+  var qtext = document.getElementById('qtext');
+  var optsEl = document.getElementById('opts');
+  var resultEl = document.getElementById('result');
+  var scoreText = document.getElementById('scoreText');
+  var verdictEl = document.getElementById('verdict');
+  var msgEl = document.getElementById('msg');
+  var againBtn = document.getElementById('again');
+  var note = document.getElementById('note');
+
+  var deck = [], at = 0, score = 0, locked = false;
+
+  function shuffle(arr){
+    var a = arr.slice(), i, j, t;
+    for(i = a.length - 1; i > 0; i--){
+      j = (Math.random() * (i + 1)) | 0;
+      t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  // 문제 순서 + 선택지 순서를 섞되, 정답 위치는 따라가도록 다시 계산
+  function buildDeck(){
+    var order = shuffle(QUESTIONS), out = [], i, k;
+    for(i = 0; i < order.length; i++){
+      var src = order[i];
+      var idx = [];
+      for(k = 0; k < src.opts.length; k++) idx.push(k);
+      idx = shuffle(idx);
+      var opts = [], ans = 0;
+      for(k = 0; k < idx.length; k++){
+        opts.push(src.opts[idx[k]]);
+        if(idx[k] === src.answer) ans = k;
+      }
+      out.push({ q: src.q, opts: opts, ans: ans });
+    }
+    return out;
+  }
+
+  function drawProgress(){
+    progText.textContent = (at + 1) + ' / ' + deck.length;
+    progBar.style.width = (at / deck.length * 100) + '%';
+  }
+
+  function render(){
+    var item = deck[at], i;
+    locked = false;
+    drawProgress();
+    qtext.textContent = item.q;
+    optsEl.innerHTML = '';
+    for(i = 0; i < item.opts.length; i++){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'opt';
+      b.textContent = item.opts[i];
+      b.setAttribute('data-i', String(i));
+      b.addEventListener('click', pick);
+      optsEl.appendChild(b);
+    }
+    quizEl.classList.remove('step');
+    void quizEl.offsetWidth;   // 애니메이션 재시작
+    quizEl.classList.add('step');
+  }
+
+  function pick(e){
+    if(locked) return;
+    locked = true;
+    var btn = e.currentTarget;
+    var chosen = parseInt(btn.getAttribute('data-i'), 10);
+    var right = deck[at].ans;
+    var kids = optsEl.childNodes, i, el, n;
+
+    for(i = 0; i < kids.length; i++){
+      el = kids[i];
+      n = parseInt(el.getAttribute('data-i'), 10);
+      el.classList.add('lock');
+      if(n === right) el.classList.add('ok');
+      else if(n === chosen) el.classList.add('no');
+    }
+
+    if(chosen === right){
+      score++;
+      note.textContent = '정답! 🎉 (' + score + '개 맞힘)';
+      var r = btn.getBoundingClientRect();
+      FX.burst(r.left + r.width / 2, r.top + r.height / 2, 26);
+    } else {
+      note.textContent = '땡! 😜 (' + score + '개 맞힘)';
+    }
+
+    at++;
+    setTimeout(function(){
+      if(at < deck.length) render();
+      else finish();
+    }, 900);
+  }
+
+  function finish(){
+    var i, v = VERDICTS[VERDICTS.length - 1];
+    for(i = 0; i < VERDICTS.length; i++){
+      if(score >= VERDICTS[i].min){ v = VERDICTS[i]; break; }
+    }
+    progBar.style.width = '100%';
+    progWrap.classList.add('hide');
+    quizEl.classList.add('hide');
+    topEmoji.textContent = v.emoji;
+    scoreText.innerHTML = score + ' <small>/ ' + deck.length + '</small>';
+    verdictEl.textContent = v.title;
+    msgEl.textContent = v.msg;
+    note.textContent = '정답이 이상하면 파일 맨 위 QUESTIONS를 고치면 돼 😉';
+    resultEl.classList.remove('hide');
+    resultEl.classList.add('step');
+    FX.party();
+  }
+
+  function start(){
+    deck = buildDeck();
+    at = 0; score = 0;
+    topEmoji.textContent = '🧠';
+    resultEl.classList.add('hide');
+    resultEl.classList.remove('step');
+    quizEl.classList.remove('hide');
+    progWrap.classList.remove('hide');
+    note.textContent = '';
+    render();
+  }
+
+  againBtn.addEventListener('click', start);
+  start();
+})();
+</script>

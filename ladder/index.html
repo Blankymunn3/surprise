@@ -1,0 +1,297 @@
+<title>설거지 당번 사다리타기 🧽</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/base.css" />
+<style>
+  input{-webkit-user-select:text;user-select:text}
+  .names{display:flex;gap:10px;margin:0 0 10px}
+  .names input{flex:1;min-width:0;font-size:16px;padding:11px 8px}
+  .picker{display:flex;gap:10px;margin:0 0 14px}
+  .chip{
+    flex:1;min-width:0;font-family:var(--font);cursor:pointer;font-size:15px;padding:11px 6px;
+    border:2px solid #ffc2d6;background:rgba(255,255,255,.75);color:var(--ink-soft);
+    border-radius:999px;transition:transform .12s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .chip.on{
+    border-color:var(--rose);color:#fff;background:linear-gradient(135deg,var(--rose),var(--rose-deep));
+    box-shadow:0 12px 24px -14px rgba(225,29,91,.9);
+  }
+  .chip:active{transform:scale(.96)}
+  .lwrap{position:relative;width:100%;margin:0 auto}
+  .lwrap canvas{
+    display:block;border-radius:22px;background:rgba(255,255,255,.5);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 14px 28px -20px rgba(190,30,80,.6);
+  }
+  .slots{display:flex;gap:10px;margin:10px 0 14px}
+  .slot{
+    flex:1;min-width:0;font-family:var(--font-hand);font-size:17px;color:var(--ink-soft);
+    background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);
+    border-radius:16px;padding:11px 4px;
+  }
+  .slot.hit{color:#fff;background:linear-gradient(135deg,var(--rose),var(--rose-deep));border-color:var(--rose)}
+  .slot.safe{color:var(--rose-deep)}
+  .taskrow{
+    display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 16px;
+    font-family:var(--font-hand);font-size:16px;color:var(--ink-soft);
+  }
+  select{
+    font-family:var(--font);font-size:16px;color:var(--ink);border:1px solid #ffc2d6;
+    background:rgba(255,255,255,.85);border-radius:14px;padding:10px 12px;outline:none;
+  }
+  select:focus{border-color:var(--rose)}
+  .win{min-height:38px;margin:2px 0 14px;font-size:clamp(19px,5.2vw,26px);color:var(--rose-deep)}
+  .win .sm{display:block;font-family:var(--font-hand);font-size:15px;color:var(--ink-soft)}
+  .btns{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
+</style>
+
+<a class="home" href="../">← 목록</a>
+
+<div class="stage">
+  <main class="card">
+    <span class="emoji">🧽</span>
+    <h1>설거지 당번 사다리</h1>
+    <p class="sub">사다리는 거짓말 안 해. 결과에 승복하기 🤝</p>
+
+    <div class="names">
+      <input id="n0" type="text" value="남편" maxlength="6" aria-label="왼쪽 사람 이름" />
+      <input id="n1" type="text" value="아내" maxlength="6" aria-label="오른쪽 사람 이름" />
+    </div>
+
+    <div class="picker">
+      <button class="chip on" id="c0" type="button">남편</button>
+      <button class="chip" id="c1" type="button">아내</button>
+    </div>
+
+    <div class="lwrap"><canvas id="ladder"></canvas></div>
+
+    <div class="slots">
+      <div class="slot" id="s0">❓</div>
+      <div class="slot" id="s1">❓</div>
+    </div>
+
+    <div class="taskrow">
+      <label for="task">오늘 벌칙</label>
+      <select id="task">
+        <option value="🧽 설거지">🧽 설거지</option>
+        <option value="🗑️ 쓰레기 버리기">🗑️ 쓰레기 버리기</option>
+        <option value="🧺 빨래 개기">🧺 빨래 개기</option>
+        <option value="🚽 화장실 청소">🚽 화장실 청소</option>
+        <option value="🧹 거실 밀기">🧹 거실 밀기</option>
+      </select>
+    </div>
+
+    <div class="win" id="win"></div>
+
+    <div class="btns">
+      <button class="btn" id="go" type="button">출발! 🪜</button>
+      <button class="btn-ghost" id="again" type="button">사다리 새로 만들기</button>
+    </div>
+
+    <div class="note" id="note">먼저 내려갈 사람을 고르고 출발!</div>
+  </main>
+</div>
+
+<script src="../assets/fx.js"></script>
+<script>
+(function(){
+  var cv=document.getElementById('ladder'), ctx=cv.getContext('2d');
+  var wrap=document.querySelector('.lwrap');
+  var inputs=[document.getElementById('n0'),document.getElementById('n1')];
+  var chips=[document.getElementById('c0'),document.getElementById('c1')];
+  var slots=[document.getElementById('s0'),document.getElementById('s1')];
+  var taskSel=document.getElementById('task');
+  var winEl=document.getElementById('win'), note=document.getElementById('note');
+  var goBtn=document.getElementById('go'), againBtn=document.getElementById('again');
+  var DPR=Math.min(window.devicePixelRatio||1,2);
+  var PAD=26, ROWS=7;
+  var W=300, H=250;
+  var rungs=[], prize=0, sel=0, start=0;
+  var path=[], total=0, anim=0, running=false, count=0;
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function names(){
+    var a=(inputs[0].value||'').replace(/^\s+|\s+$/g,'');
+    var b=(inputs[1].value||'').replace(/^\s+|\s+$/g,'');
+    return [a||'왼쪽', b||'오른쪽'];
+  }
+  function xs(){ return [W*0.26, W*0.74]; }
+  function rowY(i){ var t=PAD, b=H-PAD; return t+(b-t)*(i+1)/(ROWS+1); }
+  function dist(a,b){ var dx=b.x-a.x, dy=b.y-a.y; return Math.sqrt(dx*dx+dy*dy); }
+
+  function build(){
+    rungs=[];
+    var any=false, i;
+    for(i=0;i<ROWS;i++){
+      var on=Math.random()<0.5;
+      rungs.push(on);
+      if(on) any=true;
+    }
+    if(!any) rungs[(Math.random()*ROWS)|0]=true;
+    prize=(Math.random()*2)|0;
+    path=[]; total=0; anim=0;
+    for(i=0;i<2;i++){ slots[i].className='slot'; slots[i].textContent='❓'; }
+    winEl.innerHTML='';
+    draw();
+  }
+
+  function buildPath(from){
+    var X=xs(), col=from, pts=[{x:X[col],y:PAD}], i;
+    for(i=0;i<ROWS;i++){
+      var y=rowY(i);
+      pts.push({x:X[col],y:y});
+      if(rungs[i]){ col=1-col; pts.push({x:X[col],y:y}); }
+    }
+    pts.push({x:X[col],y:H-PAD});
+    return {pts:pts, col:col};
+  }
+
+  function measure(){
+    var L=0;
+    for(var i=1;i<path.length;i++) L+=dist(path[i-1],path[i]);
+    return L;
+  }
+
+  function strokePath(t){
+    if(path.length<2) return;
+    var target=total*t, acc=0, i;
+    var cx=path[0].x, cy=path[0].y;
+    ctx.strokeStyle='#e11d5b'; ctx.lineWidth=7; ctx.lineJoin='round'; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    for(i=1;i<path.length;i++){
+      var a=path[i-1], b=path[i], d=dist(a,b);
+      if(d<=0) continue;
+      if(acc+d<=target){ ctx.lineTo(b.x,b.y); cx=b.x; cy=b.y; acc+=d; }
+      else{
+        var k=(target-acc)/d;
+        cx=a.x+(b.x-a.x)*k; cy=a.y+(b.y-a.y)*k;
+        ctx.lineTo(cx,cy);
+        break;
+      }
+    }
+    ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy,7,0,6.2832); ctx.fillStyle='#e11d5b'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx,cy,3,0,6.2832); ctx.fillStyle='#fff'; ctx.fill();
+  }
+
+  function draw(){
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.clearRect(0,0,W,H);
+    var X=xs(), nm=names(), i;
+    ctx.lineCap='round';
+    ctx.strokeStyle='rgba(255,143,171,.9)'; ctx.lineWidth=6;
+    for(i=0;i<2;i++){ ctx.beginPath(); ctx.moveTo(X[i],PAD); ctx.lineTo(X[i],H-PAD); ctx.stroke(); }
+    ctx.strokeStyle='rgba(255,143,171,.7)'; ctx.lineWidth=5;
+    for(i=0;i<ROWS;i++){
+      if(!rungs[i]) continue;
+      var y=rowY(i);
+      ctx.beginPath(); ctx.moveTo(X[0],y); ctx.lineTo(X[1],y); ctx.stroke();
+    }
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='600 15px "Jua","Apple SD Gothic Neo",sans-serif';
+    ctx.fillStyle='#a4235a';
+    for(i=0;i<2;i++) ctx.fillText(nm[i], X[i], PAD/2);
+    ctx.fillStyle='rgba(150,86,111,.85)';
+    ctx.font='600 13px "Jua","Apple SD Gothic Neo",sans-serif';
+    for(i=0;i<2;i++) ctx.fillText('▼', X[i], H-PAD/2);
+    strokePath(anim);
+  }
+
+  function fit(){
+    var w=wrap.clientWidth||300;
+    if(w<160) w=160;
+    var h=Math.round(Math.max(220, Math.min(300, w*0.8)));
+    W=w; H=h;
+    cv.style.width=w+'px'; cv.style.height=h+'px';
+    cv.width=Math.round(w*DPR); cv.height=Math.round(h*DPR);
+    if(path.length>1){
+      var r=buildPath(start);
+      path=r.pts; total=measure();
+    }
+    draw();
+  }
+
+  function reveal(col){
+    running=false; count++;
+    goBtn.classList.remove('off');
+    var task=taskSel.value, nm=names();
+    slots[prize].className='slot hit';
+    slots[prize].textContent='당첨 '+task;
+    slots[1-prize].className='slot safe';
+    slots[1-prize].textContent='면제 😎';
+    if(col===prize){
+      winEl.innerHTML='<b>'+esc(nm[start])+'</b> 당첨! '+esc(task)+
+        ' <span class="sm">반짝반짝하게 부탁해 🫶</span>';
+    }else{
+      winEl.innerHTML='<b>'+esc(nm[start])+'</b> 면제 😎'+
+        ' <span class="sm">그럼 '+esc(nm[1-start])+' 차례네… 미안 🙈</span>';
+    }
+    note.textContent='지금까지 '+count+'번 타봤어';
+    var rect=cv.getBoundingClientRect();
+    var X=xs();
+    var px=rect.left+(X[col]/W)*rect.width;
+    var py=rect.top+((H-PAD)/H)*rect.height;
+    FX.burst(px,py,90);
+    for(var k=0;k<6;k++) setTimeout(FX.heart, k*120);
+  }
+
+  function go(){
+    if(running) return;
+    running=true;
+    goBtn.classList.add('off');
+    note.textContent='조심조심 내려간다…';
+    winEl.innerHTML='';
+    for(var i=0;i<2;i++){ slots[i].className='slot'; slots[i].textContent='❓'; }
+    start=sel;
+    var r=buildPath(start);
+    path=r.pts; total=measure(); anim=0;
+    var dur=1500+ROWS*100, t0=null;
+    function ease(t){ return 1-Math.pow(1-t,3); }
+    function frame(ts){
+      if(!t0) t0=ts;
+      var t=Math.min(1,(ts-t0)/dur);
+      anim=ease(t);
+      draw();
+      if(t<1){ requestAnimationFrame(frame); return; }
+      reveal(r.col);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function pick(i){
+    if(running) return;
+    sel=i;
+    chips[0].className=(i===0?'chip on':'chip');
+    chips[1].className=(i===1?'chip on':'chip');
+    note.textContent=names()[i]+' 먼저 내려간다! 🪜';
+  }
+  function sync(){
+    var nm=names();
+    chips[0].textContent=nm[0];
+    chips[1].textContent=nm[1];
+    draw();
+  }
+
+  chips[0].addEventListener('click', function(){ pick(0); });
+  chips[1].addEventListener('click', function(){ pick(1); });
+  inputs[0].addEventListener('input', sync);
+  inputs[1].addEventListener('input', sync);
+  goBtn.addEventListener('click', go);
+  againBtn.addEventListener('click', function(){
+    if(running) return;
+    build();
+    goBtn.textContent='출발! 🪜';
+    note.textContent='새 사다리 완성! 다시 골라봐 🪜';
+  });
+
+  window.addEventListener('resize', fit);
+  var card=document.querySelector('.card');
+  if(card) card.addEventListener('animationend', fit);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+  build();
+  fit();
+})();
+</script>

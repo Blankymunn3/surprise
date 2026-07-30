@@ -1,65 +1,71 @@
+<meta charset="utf-8" />
 <title>오늘의 서프라이즈 💝</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./assets/base.css" />
 <style>
-  :root{--rose:#ff4d78;--rose-deep:#e11d5b;--pink-1:#ffe3ee;--pink-2:#ffc2d6;--pink-3:#ffd9c9;--ink:#5a2740;--ink-soft:#96566f;--card:rgba(255,255,255,.62);--font:"Jua","Apple SD Gothic Neo","Pretendard",system-ui,sans-serif}
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0}
-  body{font-family:var(--font);color:var(--ink);min-height:100svh;-webkit-font-smoothing:antialiased;background-attachment:fixed;
-    background:radial-gradient(120% 90% at 15% 0%,var(--pink-1),transparent 55%),radial-gradient(120% 100% at 100% 100%,var(--pink-3),transparent 55%),linear-gradient(160deg,#fff0f5 0%,var(--pink-2) 60%,#ffb3c9 100%)}
-  .wrap{max-width:560px;margin:0 auto;padding:52px 22px 60px;text-align:center}
-  .emoji{font-size:58px;display:block;animation:bob 2.6s ease-in-out infinite}
-  @keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(4deg)}}
-  h1{font-size:clamp(28px,7vw,40px);margin:14px 0 6px;color:var(--rose-deep);text-shadow:0 2px 0 rgba(255,255,255,.6)}
-  .sub{font-family:"Gaegu","Apple SD Gothic Neo",sans-serif;font-size:clamp(15px,4.2vw,19px);color:var(--ink-soft);margin:0 0 30px}
-  .list{display:grid;gap:14px;text-align:left}
-  a.item{display:flex;align-items:center;gap:16px;text-decoration:none;color:inherit;
+  .wrap{max-width:640px;margin:0 auto;padding:52px 20px 70px;text-align:center}
+  .hgroup{margin:0 0 34px}
+  .sect{margin:34px 0 12px;display:flex;align-items:center;gap:10px;text-align:left}
+  .sect .st{font-size:15px;color:var(--rose-deep)}
+  .sect .line{flex:1;height:1px;background:rgba(225,29,91,.22)}
+  .list{display:grid;gap:12px;text-align:left}
+  a.item{
+    display:flex;align-items:center;gap:15px;text-decoration:none;color:inherit;
     background:var(--card);backdrop-filter:blur(18px) saturate(175%);-webkit-backdrop-filter:blur(18px) saturate(175%);
-    border:1px solid rgba(255,255,255,.75);border-radius:22px;padding:18px 20px;
+    border:1px solid rgba(255,255,255,.75);border-radius:20px;padding:16px 18px;
     box-shadow:0 18px 42px -22px rgba(190,30,80,.45),inset 0 1px 0 rgba(255,255,255,.9);
-    transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+    transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s;
+  }
   a.item:hover{transform:translateY(-4px);box-shadow:0 26px 56px -24px rgba(190,30,80,.6),inset 0 1px 0 rgba(255,255,255,.95)}
   a.item:active{transform:scale(.98)}
-  .ico{font-size:36px;flex:none;line-height:1}
-  .tt{font-size:19px;color:var(--rose-deep)}
-  .dd{font-family:"Gaegu",sans-serif;font-size:14.5px;color:var(--ink-soft);margin-top:2px}
+  a.item:focus-visible{outline:3px solid var(--rose-deep);outline-offset:3px}
+  .ico{font-size:33px;flex:none;line-height:1}
+  .tt{font-size:18px;color:var(--rose-deep);display:block}
+  .dd{font-family:var(--font-hand);font-size:14px;color:var(--ink-soft);margin-top:1px;display:block}
   .arrow{margin-left:auto;color:var(--rose);font-size:20px;flex:none}
-  .foot{margin-top:34px;font-family:"Gaegu",sans-serif;font-size:13.5px;color:var(--ink-soft);opacity:.9}
+  .foot{margin-top:40px;font-family:var(--font-hand);font-size:13.5px;color:var(--ink-soft);opacity:.9}
 </style>
 
 <div class="wrap">
-  <span class="emoji">💝</span>
-  <h1>오늘의 서프라이즈</h1>
-  <p class="sub">골라서 하나씩 눌러봐 (전부 무해한 장난이야 😌)</p>
+  <div class="hgroup">
+    <span class="emoji">💝</span>
+    <h1>오늘의 서프라이즈</h1>
+    <p class="sub">골라서 하나씩 눌러봐 (전부 무해한 장난이야 😌)</p>
+  </div>
 
+  <div class="sect"><span class="st">💘 사랑 확인</span><span class="line"></span></div>
   <div class="list">
-    <a class="item" href="./love/">
-      <span class="ico">💘</span>
-      <span><span class="tt">나 사랑하나요?</span><span class="dd">'아니'는 아무리 눌러도 도망가요</span></span>
-      <span class="arrow">›</span>
-    </a>
-    <a class="item" href="./gunghap/">
-      <span class="ico">💞</span>
-      <span><span class="tt">우리 궁합은 몇 %?</span><span class="dd">이름 넣고 측정 — 결과는 늘 최고</span></span>
-      <span class="arrow">›</span>
-    </a>
-    <a class="item" href="./coupon/">
-      <span class="ico">🎟️</span>
-      <span><span class="tt">사랑 쿠폰 뽑기</span><span class="dd">안아주기·야식·소원권… 랜덤 16종</span></span>
-      <span class="arrow">›</span>
-    </a>
-    <a class="item" href="./scratch/">
-      <span class="ico">🪙</span>
-      <span><span class="tt">긁는 복권</span><span class="dd">은박을 벅벅 긁어 당첨 확인</span></span>
-      <span class="arrow">›</span>
-    </a>
-    <a class="item" href="./loading/">
-      <span class="ico">💗</span>
-      <span><span class="tt">사랑 측정 중…</span><span class="dd">두근두근 로딩 끝에 나오는 결과</span></span>
-      <span class="arrow">›</span>
-    </a>
+    <a class="item" href="./love/"><span class="ico">💘</span><span><span class="tt">나 사랑하나요?</span><span class="dd">'아니'는 아무리 눌러도 도망가요</span></span><span class="arrow">›</span></a>
+    <a class="item" href="./gunghap/"><span class="ico">💞</span><span><span class="tt">우리 궁합은 몇 %?</span><span class="dd">이름 넣고 측정 — 결과는 늘 최고</span></span><span class="arrow">›</span></a>
+    <a class="item" href="./loading/"><span class="ico">💗</span><span><span class="tt">사랑 측정 중…</span><span class="dd">두근두근 로딩 끝에 나오는 결과</span></span><span class="arrow">›</span></a>
+    <a class="item" href="./type/"><span class="ico">🧩</span><span><span class="tt">우리 커플 유형 테스트</span><span class="dd">질문 6개로 알아보는 우리 스타일</span></span><span class="arrow">›</span></a>
+    <a class="item" href="./quiz/"><span class="ico">❓</span><span><span class="tt">커플 퀴즈</span><span class="dd">서로 얼마나 아는지 5문제 대결</span></span><span class="arrow">›</span></a>
+  </div>
+
+  <div class="sect"><span class="st">🎁 뽑기 · 선물</span><span class="line"></span></div>
+  <div class="list">
+    <a class="item" href="./coupon/"><span class="ico">🎟️</span><span><span class="tt">사랑 쿠폰 뽑기</span><span class="dd">안아주기·야식·소원권… 랜덤 16종</span></span><span class="arrow">›</span></a>
+    <a class="item" href="./scratch/"><span class="ico">🪙</span><span><span class="tt">긁는 복권</span><span class="dd">은박을 벅벅 긁어 당첨 확인</span></span><span class="arrow">›</span></a>
+    <a class="item" href="./fortune/"><span class="ico">🥠</span><span><span class="tt">포춘쿠키</span><span class="dd">쿠키 깨서 오늘의 달달한 한마디</span></span><span class="arrow">›</span></a>
+    <a class="item" href="./praise/"><span class="ico">🍬</span><span><span class="tt">칭찬 자판기</span><span class="dd">누를 때마다 칭찬 무한 리필</span></span><span class="arrow">›</span></a>
+  </div>
+
+  <div class="sect"><span class="st">💌 서프라이즈</span><span class="line"></span></div>
+  <div class="list">
+    <a class="item" href="./safe/"><span class="ico">🔐</span><span><span class="tt">비밀 금고</span><span class="dd">기념일 비번을 맞혀야 열리는 편지</span></span><span class="arrow">›</span></a>
+    <a class="item" href="./letter/"><span class="ico">💌</span><span><span class="tt">편지 봉투 열기</span><span class="dd">탭하면 스르륵 펼쳐지는 손편지</span></span><span class="arrow">›</span></a>
+    <a class="item" href="./dday/"><span class="ico">📅</span><span><span class="tt">우리 D-day</span><span class="dd">기념일까지 며칠? 자동으로 세줄게</span></span><span class="arrow">›</span></a>
+  </div>
+
+  <div class="sect"><span class="st">🎡 정하기 · 놀기</span><span class="line"></span></div>
+  <div class="list">
+    <a class="item" href="./roulette/"><span class="ico">🍽️</span><span><span class="tt">오늘 저녁 뭐 먹지?</span><span class="dd">돌려서 나온 걸로 먹기, 불만 없기</span></span><span class="arrow">›</span></a>
+    <a class="item" href="./ladder/"><span class="ico">🧽</span><span><span class="tt">설거지 당번 사다리</span><span class="dd">운명에 맡기는 오늘의 당번</span></span><span class="arrow">›</span></a>
+    <a class="item" href="./catch/"><span class="ico">🎮</span><span><span class="tt">하트 받기 게임</span><span class="dd">15초 안에 하트를 잡아봐</span></span><span class="arrow">›</span></a>
+    <a class="item" href="./course/"><span class="ico">🌊</span><span><span class="tt">강릉 데이트 코스 뽑기</span><span class="dd">랜덤으로 짜주는 오늘의 강릉 코스</span></span><span class="arrow">›</span></a>
   </div>
 
   <p class="foot">만든 사람: 나 · 받는 사람: 너 💕</p>

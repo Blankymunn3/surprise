@@ -1,0 +1,172 @@
+<meta charset="utf-8" />
+<title>칭찬 자판기 🥤</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/base.css" />
+<style>
+  /* 자판기 몸통 */
+  .vm{position:relative;width:min(84vw,300px);margin:6px auto 18px;border-radius:26px;
+    padding:16px 14px 18px;
+    background:linear-gradient(160deg,#ffdbe6,#ffb7cd 58%,#ff9fbb);
+    border:3px solid rgba(255,255,255,.95);
+    box-shadow:0 24px 48px -22px rgba(190,30,80,.55),inset 0 2px 0 rgba(255,255,255,.9)}
+  /* 상단 표시창 */
+  .screen{min-height:104px;border-radius:18px;padding:16px 13px;display:grid;place-items:center;
+    background:linear-gradient(#fffafc,#ffeef4);border:2px solid rgba(255,255,255,.95);
+    box-shadow:inset 0 5px 14px rgba(190,30,80,.2);
+    font-family:var(--font-hand);font-size:clamp(18px,4.9vw,22px);line-height:1.45;color:var(--ink)}
+  .screen.pop{animation:scr .45s cubic-bezier(.16,1.1,.3,1) both}
+  @keyframes scr{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+  /* 진열대 (장식) */
+  .shelf{display:flex;justify-content:center;gap:9px;margin:11px 0 0;padding:7px 6px;
+    border-radius:12px;background:rgba(255,255,255,.42);
+    box-shadow:inset 0 2px 6px rgba(190,30,80,.16)}
+  .shelf i{width:22px;height:22px;border-radius:50%;
+    background:radial-gradient(circle at 34% 28%,#fff,#ffc0d5 60%,#ff8fab);
+    box-shadow:0 3px 6px -2px rgba(190,30,80,.55)}
+  /* 큰 버튼 */
+  .vm-btn{display:block;width:86%;max-width:230px;margin:15px auto 0;padding:18px 18px}
+  /* 배출구 */
+  .slot{position:relative;height:88px;margin-top:15px;border-radius:16px;overflow:hidden;
+    background:linear-gradient(#a5506b,#7a3049);
+    box-shadow:inset 0 9px 20px rgba(0,0,0,.42)}
+  .slot .lip{position:absolute;left:0;right:0;top:0;height:11px;background:rgba(0,0,0,.26)}
+  .slot .ph{position:absolute;left:0;right:0;bottom:9px;text-align:center;
+    font-family:var(--font-hand);font-size:14px;color:rgba(255,255,255,.55)}
+  .capsule{position:absolute;left:50%;top:-62px;width:58px;height:58px;margin-left:-29px;
+    border-radius:50%;display:grid;place-items:center;font-size:27px;
+    background:radial-gradient(circle at 34% 28%,#fff,#ffd2e0 58%,#ff9dba);
+    border:2px solid rgba(255,255,255,.92);
+    box-shadow:0 9px 16px -6px rgba(0,0,0,.45);
+    animation:drop 1s cubic-bezier(.3,.8,.4,1) both}
+  @keyframes drop{
+    0%{top:-62px;opacity:0;transform:rotate(-26deg)}
+    12%{opacity:1}
+    48%{top:24px}
+    62%{top:2px;transform:rotate(10deg)}
+    78%{top:26px}
+    89%{top:15px}
+    100%{top:24px;opacity:1;transform:rotate(4deg)}
+  }
+  .count{margin-top:2px;font-size:clamp(19px,5vw,24px);color:var(--rose-deep);min-height:30px}
+  .count b{font-size:1.25em}
+</style>
+
+<a class="home" href="../">← 목록</a>
+
+<div class="stage">
+  <main class="card">
+    <span class="emoji">🥤</span>
+    <h1>칭찬 자판기</h1>
+    <p class="sub">누르면 칭찬이 나와. 무한 리필이야 😌</p>
+
+    <div class="vm">
+      <div class="screen" id="screen">버튼을 누르면 오늘의 칭찬이 나옵니다</div>
+      <div class="shelf"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="shelf"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <button class="btn vm-btn" id="go" type="button">칭찬 주세요 🩷</button>
+      <div class="slot" id="slot">
+        <div class="lip"></div>
+        <div class="ph" id="ph">배출구</div>
+      </div>
+    </div>
+
+    <div class="count" id="count"></div>
+    <div class="note" id="note">재고 걱정은 안 해도 돼 😌</div>
+  </main>
+</div>
+
+<script src="../assets/fx.js"></script>
+<script>
+(function(){
+  /* ───────── 칭찬 멘트 (자유롭게 추가/수정하세요) ───────── */
+  var MSG = [
+    "오늘 유난히 예뻐 보여",
+    "네 웃음소리 진짜 좋아",
+    "너랑 있으면 하루가 짧아",
+    "네가 웃으면 나도 그냥 웃게 돼",
+    "오늘도 잘 버텨준 너, 진짜 대단해",
+    "손잡고 같이 걷는 시간이 제일 좋아",
+    "밥 먹는 모습도 귀여워",
+    "네 목소리 들으면 마음이 놓여",
+    "아침에 부스스한 머리도 사랑스러워",
+    "내 얘기 끝까지 들어줘서 고마워",
+    "네 덕분에 우리 집이 따뜻해",
+    "화날 때도 예쁜 건 좀 반칙이야",
+    "오늘 입은 옷 진짜 잘 어울려",
+    "네가 고른 건 왜 다 맘에 들지",
+    "사소한 것까지 챙겨주는 네가 고마워",
+    "옆에서 자는 숨소리가 제일 편해",
+    "너랑 하는 시시한 대화가 제일 재밌어",
+    "오늘 하루도 애썼어, 이제 좀 쉬자",
+    "네가 웃는 사진은 몇 번 봐도 좋아",
+    "같이 늙어가는 게 은근 기대돼",
+    "멀리서도 네 뒷모습은 바로 알아봐",
+    "매일 봐도 매일 새로 좋아",
+    "잔소리도 지나고 보면 다 맞는 말이더라",
+    "네가 차려준 밥이 세상에서 제일 맛있어",
+    "너랑 결혼한 게 내 최고의 선택이야",
+    "오늘도 내 편이라서 든든해",
+    "피곤한 얼굴도 그냥 좋아",
+    "네 마음 씀씀이가 제일 예뻐",
+    "같이 있으면 아무것도 안 해도 좋아",
+    "내일도 네 옆자리는 예약이야"
+  ];
+  var CAP = ["💗","💕","🍬","🌸","⭐","🎀","🧸","🍯","💖"];
+  /* ────────────────────────────────────────────────── */
+
+  var screen = document.getElementById('screen');
+  var slot = document.getElementById('slot');
+  var ph = document.getElementById('ph');
+  var go = document.getElementById('go');
+  var countEl = document.getElementById('count');
+  var note = document.getElementById('note');
+  var last = -1, count = 0;
+
+  function pickIdx(){
+    var i = (Math.random() * MSG.length) | 0;
+    if (MSG.length > 1){
+      while (i === last) i = (Math.random() * MSG.length) | 0;
+    }
+    last = i;
+    return i;
+  }
+
+  function dispense(){
+    var idx = pickIdx();
+    count++;
+
+    // 표시창 갱신
+    screen.classList.remove('pop');
+    screen.textContent = MSG[idx];
+    void screen.offsetWidth;   // 애니메이션 다시 재생시키기
+    screen.classList.add('pop');
+
+    // 배출구에 캡슐 톡 떨어뜨리기
+    var old = slot.querySelector('.capsule');
+    if (old) old.parentNode.removeChild(old);
+    var cap = document.createElement('div');
+    cap.className = 'capsule';
+    cap.textContent = CAP[(Math.random() * CAP.length) | 0];
+    slot.appendChild(cap);
+    ph.style.display = 'none';
+
+    countEl.innerHTML = '오늘 칭찬 <b>' + count + '</b>번 받았어';
+    go.textContent = '하나 더 🩷';
+
+    for (var k = 0; k < 5; k++) setTimeout(FX.heart, k * 130);
+    if (count % 10 === 0){
+      var r = slot.getBoundingClientRect();
+      FX.burst(r.left + r.width / 2, r.top + r.height / 2, 110);
+      FX.party(3500);
+      note.textContent = count + '번째 칭찬! 아직 재고 넉넉해 😌';
+    } else {
+      note.textContent = '재고 걱정은 안 해도 돼 😌';
+    }
+  }
+
+  go.addEventListener('click', dispense);
+})();
+</script>

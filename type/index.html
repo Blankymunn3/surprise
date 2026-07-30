@@ -1,0 +1,252 @@
+<meta charset="utf-8" />
+<title>우리 커플 유형 테스트 🔮</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/base.css" />
+<style>
+  .prog{display:flex;align-items:center;justify-content:center;gap:10px;margin:-8px 0 16px;
+    font-family:var(--font-hand);font-size:15px;color:var(--ink-soft)}
+  .bar{position:relative;width:140px;height:9px;border-radius:999px;background:rgba(225,29,91,.14);overflow:hidden}
+  .bar i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;
+    background:linear-gradient(90deg,var(--rose),var(--rose-deep));transition:width .35s ease}
+  .step{animation:slidein .34s cubic-bezier(.16,1.1,.3,1) both}
+  @keyframes slidein{from{transform:translateX(26px);opacity:0}to{transform:none;opacity:1}}
+  .qtext{font-size:clamp(19px,5.2vw,24px);color:var(--ink);margin:2px 0 18px;line-height:1.4}
+  .opts{display:grid;gap:10px}
+  .opt{font-family:var(--font);font-size:clamp(16px,4.4vw,18px);cursor:pointer;text-align:center;
+    border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.86);color:var(--ink);
+    border-radius:18px;padding:15px 12px;transition:transform .12s,background .2s;
+    box-shadow:0 10px 22px -14px rgba(190,30,80,.6)}
+  .opt:hover{transform:scale(1.02)}
+  .opt:active{transform:scale(.97)}
+  .opt:focus-visible{outline:3px solid var(--rose-deep);outline-offset:2px}
+  .opt.picked{background:linear-gradient(135deg,#ffd9e5,#ffbdd3);color:var(--rose-deep);border-color:#ffb3c9}
+  .hide{display:none}
+  .tname{font-size:clamp(24px,6.4vw,32px);color:var(--rose-deep);margin:6px 0 2px;line-height:1.3}
+  .tdesc{font-family:var(--font-hand);font-size:clamp(16px,4.4vw,19px);color:var(--ink);
+    margin:8px 0 16px;line-height:1.5;white-space:pre-line}
+  .tip{background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);border-radius:20px;
+    padding:14px 16px;margin:0 0 8px;text-align:left;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
+  .tip b{display:block;font-size:14px;color:var(--rose-deep);margin-bottom:4px}
+  .tip span{font-family:var(--font-hand);font-size:clamp(15px,4.2vw,18px);color:var(--ink);line-height:1.5}
+  .mix{font-family:var(--font-hand);font-size:15px;color:var(--ink-soft);margin:12px 0 20px}
+</style>
+
+<a class="home" href="../">← 목록</a>
+
+<div class="stage">
+  <main class="card">
+    <span class="emoji" id="topEmoji">🔮</span>
+    <h1>우리 커플 유형</h1>
+    <p class="sub">정답 없음! 그냥 끌리는 걸로 골라 😌</p>
+
+    <div class="prog" id="prog">
+      <span id="progText">1 / 6</span>
+      <span class="bar"><i id="progBar"></i></span>
+    </div>
+
+    <div id="quiz">
+      <div class="qtext" id="qtext"></div>
+      <div class="opts" id="opts"></div>
+    </div>
+
+    <div id="result" class="hide">
+      <div class="tname" id="tname"></div>
+      <p class="tdesc" id="tdesc"></p>
+      <div class="tip"><b>궁합 팁 💡</b><span id="ttip"></span></div>
+      <div class="mix" id="mix"></div>
+      <button class="btn" id="again" type="button">다시 하기 🔄</button>
+    </div>
+
+    <div class="note" id="note"></div>
+  </main>
+</div>
+
+<script src="../assets/fx.js"></script>
+<script>
+(function(){
+
+  /* 유형 목록 — 점수가 가장 높은 유형이 결과로 나옵니다.
+     문구는 마음대로 고쳐도 됩니다. (key 값은 아래 QUESTIONS의 점수 키와 짝) */
+  var TYPES = [
+    { key: 'stick', emoji: '🧲', name: '24시간 껌딱지형 🧲',
+      desc: '떨어져 있으면 5분마다 뭐 해? 하는 우리.\n같은 소파에 굳이 붙어 앉는 게 취미지 😆',
+      tip: '붙어 있는 게 사랑인 건 맞지만, 각자 혼자 노는 시간도 한 번씩 챙겨주면 다시 만날 때가 더 반가워져요.' },
+    { key: 'tease', emoji: '🐶', name: '티격태격 찐친형 🐶🐱',
+      desc: '하루에 세 번 싸우고 네 번 웃는 사이.\n놀리는 게 애정 표현이라 남들은 못 알아봐 ㅋㅋ',
+      tip: '장난은 계속 치되, 하루 한 번은 진심 모드로 "고마워" 한마디. 그거 하나로 티격태격이 더 귀여워집니다.' },
+    { key: 'cool', emoji: '😎', name: '각자 잘 노는 쿨커플형 😎',
+      desc: '각자 취미 확실하고, 만나면 또 제일 편한 사람.\n안 물어봐도 서로 믿는 게 제일 큰 무기지.',
+      tip: '믿음은 충분하니까 표현만 한 스푼! 별일 없어도 보내는 연락이 쿨한 우리를 더 단단하게 만들어줘요.' },
+    { key: 'honey', emoji: '🍯', name: '달달 꿀뚝뚝형 🍯',
+      desc: '몇 년째 신혼 같은 두 사람.\n애칭이 본명보다 익숙해진 지 오래됐어 🥰',
+      tip: '달달함은 이미 만점! 가끔은 현실적인 얘기(돈·집안일·계획)도 달달하게 같이 굴려보면 완벽해져요.' },
+    { key: 'chaos', emoji: '🎢', name: '하루가 축제인 텐션형 🎢',
+      desc: '집에 있어도 어디 놀러 온 것 같은 커플.\n둘이 모이면 계획 없이도 하루가 꽉 차 🎉',
+      tip: '텐션이 최고 재산! 대신 가끔은 둘 다 조용히 쉬는 날을 일부러 만들어 주면 그 텐션이 오래갑니다.' }
+  ];
+
+  /* 질문 6개 — 정답은 없고, 고른 선택지의 점수(score)가 유형에 쌓입니다.
+     score 안의 키는 위 TYPES의 key와 같아야 합니다. */
+  var QUESTIONS = [
+    { q: "주말에 갑자기 시간이 비었다. 우리는?",
+      opts: [
+        { t: "무조건 같이 붙어서 뭐라도 한다", score: { stick: 2, honey: 1 } },
+        { t: "각자 하고 싶은 거 하다가 저녁에 만난다", score: { cool: 2 } },
+        { t: "일단 나가! 즉흥 여행 출발", score: { chaos: 2, stick: 1 } }
+      ] },
+    { q: "우리 대화 스타일은?",
+      opts: [
+        { t: "하루 종일 카톡 폭탄 💬", score: { stick: 2 } },
+        { t: "서로 놀리고 장난치기 😜", score: { tease: 2, chaos: 1 } },
+        { t: "사랑한다 소리 하루 한 번은 함 🥰", score: { honey: 2 } }
+      ] },
+    { q: "살짝 삐졌다가 화해할 때 우리는?",
+      opts: [
+        { t: "5분 뒤에 까먹고 또 장난침", score: { tease: 2, chaos: 1 } },
+        { t: "일단 안아주고 끝", score: { honey: 2, stick: 1 } },
+        { t: "각자 좀 식히고 차분히 얘기", score: { cool: 2 } }
+      ] },
+    { q: "같이 사진 찍을 때?",
+      opts: [
+        { t: "커플 셀카 필수 📸", score: { stick: 2, honey: 1 } },
+        { t: "웃긴 표정 대결 시작", score: { tease: 2, chaos: 1 } },
+        { t: "풍경만 찍고 우리는 안 찍음", score: { cool: 2 } }
+      ] },
+    { q: "연락이 한동안 안 되면?",
+      opts: [
+        { t: "걱정 + 삐짐 콜라보", score: { stick: 2, tease: 1 } },
+        { t: "바쁘겠지~ 별생각 없음", score: { cool: 2 } },
+        { t: "될 때까지 웃긴 짤 폭탄 보내기", score: { chaos: 2, honey: 1 } }
+      ] },
+    { q: "우리 커플 필살기 한 가지!",
+      opts: [
+        { t: "텐션 — 어디서든 재밌음", score: { chaos: 2, tease: 1 } },
+        { t: "안정감 — 같이 있으면 그냥 편함", score: { cool: 1, honey: 1 } },
+        { t: "애정표현 — 하루에도 여러 번", score: { honey: 2, stick: 1 } }
+      ] }
+  ];
+
+  var topEmoji = document.getElementById('topEmoji');
+  var progWrap = document.getElementById('prog');
+  var progText = document.getElementById('progText');
+  var progBar = document.getElementById('progBar');
+  var quizEl = document.getElementById('quiz');
+  var qtext = document.getElementById('qtext');
+  var optsEl = document.getElementById('opts');
+  var resultEl = document.getElementById('result');
+  var tname = document.getElementById('tname');
+  var tdesc = document.getElementById('tdesc');
+  var ttip = document.getElementById('ttip');
+  var mix = document.getElementById('mix');
+  var againBtn = document.getElementById('again');
+  var note = document.getElementById('note');
+
+  var at = 0, tally = {}, locked = false;
+
+  function resetTally(){
+    var i;
+    tally = {};
+    for(i = 0; i < TYPES.length; i++) tally[TYPES[i].key] = 0;
+  }
+
+  function drawProgress(){
+    progText.textContent = (at + 1) + ' / ' + QUESTIONS.length;
+    progBar.style.width = (at / QUESTIONS.length * 100) + '%';
+  }
+
+  function render(){
+    var item = QUESTIONS[at], i;
+    locked = false;
+    drawProgress();
+    qtext.textContent = item.q;
+    optsEl.innerHTML = '';
+    for(i = 0; i < item.opts.length; i++){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'opt';
+      b.textContent = item.opts[i].t;
+      b.setAttribute('data-i', String(i));
+      b.addEventListener('click', pick);
+      optsEl.appendChild(b);
+    }
+    quizEl.classList.remove('step');
+    void quizEl.offsetWidth;
+    quizEl.classList.add('step');
+  }
+
+  function pick(e){
+    if(locked) return;
+    locked = true;
+    var btn = e.currentTarget;
+    var n = parseInt(btn.getAttribute('data-i'), 10);
+    var sc = QUESTIONS[at].opts[n].score, k;
+    for(k in sc){
+      if(Object.prototype.hasOwnProperty.call(sc, k) && typeof tally[k] === 'number') tally[k] += sc[k];
+    }
+    btn.classList.add('picked');
+    var r = btn.getBoundingClientRect();
+    FX.burst(r.left + r.width / 2, r.top + r.height / 2, 16);
+    at++;
+    setTimeout(function(){
+      if(at < QUESTIONS.length) render();
+      else finish();
+    }, 420);
+  }
+
+  // 최고점 유형 (동점이면 그중 랜덤)
+  function winner(){
+    var best = -1, tied = [], i;
+    for(i = 0; i < TYPES.length; i++){
+      var v = tally[TYPES[i].key];
+      if(v > best){ best = v; tied = [i]; }
+      else if(v === best) tied.push(i);
+    }
+    return tied[(Math.random() * tied.length) | 0];
+  }
+
+  // 2등 유형 (섞인 성향 한 줄용)
+  function runnerUp(winIdx){
+    var best = -1, pick2 = -1, i;
+    for(i = 0; i < TYPES.length; i++){
+      if(i === winIdx) continue;
+      if(tally[TYPES[i].key] > best){ best = tally[TYPES[i].key]; pick2 = i; }
+    }
+    return pick2;
+  }
+
+  function finish(){
+    var wi = winner(), t = TYPES[wi], ri = runnerUp(wi);
+    progBar.style.width = '100%';
+    progWrap.classList.add('hide');
+    quizEl.classList.add('hide');
+    topEmoji.textContent = t.emoji;
+    tname.textContent = t.name;
+    tdesc.textContent = t.desc;
+    ttip.textContent = t.tip;
+    if(ri >= 0 && tally[TYPES[ri].key] > 0) mix.textContent = '살짝 섞인 성향: ' + TYPES[ri].name;
+    else mix.textContent = '';
+    note.textContent = '오늘의 결과예요. 기분 따라 또 달라짐 😉';
+    resultEl.classList.remove('hide');
+    resultEl.classList.add('step');
+    FX.party();
+  }
+
+  function start(){
+    at = 0;
+    resetTally();
+    topEmoji.textContent = '🔮';
+    resultEl.classList.add('hide');
+    resultEl.classList.remove('step');
+    quizEl.classList.remove('hide');
+    progWrap.classList.remove('hide');
+    note.textContent = '';
+    render();
+  }
+
+  againBtn.addEventListener('click', start);
+  start();
+})();
+</script>

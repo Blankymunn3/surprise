@@ -1,0 +1,237 @@
+<title>우리 D-day 💌</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/base.css" />
+<style>
+  input{-webkit-user-select:text;user-select:text}
+  .form{display:grid;gap:8px;margin:0 0 16px}
+  .row{display:flex;gap:8px}
+  .row input{flex:1;min-width:0;font-size:16px;padding:12px 10px}
+  .btn.sm{padding:12px 20px;font-size:17px;white-space:nowrap}
+  .cards{display:grid;gap:10px;text-align:left}
+  .item{
+    position:relative;display:flex;align-items:center;gap:12px;
+    background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);
+    border-radius:20px;padding:14px 46px 14px 16px;
+    box-shadow:0 14px 28px -22px rgba(190,30,80,.7);
+  }
+  .item .ico{font-size:26px;line-height:1}
+  .item .txt{flex:1;min-width:0}
+  .item .lbl{font-size:17px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .item .date{font-family:var(--font-hand);font-size:14px;color:var(--ink-soft);margin-top:2px}
+  .item .cnt{font-size:20px;color:var(--rose-deep);white-space:nowrap}
+  .item.soon{border-color:var(--rose);background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(255,214,226,.9))}
+  .item.soon .cnt{font-size:25px}
+  .item.today{
+    border-color:var(--rose-deep);
+    background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(255,194,214,.95));
+    box-shadow:0 18px 34px -20px rgba(225,29,91,.8);
+  }
+  .item.today .cnt{font-size:24px}
+  .del{
+    position:absolute;right:10px;top:50%;transform:translateY(-50%);
+    border:none;cursor:pointer;background:rgba(255,255,255,.92);color:var(--ink-soft);
+    width:28px;height:28px;border-radius:50%;font-size:14px;line-height:1;font-family:var(--font);
+  }
+  .del:hover{color:var(--rose-deep)}
+  .empty{font-family:var(--font-hand);font-size:16px;color:var(--ink-soft);padding:14px 0 4px}
+  .empty.hide{display:none}
+  .foot{margin-top:16px}
+</style>
+
+<a class="home" href="../">← 목록</a>
+
+<div class="stage">
+  <main class="card">
+    <span class="emoji">💌</span>
+    <h1>우리 D-day</h1>
+    <p class="sub">적어두면 내가 안 잊어버릴게. 진짜로 😌</p>
+
+    <div class="form">
+      <div class="row">
+        <input id="lbl" type="text" maxlength="14" placeholder="기념일 이름 (예: 결혼기념일)" aria-label="기념일 이름" />
+      </div>
+      <div class="row">
+        <input id="dt" type="date" aria-label="기념일 날짜" />
+        <button class="btn sm" id="add" type="button">추가 ➕</button>
+      </div>
+    </div>
+
+    <div class="cards" id="list"></div>
+    <div class="empty" id="empty">아직 등록된 기념일이 없어. 위에 하나 적어보자 💕</div>
+
+    <div class="foot">
+      <button class="btn-ghost" id="clear" type="button">전부 지우기 🧹</button>
+    </div>
+
+    <div class="note" id="note"></div>
+  </main>
+</div>
+
+<script src="../assets/fx.js"></script>
+<script>
+(function(){
+  var KEY='surprise.dday.v1', MAX=5, DAY=86400000;
+  var lblEl=document.getElementById('lbl'), dtEl=document.getElementById('dt');
+  var addBtn=document.getElementById('add'), clearBtn=document.getElementById('clear');
+  var listEl=document.getElementById('list'), emptyEl=document.getElementById('empty');
+  var note=document.getElementById('note');
+  var items=[], partied=false;
+
+  function today0(){
+    var d=new Date();
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+  function parse(s){
+    var p=String(s).split('-');
+    return new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10));
+  }
+  function stamp(d){
+    var m=d.getMonth()+1, day=d.getDate();
+    return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(day<10?'0':'')+day;
+  }
+  function dayDiff(a,b){
+    return Math.round((b.getTime()-a.getTime())/DAY);
+  }
+  function nextAnniv(d,t){
+    var n=new Date(t.getFullYear(), d.getMonth(), d.getDate());
+    if(dayDiff(t,n)<0) n=new Date(t.getFullYear()+1, d.getMonth(), d.getDate());
+    return n;
+  }
+  function valid(s){ return /^\d{4}-\d{2}-\d{2}$/.test(s); }
+
+  function load(){
+    var out=[];
+    try{
+      var raw=localStorage.getItem(KEY);
+      if(!raw) return out;
+      var arr=JSON.parse(raw);
+      if(!arr || typeof arr.length!=='number') return out;
+      for(var i=0;i<arr.length && out.length<MAX;i++){
+        var it=arr[i];
+        if(!it || !valid(it.date)) continue;
+        out.push({label:String(it.label||'기념일').slice(0,14), date:it.date});
+      }
+    }catch(e){}
+    return out;
+  }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(items)); }catch(e){}
+  }
+
+  function el(tag, cls, text){
+    var n=document.createElement(tag);
+    if(cls) n.className=cls;
+    if(text!==undefined && text!==null) n.textContent=text;
+    return n;
+  }
+
+  function remove(idx){
+    items.splice(idx,1);
+    save();
+    render();
+    note.textContent='하나 지웠어. 그래도 마음엔 남아있음 🙂';
+  }
+
+  function render(){
+    listEl.innerHTML='';
+    var t=today0(), rows=[], i;
+    for(i=0;i<items.length;i++){
+      var d=parse(items[i].date);
+      var diff=dayDiff(t,d);
+      var na=nextAnniv(d,t);
+      var nd=dayDiff(t,na);
+      var isToday=(diff===0)||(nd===0);
+      rows.push({
+        idx:i, label:items[i].label, date:items[i].date,
+        diff:diff, nd:nd, year:na.getFullYear()-d.getFullYear(), isToday:isToday,
+        key:isToday?-1:(diff>0?diff:nd)
+      });
+    }
+    rows.sort(function(a,b){ return a.key-b.key; });
+
+    var todayNames=[], soonCount=0;
+    for(i=0;i<rows.length;i++){
+      var r=rows[i];
+      var cls='item';
+      if(r.isToday) cls='item today';
+      else if(r.key<=30){ cls='item soon'; soonCount++; }
+
+      var box=el('div', cls);
+      box.appendChild(el('span','ico', r.isToday?'🎉':(r.diff>0?'⏳':'💗')));
+
+      var txt=el('div','txt');
+      txt.appendChild(el('div','lbl', r.label));
+      var sub=r.date;
+      if(r.isToday && r.diff<0) sub=r.date+' · 오늘로 딱 '+(-r.diff)+'일'+(r.year>0?' · '+r.year+'주년 🎊':'');
+      else if(r.isToday) sub=r.date+' · 바로 오늘!';
+      else if(r.diff<0) sub=r.date+' · 다음 기념일 D-'+r.nd+(r.year>0?' ('+r.year+'주년)':'');
+      txt.appendChild(el('div','date', sub));
+      box.appendChild(txt);
+
+      var cnt='D-'+r.diff;
+      if(r.isToday) cnt='D-DAY';
+      else if(r.diff<0) cnt='D+'+(-r.diff)+'일';
+      box.appendChild(el('div','cnt', cnt));
+
+      var del=el('button','del','✕');
+      del.type='button';
+      del.setAttribute('aria-label', r.label+' 지우기');
+      (function(idx){ del.addEventListener('click', function(){ remove(idx); }); })(r.idx);
+      box.appendChild(del);
+
+      listEl.appendChild(box);
+      if(r.isToday) todayNames.push(r.label);
+    }
+
+    emptyEl.className=items.length?'empty hide':'empty';
+    clearBtn.style.display=items.length?'':'none';
+
+    if(todayNames.length){
+      note.textContent='오늘은 '+todayNames.join(', ')+'! 축하해 🎉';
+      if(!partied){ partied=true; FX.party(7000); }
+    }else if(items.length){
+      note.textContent='기념일 '+items.length+'개 저장됨'+(soonCount?' · 한 달 안에 '+soonCount+'개 다가온다 👀':'');
+    }else{
+      note.textContent='';
+    }
+  }
+
+  function add(){
+    if(items.length>=MAX){
+      note.textContent='최대 '+MAX+'개까지만! 하나 지우고 다시 추가해줘 🙏';
+      return;
+    }
+    var date=dtEl.value;
+    if(!valid(date)){
+      note.textContent='날짜를 먼저 골라줘 📅';
+      return;
+    }
+    var label=(lblEl.value||'').replace(/^\s+|\s+$/g,'');
+    if(!label) label='우리 기념일';
+    items.push({label:label.slice(0,14), date:date});
+    save();
+    lblEl.value='';
+    render();
+    if(note.textContent.indexOf('축하해')<0) note.textContent='"'+label+'" 저장 완료! 이제 안 잊어버려 ✍️';
+    for(var k=0;k<5;k++) setTimeout(FX.heart, k*130);
+  }
+
+  addBtn.addEventListener('click', add);
+  lblEl.addEventListener('keydown', function(e){ if(e.keyCode===13) add(); });
+  clearBtn.addEventListener('click', function(){
+    if(!items.length) return;
+    if(!window.confirm('저장된 기념일을 전부 지울까?')) return;
+    items=[];
+    save();
+    render();
+    note.textContent='싹 비웠어. 다시 채워보자 🌱';
+  });
+
+  dtEl.value=stamp(today0());
+  items=load();
+  render();
+})();
+</script>
