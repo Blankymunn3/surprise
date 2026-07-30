@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">우리 추억 지도</string>
-    <string name="title_activity_main">우리 추억 지도</string>
-    <string name="package_name">app.surprise.memorymap</string>
-    <string name="custom_url_scheme">app.surprise.memorymap</string>
-</resources>
