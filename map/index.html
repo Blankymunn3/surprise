@@ -163,9 +163,14 @@
   }
 
   /* 확대/축소는 왼쪽 아래 (오른쪽 위는 검색 결과창과 겹침) */
-  var map=L.map('map',{zoomControl:false,scrollWheelZoom:false});
+  /* 세계를 한 번만 그리고 그 밖으로는 못 나가게. (기본값은 좌우로 계속 반복돼서 헷갈림)
+     위아래 ±85도는 웹 지도(메르카토르)가 그릴 수 있는 한계입니다. */
+  var WORLD_BOUNDS=L.latLngBounds([[-85,-180],[85,180]]);
+  var map=L.map('map',{zoomControl:false,scrollWheelZoom:false,
+    worldCopyJump:false, maxBounds:WORLD_BOUNDS, maxBoundsViscosity:1, minZoom:1});
   L.control.zoom({position:'bottomleft',zoomInTitle:'확대',zoomOutTitle:'축소'}).addTo(map);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {maxZoom:19,noWrap:true,bounds:WORLD_BOUNDS,attribution:'&copy; OpenStreetMap'}).addTo(map);
 
   /* 마우스가 지도 위에 있을 때만 휠 확대/축소
      (항상 켜두면 페이지를 스크롤하다가 지도에서 걸림) */
@@ -308,7 +313,10 @@
   var qclear=document.getElementById('qclear'), hits=[], cur=-1;
 
   function kindOf(code){
-    if(code.indexOf('P-')===0) return '해외 시도';
+    if(code.indexOf('P-')===0){                       // P-JPN-12 → 그 나라 이름으로
+      var iso=code.slice(2).split('-')[0];
+      return names['C-'+iso] || (window.COUNTRY_KO && COUNTRY_KO[iso]) || '해외 시도';
+    }
     if(code.indexOf('C-')===0) return '나라';
     return /^\d+$/.test(code) ? '국내' : '우리 추억';   // 발리처럼 경계 없는 곳
   }
