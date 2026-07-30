@@ -1,8 +1,6 @@
 /* 공통 디자인 — 핑크 글라스 (surprise 사이트 전 페이지 공용) */
 :root{
-  /* 이 사이트는 라이트 전용. 폰이 다크모드여도 브라우저가 색을 뒤집지 않게 막습니다
-     (안 막으면 크롬·삼성인터넷의 강제 다크모드가 핑크 배경을 자주색으로 반전시킴) */
-  color-scheme: only light;
+  color-scheme: only light;   /* 폰의 강제 다크모드 차단 */
   --rose:#ff4d78;--rose-deep:#e11d5b;--pink-1:#ffe3ee;--pink-2:#ffc2d6;--pink-3:#ffd9c9;
   --ink:#5a2740;--ink-soft:#96566f;--card:rgba(255,255,255,.62);
   --font:"Jua","Apple SD Gothic Neo","Pretendard",system-ui,sans-serif;
@@ -19,9 +17,10 @@ body{
     radial-gradient(120% 100% at 100% 100%,var(--pink-3),transparent 55%),
     linear-gradient(160deg,#fff0f5 0%,var(--pink-2) 60%,#ffb3c9 100%);
 }
-.stage{position:relative;z-index:2;min-height:100svh;display:grid;place-items:center;padding:24px}
+.stage{position:relative;z-index:2;min-height:100svh;display:flex;align-items:center;justify-content:center;padding:24px 16px}
+html{overflow-x:hidden}
 .card{
-  position:relative;width:min(92vw,480px);background:var(--card);
+  position:relative;width:100%;max-width:480px;background:var(--card);
   backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);
   border:1px solid rgba(255,255,255,.75);border-radius:34px;
   box-shadow:0 30px 70px -30px rgba(190,30,80,.5),inset 0 1px 0 rgba(255,255,255,.9);

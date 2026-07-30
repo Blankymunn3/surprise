@@ -1,5 +1,4 @@
 <meta charset="utf-8" />
-<meta name="color-scheme" content="light" />
 <title>우리 추억 지도 🗺️</title>
 <!-- share -->
 <meta name="robots" content="noindex, nofollow" />
@@ -14,15 +13,16 @@
 <meta property="og:image:height" content="630" />
 <meta name="twitter:card" content="summary_large_image" />
 <!-- /share -->
-<script src="../assets/gate.js"></script>
+<script src="../assets/gate.js?v=3"></script>
+<meta name="color-scheme" content="light" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="../assets/base.css" />
+<link rel="stylesheet" href="../assets/base.css?v=3" />
 <style>
-  .card{width:min(96vw,640px)}
+  .card{width:100%;max-width:640px}
   #map{height:min(60vh,460px);border-radius:22px;border:1px solid rgba(255,255,255,.9);
     box-shadow:0 18px 40px -20px rgba(190,30,80,.5);margin:4px 0 12px;background:#e9f1f4}
   .leaflet-container{font-family:var(--font)}
@@ -103,8 +103,8 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="../assets/fx.js"></script>
-<script src="../assets/firebase.js"></script>
+<script src="../assets/fx.js?v=3"></script>
+<script src="../assets/firebase.js?v=3"></script>
 <script>
 (function(){
   var KEY='surprise.stamp.';          // 지역 코드별 사진 (도장깨기와 공용)
@@ -118,7 +118,7 @@
     'New Zealand':'뉴질랜드',Canada:'캐나다',Turkey:'튀르키예',Greece:'그리스',Portugal:'포르투갈',
     Singapore:'싱가포르',Malaysia:'말레이시아',India:'인도',Mexico:'멕시코',Brazil:'브라질',
     Netherlands:'네덜란드',Austria:'오스트리아','Czech Republic':'체코',Croatia:'크로아티아'};
-  var SITE_CODES=['11140','11160','11230','32030'];   // photos/region-<code>.jpg 로 올려둔 지역
+  var SITE_CODES=[];   // photos/region-<code>.jpg 로 올려둔 지역
 
   /* 우리 추억 장소 (확정된 사실만) */
   var PLACES=[

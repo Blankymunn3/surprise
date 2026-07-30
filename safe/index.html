@@ -1,5 +1,4 @@
 <meta charset="utf-8" />
-<meta name="color-scheme" content="light" />
 <title>비밀 금고 🔐</title>
 <!-- share -->
 <meta name="robots" content="noindex, nofollow" />
@@ -14,15 +13,16 @@
 <meta property="og:image:height" content="630" />
 <meta name="twitter:card" content="summary_large_image" />
 <!-- /share -->
-<script src="../assets/gate.js"></script>
+<script src="../assets/gate.js?v=3"></script>
+<meta name="color-scheme" content="light" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../assets/base.css" />
+<link rel="stylesheet" href="../assets/base.css?v=3" />
 <style>
   /* 금고 */
-  .safe-wrap{position:relative;width:min(84vw,300px);margin:4px auto 18px}
+  .safe-wrap{position:relative;width:100%;max-width:300px;margin:4px auto 18px}
   .safe{position:relative;z-index:2;width:100%;padding-bottom:92%;border-radius:22px;perspective:1000px;
     background:linear-gradient(160deg,#ffeaf2,#ffc7da 55%,#ffb0c9);
     border:3px solid rgba(255,255,255,.95);
@@ -85,7 +85,7 @@
     font-size:27px;color:var(--rose-deep);transition:transform .12s,border-color .2s}
   .cell.on{border-color:var(--rose);background:#fff;transform:translateY(-2px)}
   /* 키패드 */
-  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:min(84vw,300px);margin:0 auto}
+  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:300px;margin:0 auto}
   .pad.off{opacity:.45;pointer-events:none}
   .key{font-family:var(--font);border:none;cursor:pointer;border-radius:16px;padding:15px 0;
     font-size:26px;color:var(--rose-deep);background:rgba(255,255,255,.92);
@@ -93,7 +93,7 @@
   .key:active{transform:scale(.93)}
   .key:focus-visible{outline:3px solid var(--rose-deep);outline-offset:2px}
   .key.del{font-size:18px;background:rgba(255,255,255,.72)}
-  .hintbox{display:none;margin:14px auto 0;width:min(84vw,300px);
+  .hintbox{display:none;margin:14px auto 0;width:100%;max-width:300px;
     font-family:var(--font-hand);font-size:16px;color:var(--rose-deep);
     background:rgba(255,255,255,.82);border-radius:14px;padding:11px 14px}
   .hintbox.show{display:block;animation:pop .4s ease both}
@@ -142,7 +142,7 @@
   </main>
 </div>
 
-<script src="../assets/fx.js"></script>
+<script src="../assets/fx.js?v=3"></script>
 <script>
 (function(){
   /* ───────── 여기만 고치면 됩니다 ───────── */
