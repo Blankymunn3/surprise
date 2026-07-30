@@ -25,7 +25,7 @@
   html,body{height:100%;margin:0}
   body{font-family:var(--font);color:var(--ink);min-height:100svh;overflow-x:hidden;user-select:none;-webkit-user-select:none;-webkit-font-smoothing:antialiased;background-attachment:fixed;
     background:radial-gradient(120% 90% at 15% 0%,var(--pink-1),transparent 55%),radial-gradient(120% 100% at 100% 100%,var(--pink-3),transparent 55%),linear-gradient(160deg,#fff0f5 0%,var(--pink-2) 60%,#ffb3c9 100%)}
-  .stage{position:relative;z-index:2;min-height:100svh;display:grid;place-items:center;padding:24px 16px}
+  .stage{position:relative;z-index:2;min-height:100svh;display:flex;align-items:center;justify-content:center;padding:24px 16px}
   .card{position:relative;width:100%;max-width:480px;background:var(--card);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,.75);border-radius:34px;box-shadow:0 30px 70px -30px rgba(190,30,80,.5),inset 0 1px 0 rgba(255,255,255,.9);padding:40px 28px;text-align:center;animation:pop .6s cubic-bezier(.16,1.2,.3,1) both}
   @keyframes pop{from{transform:scale(.7) translateY(20px);opacity:0}to{transform:none;opacity:1}}
   .emoji{font-size:58px;line-height:1;display:block;animation:bob 2.6s ease-in-out infinite}

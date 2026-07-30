@@ -17,7 +17,7 @@ body{
     radial-gradient(120% 100% at 100% 100%,var(--pink-3),transparent 55%),
     linear-gradient(160deg,#fff0f5 0%,var(--pink-2) 60%,#ffb3c9 100%);
 }
-.stage{position:relative;z-index:2;min-height:100svh;display:grid;place-items:center;padding:24px 16px}
+.stage{position:relative;z-index:2;min-height:100svh;display:flex;align-items:center;justify-content:center;padding:24px 16px}
 html{overflow-x:hidden}
 .card{
   position:relative;width:100%;max-width:480px;background:var(--card);
