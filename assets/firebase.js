@@ -1,30 +1,31 @@
-/* 클라우드 사진 저장 — Firebase Storage
+/* 클라우드 사진 저장 — Firebase Storage (REST 직접 호출)
    ─────────────────────────────────────────────────────────────
-   ① Firebase 콘솔에서 프로젝트를 만들고 Storage를 켠 뒤,
-      '웹 앱 추가'에서 나오는 값을 아래 CONFIG에 그대로 붙여 넣으세요.
-   ② 규칙(Rules)은 저장소 루트의 storage.rules 를 복사해 넣으면 됩니다.
-   ③ CONFIG가 비어 있으면 이 파일은 아무 것도 하지 않고,
-      각 페이지는 예전처럼 localStorage(내 기기에만 저장)로 동작합니다.
-   자세한 순서는 FIREBASE.md 참고. */
+   Firebase SDK를 받지 않고 Storage REST API만 씁니다.
+   폰에서 100KB짜리 SDK를 매번 안 받아도 되고, 코드도 짧습니다.
+
+   ⚠️ 이 방식은 Storage 규칙에서 regions/ 를 '공개 읽기'로 열어둔 전제입니다.
+      (저장소 루트 storage.rules 참고 — 사진 주소를 아는 사람은 볼 수 있음)
+   설정 방법은 FIREBASE.md 참고. */
 (function () {
   var CONFIG = {
-    apiKey: '',            // 예: 'AIzaSy...'
-    authDomain: '',        // 예: 'our-surprise.firebaseapp.com'
-    projectId: '',         // 예: 'our-surprise'
-    storageBucket: '',     // 예: 'our-surprise.firebasestorage.app'
-    appId: ''              // 예: '1:1234567890:web:abcdef'
+    storageBucket: 'our-surprise.firebasestorage.app',   // 실제로 쓰는 값
+    projectId: 'our-surprise',                           // 참고용
+    apiKey: 'AIzaSyAvDJkTuNWs6PqoEvMT0w1BmyFZT_gZNXs'    // 참고용(웹 공개 키, 비밀 아님)
   };
 
-  var DIR = 'regions';                                  // 지역 사진이 쌓이는 폴더
-  var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
-  var CACHE_KEY = 'surprise.cloud.index';               // {코드: 다운로드주소} 마지막 목록
+  var DIR = 'regions';                        // 지역 사진이 쌓이는 폴더
+  var CACHE_KEY = 'surprise.cloud.index';     // {코드: 주소} 마지막 목록
+  var configured = !!CONFIG.storageBucket;
 
-  var configured = !!(CONFIG.apiKey && CONFIG.storageBucket);
-  var loading = null, storage = null;
-
+  function base() {
+    return 'https://firebasestorage.googleapis.com/v0/b/' +
+           encodeURIComponent(CONFIG.storageBucket) + '/o';
+  }
   function safe(code) { return String(code).replace(/[^A-Za-z0-9_-]/g, '_'); }
   function pathOf(code) { return DIR + '/' + safe(code) + '.jpg'; }
-  function codeOf(name) { return name.replace(/\.jpg$/i, ''); }
+  function codeOf(name) { return name.replace(/^.*\//, '').replace(/\.jpg$/i, ''); }
+  function objUrl(p) { return base() + '/' + encodeURIComponent(p); }
+  function mediaUrl(p) { return objUrl(p) + '?alt=media'; }
 
   function cached() {
     try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}') || {}; }
@@ -34,60 +35,56 @@
     try { localStorage.setItem(CACHE_KEY, JSON.stringify(map)); } catch (e) {}
   }
 
-  function script(src) {
-    return new Promise(function (ok, no) {
-      var s = document.createElement('script');
-      s.src = src; s.async = true;
-      s.onload = ok;
-      s.onerror = function () { no(new Error('SDK 로드 실패: ' + src)); };
-      document.head.appendChild(s);
+  function need() {
+    return configured ? null : Promise.reject(new Error('not-configured'));
+  }
+
+  /* 신호가 약한 곳에서 하염없이 기다리지 않도록 시간 제한을 둡니다.
+     시간이 넘으면 실패로 처리되고, 부르는 쪽에서 기기 저장으로 넘어갑니다. */
+  function ask(url, opts, ms) {
+    opts = opts || {};
+    var ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    if (ctl) opts.signal = ctl.signal;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, ms || 15000);
+    return fetch(url, opts).then(function (r) {
+      clearTimeout(timer); return r;
+    }, function (e) {
+      clearTimeout(timer);
+      throw new Error(e && e.name === 'AbortError' ? 'timeout' : (e.message || 'network'));
     });
   }
 
-  /* Firebase SDK를 처음 필요할 때 한 번만 불러옵니다 */
-  function ready() {
-    if (!configured) return Promise.reject(new Error('not-configured'));
-    if (loading) return loading;
-    loading = script(SDK + 'firebase-app-compat.js')
-      .then(function () { return script(SDK + 'firebase-storage-compat.js'); })
-      .then(function () {
-        if (!firebase.apps.length) firebase.initializeApp(CONFIG);
-        storage = firebase.storage();
-        return storage;
-      })
-      .catch(function (e) { loading = null; throw e; });
-    return loading;
-  }
-
-  /* 올라와 있는 사진 전체 목록 → {코드: 주소} */
+  /* 올라와 있는 사진 전체 목록 → {코드: 주소} (여러 페이지도 이어서 받음) */
   function list() {
-    return ready().then(function (st) {
-      return st.ref(DIR).listAll();
-    }).then(function (res) {
-      return Promise.all(res.items.map(function (item) {
-        return item.getDownloadURL().then(
-          function (url) { return { code: codeOf(item.name), url: url }; },
-          function () { return null; }
-        );
-      }));
-    }).then(function (rows) {
-      var map = {};
-      rows.forEach(function (r) { if (r) map[r.code] = r.url; });
-      putCache(map);
-      return map;
-    });
+    var stop = need(); if (stop) return stop;
+    var map = {};
+    function page(token) {
+      var url = base() + '?prefix=' + encodeURIComponent(DIR + '/') + '&maxResults=1000' +
+                (token ? '&pageToken=' + encodeURIComponent(token) : '');
+      return ask(url, null, 15000).then(function (r) {
+        if (!r.ok) throw new Error('list ' + r.status);
+        return r.json();
+      }).then(function (d) {
+        (d.items || []).forEach(function (it) {
+          if (/\.jpg$/i.test(it.name)) map[codeOf(it.name)] = mediaUrl(it.name);
+        });
+        return d.nextPageToken ? page(d.nextPageToken) : map;
+      });
+    }
+    return page(null).then(function (m) { putCache(m); return m; });
   }
 
-  /* 사진 한 장 올리기 → 다운로드 주소 */
+  /* 사진 한 장 올리기 → 주소 */
   function upload(code, blob) {
-    return ready().then(function (st) {
-      return st.ref(pathOf(code)).put(blob, {
-        contentType: 'image/jpeg',
-        cacheControl: 'public,max-age=31536000'
-      });
-    }).then(function (snap) {
-      return snap.ref.getDownloadURL();
-    }).then(function (url) {
+    var stop = need(); if (stop) return stop;
+    var p = pathOf(code);
+    return ask(base() + '?name=' + encodeURIComponent(p), {
+      method: 'POST',
+      headers: { 'Content-Type': 'image/jpeg' },
+      body: blob
+    }, 25000).then(function (r) {
+      if (!r.ok) throw new Error('upload ' + r.status);
+      var url = mediaUrl(p);
       var map = cached(); map[safe(code)] = url; putCache(map);
       return url;
     });
@@ -95,18 +92,15 @@
 
   /* 사진 한 장 지우기 (이미 없어도 성공으로 처리) */
   function remove(code) {
-    return ready().then(function (st) {
-      return st.ref(pathOf(code)).delete().catch(function (e) {
-        if (e && e.code === 'storage/object-not-found') return;
-        throw e;
-      });
-    }).then(function () {
+    var stop = need(); if (stop) return stop;
+    return ask(objUrl(pathOf(code)), { method: 'DELETE' }, 15000).then(function (r) {
+      if (!r.ok && r.status !== 404) throw new Error('delete ' + r.status);
       var map = cached(); delete map[safe(code)]; putCache(map);
     });
   }
 
   window.CloudPhotos = {
-    configured: configured,   // config를 채웠는지
+    configured: configured,   // 버킷이 설정돼 있는지
     cached: cached,           // 마지막으로 본 목록(즉시 사용, 네트워크 없음)
     list: list,
     upload: upload,
