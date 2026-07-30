@@ -22,6 +22,12 @@
   .names .hh{font-size:24px}
   .btn{font-family:var(--font);border:none;cursor:pointer;border-radius:999px;padding:16px 30px;font-size:clamp(18px,4.6vw,22px);color:#fff;background:linear-gradient(135deg,var(--rose),var(--rose-deep));box-shadow:0 14px 30px -10px rgba(225,29,91,.7),inset 0 2px 0 rgba(255,255,255,.35);transition:transform .12s}
   .btn:active{transform:scale(.96)}.btn:hover{transform:scale(1.04)}
+  .btn:disabled{background:#f0d3de;color:#fff;box-shadow:none;cursor:not-allowed;transform:none}
+  .btn:disabled:hover{transform:none}
+  .warn{min-height:22px;margin:-8px 0 12px;font-family:"Gaegu","Apple SD Gothic Neo",sans-serif;font-size:15px;color:var(--rose-deep);opacity:0;transition:opacity .2s}
+  .warn.show{opacity:1}
+  input.miss{border-color:var(--rose);background:#fff3f7;animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
   .result{display:none}
   .result.show{display:block;animation:pop .5s cubic-bezier(.16,1.2,.3,1) both}
   .ringwrap{position:relative;width:210px;height:210px;margin:6px auto 8px}
@@ -42,15 +48,16 @@
   <main class="card">
     <span class="emoji">💘</span>
     <h1>우리 궁합은 몇 %?</h1>
-    <p class="sub">두 사람 이름을 넣고 측정해봐 (안 넣어도 돼)</p>
+    <p class="sub">두 사람 이름을 넣어야 측정할 수 있어 ✍️</p>
 
     <div id="form">
       <div class="names">
-        <input id="me" type="text" placeholder="내 이름" maxlength="8" />
+        <input id="me" type="text" placeholder="내 이름" maxlength="8" autocomplete="off" />
         <span class="hh">💕</span>
-        <input id="you" type="text" placeholder="상대 이름" maxlength="8" />
+        <input id="you" type="text" placeholder="상대 이름" maxlength="8" autocomplete="off" />
       </div>
-      <button class="btn" id="go" type="button">측정하기 💓</button>
+      <div class="warn" id="warn"></div>
+      <button class="btn" id="go" type="button" disabled>측정하기 💓</button>
     </div>
 
     <div class="result" id="result">
@@ -88,12 +95,33 @@ window.FX=(function(){
   var C=2*Math.PI*92; ring.style.strokeDasharray=C; ring.style.strokeDashoffset=C;
   var targets=[100,99.9,99.9,99.8,99.5,98.7,97.9]; // 항상 높게 나옴
 
+  var meEl=document.getElementById('me'), youEl=document.getElementById('you');
+  var goBtn=document.getElementById('go'), warn=document.getElementById('warn');
+
+  function val(el){ return (el.value||'').trim(); }
+  function valid(){ return val(meEl).length>0 && val(youEl).length>0; }
+  function sync(){                       // 둘 다 입력해야 버튼 활성화
+    goBtn.disabled = !valid();
+    if(valid()){ warn.classList.remove('show'); meEl.classList.remove('miss'); youEl.classList.remove('miss'); }
+  }
+  function nag(){                        // 비었을 때 안내 + 흔들기
+    warn.textContent='두 사람 이름을 모두 적어줘! 🥰';
+    warn.classList.add('show');
+    [meEl,youEl].forEach(function(el){
+      el.classList.remove('miss');
+      if(!val(el)){ void el.offsetWidth; el.classList.add('miss'); }
+    });
+    (!val(meEl) ? meEl : youEl).focus();
+  }
+  [meEl,youEl].forEach(function(el){ el.addEventListener('input', sync); });
+  sync();
+
   function measure(){
-    var me=(document.getElementById('me').value||'').trim();
-    var you=(document.getElementById('you').value||'').trim();
+    if(!valid()){ nag(); return; }       // 이름 없으면 측정 불가
+    var me=val(meEl), you=val(youEl);
     var target=targets[(Math.random()*targets.length)|0];
     form.style.display='none'; result.classList.add('show');
-    if(me&&you){ pair.textContent=me+' 💗 '+you; } else { pair.textContent=''; }
+    pair.textContent=me+' 💗 '+you;
 
     // 서스펜스: 빠르게 82까지 → 잠깐 멈칫 → 목표까지 천천히
     var start=null, phase=1, from=0, to=82, dur=900, hold=0;
@@ -110,13 +138,14 @@ window.FX=(function(){
     }
     requestAnimationFrame(frame);
   }
-  document.getElementById('go').addEventListener('click', measure);
+  goBtn.addEventListener('click', measure);
   document.getElementById('again').addEventListener('click', function(){
     result.classList.remove('show'); form.style.display='block';
     ring.style.strokeDashoffset=C; pct.textContent='0%'; verdict.textContent='';
+    sync();   // 이름이 그대로 있으면 바로 다시 측정 가능
   });
   // 엔터로도 측정
-  [document.getElementById('me'),document.getElementById('you')].forEach(function(el){
+  [meEl,youEl].forEach(function(el){
     el.addEventListener('keydown',function(e){if(e.key==='Enter')measure();});
   });
 })();
