@@ -25,9 +25,11 @@ import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 /**
  * 달력의 하루 칸.
  *
- * 사진이 **없는** 날은 연회색 칸에 숫자를 가운데,
- * **있는** 날은 사진이 칸을 채우고 숫자가 왼쪽 위로 갑니다.
- * 숫자 자리가 다른 것 자체가 "사진이 있다" 는 신호입니다.
+ * 숫자는 **늘 왼쪽 위**입니다 — 자리가 날마다 바뀌면 눈이 숫자를 다시 찾아야 합니다.
+ *
+ * 빈 날에는 **아무것도 깔지 않습니다.** 칸마다 회색을 깔면 달력이 격자무늬가 되어,
+ * 정작 봐야 할 사진이 묻힙니다. 배경은 사진이 있을 때만 생기고, 그래서 사진이 있는
+ * 날이 저절로 눈에 띕니다.
  */
 @Composable
 fun DayCell(
@@ -45,7 +47,6 @@ fun DayCell(
             .fillMaxWidth()
             .aspectRatio(1f)
             .clip(MemoryShapes.DayCell)
-            .background(if (hasPhoto) Color.Transparent else MemoryColors.Fill)
             .clickable(onClick = onClick)
     ) {
         if (hasPhoto) {
@@ -75,11 +76,7 @@ fun DayCell(
                 isSunday -> MemoryColors.Accent
                 else -> MemoryColors.Ink2
             },
-            modifier = if (hasPhoto) {
-                Modifier.align(Alignment.TopStart).padding(start = 7.dp, top = 5.dp)
-            } else {
-                Modifier.align(Alignment.Center)
-            },
+            modifier = Modifier.align(Alignment.TopStart).padding(start = 7.dp, top = 5.dp),
         )
 
         if (isToday) {

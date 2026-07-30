@@ -34,8 +34,14 @@ extension Color {
 }
 
 /// **Pretendard 한 벌.** 굵기와 자간만으로 위계를 만듭니다.
-/// 앱 번들에 폰트를 넣기 전까지는 시스템 서체로 떨어집니다 — 이름은 그대로 두고
-/// 앱 껍데기에서 폰트를 등록하면 바로 붙습니다.
+///
+/// 굵기를 **PostScript 이름으로 직접** 고릅니다. `.custom("Pretendard").weight(.semibold)`
+/// 로 하지 않는 이유: 이 폰트 파일들은 Medium·SemiBold 가 각자 다른 패밀리로 들어 있어
+/// (`Pretendard Medium`, `Pretendard SemiBold`) `Pretendard` 패밀리 안에서는 찾지 못하고
+/// 시스템이 굵기를 **흉내 내 그립니다**. 이름을 직접 대면 그 얼굴이 그대로 나옵니다.
+///
+/// 앱 번들에 폰트가 없으면 시스템 서체로 떨어집니다 — 등록은 앱 껍데기가 합니다
+/// (`ios/App/Info.plist` 의 `UIAppFonts`).
 public enum MemoryFont {
     static let family = "Pretendard"
 
@@ -46,8 +52,18 @@ public enum MemoryFont {
     public static let label = font(13, .medium)
     public static let micro = font(11, .semibold)
 
+    /// 안드로이드 `res/font` 에 있는 것과 **같은 네 벌**입니다.
+    static func faceName(_ weight: Font.Weight) -> String {
+        switch weight {
+        case .bold, .heavy, .black: "\(family)-Bold"
+        case .semibold: "\(family)-SemiBold"
+        case .medium: "\(family)-Medium"
+        default: "\(family)-Regular"
+        }
+    }
+
     static func font(_ size: CGFloat, _ weight: Font.Weight) -> Font {
-        .custom(family, size: size).weight(weight)
+        .custom(faceName(weight), size: size)
     }
 }
 

@@ -119,11 +119,18 @@ public final class SpaceListStore {
     public private(set) var state = SpaceListState()
 
     private let observeSpaces: ObserveSpaces
+    private let refreshSpaces: RefreshSpaces
     private let createSpace: CreateSpace
     private let joinSpace: JoinSpace
 
-    public init(observeSpaces: ObserveSpaces, createSpace: CreateSpace, joinSpace: JoinSpace) {
+    public init(
+        observeSpaces: ObserveSpaces,
+        refreshSpaces: RefreshSpaces,
+        createSpace: CreateSpace,
+        joinSpace: JoinSpace
+    ) {
         self.observeSpaces = observeSpaces
+        self.refreshSpaces = refreshSpaces
         self.createSpace = createSpace
         self.joinSpace = joinSpace
     }
@@ -131,6 +138,11 @@ public final class SpaceListStore {
     public func send(_ intent: SpaceListIntent) async {
         switch intent {
         case .appeared:
+            // 먼저 받아오고 그 다음에 읽습니다. 안드로이드 `SpaceListViewModel` 과 같은 순서입니다.
+            if case .fail(let reason) = await refreshSpaces() {
+                state = SpaceListReducer.loadFailed(state, reason)
+                return
+            }
             state = SpaceListReducer.loaded(state, await observeSpaces())
 
         case .createTapped:

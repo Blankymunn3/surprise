@@ -19,10 +19,16 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import kr.surprise.memorymap.core.designsystem.component.GlassIconButton
 import kr.surprise.memorymap.core.designsystem.component.GlassSurface
@@ -49,7 +55,14 @@ fun MapScreen(
     topBarHeight: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
 ) {
-    val sheetHeight = if (state.sheet != null) 300.dp else 0.dp
+    // 시트 높이는 **재서** 씁니다. 사진이 있느냐에 따라 시트가 훌쩍 달라지는데,
+    // 고정값으로 두면 시트가 짧을 때 버튼만 허공에 뜹니다.
+    var sheetHeight by remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
+
+    // 시트가 없을 때는 화면 아래에서 40dp. 있을 때는 시트 바로 위에 Gap.l 만큼 띄웁니다.
+    val floatBottom =
+        if (state.sheet == null) 40.dp else maxOf(40.dp, sheetHeight + Gap.l)
 
     Box(modifier.fillMaxSize().background(MemoryColors.MapSea)) {
         MapCanvas(
@@ -82,7 +95,7 @@ fun MapScreen(
         Column(
             Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = Gap.l, bottom = 40.dp + sheetHeight),
+                .padding(start = Gap.l, bottom = floatBottom),
             verticalArrangement = Arrangement.spacedBy(9.dp),
         ) {
             GlassSurface(modifier = Modifier.size(width = 40.dp, height = 80.dp)) {
@@ -104,7 +117,7 @@ fun MapScreen(
             contentDescription = "사진 올리기",
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = Gap.xl, bottom = 40.dp + sheetHeight),
+                .padding(end = Gap.xl, bottom = floatBottom),
         )
 
         state.sheet?.let { sheet ->
@@ -112,7 +125,9 @@ fun MapScreen(
                 sheet = sheet,
                 canSetCover = state.canSetCover(),
                 onIntent = onIntent,
-                modifier = Modifier.align(Alignment.BottomCenter),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .onSizeChanged { sheetHeight = with(density) { it.height.toDp() } },
             )
         }
     }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,14 +16,23 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kr.surprise.memorymap.domain.CalendarMonth
 import kr.surprise.memorymap.core.designsystem.component.DayCell
 import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
 import kr.surprise.memorymap.core.designsystem.component.PhotoThumb
@@ -30,6 +40,8 @@ import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
+import java.time.YearMonth
+import java.time.temporal.ChronoUnit
 
 private val WEEKDAYS = listOf("일", "월", "화", "수", "목", "금", "토")
 
@@ -123,28 +135,69 @@ private fun WeekdayRow() {
     }
 }
 
+/**
+ * 옆으로 넘겨 달을 바꿉니다.
+ *
+ * 페이지 수를 아주 크게 잡고 가운데에서 시작합니다 — 무한히 넘기는 것처럼 보이게 하는
+ * 흔한 방법입니다. 실제로 그리는 건 화면에 보이는 한 장뿐입니다.
+ *
+ * **보이는 달만** 사진을 채워 그립니다. 옆 페이지는 상태에 없는 달이라 사진을 모르는데,
+ * 빈 격자를 잠깐 보여 주는 편이 엉뚱한 달의 사진을 보여 주는 것보다 낫습니다.
+ */
 @Composable
 private fun MonthGrid(state: CalendarState, onIntent: (CalendarIntent) -> Unit) {
-    // 칸 수가 정해져 있어(최대 6줄) 스크롤 없는 격자로 그립니다
-    Column(
-        Modifier.fillMaxWidth().padding(horizontal = 18.dp),
-        verticalArrangement = Arrangement.spacedBy(Gap.xs),
-    ) {
-        state.cells.chunked(7).forEach { week ->
-            Row(horizontalArrangement = Arrangement.spacedBy(Gap.xs)) {
-                week.forEach { cell ->
-                    Box(Modifier.weight(1f)) {
-                        val date = cell.date
-                        if (date == null) {
-                            Spacer(Modifier.fillMaxWidth().height(0.dp))
-                        } else {
-                            DayCell(
-                                day = date.dayOfMonth,
-                                photoUrl = cell.coverUrl,
-                                isToday = cell.isToday,
-                                isSunday = cell.isSunday,
-                                onClick = { onIntent(CalendarIntent.DayTapped(date)) },
-                            )
+    val anchor = rememberSaveable(saver = YearMonthSaver) { state.month }
+    val pager = rememberPagerState(initialPage = PAGE_CENTER, pageCount = { PAGE_COUNT })
+
+    fun monthAt(page: Int): YearMonth = anchor.plusMonths((page - PAGE_CENTER).toLong())
+
+    // 넘김이 멈춘 뒤에만 알립니다. 손가락을 따라가며 매번 다시 그리면 화면이 떨립니다.
+    LaunchedEffect(pager) {
+        snapshotFlow { pager.settledPage }
+            .map { monthAt(it) }
+            .distinctUntilChanged()
+            .collect { onIntent(CalendarIntent.MonthSelected(it)) }
+    }
+
+    // 위 화살표로 달을 바꿨을 때 페이지도 따라오게
+    LaunchedEffect(state.month) {
+        val target = PAGE_CENTER + ChronoUnit.MONTHS.between(anchor, state.month).toInt()
+        if (target != pager.currentPage && target in 0 until PAGE_COUNT) {
+            pager.animateScrollToPage(target)
+        }
+    }
+
+    BoxWithConstraints(Modifier.fillMaxWidth().padding(horizontal = 18.dp)) {
+        // 높이를 미리 정합니다. 달마다 줄 수가 달라 그때그때 재면 넘길 때 화면이 출렁입니다.
+        val cell = (maxWidth - Gap.xs * 6) / 7
+        val gridHeight = cell * WEEK_ROWS + Gap.xs * (WEEK_ROWS - 1)
+
+        HorizontalPager(state = pager, modifier = Modifier.height(gridHeight)) { page ->
+            val month = monthAt(page)
+            val cells = if (month == state.month) {
+                state.cells
+            } else {
+                CalendarMonth.grid(month).map { DayUi(it, null, isToday = false, isSunday = it != null && CalendarMonth.isSunday(it)) }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(Gap.xs)) {
+                cells.chunked(7).forEach { week ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(Gap.xs)) {
+                        week.forEach { dayCell ->
+                            Box(Modifier.weight(1f)) {
+                                val date = dayCell.date
+                                if (date == null) {
+                                    Spacer(Modifier.fillMaxWidth().height(cell))
+                                } else {
+                                    DayCell(
+                                        day = date.dayOfMonth,
+                                        photoUrl = dayCell.coverUrl,
+                                        isToday = dayCell.isToday,
+                                        isSunday = dayCell.isSunday,
+                                        onClick = { onIntent(CalendarIntent.DayTapped(date)) },
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -152,6 +205,19 @@ private fun MonthGrid(state: CalendarState, onIntent: (CalendarIntent) -> Unit) 
         }
     }
 }
+
+/** 6줄이면 어떤 달이든 들어갑니다. 늘 6줄로 그려야 넘길 때 높이가 안 바뀝니다. */
+private const val WEEK_ROWS = 6
+
+/** ±100년. 넘기다 끝에 닿을 일은 없습니다. */
+private const val PAGE_COUNT = 2401
+private const val PAGE_CENTER = PAGE_COUNT / 2
+
+/** 화면이 다시 만들어져도 기준 달이 흔들리지 않게 저장합니다. */
+private val YearMonthSaver = Saver<YearMonth, String>(
+    save = { it.toString() },
+    restore = { YearMonth.parse(it) },
+)
 
 @Composable
 private fun CollapseBar(collapsed: Boolean, onToggle: () -> Unit) {

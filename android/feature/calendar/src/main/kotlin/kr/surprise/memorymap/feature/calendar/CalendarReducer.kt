@@ -46,6 +46,9 @@ internal object CalendarReducer {
     fun monthChanged(state: CalendarState, delta: Long): CalendarState =
         state.copy(month = state.month.plusMonths(delta), selected = null)
 
+    fun monthSelected(state: CalendarState, month: YearMonth): CalendarState =
+        if (month == state.month) state else state.copy(month = month, selected = null)
+
     fun daySelected(state: CalendarState, date: LocalDate): CalendarState =
         state.copy(selected = date)
 

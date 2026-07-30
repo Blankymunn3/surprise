@@ -130,10 +130,11 @@ public struct DayCell: View {
         self.isSunday = isSunday
     }
 
+    /// 숫자는 **늘 왼쪽 위**, 배경은 **사진이 있을 때만**. 안드로이드 `DayCell` 과 같습니다.
+    /// 빈 날까지 회색을 깔면 달력이 격자무늬가 되어 정작 사진이 묻힙니다.
     public var body: some View {
-        ZStack(alignment: photoURL == nil ? .center : .topLeading) {
-            RoundedRectangle(cornerRadius: MemoryRadius.dayCell, style: .continuous)
-                .fill(photoURL == nil ? MemoryColor.fill : Color.clear)
+        ZStack(alignment: .topLeading) {
+            Color.clear
 
             if let photoURL, let url = URL(string: photoURL) {
                 AsyncImage(url: url) { image in
@@ -155,8 +156,8 @@ public struct DayCell: View {
             Text("\(day)")
                 .memoryLabel()
                 .foregroundStyle(textColor)
-                .padding(photoURL == nil ? .all : .leading, photoURL == nil ? 0 : 7)
-                .padding(.top, photoURL == nil ? 0 : 5)
+                .padding(.leading, 7)
+                .padding(.top, 5)
         }
         .aspectRatio(1, contentMode: .fit)
         .overlay {

@@ -1,5 +1,14 @@
 package kr.surprise.memorymap
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -56,11 +66,29 @@ import kr.surprise.memorymap.feature.upload.UploadViewModel
 private const val ROUTE_SPACES = "spaces"
 private const val ROUTE_SPACE = "space/{spaceId}"
 
+/**
+ * 화면이 오갈 때의 움직임.
+ *
+ * 들어갈 때는 오른쪽에서 밀려 들어오고, 나갈 때는 그 반대로 나갑니다.
+ * 뒤에 남는 화면은 **조금만**(1/6) 따라 움직입니다 — 같은 거리로 밀면 두 장이 붙어
+ * 움직이는 것처럼 보여서 어느 쪽이 위인지 알 수 없습니다.
+ */
+private val SLIDE = tween<IntOffset>(300, easing = FastOutSlowInEasing)
+private val FADE = tween<Float>(200, easing = LinearEasing)
+private const val PARALLAX = 6
+
 @Composable
 fun MemoryMapNavHost(container: AppContainer) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = ROUTE_SPACES) {
+    NavHost(
+        navController = navController,
+        startDestination = ROUTE_SPACES,
+        enterTransition = { slideInHorizontally(SLIDE) { it } + fadeIn(FADE) },
+        exitTransition = { slideOutHorizontally(SLIDE) { -it / PARALLAX } + fadeOut(FADE) },
+        popEnterTransition = { slideInHorizontally(SLIDE) { -it / PARALLAX } + fadeIn(FADE) },
+        popExitTransition = { slideOutHorizontally(SLIDE) { it } + fadeOut(FADE) },
+    ) {
         composable(ROUTE_SPACES) {
             val vm: SpaceListViewModel = viewModel(factory = container.spaceListFactory())
             val state by vm.state.collectAsStateWithLifecycle()
@@ -141,12 +169,24 @@ private fun SpaceTabs(container: AppContainer, spaceId: SpaceId, onBack: () -> U
     }
 
     Box(Modifier.fillMaxSize().background(MemoryColors.Paper)) {
-        if (tab == 0) {
-            MapScreen(state = mapState, onIntent = mapVm::onIntent, topBarHeight = 96.dp)
-        } else {
-            Column(Modifier.fillMaxSize().systemBarsPadding()) {
-                Box(Modifier.fillMaxWidth().padding(top = 44.dp))
-                CalendarScreen(state = calendarState, onIntent = calendarVm::onIntent)
+        // 탭도 옆으로 밀립니다. 누른 쪽으로 미끄러져야 어느 쪽으로 옮겼는지 보입니다.
+        AnimatedContent(
+            targetState = tab,
+            transitionSpec = {
+                val toRight = targetState > initialState
+                val dir = if (toRight) 1 else -1
+                (slideInHorizontally(SLIDE) { dir * it } + fadeIn(FADE)) togetherWith
+                    (slideOutHorizontally(SLIDE) { -dir * it } + fadeOut(FADE))
+            },
+            label = "탭",
+        ) { current ->
+            if (current == 0) {
+                MapScreen(state = mapState, onIntent = mapVm::onIntent, topBarHeight = 96.dp)
+            } else {
+                Column(Modifier.fillMaxSize().systemBarsPadding()) {
+                    Box(Modifier.fillMaxWidth().padding(top = 44.dp))
+                    CalendarScreen(state = calendarState, onIntent = calendarVm::onIntent)
+                }
             }
         }
 

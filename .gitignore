@@ -1,2 +1,9 @@
 .DS_Store
 *.command
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+.swiftpm/
+ios/Packages/MemoryMap/.build/

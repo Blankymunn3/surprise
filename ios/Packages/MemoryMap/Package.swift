@@ -15,6 +15,8 @@ let package = Package(
     products: [
         .library(name: "CoreModel", targets: ["CoreModel"]),
         .library(name: "CoreCommon", targets: ["CoreCommon"]),
+        // 앱 껍데기가 저장소(Repository)를 조립할 때 FirebaseStorage 가 필요합니다.
+        .library(name: "CoreNetwork", targets: ["CoreNetwork"]),
         .library(name: "DesignSystem", targets: ["DesignSystem"]),
         .library(name: "Domain", targets: ["Domain"]),
         .library(name: "DataPhoto", targets: ["DataPhoto"]),

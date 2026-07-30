@@ -5,11 +5,10 @@
 # 번거롭고 로그인이 필요합니다. 릴리스 파일은 폰 브라우저에서 눌러 바로 설치됩니다.
 name: apk
 
+# **부를 때만** 만듭니다. main 에 들어갈 때마다 자동으로 만들지 않습니다.
+# 만드는 법: 저장소 → Actions → apk → "Run workflow"
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['android/**', '.github/workflows/apk.yml']
 
 permissions:
   contents: write
