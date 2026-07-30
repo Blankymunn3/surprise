@@ -1,361 +1,66 @@
-<title>나 사랑하나요? 💕</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>오늘의 서프라이즈 💝</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
-
 <style>
-  :root {
-    --rose: #ff4d78;
-    --rose-deep: #e11d5b;
-    --pink-1: #ffe3ee;
-    --pink-2: #ffc2d6;
-    --pink-3: #ffd9c9;
-    --ink: #5a2740;
-    --ink-soft: #96566f;
-    --card: rgba(255,255,255,.62);
-    --font: "Jua", "Apple SD Gothic Neo", "Pretendard", system-ui, sans-serif;
-  }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; margin: 0; }
-  body {
-    font-family: var(--font);
-    color: var(--ink);
-    overflow: hidden;
-    background:
-      radial-gradient(120% 90% at 15% 0%, var(--pink-1), transparent 55%),
-      radial-gradient(120% 100% at 100% 100%, var(--pink-3), transparent 55%),
-      linear-gradient(160deg, #fff0f5 0%, var(--pink-2) 60%, #ffb3c9 100%);
-    background-attachment: fixed;
-    -webkit-font-smoothing: antialiased;
-    touch-action: manipulation;
-    user-select: none; -webkit-user-select: none;
-  }
-
-  /* ambient drifting hearts (background) */
-  .bg-hearts { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-  .bg-hearts span {
-    position: absolute; bottom: -10%; font-size: var(--s); opacity: .18;
-    animation: drift var(--d) linear infinite; animation-delay: var(--delay);
-    filter: blur(.3px);
-  }
-  @keyframes drift {
-    0% { transform: translateY(0) translateX(0) rotate(0); }
-    100% { transform: translateY(-120vh) translateX(var(--x)) rotate(320deg); }
-  }
-
-  /* main card */
-  .stage { position: relative; z-index: 2; min-height: 100svh; display: grid; place-items: center; padding: 24px; }
-  .card {
-    position: relative;
-    width: min(92vw, 520px);
-    background: var(--card);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255,255,255,.75);
-    border-radius: 34px;
-    box-shadow: 0 30px 70px -30px rgba(190,30,80,.5), inset 0 1px 0 rgba(255,255,255,.9);
-    padding: 44px 30px 40px;
-    text-align: center;
-    animation: pop .7s cubic-bezier(.16,1.2,.3,1) both;
-  }
-  @keyframes pop { from { transform: scale(.7) translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
-
-  .emoji { font-size: 66px; line-height: 1; display: block; animation: bob 2.6s ease-in-out infinite; }
-  @keyframes bob { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-10px) rotate(4deg); } }
-
-  h1 {
-    font-size: clamp(34px, 8.5vw, 54px);
-    margin: 14px 0 6px; line-height: 1.15; color: var(--rose-deep);
-    text-shadow: 0 2px 0 rgba(255,255,255,.6);
-  }
-  .sub { font-family: "Gaegu","Apple SD Gothic Neo",sans-serif; font-size: clamp(16px,4.4vw,20px); color: var(--ink-soft); margin: 0 0 30px; }
-
-  .btns { display: flex; gap: 16px; justify-content: center; align-items: center; flex-wrap: wrap; }
-  .btn {
-    font-family: var(--font); border: none; cursor: pointer; border-radius: 999px;
-    padding: 18px 30px; font-size: clamp(19px, 5vw, 24px); transition: transform .12s ease, box-shadow .2s ease, background .2s;
-  }
-  .btn:active { transform: scale(.96); }
-  .yes {
-    background: linear-gradient(135deg, var(--rose), var(--rose-deep));
-    color: #fff; box-shadow: 0 14px 30px -10px rgba(225,29,91,.7), inset 0 2px 0 rgba(255,255,255,.35);
-    transform-origin: center;
-    animation: throb 1.5s ease-in-out infinite;
-  }
-  @keyframes throb { 0%,100% { box-shadow: 0 14px 30px -10px rgba(225,29,91,.7), inset 0 2px 0 rgba(255,255,255,.35); } 50% { box-shadow: 0 18px 42px -8px rgba(225,29,91,.9), inset 0 2px 0 rgba(255,255,255,.35); } }
-  .yes:hover { transform: scale(1.06); }
-  .no {
-    background: rgba(255,255,255,.85); color: var(--ink-soft);
-    box-shadow: 0 8px 18px -8px rgba(150,86,111,.5); border: 1px solid rgba(255,255,255,.9);
-    transform-origin: top left; z-index: 5;
-    white-space: nowrap; max-width: calc(100vw - 24px);
-  }
-
-  .counter { margin-top: 22px; height: 20px; font-family:"Gaegu",sans-serif; font-size: 15px; color: var(--ink-soft); opacity: .85; }
-
-  /* win overlay */
-  #win {
-    position: fixed; inset: 0; z-index: 40; display: none; place-items: center; text-align: center;
-    padding: 24px;
-    background: radial-gradient(120% 120% at 50% 30%, rgba(255,220,232,.55), rgba(255,150,180,.5));
-    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
-  }
-  #win.show { display: grid; animation: fadein .5s ease both; }
-  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
-  .win-inner { animation: pop .8s cubic-bezier(.16,1.3,.3,1) both; }
-  #win .big { font-size: clamp(46px, 13vw, 96px); color: var(--rose-deep); text-shadow: 0 3px 0 rgba(255,255,255,.7); line-height: 1.05; }
-  #win .msg { font-family:"Gaegu",sans-serif; font-size: clamp(19px,5.4vw,26px); color: var(--ink); margin-top: 14px; }
-  .again {
-    margin-top: 30px; font-family: var(--font); cursor: pointer; border: none;
-    background: rgba(255,255,255,.9); color: var(--rose-deep); font-size: 17px;
-    padding: 12px 24px; border-radius: 999px; box-shadow: 0 10px 24px -10px rgba(225,29,91,.6);
-  }
-  .again:active { transform: scale(.96); }
-
-  /* layers */
-  #confetti { position: fixed; inset: 0; z-index: 45; pointer-events: none; }
-  #hearts { position: fixed; inset: 0; z-index: 44; pointer-events: none; overflow: hidden; }
-  .heart-b { position: fixed; bottom: -8%; will-change: transform, opacity; animation: floatUp var(--dur) linear forwards; }
-  @keyframes floatUp {
-    0% { transform: translateY(0) translateX(0) rotate(0); opacity: 0; }
-    12% { opacity: 1; }
-    88% { opacity: 1; }
-    100% { transform: translateY(-118vh) translateX(var(--sway)) rotate(var(--rot)); opacity: 0; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .bg-hearts span, .emoji, .yes { animation: none; }
-  }
+  :root{--rose:#ff4d78;--rose-deep:#e11d5b;--pink-1:#ffe3ee;--pink-2:#ffc2d6;--pink-3:#ffd9c9;--ink:#5a2740;--ink-soft:#96566f;--card:rgba(255,255,255,.62);--font:"Jua","Apple SD Gothic Neo","Pretendard",system-ui,sans-serif}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{font-family:var(--font);color:var(--ink);min-height:100svh;-webkit-font-smoothing:antialiased;background-attachment:fixed;
+    background:radial-gradient(120% 90% at 15% 0%,var(--pink-1),transparent 55%),radial-gradient(120% 100% at 100% 100%,var(--pink-3),transparent 55%),linear-gradient(160deg,#fff0f5 0%,var(--pink-2) 60%,#ffb3c9 100%)}
+  .wrap{max-width:560px;margin:0 auto;padding:52px 22px 60px;text-align:center}
+  .emoji{font-size:58px;display:block;animation:bob 2.6s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(4deg)}}
+  h1{font-size:clamp(28px,7vw,40px);margin:14px 0 6px;color:var(--rose-deep);text-shadow:0 2px 0 rgba(255,255,255,.6)}
+  .sub{font-family:"Gaegu","Apple SD Gothic Neo",sans-serif;font-size:clamp(15px,4.2vw,19px);color:var(--ink-soft);margin:0 0 30px}
+  .list{display:grid;gap:14px;text-align:left}
+  a.item{display:flex;align-items:center;gap:16px;text-decoration:none;color:inherit;
+    background:var(--card);backdrop-filter:blur(18px) saturate(175%);-webkit-backdrop-filter:blur(18px) saturate(175%);
+    border:1px solid rgba(255,255,255,.75);border-radius:22px;padding:18px 20px;
+    box-shadow:0 18px 42px -22px rgba(190,30,80,.45),inset 0 1px 0 rgba(255,255,255,.9);
+    transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+  a.item:hover{transform:translateY(-4px);box-shadow:0 26px 56px -24px rgba(190,30,80,.6),inset 0 1px 0 rgba(255,255,255,.95)}
+  a.item:active{transform:scale(.98)}
+  .ico{font-size:36px;flex:none;line-height:1}
+  .tt{font-size:19px;color:var(--rose-deep)}
+  .dd{font-family:"Gaegu",sans-serif;font-size:14.5px;color:var(--ink-soft);margin-top:2px}
+  .arrow{margin-left:auto;color:var(--rose);font-size:20px;flex:none}
+  .foot{margin-top:34px;font-family:"Gaegu",sans-serif;font-size:13.5px;color:var(--ink-soft);opacity:.9}
 </style>
 
-<div class="bg-hearts" id="bgHearts" aria-hidden="true"></div>
+<div class="wrap">
+  <span class="emoji">💝</span>
+  <h1>오늘의 서프라이즈</h1>
+  <p class="sub">골라서 하나씩 눌러봐 (전부 무해한 장난이야 😌)</p>
 
-<div class="stage">
-  <main class="card">
-    <span class="emoji">🥺</span>
-    <h1>나… 사랑하나요?</h1>
-    <p class="sub">솔직하게 딱 하나만 눌러줘 👀</p>
-    <div class="btns">
-      <button class="btn yes" id="yes" type="button">응, 사랑해 ❤️</button>
-      <button class="btn no" id="no" type="button">아니</button>
-    </div>
-    <div class="counter" id="counter"></div>
-  </main>
-</div>
-
-<div id="hearts" aria-hidden="true"></div>
-<canvas id="confetti" aria-hidden="true"></canvas>
-
-<div id="win" role="dialog" aria-label="사랑 확인">
-  <div class="win-inner">
-    <div class="big" id="winBig">사랑해 ❤️</div>
-    <div class="msg" id="winMsg">내 하루의 시작도 끝도 늘 너야.<br>세상에서 제일 사랑해, 내 사람 🥰</div>
-    <button class="again" id="again" type="button">한 번 더 물어보기 🔁</button>
+  <div class="list">
+    <a class="item" href="./love/">
+      <span class="ico">💘</span>
+      <span><span class="tt">나 사랑하나요?</span><span class="dd">'아니'는 아무리 눌러도 도망가요</span></span>
+      <span class="arrow">›</span>
+    </a>
+    <a class="item" href="./gunghap/">
+      <span class="ico">💞</span>
+      <span><span class="tt">우리 궁합은 몇 %?</span><span class="dd">이름 넣고 측정 — 결과는 늘 최고</span></span>
+      <span class="arrow">›</span>
+    </a>
+    <a class="item" href="./coupon/">
+      <span class="ico">🎟️</span>
+      <span><span class="tt">사랑 쿠폰 뽑기</span><span class="dd">안아주기·야식·소원권… 랜덤 16종</span></span>
+      <span class="arrow">›</span>
+    </a>
+    <a class="item" href="./scratch/">
+      <span class="ico">🪙</span>
+      <span><span class="tt">긁는 복권</span><span class="dd">은박을 벅벅 긁어 당첨 확인</span></span>
+      <span class="arrow">›</span>
+    </a>
+    <a class="item" href="./loading/">
+      <span class="ico">💗</span>
+      <span><span class="tt">사랑 측정 중…</span><span class="dd">두근두근 로딩 끝에 나오는 결과</span></span>
+      <span class="arrow">›</span>
+    </a>
   </div>
+
+  <p class="foot">만든 사람: 나 · 받는 사람: 너 💕</p>
 </div>
-
-<script>
-(function () {
-  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var no = document.getElementById("no");
-  var yes = document.getElementById("yes");
-  var counter = document.getElementById("counter");
-  var heartEmojis = ["❤️","💕","💖","💘","💗","🩷","😍","🥰","💞","💓"];
-  var noHome = no.parentNode, noNext = no.nextSibling;  // 리셋 시 제자리로 복원용
-
-  /* ---------- ambient background hearts ---------- */
-  (function bg() {
-    var wrap = document.getElementById("bgHearts");
-    var n = 14;
-    for (var i = 0; i < n; i++) {
-      var s = document.createElement("span");
-      s.textContent = heartEmojis[i % heartEmojis.length];
-      s.style.left = (Math.random() * 100) + "%";
-      s.style.setProperty("--s", (24 + Math.random() * 46) + "px");
-      s.style.setProperty("--d", (12 + Math.random() * 12) + "s");
-      s.style.setProperty("--x", (Math.random() * 120 - 60) + "px");
-      s.style.setProperty("--delay", (-Math.random() * 18) + "s");
-      wrap.appendChild(s);
-    }
-  })();
-
-  /* ---------- the runaway "아니" button ---------- */
-  var escapes = 0;
-  var noTexts = ["아니","아니…?","진짜로?","다시 생각해봐 🙄","한 번만 더 생각해","에이~ 아니겠지","그럴 리 없어 😤","안 돼! 못 눌러 😝","히히 못 잡지롱","날 잡아봐라~","우린 운명인걸 💫","포기하면 편해 😏"];
-  var caught = ["","살짝 도망…","또 도망쳤다!","자꾸 도망가네 😆","끈질기네 진짜 ㅋㅋ","이쯤이면 인정하자 😌","'아니'는 원래 못 눌러 🤫"];
-
-  function moveNo() {
-    escapes++;
-    // 0) body 최상위로 옮긴다 — .card의 backdrop-filter가 fixed의 기준을 카드로 바꾸기 때문.
-    //    body 직속이어야 position:fixed가 '뷰포트' 기준이 되어 화면 밖으로 사라지지 않음.
-    if (no.parentNode !== document.body) document.body.appendChild(no);
-    // 1) 문구·크기를 먼저 바꿔서 측정이 새 상태를 반영하게 한다
-    no.textContent = noTexts[Math.min(escapes, noTexts.length - 1)];
-    var s = Math.max(0.62, 1 - escapes * 0.04);
-    no.style.position = "fixed";
-    no.style.margin = "0";
-    no.style.transformOrigin = "top left";
-    no.style.transform = "scale(" + s + ")";
-    // 2) 실제 렌더 크기(스케일 포함)를 재서 항상 화면 '안'에만 두도록 클램프
-    var pad = 12;
-    var rect = no.getBoundingClientRect();
-    var w = rect.width, h = rect.height;
-    var maxX = Math.max(pad, window.innerWidth - w - pad);
-    var maxY = Math.max(pad, window.innerHeight - h - pad);
-    var x = Math.min(maxX, Math.max(pad, pad + Math.random() * (maxX - pad)));
-    var y = Math.min(maxY, Math.max(pad, pad + Math.random() * (maxY - pad)));
-    no.style.left = x + "px";
-    no.style.top = y + "px";
-    // 3) '사랑해'는 점점 커지고, 약올림 카운터
-    var ys = Math.min(1.7, 1 + escapes * 0.05);
-    yes.style.transform = "scale(" + ys + ")";
-    counter.textContent = caught[Math.min(escapes, caught.length - 1)];
-  }
-
-  // 창 크기/회전이 바뀌면 도망친 버튼을 다시 화면 안으로 당겨온다
-  window.addEventListener("resize", function () {
-    if (no.style.position !== "fixed") return;
-    var pad = 12, rect = no.getBoundingClientRect();
-    var maxX = Math.max(pad, window.innerWidth - rect.width - pad);
-    var maxY = Math.max(pad, window.innerHeight - rect.height - pad);
-    no.style.left = Math.min(maxX, Math.max(pad, parseFloat(no.style.left) || 0)) + "px";
-    no.style.top = Math.min(maxY, Math.max(pad, parseFloat(no.style.top) || 0)) + "px";
-  });
-
-  // desktop: run away when the cursor gets close
-  window.addEventListener("mousemove", function (e) {
-    var r = no.getBoundingClientRect();
-    var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    if (Math.hypot(e.clientX - cx, e.clientY - cy) < 120) moveNo();
-  });
-  // mobile: dodge a finger sliding toward it
-  window.addEventListener("touchmove", function (e) {
-    var t = e.touches[0]; if (!t) return;
-    var r = no.getBoundingClientRect();
-    var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    if (Math.hypot(t.clientX - cx, t.clientY - cy) < 90) moveNo();
-  }, { passive: true });
-  // any direct attempt on the button itself → escape before it can register
-  ["pointerdown", "touchstart", "mousedown", "mouseenter", "click", "focus"].forEach(function (ev) {
-    no.addEventListener(ev, function (e) { if (e.cancelable) e.preventDefault(); moveNo(); }, { passive: false });
-  });
-
-  /* ---------- confetti ---------- */
-  var canvas = document.getElementById("confetti");
-  var ctx = canvas.getContext("2d");
-  var DPR = Math.min(window.devicePixelRatio || 1, 2);
-  var parts = [], raf = null;
-  var COLORS = ["#ff4d78", "#e11d5b", "#ff8fab", "#ffd166", "#ff5da2", "#ffffff", "#ff9770"];
-
-  function size() {
-    canvas.width = window.innerWidth * DPR;
-    canvas.height = window.innerHeight * DPR;
-    canvas.style.width = window.innerWidth + "px";
-    canvas.style.height = window.innerHeight + "px";
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  }
-  size();
-  window.addEventListener("resize", function () { size(); });
-
-  function burst(x, y, amount) {
-    for (var i = 0; i < amount; i++) {
-      var ang = Math.random() * Math.PI * 2;
-      var spd = 4 + Math.random() * 11;
-      parts.push({
-        x: x, y: y,
-        vx: Math.cos(ang) * spd,
-        vy: Math.sin(ang) * spd - 6,
-        g: 0.16 + Math.random() * 0.12,
-        size: 7 + Math.random() * 10,
-        rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3,
-        color: COLORS[(Math.random() * COLORS.length) | 0],
-        heart: Math.random() < 0.4,
-        life: 0, max: 120 + Math.random() * 60
-      });
-    }
-    if (!raf) raf = requestAnimationFrame(tick);
-  }
-
-  function tick() {
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    for (var i = parts.length - 1; i >= 0; i--) {
-      var p = parts[i];
-      p.vy += p.g; p.x += p.vx; p.y += p.vy; p.vx *= 0.995; p.rot += p.vr; p.life++;
-      var alpha = Math.max(0, 1 - p.life / p.max);
-      ctx.save(); ctx.globalAlpha = alpha; ctx.translate(p.x, p.y); ctx.rotate(p.rot);
-      ctx.fillStyle = p.color;
-      if (p.heart) {
-        ctx.font = p.size * 1.7 + "px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText("♥", 0, 0);
-      } else {
-        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
-      }
-      ctx.restore();
-      if (p.life >= p.max || p.y > window.innerHeight + 40) parts.splice(i, 1);
-    }
-    if (parts.length) raf = requestAnimationFrame(tick);
-    else { raf = null; ctx.clearRect(0, 0, window.innerWidth, window.innerHeight); }
-  }
-
-  /* ---------- rising heart balloons ---------- */
-  var heartsLayer = document.getElementById("hearts");
-  function spawnHeart() {
-    var s = document.createElement("div");
-    s.className = "heart-b";
-    s.textContent = heartEmojis[(Math.random() * heartEmojis.length) | 0];
-    s.style.left = (Math.random() * 100) + "%";
-    s.style.fontSize = (26 + Math.random() * 44) + "px";
-    s.style.setProperty("--dur", (4.5 + Math.random() * 4) + "s");
-    s.style.setProperty("--sway", (Math.random() * 180 - 90) + "px");
-    s.style.setProperty("--rot", (Math.random() * 120 - 60) + "deg");
-    heartsLayer.appendChild(s);
-    s.addEventListener("animationend", function () { s.remove(); });
-  }
-
-  /* ---------- WIN ---------- */
-  var win = document.getElementById("win");
-  var heartTimer = null;
-  var winBig = document.getElementById("winBig");
-  var winMsg = document.getElementById("winMsg");
-  var sweetBig = ["사랑해 ❤️", "역시 내 사랑 💖", "너뿐이야 🥰", "나도 사랑해 💕", "내 사람 ❤️"];
-  var sweetMsg = [
-    "내 하루의 시작도 끝도 늘 너야.<br>세상에서 제일 사랑해, 내 사람 🥰",
-    "네 옆이 내가 제일 좋아하는 자리야.<br>평생 손 꼭 잡고 걸을게 💞",
-    "오늘도, 내일도, 그다음 날도 —<br>변함없이 너만 사랑할게 💕",
-    "너를 만난 게 내 인생에서 제일 잘한 일이야.<br>고맙고, 또 사랑해 😘",
-    "우린 역시 운명인가 봐 💫<br>남은 날들 전부 너랑 웃고 싶어 🥰",
-    "네 웃음 하나에 내 하루가 다 환해져.<br>사랑해, 아주 많이 ❤️",
-    "설레는 것도, 편한 것도 너 하나뿐.<br>더 아끼고 더 사랑할게 💗"
-  ];
-  function celebrate() {
-    if (winBig) winBig.textContent = sweetBig[(Math.random() * sweetBig.length) | 0];
-    if (winMsg) winMsg.innerHTML = sweetMsg[(Math.random() * sweetMsg.length) | 0];
-    win.classList.add("show");
-    var cx = window.innerWidth / 2, cy = window.innerHeight * 0.42;
-    burst(cx, cy, reduce ? 60 : 180);
-    setTimeout(function () { burst(window.innerWidth * 0.2, window.innerHeight * 0.5, 90); }, 250);
-    setTimeout(function () { burst(window.innerWidth * 0.8, window.innerHeight * 0.5, 90); }, 450);
-    // initial heart flood + continuous
-    for (var i = 0; i < 22; i++) setTimeout(spawnHeart, i * 90);
-    if (heartTimer) clearInterval(heartTimer);
-    heartTimer = setInterval(function () { spawnHeart(); if (Math.random() < 0.5) spawnHeart(); }, 320);
-  }
-  yes.addEventListener("click", celebrate);
-
-  document.getElementById("again").addEventListener("click", function () {
-    win.classList.remove("show");
-    if (heartTimer) { clearInterval(heartTimer); heartTimer = null; }
-    // reset the no button back into the card (원위치로 복원)
-    escapes = 0;
-    no.style.position = "";
-    no.style.left = no.style.top = no.style.margin = "";
-    no.style.transform = "";
-    no.style.transformOrigin = "";
-    no.textContent = "아니";
-    yes.style.transform = "";
-    counter.textContent = "";
-    if (no.parentNode !== noHome) noHome.insertBefore(no, noNext);
-  });
-})();
-</script>

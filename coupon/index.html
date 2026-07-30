@@ -1,0 +1,91 @@
+<title>오늘의 사랑 쿠폰 🎟️</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<style>
+  :root{--rose:#ff4d78;--rose-deep:#e11d5b;--pink-1:#ffe3ee;--pink-2:#ffc2d6;--pink-3:#ffd9c9;--ink:#5a2740;--ink-soft:#96566f;--card:rgba(255,255,255,.62);--font:"Jua","Apple SD Gothic Neo","Pretendard",system-ui,sans-serif}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;margin:0}
+  body{font-family:var(--font);color:var(--ink);min-height:100svh;overflow-x:hidden;user-select:none;-webkit-user-select:none;-webkit-font-smoothing:antialiased;background-attachment:fixed;
+    background:radial-gradient(120% 90% at 15% 0%,var(--pink-1),transparent 55%),radial-gradient(120% 100% at 100% 100%,var(--pink-3),transparent 55%),linear-gradient(160deg,#fff0f5 0%,var(--pink-2) 60%,#ffb3c9 100%)}
+  .stage{position:relative;z-index:2;min-height:100svh;display:grid;place-items:center;padding:24px}
+  .card{position:relative;width:min(92vw,480px);background:var(--card);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,.75);border-radius:34px;box-shadow:0 30px 70px -30px rgba(190,30,80,.5),inset 0 1px 0 rgba(255,255,255,.9);padding:38px 26px;text-align:center;animation:pop .6s cubic-bezier(.16,1.2,.3,1) both}
+  @keyframes pop{from{transform:scale(.7) translateY(20px);opacity:0}to{transform:none;opacity:1}}
+  .emoji{font-size:56px;line-height:1;display:block;animation:bob 2.6s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(4deg)}}
+  h1{font-size:clamp(26px,6.4vw,38px);margin:12px 0 6px;color:var(--rose-deep);text-shadow:0 2px 0 rgba(255,255,255,.6)}
+  .sub{font-family:"Gaegu","Apple SD Gothic Neo",sans-serif;font-size:clamp(15px,4.2vw,19px);color:var(--ink-soft);margin:0 0 22px}
+  .ticket{position:relative;margin:6px auto 20px;width:min(84vw,360px);min-height:150px;background:linear-gradient(135deg,#fff,#fff4f8);border-radius:20px;border:2px dashed #ffb0c8;box-shadow:0 16px 40px -18px rgba(225,29,91,.5);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:26px 22px;opacity:0;transform:scale(.8);}
+  .ticket.show{animation:flip .6s cubic-bezier(.16,1.3,.3,1) forwards}
+  @keyframes flip{0%{opacity:0;transform:perspective(700px) rotateY(90deg) scale(.9)}60%{opacity:1}100%{opacity:1;transform:perspective(700px) rotateY(0) scale(1)}}
+  .ticket::before,.ticket::after{content:"";position:absolute;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;background:var(--pink-2)}
+  .ticket::before{left:-14px}.ticket::after{right:-14px}
+  .ticket .ico{font-size:52px;line-height:1}
+  .ticket .label{font-size:11px;letter-spacing:.2em;color:var(--rose);font-family:"Gaegu",sans-serif}
+  .ticket .rw{font-size:clamp(20px,5.6vw,26px);color:var(--rose-deep)}
+  .ticket .fine{font-family:"Gaegu",sans-serif;font-size:12.5px;color:var(--ink-soft)}
+  .btn{font-family:var(--font);border:none;cursor:pointer;border-radius:999px;padding:16px 30px;font-size:clamp(18px,4.6vw,22px);color:#fff;background:linear-gradient(135deg,var(--rose),var(--rose-deep));box-shadow:0 14px 30px -10px rgba(225,29,91,.7),inset 0 2px 0 rgba(255,255,255,.35);transition:transform .12s}
+  .btn:active{transform:scale(.96)}.btn:hover{transform:scale(1.04)}
+  .count{margin-top:16px;height:18px;font-family:"Gaegu",sans-serif;font-size:14px;color:var(--ink-soft);opacity:.85}
+  #confetti{position:fixed;inset:0;z-index:45;pointer-events:none}
+  #hearts{position:fixed;inset:0;z-index:44;pointer-events:none;overflow:hidden}
+  .heart-b{position:fixed;bottom:-8%;animation:floatUp var(--dur) linear forwards}
+  @keyframes floatUp{0%{transform:translateY(0);opacity:0}12%{opacity:1}88%{opacity:1}100%{transform:translateY(-118vh) translateX(var(--sway)) rotate(var(--rot));opacity:0}}
+</style>
+
+<div class="stage">
+  <main class="card">
+    <span class="emoji">🎟️</span>
+    <h1>오늘의 사랑 쿠폰</h1>
+    <p class="sub">버튼을 누르면 쿠폰이 뽑혀! (마음껏 다시 뽑기 가능)</p>
+    <div class="ticket" id="ticket">
+      <div class="ico" id="ico">🎁</div>
+      <div class="label">LOVE COUPON</div>
+      <div class="rw" id="rw">버튼을 눌러줘</div>
+      <div class="fine">발행: 나 · 유효기간: 평생 💕</div>
+    </div>
+    <button class="btn" id="draw" type="button">쿠폰 뽑기 🎁</button>
+    <div class="count" id="count"></div>
+  </main>
+</div>
+
+<div id="hearts" aria-hidden="true"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+window.FX=(function(){
+  var c=document.getElementById('confetti'),x=c.getContext('2d'),DPR=Math.min(window.devicePixelRatio||1,2),P=[],raf=null;
+  var COL=["#ff4d78","#e11d5b","#ff8fab","#ffd166","#ff5da2","#ffffff","#ff9770"];
+  function sz(){c.width=innerWidth*DPR;c.height=innerHeight*DPR;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';x.setTransform(DPR,0,0,DPR,0,0)}sz();addEventListener('resize',sz);
+  function burst(px,py,n){for(var i=0;i<n;i++){var a=Math.random()*Math.PI*2,s=4+Math.random()*11;P.push({x:px,y:py,vx:Math.cos(a)*s,vy:Math.sin(a)*s-6,g:.16+Math.random()*.12,s:7+Math.random()*10,r:Math.random()*Math.PI,vr:(Math.random()-.5)*.3,c:COL[(Math.random()*COL.length)|0],h:Math.random()<.4,l:0,m:120+Math.random()*60})}if(!raf)raf=requestAnimationFrame(tick)}
+  function tick(){x.clearRect(0,0,innerWidth,innerHeight);for(var i=P.length-1;i>=0;i--){var p=P[i];p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.vx*=.995;p.r+=p.vr;p.l++;var a=Math.max(0,1-p.l/p.m);x.save();x.globalAlpha=a;x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;if(p.h){x.font=p.s*1.7+'px serif';x.textAlign='center';x.textBaseline='middle';x.fillText('♥',0,0)}else x.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);x.restore();if(p.l>=p.m||p.y>innerHeight+40)P.splice(i,1)}if(P.length)raf=requestAnimationFrame(tick);else{raf=null;x.clearRect(0,0,innerWidth,innerHeight)}}
+  var HL=document.getElementById('hearts'),EM=["❤️","💕","💖","💘","💗","🩷","😍","🥰","💞","💓"],ht=null;
+  function heart(){var s=document.createElement('div');s.className='heart-b';s.textContent=EM[(Math.random()*EM.length)|0];s.style.left=(Math.random()*100)+'%';s.style.fontSize=(26+Math.random()*40)+'px';s.style.setProperty('--dur',(4.5+Math.random()*4)+'s');s.style.setProperty('--sway',(Math.random()*180-90)+'px');s.style.setProperty('--rot',(Math.random()*120-60)+'deg');HL.appendChild(s);s.addEventListener('animationend',function(){s.remove()})}
+  return{burst:burst,heart:heart}
+})();
+
+(function(){
+  var coupons=[
+    ["🤗","언제든 안아주기 쿠폰"],["🍗","야식 사주기 쿠폰"],["🧞","1일 소원권"],["🍽️","설거지 면제권"],
+    ["🎬","영화 고르기 권한"],["🫂","10초 백허그권"],["💬","칭찬 폭격 쿠폰"],["💆","마사지 15분권"],
+    ["🚗","드라이브 데이트권"],["😴","주말 늦잠 보장권"],["💋","뽀뽀 쿠폰"],["👑","오늘 하루 내 맘대로권"],
+    ["☕","카페 쏘기 쿠폰"],["🛍️","소소한 선물권"],["🎤","노래방 셔틀권"],["🍰","디저트 무한 리필권"]
+  ];
+  var ticket=document.getElementById('ticket'),ico=document.getElementById('ico'),rw=document.getElementById('rw');
+  var btn=document.getElementById('draw'),count=document.getElementById('count');
+  var n=0, last=-1;
+  function draw(){
+    var i; do{ i=(Math.random()*coupons.length)|0; }while(i===last && coupons.length>1); last=i;
+    ticket.classList.remove('show'); void ticket.offsetWidth; // reflow → 재생
+    ico.textContent=coupons[i][0]; rw.textContent=coupons[i][1];
+    ticket.classList.add('show');
+    var r=ticket.getBoundingClientRect();
+    FX.burst(r.left+r.width/2, r.top+r.height/2, 70);
+    for(var k=0;k<6;k++) setTimeout(FX.heart, k*120);
+    n++; count.textContent='뽑은 쿠폰: '+n+'장';
+    btn.textContent='한 번 더 뽑기 🎁';
+  }
+  btn.addEventListener('click', draw);
+})();
+</script>

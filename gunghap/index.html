@@ -1,0 +1,123 @@
+<title>우리 궁합은? 💘</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&display=swap" rel="stylesheet" />
+<style>
+  :root{--rose:#ff4d78;--rose-deep:#e11d5b;--pink-1:#ffe3ee;--pink-2:#ffc2d6;--pink-3:#ffd9c9;--ink:#5a2740;--ink-soft:#96566f;--card:rgba(255,255,255,.62);--font:"Jua","Apple SD Gothic Neo","Pretendard",system-ui,sans-serif}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;margin:0}
+  body{font-family:var(--font);color:var(--ink);min-height:100svh;overflow-x:hidden;user-select:none;-webkit-user-select:none;-webkit-font-smoothing:antialiased;background-attachment:fixed;
+    background:radial-gradient(120% 90% at 15% 0%,var(--pink-1),transparent 55%),radial-gradient(120% 100% at 100% 100%,var(--pink-3),transparent 55%),linear-gradient(160deg,#fff0f5 0%,var(--pink-2) 60%,#ffb3c9 100%)}
+  .stage{position:relative;z-index:2;min-height:100svh;display:grid;place-items:center;padding:24px}
+  .card{position:relative;width:min(92vw,480px);background:var(--card);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,.75);border-radius:34px;box-shadow:0 30px 70px -30px rgba(190,30,80,.5),inset 0 1px 0 rgba(255,255,255,.9);padding:40px 28px;text-align:center;animation:pop .6s cubic-bezier(.16,1.2,.3,1) both}
+  @keyframes pop{from{transform:scale(.7) translateY(20px);opacity:0}to{transform:none;opacity:1}}
+  .emoji{font-size:58px;line-height:1;display:block;animation:bob 2.6s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(4deg)}}
+  h1{font-size:clamp(27px,6.6vw,40px);margin:12px 0 6px;color:var(--rose-deep);text-shadow:0 2px 0 rgba(255,255,255,.6)}
+  .sub{font-family:"Gaegu","Apple SD Gothic Neo",sans-serif;font-size:clamp(15px,4.2vw,19px);color:var(--ink-soft);margin:0 0 24px}
+  .names{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:22px}
+  input{font-family:var(--font);font-size:17px;text-align:center;border:1px solid #ffc2d6;background:rgba(255,255,255,.85);border-radius:14px;padding:12px 10px;width:42%;color:var(--ink);outline:none}
+  input:focus{border-color:var(--rose)}
+  .names .hh{font-size:24px}
+  .btn{font-family:var(--font);border:none;cursor:pointer;border-radius:999px;padding:16px 30px;font-size:clamp(18px,4.6vw,22px);color:#fff;background:linear-gradient(135deg,var(--rose),var(--rose-deep));box-shadow:0 14px 30px -10px rgba(225,29,91,.7),inset 0 2px 0 rgba(255,255,255,.35);transition:transform .12s}
+  .btn:active{transform:scale(.96)}.btn:hover{transform:scale(1.04)}
+  .result{display:none}
+  .result.show{display:block;animation:pop .5s cubic-bezier(.16,1.2,.3,1) both}
+  .ringwrap{position:relative;width:210px;height:210px;margin:6px auto 8px}
+  .ring{width:210px;height:210px;transform:rotate(-90deg)}
+  .ring .track{fill:none;stroke:rgba(225,29,91,.13);stroke-width:13}
+  .ring .fill{fill:none;stroke:var(--rose);stroke-width:13;stroke-linecap:round}
+  .pct{position:absolute;inset:0;display:grid;place-items:center;font-size:52px;color:var(--rose-deep);font-variant-numeric:tabular-nums}
+  .verdict{font-size:clamp(22px,6vw,30px);color:var(--rose-deep);margin-top:4px}
+  .pair{font-family:"Gaegu",sans-serif;font-size:18px;color:var(--ink);margin-top:6px}
+  .again{margin-top:22px;font-family:var(--font);cursor:pointer;border:none;background:rgba(255,255,255,.9);color:var(--rose-deep);font-size:16px;padding:11px 22px;border-radius:999px;box-shadow:0 10px 24px -10px rgba(225,29,91,.6)}
+  #confetti{position:fixed;inset:0;z-index:45;pointer-events:none}
+  #hearts{position:fixed;inset:0;z-index:44;pointer-events:none;overflow:hidden}
+  .heart-b{position:fixed;bottom:-8%;animation:floatUp var(--dur) linear forwards}
+  @keyframes floatUp{0%{transform:translateY(0);opacity:0}12%{opacity:1}88%{opacity:1}100%{transform:translateY(-118vh) translateX(var(--sway)) rotate(var(--rot));opacity:0}}
+</style>
+
+<div class="stage">
+  <main class="card">
+    <span class="emoji">💘</span>
+    <h1>우리 궁합은 몇 %?</h1>
+    <p class="sub">두 사람 이름을 넣고 측정해봐 (안 넣어도 돼)</p>
+
+    <div id="form">
+      <div class="names">
+        <input id="me" type="text" placeholder="내 이름" maxlength="8" />
+        <span class="hh">💕</span>
+        <input id="you" type="text" placeholder="상대 이름" maxlength="8" />
+      </div>
+      <button class="btn" id="go" type="button">측정하기 💓</button>
+    </div>
+
+    <div class="result" id="result">
+      <div class="ringwrap">
+        <svg class="ring" viewBox="0 0 210 210"><circle class="track" cx="105" cy="105" r="92"/><circle class="fill" id="ring" cx="105" cy="105" r="92"/></svg>
+        <div class="pct" id="pct">0%</div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="pair" id="pair"></div>
+      <button class="again" id="again" type="button">다시 측정 🔄</button>
+    </div>
+  </main>
+</div>
+
+<div id="hearts" aria-hidden="true"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+/* shared FX: confetti + hearts */
+window.FX=(function(){
+  var c=document.getElementById('confetti'),x=c.getContext('2d'),DPR=Math.min(window.devicePixelRatio||1,2),P=[],raf=null;
+  var COL=["#ff4d78","#e11d5b","#ff8fab","#ffd166","#ff5da2","#ffffff","#ff9770"];
+  function sz(){c.width=innerWidth*DPR;c.height=innerHeight*DPR;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';x.setTransform(DPR,0,0,DPR,0,0)}sz();addEventListener('resize',sz);
+  function burst(px,py,n){for(var i=0;i<n;i++){var a=Math.random()*Math.PI*2,s=4+Math.random()*11;P.push({x:px,y:py,vx:Math.cos(a)*s,vy:Math.sin(a)*s-6,g:.16+Math.random()*.12,s:7+Math.random()*10,r:Math.random()*Math.PI,vr:(Math.random()-.5)*.3,c:COL[(Math.random()*COL.length)|0],h:Math.random()<.4,l:0,m:120+Math.random()*60})}if(!raf)raf=requestAnimationFrame(tick)}
+  function tick(){x.clearRect(0,0,innerWidth,innerHeight);for(var i=P.length-1;i>=0;i--){var p=P[i];p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.vx*=.995;p.r+=p.vr;p.l++;var a=Math.max(0,1-p.l/p.m);x.save();x.globalAlpha=a;x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;if(p.h){x.font=p.s*1.7+'px serif';x.textAlign='center';x.textBaseline='middle';x.fillText('♥',0,0)}else x.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);x.restore();if(p.l>=p.m||p.y>innerHeight+40)P.splice(i,1)}if(P.length)raf=requestAnimationFrame(tick);else{raf=null;x.clearRect(0,0,innerWidth,innerHeight)}}
+  var HL=document.getElementById('hearts'),EM=["❤️","💕","💖","💘","💗","🩷","😍","🥰","💞","💓"],ht=null;
+  function heart(){var s=document.createElement('div');s.className='heart-b';s.textContent=EM[(Math.random()*EM.length)|0];s.style.left=(Math.random()*100)+'%';s.style.fontSize=(26+Math.random()*40)+'px';s.style.setProperty('--dur',(4.5+Math.random()*4)+'s');s.style.setProperty('--sway',(Math.random()*180-90)+'px');s.style.setProperty('--rot',(Math.random()*120-60)+'deg');HL.appendChild(s);s.addEventListener('animationend',function(){s.remove()})}
+  function party(dur){burst(innerWidth/2,innerHeight*.4,160);setTimeout(function(){burst(innerWidth*.2,innerHeight*.5,80)},220);setTimeout(function(){burst(innerWidth*.8,innerHeight*.5,80)},420);for(var i=0;i<20;i++)setTimeout(heart,i*90);if(ht)clearInterval(ht);ht=setInterval(function(){heart();if(Math.random()<.5)heart()},320);setTimeout(function(){clearInterval(ht);ht=null},dur||6000)}
+  return{burst:burst,heart:heart,party:party}
+})();
+
+(function(){
+  var form=document.getElementById('form'),result=document.getElementById('result');
+  var ring=document.getElementById('ring'),pct=document.getElementById('pct'),verdict=document.getElementById('verdict'),pair=document.getElementById('pair');
+  var C=2*Math.PI*92; ring.style.strokeDasharray=C; ring.style.strokeDashoffset=C;
+  var targets=[100,99.9,99.9,99.8,99.5,98.7,97.9]; // 항상 높게 나옴
+
+  function measure(){
+    var me=(document.getElementById('me').value||'').trim();
+    var you=(document.getElementById('you').value||'').trim();
+    var target=targets[(Math.random()*targets.length)|0];
+    form.style.display='none'; result.classList.add('show');
+    if(me&&you){ pair.textContent=me+' 💗 '+you; } else { pair.textContent=''; }
+
+    // 서스펜스: 빠르게 82까지 → 잠깐 멈칫 → 목표까지 천천히
+    var start=null, phase=1, from=0, to=82, dur=900, hold=0;
+    function ease(t){return 1-Math.pow(1-t,3);}
+    function set(v){ pct.textContent=(Math.round(v*10)/10)+'%'; ring.style.strokeDashoffset=C*(1-v/100); }
+    function frame(ts){
+      if(!start)start=ts; var t=Math.min(1,(ts-start)/dur); var v=from+(to-from)*ease(t); set(v);
+      if(t<1){requestAnimationFrame(frame);return;}
+      if(phase===1){ phase=2; setTimeout(function(){ start=null; from=82; to=target; dur=1100; requestAnimationFrame(frame); }, 550); return; }
+      // 완료
+      set(target);
+      verdict.textContent = target>=99.5?'천생연분 💞' : target>=98?'찰떡궁합 🍡' : '환상의 커플 ✨';
+      FX.party();
+    }
+    requestAnimationFrame(frame);
+  }
+  document.getElementById('go').addEventListener('click', measure);
+  document.getElementById('again').addEventListener('click', function(){
+    result.classList.remove('show'); form.style.display='block';
+    ring.style.strokeDashoffset=C; pct.textContent='0%'; verdict.textContent='';
+  });
+  // 엔터로도 측정
+  [document.getElementById('me'),document.getElementById('you')].forEach(function(el){
+    el.addEventListener('keydown',function(e){if(e.key==='Enter')measure();});
+  });
+})();
+</script>
