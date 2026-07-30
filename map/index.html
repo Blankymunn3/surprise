@@ -66,7 +66,7 @@
     <div id="map"></div>
 
     <div class="places" id="places"></div>
-    <div class="note" id="note">사진은 이 기기에만 저장돼요 (인터넷에 올라가지 않아요)</div>
+    <div class="note" id="note">사이트에 올린 사진은 자기야 폰에서도 보여요 · 여기서 넣은 사진은 이 기기에만 저장돼요</div>
     <input type="file" id="picker" accept="image/*" class="hidden" />
   </main>
 </div>
@@ -96,10 +96,26 @@
   }).addTo(map);
 
   var markers={}, overlays={}, current=null;
+  var sitePhotos={};      // 사이트에 올려둔 공유 사진 (모든 기기에서 보임)
   var picker=document.getElementById('picker'), note=document.getElementById('note');
   var listEl=document.getElementById('places');
 
-  function photoOf(id){ try{ return localStorage.getItem(KEY+id); }catch(e){ return null; } }
+  function localPhoto(id){ try{ return localStorage.getItem(KEY+id); }catch(e){ return null; } }
+  // 이 기기에 넣은 사진이 있으면 그걸, 없으면 사이트에 올려둔 공유 사진을 쓴다
+  function photoOf(id){ return localPhoto(id) || sitePhotos[id] || null; }
+
+  // photos/<id>.jpg 가 사이트에 있으면 불러온다 (아내 폰에서도 보이는 사진)
+  function loadSitePhotos(done){
+    var left=PLACES.length;
+    if(!left){ done(); return; }
+    PLACES.forEach(function(p){
+      var url='../photos/'+p.id+'.jpg';
+      var im=new Image();
+      im.onload=function(){ sitePhotos[p.id]=url; if(--left===0) done(); };
+      im.onerror=function(){ if(--left===0) done(); };
+      im.src=url;
+    });
+  }
 
   function iconFor(p){
     var src=photoOf(p.id);
@@ -200,7 +216,7 @@
       b1.textContent=src?'사진 바꾸기':'사진 넣기';
       b1.addEventListener('click', function(ev){ ev.stopPropagation(); pick(p); });
       acts.appendChild(b1);
-      if(src){
+      if(localPhoto(p.id)){
         var b2=document.createElement('button'); b2.className='mini del'; b2.type='button';
         b2.textContent='지우기';
         b2.addEventListener('click', function(ev){ ev.stopPropagation(); removePhoto(p); });
@@ -218,6 +234,9 @@
 
   fitKr();
   renderList();
+  loadSitePhotos(function(){
+    PLACES.forEach(function(p){ if(sitePhotos[p.id]) refresh(p); });
+  });
   /* 카드 등장 애니메이션(scale) 뒤에 지도 크기 재계산 */
   var card=document.querySelector('.card');
   if(card) card.addEventListener('animationend', function(){ map.invalidateSize(); fitKr(); });
