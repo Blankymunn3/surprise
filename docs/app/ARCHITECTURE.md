@@ -39,7 +39,9 @@ Compose·SwiftUI·MapLibre·Firebase 는 domain 에서 import 하지 않습니�
 android/
   app/                     앱 조립·DI 그래프·네비게이션
   core/model/              도메인 모델 (순수 코틀린)
-  core/common/             Result, 디스패처, 확장함수
+  core/common/             Outcome, 실패 종류, 웹과 맞춘 제한값 (순수 코틀린)
+  core/network/            Firebase Storage REST 클라이언트 (순수 코틀린)
+  core/ui/                 MVI 뼈대 (MviViewModel)
   core/designsystem/       색·타이포·공용 Composable ([design.html](design.html) 그대로)
   domain/                  UseCase + Repository 인터페이스
   data/auth/               구글 로그인
@@ -60,6 +62,7 @@ ios/
   Packages/
     CoreModel/             도메인 모델 (순수 스위프트)
     CoreCommon/
+    CoreNetwork/
     DesignSystem/
     Domain/                UseCase + Repository 프로토콜
     DataAuth/
@@ -83,14 +86,16 @@ ios/
 | UI | Jetpack Compose (Material 3) | SwiftUI |
 | 상태 관리 | MVI + `StateFlow` | MVI + `@Observable` (Observation) |
 | 비동기 | Coroutines / Flow | async-await / AsyncSequence |
-| DI | Hilt | 수동 조립 (Composition Root) |
+| DI | 수동 조립 (`AppContainer`) | 수동 조립 (Composition Root) |
 | 직렬화 | kotlinx.serialization | Codable |
 | 네트워크 | OkHttp | URLSession |
 | 지도 | MapLibre Native Android | MapLibre Native iOS |
 | 테스트 | JUnit5 + Turbine | swift-testing |
 
-**iOS DI 를 수동으로 하는 이유**: 화면이 하나뿐이라 프레임워크를 들일 이유가 없습니다.
-앱 진입점에서 한 번 조립해 내려보냅니다.
+**DI 를 두 쪽 다 수동으로 하는 이유**: 처음에는 안드로이드에 Hilt 를 쓰려고 했는데,
+화면이 여섯이고 의존성이 열 개 남짓입니다. 이 규모에서 Hilt 는 빌드에 코드 생성 단계를
+하나 더 얹는 값만 하고 얻는 게 없습니다. 그래프가 커지면 그때 바꾸되, 그때 고칠 자리가
+`app/AppContainer.kt` 하나뿐이도록 만들어 뒀습니다.
 
 ## 지도를 MapLibre 로 정한 이유
 
@@ -154,6 +159,7 @@ ios/
 ## 참고
 
 - 화면 디자인(색·글씨·여섯 화면) → [design.html](design.html)
+- 지금 만들어진 것과 아직 아닌 것 → [STATUS.md](STATUS.md)
 - 화면 명세(지도·달력·사진 올리기) → [SCREENS.md](SCREENS.md)
 - 공간·초대·보안 규칙 → [SPACES.md](SPACES.md)
 - MVI 세부 규칙 → [MVI.md](MVI.md)

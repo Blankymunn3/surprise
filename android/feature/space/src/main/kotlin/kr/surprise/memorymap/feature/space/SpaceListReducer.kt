@@ -1,0 +1,64 @@
+package kr.surprise.memorymap.feature.space
+
+import kr.surprise.memorymap.core.common.Failure
+import kr.surprise.memorymap.core.model.Space
+
+/**
+ * 순수 함수입니다. 네트워크·시간·난수를 쓰지 않습니다 — 필요하면 인자로 받습니다.
+ * 앱의 핵심이 상태 전이라 여기를 제일 먼저 테스트합니다 (`docs/app/MVI.md`).
+ */
+internal object SpaceListReducer {
+
+    fun spacesLoaded(state: SpaceListState, items: List<Space>): SpaceListState =
+        state.copy(spaces = SpacesUi.Ready(items), working = false)
+
+    fun loadFailed(state: SpaceListState, reason: Failure): SpaceListState =
+        state.copy(
+            // 이미 목록을 보여 주고 있었다면 지우지 않습니다. 새로고침이 실패했다고
+            // 눈앞의 목록이 사라지면 더 나쁩니다.
+            spaces = if (state.spaces is SpacesUi.Ready) state.spaces else SpacesUi.Failed(reason),
+            working = false,
+        )
+
+    fun sheetOpened(state: SpaceListState, sheet: SpaceListSheet): SpaceListState =
+        state.copy(sheet = sheet, pendingName = "", pendingCode = "")
+
+    fun sheetDismissed(state: SpaceListState): SpaceListState =
+        state.copy(sheet = SpaceListSheet.None, pendingName = "", pendingCode = "", working = false)
+
+    fun nameTyped(state: SpaceListState, value: String): SpaceListState =
+        state.copy(pendingName = value)
+
+    fun codeTyped(state: SpaceListState, value: String): SpaceListState =
+        state.copy(pendingCode = value)
+
+    fun working(state: SpaceListState): SpaceListState = state.copy(working = true)
+
+    fun created(state: SpaceListState, space: Space, code: String): SpaceListState =
+        state.copy(
+            spaces = SpacesUi.Ready(state.currentItems() + space),
+            sheet = SpaceListSheet.Invited(space.name, code),
+            pendingName = "",
+            working = false,
+        )
+
+    fun joined(state: SpaceListState, space: Space): SpaceListState =
+        state.copy(
+            spaces = SpacesUi.Ready(state.currentItems().filterNot { it.id == space.id } + space),
+            sheet = SpaceListSheet.None,
+            pendingCode = "",
+            working = false,
+        )
+
+    fun failedAction(state: SpaceListState): SpaceListState = state.copy(working = false)
+
+    private fun SpaceListState.currentItems(): List<Space> =
+        (spaces as? SpacesUi.Ready)?.items.orEmpty()
+}
+
+/** 공간을 만들 수 있는가. 화면의 버튼이 꺼지는 조건과 같아야 합니다. */
+internal fun SpaceListState.canCreate(): Boolean = pendingName.isNotBlank() && !working
+
+/** 참여할 수 있는가 — 코드는 여섯 글자입니다. */
+internal fun SpaceListState.canJoin(): Boolean =
+    pendingCode.trim().length >= 6 && !working
