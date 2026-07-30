@@ -1,13 +1,18 @@
 [versions]
-# 버전은 러너에서 실제로 확인하고 고정했습니다 (이 컨테이너는 dl.google.com 이 막혀 있음)
+# 버전은 러너에서 실제로 확인하고 고정했습니다 (이 컨테이너는 dl.google.com 이 막혀 있음).
+#
+# androidx 를 최신으로 올리지 않은 이유: core 1.19 / lifecycle 2.11 부터
+# **AGP 9.1 과 compileSdk 37** 을 요구합니다. AGP 9 는 DSL 이 바뀌어서 지금 올리면
+# 빌드 파일을 전부 손봐야 합니다. compileSdk 36 에서 도는 마지막 조합으로 맞췄습니다.
+# AGP 9 로 올릴 때 이 주석부터 지우세요.
 agp = "8.13.2"
 kotlin = "2.4.10"
 coroutines = "1.11.0"
 serialization = "1.11.0"
 
-coreKtx = "1.19.0"
-activityCompose = "1.13.0"
-lifecycle = "2.11.0"
+coreKtx = "1.17.0"
+activityCompose = "1.12.4"
+lifecycle = "2.10.0"
 navigation = "2.9.8"
 composeBom = "2026.06.01"
 exifinterface = "1.4.2"
