@@ -1,12 +1,17 @@
 package kr.surprise.memorymap
 
 import android.content.Context
+import kr.surprise.memorymap.core.common.Outcome
+import kr.surprise.memorymap.core.model.SpaceId
+import kr.surprise.memorymap.core.model.SpaceKind
 import kr.surprise.memorymap.core.network.FirebaseStorage
 import kr.surprise.memorymap.data.photo.ExifReader
 import kr.surprise.memorymap.data.photo.FirebasePhotoRepository
 import kr.surprise.memorymap.data.photo.ImageDownscaler
+import kr.surprise.memorymap.data.photo.LocalPhotoRepository
 import kr.surprise.memorymap.data.region.AssetRegionCatalog
 import kr.surprise.memorymap.data.space.SharedSpaceRepository
+import kr.surprise.memorymap.domain.repository.PhotoRepository
 import kr.surprise.memorymap.domain.usecase.CreateSpaceUseCase
 import kr.surprise.memorymap.domain.usecase.JoinSpaceUseCase
 import kr.surprise.memorymap.domain.usecase.ObservePhotoBoardUseCase
@@ -35,8 +40,6 @@ class AppContainer(context: Context) {
     val regions = AssetRegionCatalog(appContext)
     val spaces = SharedSpaceRepository(appContext, storage)
 
-    private val photos = FirebasePhotoRepository(storage, uploaderUid = "me")
-
     val exif = ExifReader(appContext, regions)
     val downscaler = ImageDownscaler(appContext)
 
@@ -45,10 +48,30 @@ class AppContainer(context: Context) {
     val createSpace = CreateSpaceUseCase(spaces)
     val joinSpace = JoinSpaceUseCase(spaces)
 
-    val observeBoard = ObservePhotoBoardUseCase(photos)
-    val refreshPhotos = RefreshPhotosUseCase(photos)
-    val uploadPhotos = UploadPhotosUseCase(photos)
-    val setCover = SetCoverPhotoUseCase(photos)
-
     val searchRegions = SearchRegionsUseCase(regions)
+
+    /**
+     * 사진 저장소가 **둘**입니다. 혼자 짜국은 기기 안, 둘이 짜국은 서버 —
+     * 어느 쪽을 쓸지는 **여기서만** 정합니다. 화면과 도메인은 어느 쪽인지 모릅니다.
+     *
+     * 저장소는 종류마다 한 벌씩만 만들어 돌려씁니다. 받아 둔 사진을 자기 안에 들고 있어서
+     * 화면마다 새로 만들면 매번 다시 받아오게 됩니다.
+     */
+    private val remote = PhotoUseCases(FirebasePhotoRepository(storage, uploaderUid = "me"))
+    private val local = PhotoUseCases(LocalPhotoRepository(appContext, uploaderUid = "me"))
+
+    internal fun photoUseCases(kind: SpaceKind): PhotoUseCases =
+        if (kind == SpaceKind.Personal) local else remote
+
+    /** 사진을 올린 뒤 지도·달력이 새 사진을 보게 합니다. */
+    suspend fun refreshPhotos(kind: SpaceKind, spaceId: SpaceId): Outcome<Unit> =
+        photoUseCases(kind).refreshPhotos(spaceId)
+}
+
+/** 한 저장소에 딸린 사진 유스케이스 한 벌. 종류마다 하나씩 있습니다. */
+internal class PhotoUseCases(repository: PhotoRepository) {
+    val observeBoard = ObservePhotoBoardUseCase(repository)
+    val refreshPhotos = RefreshPhotosUseCase(repository)
+    val uploadPhotos = UploadPhotosUseCase(repository)
+    val setCover = SetCoverPhotoUseCase(repository)
 }

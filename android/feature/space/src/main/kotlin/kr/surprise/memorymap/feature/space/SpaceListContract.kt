@@ -3,6 +3,7 @@ package kr.surprise.memorymap.feature.space
 import kr.surprise.memorymap.core.common.Failure
 import kr.surprise.memorymap.core.model.Space
 import kr.surprise.memorymap.core.model.SpaceId
+import kr.surprise.memorymap.core.model.SpaceKind
 
 /** 화면을 그리는 데 필요한 전부. 불변입니다. */
 data class SpaceListState(
@@ -48,7 +49,8 @@ sealed interface SpaceListIntent {
 
 /** 한 번만 일어나는 일. 화면에 남아 있어야 하는 건 State 로 갑니다. */
 sealed interface SpaceListEffect {
-    data class OpenSpace(val id: SpaceId) : SpaceListEffect
+    /** 종류를 같이 넘깁니다 — 들어간 화면이 기기 안 사진을 볼지 서버 사진을 볼지 정합니다. */
+    data class OpenSpace(val id: SpaceId, val kind: SpaceKind) : SpaceListEffect
     data class ShowMessage(val text: String) : SpaceListEffect
     data class ShareInvite(val code: String) : SpaceListEffect
 }

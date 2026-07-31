@@ -10,9 +10,11 @@ public struct SpaceListView: View {
     /// 시트 높이는 **내용에 맞춥니다.** 만들기·참여·초대코드가 각각 길이가 달라서
     /// 하나로 고정하면 어떤 것은 비고 어떤 것은 잘립니다.
     @State private var sheetHeight: CGFloat = 260
-    private let onOpen: (SpaceId) -> Void
+    /// ID 만이 아니라 짜국을 통째로 넘깁니다 — 들어간 화면이 **종류**를 알아야
+    /// 기기 안 사진을 볼지 서버 사진을 볼지 정할 수 있습니다.
+    private let onOpen: (Space) -> Void
 
-    public init(store: SpaceListStore, onOpen: @escaping (SpaceId) -> Void) {
+    public init(store: SpaceListStore, onOpen: @escaping (Space) -> Void) {
         self._store = State(initialValue: store)
         self.onOpen = onOpen
     }
@@ -42,7 +44,7 @@ public struct SpaceListView: View {
                         emptyScene("아직 짜국이 없어요. 하나 만들어 볼까요?")
                     }
                     ForEach(items) { space in
-                        SpaceCardView(space: space) { onOpen(space.spaceId) }
+                        SpaceCardView(space: space) { onOpen(space) }
                             .padding(.horizontal, MemorySpace.xl)
                     }
                 }

@@ -1,6 +1,14 @@
 package kr.surprise.memorymap.core.model
 
-/** 지도 하나. 초대한 사람들과 함께 채웁니다. (`docs/app/SPACES.md`) */
+/**
+ * 짜국을 **혼자** 쓰는지 **둘이** 쓰는지.
+ *
+ * 혼자 쓰는 짜국은 사진이 기기 안에만 있습니다. 서버도, 로그인도 안 씁니다.
+ * (`docs/app/AUTH.md` 의 '혼자 쓰는 짜국은 서버에 안 올립니다')
+ */
+enum class SpaceKind { Personal, Shared }
+
+/** 지도 하나. 둘이 쓰는 짜국은 초대한 사람들과 함께 채웁니다. (`docs/app/SPACES.md`) */
 data class Space(
     val id: SpaceId,
     val name: String,
@@ -9,6 +17,12 @@ data class Space(
     val regionCount: Int,
     val coverPhotoUrl: String?,
     val lastPhotoOn: java.time.LocalDate?,
+    /**
+     * 기본이 [SpaceKind.Personal] 인 이유: 이 값이 없는 옛 데이터를 읽었을 때
+     * **서버로 나가지 않는 쪽**이 안전합니다. 반대로 두면 옛 짜국이 조용히 공유로
+     * 취급됩니다.
+     */
+    val kind: SpaceKind = SpaceKind.Personal,
 )
 
 data class Member(

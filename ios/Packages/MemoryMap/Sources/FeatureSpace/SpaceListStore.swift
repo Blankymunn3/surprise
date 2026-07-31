@@ -87,10 +87,11 @@ public enum SpaceListReducer {
     /// 저장소도 목록에 넣고 여기서도 넣기 때문에 **같은 공간이 두 번 들어갈 수 있습니다.**
     /// 목록은 `id` 를 키로 그리므로 그러면 화면이 죽습니다. `joined` 와 같은 방식으로
     /// 같은 id 를 먼저 걷어냅니다.
-    public static func created(_ state: SpaceListState, _ space: Space, _ code: String) -> SpaceListState {
+    public static func created(_ state: SpaceListState, _ space: Space, _ code: String?) -> SpaceListState {
         var next = state
         next.spaces = .ready(state.items.filter { $0.spaceId != space.spaceId } + [space])
-        next.sheet = .invited(spaceName: space.name, code: code)
+        // 혼자 쓰는 짜국은 초대 코드가 없습니다. 보여 줄 것이 없으니 시트를 닫습니다.
+        next.sheet = code.map { SpaceListSheet.invited(spaceName: space.name, code: $0) } ?? SpaceListSheet.none
         next.pendingName = ""
         next.working = false
         return next
@@ -163,9 +164,11 @@ public final class SpaceListStore {
         case .createConfirmed:
             guard state.canCreate else { return }
             state = SpaceListReducer.working(state)
-            switch await createSpace(state.pendingName) {
+            // 혼자/둘이를 고르는 화면은 아직 없습니다(`docs/app/AUTH.md` 0번의 5).
+            // 그때까지는 지금까지처럼 둘이 쓰는 짜국을 만듭니다 — 여기 한 줄만 바꾸면 됩니다.
+            switch await createSpace(state.pendingName, .shared) {
             case .ok(let (space, invite)):
-                state = SpaceListReducer.created(state, space, invite.code)
+                state = SpaceListReducer.created(state, space, invite?.code)
             case .fail(let reason):
                 state = SpaceListReducer.loadFailed(state, reason)
             }

@@ -2,6 +2,8 @@ package kr.surprise.memorymap.feature.space
 
 import kr.surprise.memorymap.core.common.Failure
 import kr.surprise.memorymap.core.model.Space
+import kr.surprise.memorymap.core.model.SpaceId
+import kr.surprise.memorymap.core.model.SpaceKind
 
 /**
  * 순수 함수입니다. 네트워크·시간·난수를 쓰지 않습니다 — 필요하면 인자로 받습니다.
@@ -39,10 +41,11 @@ internal object SpaceListReducer {
      * 목록은 `id` 를 키로 그리므로 그러면 화면이 죽습니다. `joined` 와 같은 방식으로
      * 같은 id 를 먼저 걷어냅니다.
      */
-    fun created(state: SpaceListState, space: Space, code: String): SpaceListState =
+    fun created(state: SpaceListState, space: Space, code: String?): SpaceListState =
         state.copy(
             spaces = SpacesUi.Ready(state.currentItems().filterNot { it.id == space.id } + space),
-            sheet = SpaceListSheet.Invited(space.name, code),
+            // 혼자 쓰는 짜국은 초대 코드가 없습니다. 보여 줄 것이 없으니 시트를 닫습니다.
+            sheet = if (code == null) SpaceListSheet.None else SpaceListSheet.Invited(space.name, code),
             pendingName = "",
             working = false,
         )
@@ -60,6 +63,15 @@ internal object SpaceListReducer {
     private fun SpaceListState.currentItems(): List<Space> =
         (spaces as? SpacesUi.Ready)?.items.orEmpty()
 }
+
+/**
+ * 목록에서 짜국의 종류를 찾습니다.
+ *
+ * 못 찾으면 **둘이**로 봅니다 — 목록에 없는 것을 눌렀을 리는 없지만, 만에 하나 그렇다면
+ * 지금까지의 짜국은 전부 서버 쪽이었으니 그쪽이 맞습니다.
+ */
+internal fun SpaceListState.kindOf(id: SpaceId): SpaceKind =
+    (spaces as? SpacesUi.Ready)?.items?.firstOrNull { it.id == id }?.kind ?: SpaceKind.Shared
 
 /** 공간을 만들 수 있는가. 화면의 버튼이 꺼지는 조건과 같아야 합니다. */
 internal fun SpaceListState.canCreate(): Boolean = pendingName.isNotBlank() && !working

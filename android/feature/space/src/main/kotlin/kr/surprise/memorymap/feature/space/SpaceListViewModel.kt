@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kr.surprise.memorymap.core.common.Failure
 import kr.surprise.memorymap.core.common.Outcome
+import kr.surprise.memorymap.core.model.SpaceKind
 import kr.surprise.memorymap.core.ui.MviViewModel
 import kr.surprise.memorymap.domain.usecase.CreateSpaceUseCase
 import kr.surprise.memorymap.domain.usecase.JoinSpaceUseCase
@@ -28,7 +29,8 @@ class SpaceListViewModel(
     override fun onIntent(intent: SpaceListIntent) {
         when (intent) {
             SpaceListIntent.Appeared, SpaceListIntent.PullToRefresh -> refresh()
-            is SpaceListIntent.SpaceTapped -> sendEffect(SpaceListEffect.OpenSpace(intent.id))
+            is SpaceListIntent.SpaceTapped ->
+                sendEffect(SpaceListEffect.OpenSpace(intent.id, currentState().kindOf(intent.id)))
             SpaceListIntent.CreateTapped -> setState { SpaceListReducer.sheetOpened(this, SpaceListSheet.Create) }
             SpaceListIntent.JoinTapped -> setState { SpaceListReducer.sheetOpened(this, SpaceListSheet.Join) }
             SpaceListIntent.SheetDismissed -> setState { SpaceListReducer.sheetDismissed(this) }
@@ -55,10 +57,12 @@ class SpaceListViewModel(
         setState { SpaceListReducer.working(this) }
 
         viewModelScope.launch {
-            when (val result = createSpace(name)) {
+            // 혼자/둘이를 고르는 화면은 아직 없습니다(`docs/app/AUTH.md` 0번의 5).
+            // 그때까지는 지금까지처럼 둘이 쓰는 짜국을 만듭니다 — 여기 한 줄만 바꾸면 됩니다.
+            when (val result = createSpace(name, SpaceKind.Shared)) {
                 is Outcome.Ok -> {
                     val (space, invite) = result.value
-                    setState { SpaceListReducer.created(this, space, invite.code) }
+                    setState { SpaceListReducer.created(this, space, invite?.code) }
                 }
                 is Outcome.Fail -> {
                     setState { SpaceListReducer.failedAction(this) }

@@ -12,6 +12,17 @@ public enum PhotoObjectName {
         public let id: PhotoId
         public let regionCode: RegionCode
         public let takenOn: CalendarDate
+
+        /// 목록만 보고 만드는 **정렬용 값**. 찍은 날짜가 먼저, 같은 날이면 사진 ID 순입니다.
+        ///
+        /// 목록 API 도 파일 시스템도 '올린 시각' 을 주지 않습니다. 그때그때 다른 값을 쓰면
+        /// 대표사진 기본값("가장 최근")이 실행할 때마다 흔들립니다. Swift 의 `hashValue` 는
+        /// 실행마다 씨앗이 달라 쓸 수 없어 직접 셈합니다. 안드로이드와 같은 규칙입니다.
+        public var stableOrder: Int {
+            let day = takenOn.year * 10_000 + takenOn.month * 100 + takenOn.day
+            let tail = id.value.unicodeScalars.reduce(0) { ($0 &* 31 &+ Int($1.value)) % 9_973 }
+            return day * 10_000 + tail
+        }
     }
 
     public static func build(id: PhotoId, regionCode: RegionCode, takenOn: CalendarDate) -> String {

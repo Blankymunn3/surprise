@@ -18,6 +18,9 @@ struct MemberDocument: Codable, Sendable {
 /// 내가 속한 공간 목록은 **기기에**, 공간의 이름·멤버는 **저장소에** 둡니다.
 /// 로그인이 없어 "누가 어느 공간의 멤버인가" 를 서버가 판단할 수 없기 때문입니다.
 /// 안드로이드 `SharedSpaceRepository` 와 같은 구조·같은 파일 형식입니다.
+///
+/// **혼자 쓰는 짜국은 서버를 아예 안 씁니다** — 이름까지 기기 안(UserDefaults)에 둡니다.
+/// 그래서 로그인도, 인터넷도 없이 만들어집니다 (`docs/app/AUTH.md`).
 public actor SharedSpaceRepository: SpaceRepository {
 
     private let storage: FirebaseStorage
@@ -27,7 +30,13 @@ public actor SharedSpaceRepository: SpaceRepository {
     /// Swift 6 에서 Sendable 검사에 걸립니다.
     private var defaults: UserDefaults { .standard }
 
+    /// **둘이 쓰는 짜국**만 담습니다. 이 구분이 생기기 전의 옛 데이터는 전부 서버에 문서를
+    /// 만들며 들어온 것이라 그대로 두면 맞습니다 — 옛 ID 를 혼자로 읽으면 이미 서버에 있는
+    /// 사진이 앱에서 사라집니다.
     private static let idsKey = "memorymap.spaceIds"
+
+    /// 혼자 쓰는 짜국. 서버에 문서가 없어 **이름도 여기에** 둡니다.
+    private static let personalKey = "memorymap.personalSpaces"
 
     public init(storage: FirebaseStorage) {
         self.storage = storage
@@ -35,8 +44,9 @@ public actor SharedSpaceRepository: SpaceRepository {
 
     public func spaces() async -> [Space] { cached }
 
+    /// 혼자 짜국이 먼저입니다 — 네트워크를 기다리지 않고 바로 보여 줄 수 있습니다.
     public func refresh() async -> Outcome<Void> {
-        var loaded: [Space] = []
+        var loaded: [Space] = personalSpaces().map { personalSpace(id: SpaceId($0.id), name: $0.name) }
         for id in spaceIds() {
             if let document = await read(SpaceId(id)) {
                 loaded.append(space(from: document, id: SpaceId(id)))
@@ -46,8 +56,18 @@ public actor SharedSpaceRepository: SpaceRepository {
         return .ok(())
     }
 
-    public func create(name: String) async -> Outcome<(Space, Invite)> {
+    public func create(name: String, kind: SpaceKind) async -> Outcome<(Space, Invite?)> {
         let id = SpaceId(InviteCode.generate())
+
+        // 혼자 쓰는 짜국은 여기서 끝입니다. 서버에 아무것도 안 만듭니다.
+        // 초대 코드도 없습니다 — 초대할 상대가 없으니까요.
+        if kind == .personal {
+            rememberPersonal(id: id, name: name)
+            let created = personalSpace(id: id, name: name)
+            cached.append(created)
+            return .ok((created, nil))
+        }
+
         let document = SpaceDocument(
             name: name,
             members: [MemberDocument(uid: uid(), displayName: displayName(), owner: true)]
@@ -102,7 +122,17 @@ public actor SharedSpaceRepository: SpaceRepository {
             spaceId: id, name: document.name,
             members: document.members.map {
                 Member(uid: $0.uid, displayName: $0.displayName, role: $0.owner ? .owner : .member)
-            }
+            },
+            kind: .shared
+        )
+    }
+
+    /// 혼자 짜국의 멤버는 늘 나 하나입니다. 서버에 문서가 없어 여기서 만들어 줍니다.
+    private func personalSpace(id: SpaceId, name: String) -> Space {
+        Space(
+            spaceId: id, name: name,
+            members: [Member(uid: uid(), displayName: displayName(), role: .owner)],
+            kind: .personal
         )
     }
 
@@ -110,6 +140,20 @@ public actor SharedSpaceRepository: SpaceRepository {
 
     private func remember(_ id: SpaceId) {
         defaults.set(spaceIds() + [id.value], forKey: Self.idsKey)
+    }
+
+    private func personalSpaces() -> [(id: String, name: String)] {
+        let raw = defaults.array(forKey: Self.personalKey) as? [[String: String]] ?? []
+        return raw.compactMap { entry in
+            guard let id = entry["id"], let name = entry["name"] else { return nil }
+            return (id, name)
+        }
+    }
+
+    private func rememberPersonal(id: SpaceId, name: String) {
+        var raw = defaults.array(forKey: Self.personalKey) as? [[String: String]] ?? []
+        raw.append(["id": id.value, "name": name])
+        defaults.set(raw, forKey: Self.personalKey)
     }
 
     /// 사진 저장소도 **같은 값**을 써야 해서 `DeviceIdentity` 한 곳에 두었습니다.

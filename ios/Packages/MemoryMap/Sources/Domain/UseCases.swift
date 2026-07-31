@@ -52,10 +52,10 @@ public struct RefreshSpaces: Sendable {
 public struct CreateSpace: Sendable {
     private let spaces: any SpaceRepository
     public init(spaces: any SpaceRepository) { self.spaces = spaces }
-    public func callAsFunction(_ name: String) async -> Outcome<(Space, Invite)> {
+    public func callAsFunction(_ name: String, _ kind: SpaceKind) async -> Outcome<(Space, Invite?)> {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return .fail(.unknown) }
-        return await spaces.create(name: trimmed)
+        return await spaces.create(name: trimmed, kind: kind)
     }
 }
 

@@ -44,10 +44,7 @@ public actor FirebasePhotoRepository: PhotoRepository {
                     storagePath: item.fullPath,
                     downloadURL: storage.downloadURL(item.fullPath),
                     uploadedBy: uploaderUid,
-                    // 목록 API 가 올린 시각을 주지 않습니다. 대표사진 기본값("가장 최근")이
-                    // 실행할 때마다 흔들리면 안 되므로 **결정적인** 값을 만들어 씁니다.
-                    // Swift 의 hashValue 는 실행마다 씨앗이 달라 쓸 수 없습니다.
-                    uploadedAt: Self.stableOrder(parsed)
+                    uploadedAt: parsed.stableOrder
                 )
             }
             await loadCovers(spaceId)
@@ -94,11 +91,7 @@ public actor FirebasePhotoRepository: PhotoRepository {
         var next = (coversBySpace[spaceId.value] ?? []).filter { $0.key.documentId != key.documentId }
         next.append(Cover(key: key, photoId: id))
 
-        let dictionary = Dictionary(next.map { ($0.key.documentId, $0.photoId.value) },
-                                    uniquingKeysWith: { _, last in last })
-        guard let body = try? JSONSerialization.data(withJSONObject: dictionary) else {
-            return .fail(.unknown)
-        }
+        guard let body = CoversFile.data(next) else { return .fail(.unknown) }
 
         switch await storage.upload(path: coversPath(spaceId), data: body, contentType: "application/json") {
         case .fail(let reason):
@@ -110,33 +103,11 @@ public actor FirebasePhotoRepository: PhotoRepository {
     }
 
     private func loadCovers(_ spaceId: SpaceId) async {
-        guard case .ok(let data) = await storage.download(path: coversPath(spaceId)),
-              let raw = try? JSONSerialization.jsonObject(with: data) as? [String: String]
-        else {
+        guard case .ok(let data) = await storage.download(path: coversPath(spaceId)) else {
             coversBySpace[spaceId.value] = []   // 아직 대표를 한 번도 안 정한 공간
             return
         }
-        coversBySpace[spaceId.value] = raw.compactMap { documentId, photoId in
-            guard let key = Self.key(from: documentId) else { return nil }
-            return Cover(key: key, photoId: PhotoId(photoId))
-        }
-    }
-
-    /// 찍은 날짜가 먼저, 같은 날이면 사진 ID 순. 안드로이드와 같은 규칙입니다.
-    static func stableOrder(_ parsed: PhotoObjectName.Parsed) -> Int {
-        let day = parsed.takenOn.year * 10_000 + parsed.takenOn.month * 100 + parsed.takenOn.day
-        let tail = parsed.id.value.unicodeScalars.reduce(0) { ($0 &* 31 &+ Int($1.value)) % 9_973 }
-        return day * 10_000 + tail
-    }
-
-    static func key(from documentId: String) -> CoverKey? {
-        if documentId.hasPrefix("region_") {
-            return .region(RegionCode(String(documentId.dropFirst(7))))
-        }
-        if documentId.hasPrefix("day_"), let date = CalendarDate(iso: String(documentId.dropFirst(4))) {
-            return .day(date)
-        }
-        return nil
+        coversBySpace[spaceId.value] = CoversFile.parse(data)
     }
 
     private func photoDir(_ spaceId: SpaceId) -> String { "spaces/\(spaceId.value)/photos/" }

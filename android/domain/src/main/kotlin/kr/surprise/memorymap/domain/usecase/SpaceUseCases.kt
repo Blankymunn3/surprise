@@ -5,6 +5,7 @@ import kr.surprise.memorymap.core.common.Outcome
 import kr.surprise.memorymap.core.model.Invite
 import kr.surprise.memorymap.core.model.Space
 import kr.surprise.memorymap.core.model.SpaceId
+import kr.surprise.memorymap.core.model.SpaceKind
 import kr.surprise.memorymap.domain.repository.SpaceRepository
 
 class ObserveSpacesUseCase(private val spaces: SpaceRepository) {
@@ -15,12 +16,12 @@ class RefreshSpacesUseCase(private val spaces: SpaceRepository) {
     suspend operator fun invoke(): Outcome<Unit> = spaces.refresh()
 }
 
-/** 이름을 정하는 순간 초대 코드도 함께 나옵니다 (셋로그에서 가져온 하나). */
+/** 이름을 정하는 순간 초대 코드도 함께 나옵니다 — 둘이 쓰는 짜국만. */
 class CreateSpaceUseCase(private val spaces: SpaceRepository) {
-    suspend operator fun invoke(name: String): Outcome<Pair<Space, Invite>> {
+    suspend operator fun invoke(name: String, kind: SpaceKind): Outcome<Pair<Space, Invite?>> {
         val trimmed = name.trim()
         require(trimmed.isNotEmpty()) { "공간 이름이 비었습니다" }
-        return spaces.create(trimmed)
+        return spaces.create(trimmed, kind)
     }
 }
 

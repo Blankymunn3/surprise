@@ -3,6 +3,7 @@ package kr.surprise.memorymap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import kr.surprise.memorymap.core.model.SpaceId
+import kr.surprise.memorymap.core.model.SpaceKind
 import kr.surprise.memorymap.feature.calendar.CalendarViewModel
 import kr.surprise.memorymap.feature.map.MapViewModel
 import kr.surprise.memorymap.feature.space.SpaceListViewModel
@@ -21,20 +22,26 @@ fun AppContainer.spaceListFactory() = VmFactory {
     SpaceListViewModel(observeSpaces, refreshSpaces, createSpace, joinSpace)
 }
 
-fun AppContainer.mapFactory(spaceId: SpaceId) = VmFactory {
-    MapViewModel(spaceId, observeBoard, searchRegions, setCover, regions)
+/**
+ * 짜국의 **종류**를 같이 받습니다 — 혼자면 기기 안 사진, 둘이면 서버 사진을 씁니다.
+ * 고르는 일은 [AppContainer] 가 하고 화면은 어느 쪽인지 모릅니다.
+ */
+fun AppContainer.mapFactory(spaceId: SpaceId, kind: SpaceKind) = VmFactory {
+    val photos = photoUseCases(kind)
+    MapViewModel(spaceId, photos.observeBoard, searchRegions, photos.setCover, regions)
 }
 
-fun AppContainer.calendarFactory(spaceId: SpaceId) = VmFactory {
+fun AppContainer.calendarFactory(spaceId: SpaceId, kind: SpaceKind) = VmFactory {
+    val photos = photoUseCases(kind)
     CalendarViewModel(
         spaceId = spaceId,
-        observeBoard = observeBoard,
-        setCover = setCover,
+        observeBoard = photos.observeBoard,
+        setCover = photos.setCover,
         regionNames = { regions.all().associateBy { it.code.value } },
     )
 }
 
-fun AppContainer.uploadFactory(spaceId: SpaceId) = VmFactory {
+fun AppContainer.uploadFactory(spaceId: SpaceId, kind: SpaceKind) = VmFactory {
     UploadViewModel(
         spaceId = spaceId,
         readHints = { uri -> exif.read(android.net.Uri.parse(uri)) },
@@ -42,7 +49,7 @@ fun AppContainer.uploadFactory(spaceId: SpaceId) = VmFactory {
         // 올리기가 실패해도 사진을 잃지 않는다는 약속. 지금은 사용자가 고른 원본이
         // 갤러리에 그대로 있으므로 따로 복사하지 않고, 다시 시도하도록 알리기만 합니다.
         keepLocally = { },
-        uploadPhotos = uploadPhotos,
+        uploadPhotos = photoUseCases(kind).uploadPhotos,
         searchRegions = searchRegions,
         regions = regions,
     )

@@ -28,8 +28,9 @@ public protocol PhotoRepository: Sendable {
 public protocol SpaceRepository: Sendable {
     func spaces() async -> [Space]
     func refresh() async -> Outcome<Void>
-    /// 이름을 정하는 순간 초대 코드도 같이 나옵니다.
-    func create(name: String) async -> Outcome<(Space, Invite)>
+    /// 이름을 정하는 순간 초대 코드도 같이 나옵니다 — **둘이 쓰는 짜국만**.
+    /// 혼자 쓰는 짜국은 초대할 상대가 없어 코드가 `nil` 입니다.
+    func create(name: String, kind: SpaceKind) async -> Outcome<(Space, Invite?)>
     func join(code: String) async -> Outcome<Space>
 }
 
