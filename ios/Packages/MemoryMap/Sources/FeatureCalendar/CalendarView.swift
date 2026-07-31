@@ -73,9 +73,11 @@ public struct CalendarView: View {
                     .frame(maxWidth: .infinity)
             }
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, MemorySpace.s)
         // 격자 칸 크기를 여기서 잽니다 — 같은 여백을 쓰므로 폭이 같습니다.
+        //
+        // ⚠️ **여백을 주기 전에** 재야 합니다. `.padding()` 뒤에 `.background()` 를 붙이면
+        // 여백까지 포함한 바깥 폭이 잡혀서 칸이 36pt 만큼 넓어지고, 그만큼 격자가 넘쳐
+        // 첫 칸(일요일)이 잘려 나갑니다.
         .background(
             GeometryReader { proxy in
                 Color.clear
@@ -83,6 +85,8 @@ public struct CalendarView: View {
                     .onChange(of: proxy.size.width) { _, value in gridWidth = value }
             }
         )
+        .padding(.horizontal, 18)
+        .padding(.vertical, MemorySpace.s)
     }
 
     /**
@@ -134,7 +138,7 @@ public struct CalendarView: View {
                 }
 
         VStack(spacing: 0) {
-            LazyVGrid(columns: Array(repeating: GridItem(.fixed(cell), spacing: gap), count: 7),
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 0), spacing: gap), count: 7),
                       spacing: gap) {
                 ForEach(cells) { item in
                     if let date = item.date {
