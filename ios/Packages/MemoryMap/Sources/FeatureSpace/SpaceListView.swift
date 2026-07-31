@@ -172,6 +172,9 @@ struct SpaceCardView: View {
             }
             .aspectRatio(16 / 9.6, contentMode: .fill)
             .clipShape(RoundedRectangle(cornerRadius: MemoryRadius.card, style: .continuous))
+            .overlay(alignment: .topLeading) {
+                if space.kind == .personal { onlyOnThisPhone }
+            }
             .overlay(alignment: .topTrailing) {
                 HStack(spacing: -7) {
                     ForEach(Array(avatarLabels.enumerated()), id: \.offset) { _, label in
@@ -187,6 +190,22 @@ struct SpaceCardView: View {
             }
         }
         .buttonStyle(.plain)
+    }
+
+    /// 사진이 이 기기 안에만 있다는 표시 (`docs/app/design.html` 의 '공간 목록').
+    ///
+    /// **다는 쪽이 예외입니다** — 같이 쓰는 짜국에는 아무것도 달지 않습니다. 둘 다 달면
+    /// 목록이 딱지투성이가 되고 어느 쪽이 특별한지도 알 수 없습니다.
+    ///
+    /// 감빛을 쓰지 않는 이유: 누르는 것이 아니라 그냥 알려 주는 것이라서요.
+    private var onlyOnThisPhone: some View {
+        Text("이 폰에만")
+            .memoryMicro()
+            .foregroundStyle(MemoryColor.ink2)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 3)
+            .background(Capsule().fill(.ultraThinMaterial))
+            .padding(14)
     }
 
     /// 이름 첫 글자 원. **넷을 넘으면 마지막이 `+N`** 이 됩니다 — 그냥 잘라 내면

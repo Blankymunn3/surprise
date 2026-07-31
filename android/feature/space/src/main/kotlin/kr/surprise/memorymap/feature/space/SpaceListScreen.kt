@@ -100,6 +100,7 @@ fun SpaceListScreen(
                             memberInitials = space.members.map { it.initial },
                             onClick = { onIntent(SpaceListIntent.SpaceTapped(space.id)) },
                             modifier = Modifier.padding(horizontal = Gap.xl),
+                            onlyOnThisPhone = space.kind == SpaceKind.Personal,
                         )
                     }
                 }

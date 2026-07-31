@@ -38,6 +38,8 @@ fun SpaceCard(
     memberInitials: List<String>,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /** 혼자 쓰는 짜국이면 왼쪽 위에 '이 폰에만' 이 붙습니다. */
+    onlyOnThisPhone: Boolean = false,
 ) {
     Box(
         modifier = modifier
@@ -74,6 +76,10 @@ fun SpaceCard(
                 )
         )
 
+        if (onlyOnThisPhone) {
+            OnlyOnThisPhone(Modifier.align(Alignment.TopStart).padding(14.dp))
+        }
+
         MemberAvatars(
             initials = memberInitials,
             modifier = Modifier.align(Alignment.TopEnd).padding(14.dp),
@@ -84,6 +90,28 @@ fun SpaceCard(
             Text(meta, style = MemoryType.Label, color = Color.White.copy(alpha = 0.88f))
         }
     }
+}
+
+/**
+ * 사진이 이 기기 안에만 있다는 표시 (`docs/app/design.html` 의 '공간 목록').
+ *
+ * **다는 쪽이 예외입니다** — 같이 쓰는 짜국에는 아무것도 달지 않습니다. 둘 다 달면
+ * 목록이 딱지투성이가 되고 어느 쪽이 특별한지도 알 수 없습니다.
+ *
+ * 감빛을 쓰지 않는 이유: 누르는 것이 아니라 그냥 알려 주는 것이라서요.
+ * 지도 위의 알약·버튼과 같은 유리를 씁니다.
+ */
+@Composable
+private fun OnlyOnThisPhone(modifier: Modifier = Modifier) {
+    Text(
+        text = "이 폰에만",
+        style = MemoryType.Micro,
+        color = MemoryColors.Ink2,
+        modifier = modifier
+            .clip(MemoryShapes.Pill)
+            .background(MemoryColors.Glass)
+            .padding(horizontal = 9.dp, vertical = 3.dp),
+    )
 }
 
 /** 이름 첫 글자 원. 넷을 넘으면 마지막이 +N 이 됩니다. */
