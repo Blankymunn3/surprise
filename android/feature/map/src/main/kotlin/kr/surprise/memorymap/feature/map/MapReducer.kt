@@ -24,12 +24,14 @@ internal object MapReducer {
         region: Region,
         board: PhotoBoard,
         center: DoubleArray?,
+        outline: RegionOutline?,
     ): MapState {
         val photos = board.photosIn(region.code)
         return state.copy(
             query = region.displayName,
             results = emptyList(),
             focus = center,
+            outline = outline,
             sheet = RegionSheetUi(
                 region = region,
                 photos = photos,

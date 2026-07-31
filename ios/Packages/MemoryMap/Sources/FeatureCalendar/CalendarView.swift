@@ -1,5 +1,6 @@
 import CoreModel
 import DesignSystem
+import Domain
 import Foundation
 import SwiftUI
 
@@ -8,6 +9,17 @@ private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
 /// 달력 탭. 지도 탭과 **같은 밝은 바탕**입니다 — 탭 하나 옮겼다고 앱이 뒤집히면 안 됩니다.
 public struct CalendarView: View {
     @State private var store: CalendarStore
+
+    /// 넘김의 기준이 되는 달. 처음 보인 달을 가운데 페이지로 잡습니다.
+    @State private var anchor: (year: Int, month: Int)?
+    @State private var page = CalendarView.pageCenter
+    @State private var gridWidth: CGFloat = 0
+
+    /// ±100년. 넘기다 끝에 닿을 일은 없습니다. 안드로이드와 같은 값입니다.
+    private static let pageCount = 2401
+    private static let pageCenter = pageCount / 2
+    /// 6줄이면 어떤 달이든 들어갑니다. 늘 6줄로 그려야 넘길 때 높이가 안 바뀝니다.
+    private static let weekRows = 6
 
     public init(store: CalendarStore) {
         self._store = State(initialValue: store)
@@ -63,24 +75,98 @@ public struct CalendarView: View {
         }
         .padding(.horizontal, 18)
         .padding(.vertical, MemorySpace.s)
+        // 격자 칸 크기를 여기서 잽니다 — 같은 여백을 쓰므로 폭이 같습니다.
+        .background(
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { gridWidth = proxy.size.width }
+                    .onChange(of: proxy.size.width) { _, value in gridWidth = value }
+            }
+        )
     }
 
+    /**
+     옆으로 넘겨 달을 바꿉니다. 안드로이드의 `HorizontalPager` 와 같은 방식입니다.
+
+     페이지 수를 아주 크게 잡고 가운데에서 시작합니다 — 무한히 넘기는 것처럼 보이게 하는
+     흔한 방법입니다. **보이는 달만** 사진을 채워 그립니다. 옆 페이지는 상태에 없는 달이라
+     사진을 모르는데, 빈 격자를 잠깐 보여 주는 편이 엉뚱한 달의 사진을 보여 주는 것보다 낫습니다.
+
+     높이를 미리 정하는 이유: 달마다 줄 수가 달라 그때그때 재면 넘길 때 화면이 출렁입니다.
+     */
     private var grid: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: MemorySpace.xs), count: 7),
-                  spacing: MemorySpace.xs) {
-            ForEach(store.state.cells) { cell in
-                if let date = cell.date {
-                    DayCell(
-                        day: date.day, photoURL: cell.coverURL,
-                        isToday: cell.isToday, isSunday: cell.isSunday
-                    )
-                    .onTapGesture { store.select(date) }
-                } else {
-                    Color.clear.aspectRatio(1, contentMode: .fit)
-                }
+        let gap = MemorySpace.xs
+        let cell = gridWidth > 0 ? (gridWidth - gap * 6) / 7 : 0
+
+        return TabView(selection: $page) {
+            ForEach(0..<Self.pageCount, id: \.self) { index in
+                monthGrid(at: index, cell: cell, gap: gap).tag(index)
             }
         }
+        .modifier(PageStyle())
+        .frame(height: cell * CGFloat(Self.weekRows) + gap * CGFloat(Self.weekRows - 1))
         .padding(.horizontal, 18)
+        .onAppear {
+            // 기준 달은 한 번만 잡습니다. 매번 다시 잡으면 넘긴 자리가 흔들립니다.
+            if anchor == nil { anchor = (store.state.year, store.state.month) }
+        }
+        .onChange(of: page) { _, value in
+            let target = month(at: value)
+            store.setMonth(year: target.year, month: target.month)
+        }
+        .onChange(of: store.state.month) { _, _ in syncPage() }
+        .onChange(of: store.state.year) { _, _ in syncPage() }
+    }
+
+    @ViewBuilder
+    private func monthGrid(at index: Int, cell: CGFloat, gap: CGFloat) -> some View {
+        let target = month(at: index)
+        let isCurrent = target.year == store.state.year && target.month == store.state.month
+        let cells: [DayCellUi] = isCurrent
+            ? store.state.cells
+            : CalendarMonth.grid(year: target.year, month: target.month)
+                .enumerated()
+                .map { slot, date in
+                    DayCellUi(
+                        date: date, coverURL: nil, isToday: false,
+                        isSunday: date.map(CalendarMonth.isSunday) ?? false, slot: slot
+                    )
+                }
+
+        VStack(spacing: 0) {
+            LazyVGrid(columns: Array(repeating: GridItem(.fixed(cell), spacing: gap), count: 7),
+                      spacing: gap) {
+                ForEach(cells) { item in
+                    if let date = item.date {
+                        DayCell(
+                            day: date.day, photoURL: item.coverURL,
+                            isToday: item.isToday, isSunday: item.isSunday
+                        )
+                        .onTapGesture { store.select(date) }
+                    } else {
+                        Color.clear.frame(height: cell)
+                    }
+                }
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    /// 페이지 번호 → 달. 기준 달로부터 몇 칸 떨어졌는지로 셈합니다.
+    private func month(at index: Int) -> (year: Int, month: Int) {
+        let base = anchor ?? (store.state.year, store.state.month)
+        let total = base.year * 12 + (base.month - 1) + (index - Self.pageCenter)
+        return (total / 12, total % 12 + 1)
+    }
+
+    /// 위 화살표로 달을 바꿨을 때 페이지도 따라오게.
+    private func syncPage() {
+        guard let base = anchor else { return }
+        let diff = (store.state.year - base.year) * 12 + (store.state.month - base.month)
+        let target = Self.pageCenter + diff
+        if target != page, (0..<Self.pageCount).contains(target) {
+            withAnimation { page = target }
+        }
     }
 
     private var collapseBar: some View {
@@ -129,5 +215,17 @@ public struct CalendarView: View {
         }
         .padding(.horizontal, 18)
         .padding(.vertical, MemorySpace.s)
+    }
+}
+
+/// 페이지처럼 넘기는 `TabView` 스타일은 **iOS 에만** 있습니다.
+/// 패키지가 맥에서도 빌드돼야 `swift test` 가 돌기 때문에 여기서 갈라 둡니다.
+private struct PageStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        #if os(iOS)
+        content.tabViewStyle(.page(indexDisplayMode: .never))
+        #else
+        content
+        #endif
     }
 }

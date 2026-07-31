@@ -58,13 +58,21 @@ class AssetRegionCatalog(private val context: Context) : RegionCatalog {
         return world.firstOrNull { it.contains(longitude, latitude) }?.let { find(it.code) }
     }
 
-    override suspend fun centerOf(code: RegionCode): DoubleArray? {
-        val shapes = if (code.value.startsWith("C-")) {
+    /** `C-` 로 시작하면 나라, 아니면 국내 시군구입니다. */
+    private suspend fun shapesFor(code: RegionCode): List<GeoShape> =
+        if (code.value.startsWith("C-")) {
             lock.withLock { shapesWorld ?: loadShapes("boundaries_world.json").also { shapesWorld = it } }
         } else {
             lock.withLock { shapesKorea ?: loadShapes("boundaries_kr.json").also { shapesKorea = it } }
         }
-        val shape = shapes.firstOrNull { it.code == code.value } ?: return null
+
+    override suspend fun outlineOf(code: RegionCode): List<List<DoubleArray>> =
+        shapesFor(code).firstOrNull { it.code == code.value }
+            ?.polygons?.flatten()
+            .orEmpty()
+
+    override suspend fun centerOf(code: RegionCode): DoubleArray? {
+        val shape = shapesFor(code).firstOrNull { it.code == code.value } ?: return null
         // 경계 상자의 가운데. 정확한 무게중심은 필요 없고 "그 지역 어딘가" 면 됩니다.
         return doubleArrayOf(
             (shape.bounds[1] + shape.bounds[3]) / 2,

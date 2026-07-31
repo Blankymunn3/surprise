@@ -27,8 +27,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import kr.surprise.memorymap.core.designsystem.component.GlassIconButton
 import kr.surprise.memorymap.core.designsystem.component.GlassSurface
@@ -59,6 +62,7 @@ fun MapScreen(
     // 고정값으로 두면 시트가 짧을 때 버튼만 허공에 뜹니다.
     var sheetHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
+    val keyboard = LocalSoftwareKeyboardController.current
 
     // 시트가 없을 때는 화면 아래에서 40dp. 있을 때는 시트 바로 위에 Gap.l 만큼 띄웁니다.
     val floatBottom =
@@ -68,7 +72,13 @@ fun MapScreen(
         MapCanvas(
             pins = state.pins,
             focus = state.focus,
-            onTap = { lat, lon -> onIntent(MapIntent.MapTapped(lat, lon)) },
+            outline = state.outline,
+            onTap = { lat, lon ->
+                // 검색하다 지도를 누르면 자판부터 내려갑니다. 자판이 화면 절반을 덮은 채로
+                // 지역 시트가 올라오면 아무것도 안 보입니다.
+                keyboard?.hide()
+                onIntent(MapIntent.MapTapped(lat, lon))
+            },
             modifier = Modifier.fillMaxSize(),
         )
 
@@ -78,7 +88,8 @@ fun MapScreen(
             onClear = { onIntent(MapIntent.QueryCleared) },
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(start = Gap.l, end = Gap.l, top = topBarHeight + Gap.s),
+                .padding(start = Gap.l, end = Gap.l, top = topBarHeight + Gap.s)
+                .blockMapTouches(),
         )
 
         if (state.results.isNotEmpty()) {
@@ -87,7 +98,8 @@ fun MapScreen(
                 onPick = { onIntent(MapIntent.RegionChosen(it)) },
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(start = Gap.l, end = Gap.l, top = topBarHeight + 56.dp),
+                    .padding(start = Gap.l, end = Gap.l, top = topBarHeight + 56.dp)
+                    .blockMapTouches(),
             )
         }
 
@@ -127,8 +139,30 @@ fun MapScreen(
                 onIntent = onIntent,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .onSizeChanged { sheetHeight = with(density) { it.height.toDp() } },
+                    .onSizeChanged { sheetHeight = with(density) { it.height.toDp() } }
+                    .blockMapTouches(),
             )
+        }
+    }
+}
+
+/**
+ * 지도 위에 떠 있는 것들이 터치를 **먹게** 합니다.
+ *
+ * 지도는 AndroidView(MapLibre) 라 자기 방식으로 터치를 받습니다. 그 위에 얹은 Compose
+ * 요소가 터치를 소비하지 않으면 **밑의 지도까지 같이 눌립니다** — 시트 안의 버튼을 눌렀는데
+ * 시트 뒤쪽 지역이 함께 선택되던 것이 이것 때문입니다.
+ *
+ * **Main 단계**에서 먹습니다. 이 단계는 자식부터 위로 올라오므로, 글자칸·버튼이 **먼저**
+ * 받고 남은 것만 우리가 먹습니다. Initial 에서 먹으면 자식한테 가기도 전에 가로채서
+ * 검색창을 눌러도 자판이 안 올라오고 시트 버튼도 안 눌립니다.
+ */
+private fun Modifier.blockMapTouches(): Modifier = pointerInput(Unit) {
+    awaitPointerEventScope {
+        while (true) {
+            awaitPointerEvent(PointerEventPass.Main).changes.forEach {
+                if (!it.isConsumed) it.consume()
+            }
         }
     }
 }

@@ -115,8 +115,6 @@ public struct PrimaryButton: View {
     }
 }
 
-/// 달력의 하루 칸. 사진이 없는 날은 숫자를 가운데, 있는 날은 왼쪽 위 —
-/// 숫자 자리가 다른 것 자체가 "사진이 있다" 는 신호입니다.
 public struct DayCell: View {
     let day: Int
     let photoURL: String?

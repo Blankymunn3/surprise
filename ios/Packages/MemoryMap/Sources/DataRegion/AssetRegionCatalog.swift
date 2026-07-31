@@ -41,6 +41,17 @@ public actor AssetRegionCatalog: RegionCatalog {
         return nil
     }
 
+    public func outline(of code: RegionCode) async -> [[GeoPoint]] {
+        let shapes = code.value.hasPrefix("C-") ? worldShapes() : koreaShapes()
+        guard let shape = shapes.first(where: { $0.code == code.value }) else { return [] }
+        // 저장된 순서는 GeoJSON 과 같은 (경도, 위도) 입니다. 여기서 한 번만 뒤집습니다.
+        return shape.polygons.flatMap { polygon in
+            polygon.map { ring in
+                ring.map { GeoPoint(latitude: $0.1, longitude: $0.0) }
+            }
+        }
+    }
+
     public func center(of code: RegionCode) async -> (Double, Double)? {
         let shapes = code.value.hasPrefix("C-") ? worldShapes() : koreaShapes()
         guard let shape = shapes.first(where: { $0.code == code.value }) else { return nil }

@@ -55,6 +55,22 @@ public struct SpaceListView: View {
         }
         .background(MemoryColor.paper)
         .task { await store.send(.appeared) }
+        .sheet(isPresented: sheetShown) {
+            SpaceSheet(store: store)
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+        }
+    }
+
+    /// 시트는 상태가 정하고 화면은 따라가기만 합니다. 닫으면 상태도 같이 닫힙니다 —
+    /// 안 그러면 아래로 쓸어 내린 뒤 버튼을 눌러도 두 번째부터 안 열립니다.
+    private var sheetShown: Binding<Bool> {
+        Binding(
+            get: { store.state.sheet != .none },
+            set: { shown in
+                if !shown { Task { await store.send(.sheetDismissed) } }
+            }
+        )
     }
 
     private func hint(_ text: String) -> some View {

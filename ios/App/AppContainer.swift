@@ -5,7 +5,9 @@ import DataRegion
 import DataSpace
 import Domain
 import FeatureCalendar
+import FeatureMap
 import FeatureSpace
+import FeatureUpload
 import Foundation
 
 /**
@@ -38,6 +40,43 @@ final class AppContainer {
             createSpace: CreateSpace(spaces: spaces),
             joinSpace: JoinSpace(spaces: spaces)
         )
+    }
+
+    func mapStore(_ spaceId: SpaceId) -> MapStore {
+        MapStore(
+            spaceId: spaceId,
+            observeBoard: ObservePhotoBoard(photos: photos),
+            searchRegions: SearchRegions(catalog: regions),
+            setCoverPhoto: SetCoverPhoto(photos: photos),
+            catalog: regions
+        )
+    }
+
+    func uploadStore(_ spaceId: SpaceId) -> UploadStore {
+        let catalog = regions
+        return UploadStore(
+            spaceId: spaceId,
+            // EXIF 는 파일만 읽고(PhotoFile), 좌표를 지역으로 바꾸는 건 도메인(catalog)이 합니다.
+            // 지도를 눌렀을 때와 **같은 길**이라 두 경로가 어긋날 수 없습니다.
+            readHints: { path in
+                let hint = PhotoFile.hint(at: path)
+                var code: RegionCode?
+                if let (lat, lon) = hint.coordinate {
+                    code = await catalog.regionAt(latitude: lat, longitude: lon)?.code
+                }
+                return UploadPlan.ExifHint(takenOn: hint.takenOn, regionCode: code)
+            },
+            toJpeg: { path in PhotoFile.jpeg(at: path) },
+            uploadPhotos: UploadPhotos(photos: photos),
+            searchRegions: SearchRegions(catalog: catalog),
+            catalog: catalog,
+            today: .today
+        )
+    }
+
+    /// 사진을 올린 뒤 지도·달력이 새 사진을 보게 합니다.
+    func refreshPhotos(_ spaceId: SpaceId) async {
+        _ = await RefreshPhotos(photos: photos)(spaceId)
     }
 
     func calendarStore(_ spaceId: SpaceId) -> CalendarStore {
