@@ -70,18 +70,36 @@ R2 가 싼 것은 맞습니다. 특히 **내려받기가 공짜**라 사진을 �
 
 ## 순서
 
-| | 하는 일 | 누가 |
-|---|---|---|
-| 0 | 혼자/둘이 나누기 (로그인 없이 되는 부분) | 제가 |
-| 1 | Firebase 설정 (CLI) | **맥의 Claude** |
-| 2 | 보안 규칙 (Storage · Firestore) | 제가 씀 → **맥에서 deploy** |
-| 3 | 로그인 화면 · 토큰 관리 | 제가 |
-| 4 | 공간·사진을 Firestore 로 옮기기 | 제가 |
-| 5 | 기존 데이터 옮기기 | 아래 참고 |
+| | 하는 일 | 누가 | 상태 |
+|---|---|---|---|
+| 0 | 혼자/둘이 나누기 (로그인 없이 되는 부분) | 제가 | |
+| 1 | Firebase 설정 (CLI) | **맥의 Claude** | ✅ (1-5 빼고) |
+| 2 | 보안 규칙 (Storage · Firestore) | 제가 씀 → **맥에서 deploy** | ✅ 게시됨 |
+| 3 | 로그인 화면 · 토큰 관리 | 제가 | |
+| 4 | 공간·사진을 Firestore 로 옮기기 | 제가 | |
+| 5 | 기존 데이터 옮기기 | 아래 참고 | |
 
 1번이 끝나야 3번이 돌아갑니다. **1번부터 해 주세요** — 맥에서 Claude 를 열면 됩니다.
 
+> **남은 것은 1-5 (구글 로그인 켜기) 하나입니다.** 콘솔에서만 됩니다.
+> 그걸 켜야 설정 파일에 OAuth 클라이언트 ID 가 들어가므로, 켠 뒤에 **설정 파일 두 개를
+> 다시 받아야 합니다** — 명령은 1-5 아래에 적어 뒀습니다.
+
 ## 1. Firebase 설정 — 맥에서 Claude 로
+
+> ✅ **1-1 ~ 1-4 는 끝났습니다** (2026-07-31, 맥에서). 아래 내용은 기록으로 남겨 둡니다.
+> 실제로 만들어진 것:
+>
+> | | |
+> |---|---|
+> | 프로젝트 | `our-surprise` (`.firebaserc` 에 고정) |
+> | Firestore | `(default)` · `asia-northeast3` (서울) |
+> | 규칙 | `firestore.rules` · `storage.rules` 게시됨 |
+> | 안드로이드 앱 | `1:419812459548:android:ccab28c6f8dce6eefd4bd9` |
+> | iOS 앱 | `1:419812459548:ios:d2e5a8506cbaa89ffd4bd9` |
+> | 디버그 SHA-1 | `DF:DF:FB:EF:D0:EA:60:40:46:1A:88:CB:88:AB:0F:8D:C3:31:CC:5B` |
+>
+> **남은 것은 1-5 뿐입니다.**
 
 **웹에서 도는 Claude 는 이 저장소만 볼 수 있고 님 계정으로 Firebase 에 손대지 못합니다.**
 그래서 이 부분은 **맥에서 Claude Code 를 열어** 시키는 것이 가장 빠릅니다. 거기에는
@@ -159,6 +177,22 @@ firebase apps:sdkconfig IOS <앱ID> --out ios/App/GoogleService-Info.plist
 → **Google** → 사용 설정 → 지원 이메일 고르기 → 저장
 
 CLI 에 이걸 켜는 명령이 없습니다. 한 번만 하면 끝입니다.
+
+**켠 다음에 설정 파일을 다시 받아야 합니다.** 구글 로그인을 켜는 순간 OAuth 클라이언트가
+생기는데, 지금 받아 둔 파일에는 그게 **없습니다** — `google-services.json` 의
+`oauth_client` 가 비어 있고 plist 에 `CLIENT_ID`·`REVERSED_CLIENT_ID` 가 없습니다.
+그대로 두면 구글 로그인 창이 안 뜹니다.
+
+```bash
+firebase apps:sdkconfig ANDROID 1:419812459548:android:ccab28c6f8dce6eefd4bd9 \
+        --out android/app/google-services.json
+firebase apps:sdkconfig IOS 1:419812459548:ios:d2e5a8506cbaa89ffd4bd9 \
+        --out ios/App/GoogleService-Info.plist
+
+# 들어왔는지 확인 — 둘 다 값이 나와야 합니다
+grep -o '"client_id"[^,]*' android/app/google-services.json | head -3
+grep -A1 REVERSED_CLIENT_ID ios/App/GoogleService-Info.plist
+```
 
 ### 끝났으면
 
