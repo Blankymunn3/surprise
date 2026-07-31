@@ -1,98 +1,107 @@
 import CoreModel
 import DesignSystem
 import FeatureCalendar
+import FeatureMap
+import FeatureUpload
 import SwiftUI
 
 /// 공간 안. 위쪽 가운데의 `지도 | 달력` 으로 오갑니다 (`docs/app/SCREENS.md`).
+/// 두 탭은 같은 사진을 '어디' 와 '언제' 로 보는 것뿐입니다.
 struct SpaceDetailView: View {
     let spaceId: SpaceId
 
     @Environment(\.dismiss) private var dismiss
-    @State private var tab: Tab = .map
+    @State private var tab = 0
+    @State private var uploading = false
     @State private var calendar: CalendarStore
-
-    enum Tab: String, CaseIterable { case map = "지도", calendar = "달력" }
+    @State private var map: MapStore
 
     init(spaceId: SpaceId) {
         self.spaceId = spaceId
         _calendar = State(initialValue: AppContainer.shared.calendarStore(spaceId))
+        _map = State(initialValue: AppContainer.shared.mapStore(spaceId))
     }
 
     var body: some View {
         ZStack(alignment: .top) {
             MemoryColor.paper.ignoresSafeArea()
 
+            // 탭도 옆으로 밀립니다. 누른 쪽으로 미끄러져야 어느 쪽으로 옮겼는지 보입니다.
             Group {
-                switch tab {
-                case .map: MapTabPlaceholder()
-                case .calendar: CalendarView(store: calendar)
+                if tab == 0 {
+                    MapView(store: map) { uploading = true }
+                        .transition(.move(edge: .leading).combined(with: .opacity))
+                } else {
+                    calendarTab
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
             }
-            .padding(.top, 52)
+            .animation(.easeInOut(duration: 0.3), value: tab)
 
-            segmented
+            topBar
         }
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
-        .safeAreaInset(edge: .top, spacing: 0) { Color.clear.frame(height: 0) }
-        .overlay(alignment: .topLeading) { backButton }
-    }
-
-    private var segmented: some View {
-        HStack(spacing: 2) {
-            ForEach(Tab.allCases, id: \.self) { item in
-                Text(item.rawValue)
-                    .memoryHeadline()
-                    .foregroundStyle(tab == item ? MemoryColor.ink : MemoryColor.ink2)
-                    .padding(.horizontal, MemorySpace.xl)
-                    .padding(.vertical, MemorySpace.s)
-                    .background {
-                        if tab == item {
-                            Capsule().fill(MemoryColor.surface)
-                                .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
-                        }
-                    }
-                    .contentShape(Capsule())
-                    .onTapGesture { tab = item }
+        .sheet(isPresented: $uploading) {
+            UploadView(store: AppContainer.shared.uploadStore(spaceId)) {
+                uploading = false
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.hidden)
+        }
+        .onChange(of: uploading) { _, open in
+            // 시트가 닫힌 뒤에 새로 받아옵니다. 방금 올린 사진이 바로 보여야 합니다.
+            guard !open else { return }
+            Task {
+                await AppContainer.shared.refreshPhotos(spaceId)
+                await map.refresh()
+                await calendar.refresh()
             }
         }
-        .padding(3)
-        .background(Capsule().fill(MemoryColor.fill))
+    }
+
+    private var calendarTab: some View {
+        VStack(spacing: 0) {
+            Color.clear.frame(height: 52)
+            CalendarView(store: calendar)
+        }
+        .overlay(alignment: .bottomTrailing) {
+            MemoryFab { uploading = true }
+                .padding(.trailing, MemorySpace.xl)
+                .padding(.bottom, 40)
+        }
+    }
+
+    /// 지도 위에서는 유리, 달력(종이 위)에서는 그냥 놓입니다 — 같은 부품, 다른 층.
+    private var topBar: some View {
+        HStack {
+            circleButton("arrow.left", label: "뒤로", floating: tab == 0) { dismiss() }
+            Spacer()
+            Segmented(options: ["지도", "달력"], selection: $tab, floating: tab == 0)
+            Spacer()
+            circleButton("ellipsis", label: "더 보기", floating: tab == 0) { }
+        }
+        .padding(.horizontal, MemorySpace.l)
         .padding(.top, MemorySpace.s)
     }
 
-    private var backButton: some View {
-        Button { dismiss() } label: {
-            Image(systemName: "arrow.left")
-                .font(.system(size: 17, weight: .semibold))
+    private func circleButton(
+        _ symbol: String, label: String, floating: Bool, action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(MemoryColor.ink)
                 .frame(width: 40, height: 40)
-                .background(Circle().fill(MemoryColor.surface))
-                .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
+                .background {
+                    if floating {
+                        Circle().fill(.ultraThinMaterial)
+                            .overlay(Circle().strokeBorder(MemoryColor.ink.opacity(0.07), lineWidth: 0.5))
+                            .shadow(color: MemoryColor.ink.opacity(0.14), radius: 12, y: 8)
+                    }
+                }
         }
-        .padding(.leading, MemorySpace.l)
-        .padding(.top, MemorySpace.s)
-    }
-}
-
-/// 지도는 아직 **그리지 않습니다.**
-///
-/// 안드로이드는 MapLibre 로 기본 지도를 띄우는데, iOS 쪽은 지도 SDK 를 아직 붙이지
-/// 않았습니다. 없는 것을 있는 척하는 화면보다, 무엇이 없는지 적어 두는 편이 낫습니다.
-/// 진행 상황은 `docs/app/STATUS.md`.
-private struct MapTabPlaceholder: View {
-    var body: some View {
-        VStack(spacing: MemorySpace.m) {
-            Spacer()
-            Image(systemName: "map")
-                .font(.system(size: 40, weight: .light))
-                .foregroundStyle(MemoryColor.ink3)
-            Text("지도는 아직 준비 중이에요").memoryHeadline()
-            Text("달력 탭에서 사진을 볼 수 있어요")
-                .memoryBody()
-                .foregroundStyle(MemoryColor.ink2)
-            Spacer()
-        }
-        .frame(maxWidth: .infinity)
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
     }
 }

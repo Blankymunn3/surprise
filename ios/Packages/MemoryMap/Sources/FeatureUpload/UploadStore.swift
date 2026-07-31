@@ -146,6 +146,22 @@ public final class UploadStore {
         state = UploadReducer.regionChosen(state, region)
     }
 
+    public func startPickingRegion() { state.pickingRegion = true }
+
+    /// 고르다 말고 닫아도 **원래 값은 그대로** 둡니다. 검색어만 지웁니다.
+    public func cancelPickingRegion() {
+        state.pickingRegion = false
+        state.regionQuery = ""
+        state.regionResults = []
+    }
+
+    /// 날짜를 직접 고르면 '자동' 딱지를 뗍니다 — 지역과 같은 규칙입니다.
+    public func setDate(_ date: CalendarDate) {
+        state.takenOn = date
+        state.dateFromExif = false
+        state.dateMismatch = 0
+    }
+
     public func confirm() async {
         guard state.canUpload, let region = state.region, let takenOn = state.takenOn else { return }
         state.step = .uploading
