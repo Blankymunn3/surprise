@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kr.surprise.memorymap.core.common.Outcome
 import kr.surprise.memorymap.core.model.CoverKey
+import kr.surprise.memorymap.core.model.Region
 import kr.surprise.memorymap.core.model.SpaceId
 import kr.surprise.memorymap.core.ui.MviViewModel
 import kr.surprise.memorymap.domain.model.PhotoBoard
