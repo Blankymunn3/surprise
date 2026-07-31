@@ -150,8 +150,7 @@ struct SpaceCardView: View {
                         MemoryColor.fill
                     }
                 } else {
-                    // 아직 사진이 없는 공간. 회색 네모 대신 그림을 깔아 둡니다.
-                    HillScene()
+                    MemoryColor.fill
                 }
 
                 // 흰 글자가 밝은 사진 위에서도 읽히도록 아래쪽을 어둡게
