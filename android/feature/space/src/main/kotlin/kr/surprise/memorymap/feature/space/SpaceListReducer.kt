@@ -22,14 +22,24 @@ internal object SpaceListReducer {
             working = false,
         )
 
+    /** 시트를 열 때마다 종류도 기본(혼자)으로 되돌립니다 — 지난번에 고른 것이 남아 있으면 안 됩니다. */
     fun sheetOpened(state: SpaceListState, sheet: SpaceListSheet): SpaceListState =
-        state.copy(sheet = sheet, pendingName = "", pendingCode = "")
+        state.copy(sheet = sheet, pendingName = "", pendingCode = "", pendingKind = SpaceKind.Personal)
 
     fun sheetDismissed(state: SpaceListState): SpaceListState =
-        state.copy(sheet = SpaceListSheet.None, pendingName = "", pendingCode = "", working = false)
+        state.copy(
+            sheet = SpaceListSheet.None,
+            pendingName = "",
+            pendingCode = "",
+            pendingKind = SpaceKind.Personal,
+            working = false,
+        )
 
     fun nameTyped(state: SpaceListState, value: String): SpaceListState =
         state.copy(pendingName = value)
+
+    fun kindSelected(state: SpaceListState, kind: SpaceKind): SpaceListState =
+        state.copy(pendingKind = kind)
 
     fun codeTyped(state: SpaceListState, value: String): SpaceListState =
         state.copy(pendingCode = value)

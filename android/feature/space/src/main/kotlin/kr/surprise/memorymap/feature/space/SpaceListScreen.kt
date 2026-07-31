@@ -1,7 +1,9 @@
 package kr.surprise.memorymap.feature.space
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
@@ -30,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kr.surprise.memorymap.core.designsystem.component.HillScene
@@ -43,6 +46,7 @@ import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 import kr.surprise.memorymap.core.model.Space
+import kr.surprise.memorymap.core.model.SpaceKind
 
 /**
  * 앱의 메인. **공간이 하나뿐이어도 여기서 시작합니다** —
@@ -209,11 +213,16 @@ private fun SpaceSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Uni
                 SpaceListSheet.Create -> {
                     Text("새 짜국 만들기", style = MemoryType.Title)
                     Text(
-                        "이름을 정하면 초대 코드가 함께 나와요",
+                        "사진을 어디에 둘지 먼저 고릅니다",
                         style = MemoryType.Label,
                         color = MemoryColors.Ink3,
-                        modifier = Modifier.padding(top = Gap.xs, bottom = Gap.xl),
+                        modifier = Modifier.padding(top = Gap.xs, bottom = Gap.l),
                     )
+                    KindPicker(
+                        selected = state.pendingKind,
+                        onSelect = { onIntent(SpaceListIntent.KindSelected(it)) },
+                    )
+                    Spacer(Modifier.height(Gap.m))
                     Field(
                         value = state.pendingName,
                         placeholder = "우리 추억 지도",
@@ -276,6 +285,72 @@ private fun SpaceSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Uni
                     )
                 }
             }
+        }
+    }
+}
+
+/**
+ * 혼자 / 같이 고르기 (`docs/app/design.html` 의 '짜국 만들기').
+ *
+ * **세로로 쌓는 이유**: 줄마다 설명이 한 줄씩 붙습니다. `지도|달력` 같은 알약에는
+ * 설명이 안 들어가고, 설명 없이 두면 사진이 폰 밖으로 나가는지 모르고 고르게 됩니다.
+ */
+@Composable
+private fun KindPicker(selected: SpaceKind, onSelect: (SpaceKind) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(Gap.s)) {
+        KindOption(
+            title = "혼자 쓸래요",
+            detail = "사진이 이 폰에만 있어요 · 로그인 없이 바로",
+            checked = selected == SpaceKind.Personal,
+            onClick = { onSelect(SpaceKind.Personal) },
+        )
+        KindOption(
+            title = "같이 볼래요",
+            detail = "초대한 사람들과 같이 봐요 · 로그인이 필요해요",
+            checked = selected == SpaceKind.Shared,
+            onClick = { onSelect(SpaceKind.Shared) },
+        )
+    }
+}
+
+@Composable
+private fun KindOption(title: String, detail: String, checked: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(MemoryShapes.Button)
+            .background(if (checked) MemoryColors.AccentTint else MemoryColors.Fill)
+            // 테두리를 **안쪽에** 그립니다. 바깥에 두면 고를 때마다 칸이 커졌다 작아져
+            // 두 줄이 흔들립니다.
+            .then(
+                if (checked) Modifier.border(1.5.dp, MemoryColors.Accent, MemoryShapes.Button)
+                else Modifier
+            )
+            .selectable(selected = checked, role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = Gap.l, vertical = Gap.m),
+        horizontalArrangement = Arrangement.spacedBy(Gap.m),
+    ) {
+        Box(
+            Modifier
+                .padding(top = 2.dp)
+                .size(16.dp)
+                .clip(MemoryShapes.Pill)
+                .background(MemoryColors.Surface)
+                .border(1.5.dp, if (checked) MemoryColors.Accent else MemoryColors.Line, MemoryShapes.Pill),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (checked) {
+                Box(Modifier.size(7.dp).clip(MemoryShapes.Pill).background(MemoryColors.Accent))
+            }
+        }
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MemoryType.Headline)
+            Text(
+                detail,
+                style = MemoryType.Label,
+                color = MemoryColors.Ink2,
+                modifier = Modifier.padding(top = 1.dp),
+            )
         }
     }
 }

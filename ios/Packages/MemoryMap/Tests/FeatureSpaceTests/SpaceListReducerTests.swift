@@ -52,6 +52,30 @@ struct SpaceListReducerTests {
         #expect(after.items.count == 1)
     }
 
+    /// 기본이 혼자여야 하는 이유: 잘못 골라도 사진이 폰 밖으로 나가지 않습니다.
+    /// 반대로 두면 무심코 넘긴 사람의 사진이 서버로 갑니다.
+    @Test("만들기 시트를 열면 혼자가 기본으로 잡힌다")
+    func personalIsDefault() {
+        let opened = SpaceListReducer.sheetOpened(SpaceListState(), .create)
+        #expect(opened.pendingKind == .personal)
+    }
+
+    @Test("지난번에 같이를 골랐어도 시트를 다시 열면 혼자로 돌아온다")
+    func kindResetsOnReopen() {
+        let chose = SpaceListReducer.kindSelected(SpaceListState(), .shared)
+        let reopened = SpaceListReducer.sheetOpened(chose, .create)
+        #expect(reopened.pendingKind == .personal)
+    }
+
+    /// 혼자 짜국에는 초대 코드가 없습니다 — 보여 줄 것이 없으니 시트를 닫습니다.
+    @Test("혼자 짜국을 만들면 초대 코드 시트가 뜨지 않는다")
+    func personalHasNoInviteSheet() {
+        let state = SpaceListReducer.loaded(SpaceListState(), [])
+        let after = SpaceListReducer.created(state, space("A1B2C3"), nil)
+        #expect(after.sheet == .none)
+        #expect(after.items.count == 1)
+    }
+
     @Test("이름이 비면 만들기 버튼이 꺼진다")
     func createDisabled() {
         var s = SpaceListState()

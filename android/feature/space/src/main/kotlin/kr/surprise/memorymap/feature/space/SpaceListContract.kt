@@ -11,6 +11,11 @@ data class SpaceListState(
     val sheet: SpaceListSheet = SpaceListSheet.None,
     val pendingName: String = "",
     val pendingCode: String = "",
+    /**
+     * 만들기 시트에서 고른 종류. 기본이 **혼자**인 이유는 잘못 골라도 사진이 폰 밖으로
+     * 나가지 않기 때문입니다. 반대로 두면 무심코 넘긴 사람의 사진이 서버로 갑니다.
+     */
+    val pendingKind: SpaceKind = SpaceKind.Personal,
     val working: Boolean = false,
 )
 
@@ -41,6 +46,7 @@ sealed interface SpaceListIntent {
     data object JoinTapped : SpaceListIntent
     data object SheetDismissed : SpaceListIntent
     data class NameTyped(val value: String) : SpaceListIntent
+    data class KindSelected(val kind: SpaceKind) : SpaceListIntent
     data class CodeTyped(val value: String) : SpaceListIntent
     data object CreateConfirmed : SpaceListIntent
     data object JoinConfirmed : SpaceListIntent

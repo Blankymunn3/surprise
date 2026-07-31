@@ -35,6 +35,7 @@ class SpaceListViewModel(
             SpaceListIntent.JoinTapped -> setState { SpaceListReducer.sheetOpened(this, SpaceListSheet.Join) }
             SpaceListIntent.SheetDismissed -> setState { SpaceListReducer.sheetDismissed(this) }
             is SpaceListIntent.NameTyped -> setState { SpaceListReducer.nameTyped(this, intent.value) }
+            is SpaceListIntent.KindSelected -> setState { SpaceListReducer.kindSelected(this, intent.kind) }
             is SpaceListIntent.CodeTyped -> setState { SpaceListReducer.codeTyped(this, intent.value) }
             SpaceListIntent.CreateConfirmed -> create()
             SpaceListIntent.JoinConfirmed -> join()
@@ -54,12 +55,11 @@ class SpaceListViewModel(
     private fun create() {
         if (!currentState().canCreate()) return
         val name = currentState().pendingName
+        val kind = currentState().pendingKind
         setState { SpaceListReducer.working(this) }
 
         viewModelScope.launch {
-            // 혼자/같이를 고르는 화면은 아직 없습니다(`docs/app/AUTH.md` 0번의 5).
-            // 그때까지는 지금까지처럼 같이 쓰는 짜국을 만듭니다 — 여기 한 줄만 바꾸면 됩니다.
-            when (val result = createSpace(name, SpaceKind.Shared)) {
+            when (val result = createSpace(name, kind)) {
                 is Outcome.Ok -> {
                     val (space, invite) = result.value
                     setState { SpaceListReducer.created(this, space, invite?.code) }

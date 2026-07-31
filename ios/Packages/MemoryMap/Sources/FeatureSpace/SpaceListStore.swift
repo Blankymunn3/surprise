@@ -23,6 +23,9 @@ public struct SpaceListState: Equatable, Sendable {
     public var sheet: SpaceListSheet = .none
     public var pendingName: String = ""
     public var pendingCode: String = ""
+    /// 만들기 시트에서 고른 종류. 기본이 **혼자**인 이유는 잘못 골라도 사진이 폰 밖으로
+    /// 나가지 않기 때문입니다. 반대로 두면 무심코 넘긴 사람의 사진이 서버로 갑니다.
+    public var pendingKind: SpaceKind = .personal
     public var working: Bool = false
 
     public init() {}
@@ -43,6 +46,7 @@ public enum SpaceListIntent: Sendable {
     case joinTapped
     case sheetDismissed
     case nameTyped(String)
+    case kindSelected(SpaceKind)
     case codeTyped(String)
     case createConfirmed
     case joinConfirmed
@@ -67,11 +71,13 @@ public enum SpaceListReducer {
         return next
     }
 
+    /// 시트를 열 때마다 종류도 기본(혼자)으로 되돌립니다 — 지난번에 고른 것이 남아 있으면 안 됩니다.
     public static func sheetOpened(_ state: SpaceListState, _ sheet: SpaceListSheet) -> SpaceListState {
         var next = state
         next.sheet = sheet
         next.pendingName = ""
         next.pendingCode = ""
+        next.pendingKind = .personal
         return next
     }
 
@@ -80,7 +86,14 @@ public enum SpaceListReducer {
         next.sheet = .none
         next.pendingName = ""
         next.pendingCode = ""
+        next.pendingKind = .personal
         next.working = false
+        return next
+    }
+
+    public static func kindSelected(_ state: SpaceListState, _ kind: SpaceKind) -> SpaceListState {
+        var next = state
+        next.pendingKind = kind
         return next
     }
 
@@ -158,15 +171,16 @@ public final class SpaceListStore {
         case .nameTyped(let value):
             state.pendingName = value
 
+        case .kindSelected(let kind):
+            state = SpaceListReducer.kindSelected(state, kind)
+
         case .codeTyped(let value):
             state.pendingCode = value
 
         case .createConfirmed:
             guard state.canCreate else { return }
             state = SpaceListReducer.working(state)
-            // 혼자/같이를 고르는 화면은 아직 없습니다(`docs/app/AUTH.md` 0번의 5).
-            // 그때까지는 지금까지처럼 같이 쓰는 짜국을 만듭니다 — 여기 한 줄만 바꾸면 됩니다.
-            switch await createSpace(state.pendingName, .shared) {
+            switch await createSpace(state.pendingName, state.pendingKind) {
             case .ok(let (space, invite)):
                 state = SpaceListReducer.created(state, space, invite?.code)
             case .fail(let reason):
