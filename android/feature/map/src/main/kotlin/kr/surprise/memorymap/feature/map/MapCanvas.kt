@@ -134,7 +134,7 @@ private fun drawOutline(style: Style, outline: RegionOutline?) {
     // 고른 지역이 없으면 지웁니다. 남겨 두면 다른 지역을 눌러도 옛 테두리가 남습니다.
     style.getLayer(OUTLINE_LAYER)?.let { style.removeLayer(it) }
     style.getSource(OUTLINE_SOURCE)?.let { style.removeSource(it) }
-    if (outline == null || outline.rings.isEmpty()) return
+    if (outline == null || outline.polygons.isEmpty()) return
 
     style.addSource(GeoJsonSource(OUTLINE_SOURCE, outline.toGeoJson()))
     style.addLayer(
