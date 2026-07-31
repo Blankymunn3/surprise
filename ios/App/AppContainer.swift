@@ -27,7 +27,7 @@ final class AppContainer {
     private let spaces: SharedSpaceRepository
     private let regions = AssetRegionCatalog()
 
-    /// 사진 저장소가 **둘**입니다. 혼자 짜국은 기기 안, 둘이 짜국은 서버 —
+    /// 사진 저장소가 **둘**입니다. 혼자 짜국은 기기 안, 같이 쓰는 짜국은 서버 —
     /// 어느 쪽을 쓸지는 **여기서만** 정합니다. 화면과 도메인은 어느 쪽인지 모릅니다.
     private let remotePhotos: FirebasePhotoRepository
     private let localPhotos: LocalPhotoRepository

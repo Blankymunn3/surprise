@@ -30,7 +30,7 @@ public actor SharedSpaceRepository: SpaceRepository {
     /// Swift 6 에서 Sendable 검사에 걸립니다.
     private var defaults: UserDefaults { .standard }
 
-    /// **둘이 쓰는 짜국**만 담습니다. 이 구분이 생기기 전의 옛 데이터는 전부 서버에 문서를
+    /// **같이 쓰는 짜국**만 담습니다. 이 구분이 생기기 전의 옛 데이터는 전부 서버에 문서를
     /// 만들며 들어온 것이라 그대로 두면 맞습니다 — 옛 ID 를 혼자로 읽으면 이미 서버에 있는
     /// 사진이 앱에서 사라집니다.
     private static let idsKey = "memorymap.spaceIds"
@@ -60,7 +60,7 @@ public actor SharedSpaceRepository: SpaceRepository {
         let id = SpaceId(InviteCode.generate())
 
         // 혼자 쓰는 짜국은 여기서 끝입니다. 서버에 아무것도 안 만듭니다.
-        // 초대 코드도 없습니다 — 초대할 상대가 없으니까요.
+        // 초대 코드도 없습니다 — 초대할 사람이 없으니까요.
         if kind == .personal {
             rememberPersonal(id: id, name: name)
             let created = personalSpace(id: id, name: name)

@@ -51,7 +51,7 @@ class AppContainer(context: Context) {
     val searchRegions = SearchRegionsUseCase(regions)
 
     /**
-     * 사진 저장소가 **둘**입니다. 혼자 짜국은 기기 안, 둘이 짜국은 서버 —
+     * 사진 저장소가 **둘**입니다. 혼자 짜국은 기기 안, 같이 쓰는 짜국은 서버 —
      * 어느 쪽을 쓸지는 **여기서만** 정합니다. 화면과 도메인은 어느 쪽인지 모릅니다.
      *
      * 저장소는 종류마다 한 벌씩만 만들어 돌려씁니다. 받아 둔 사진을 자기 안에 들고 있어서

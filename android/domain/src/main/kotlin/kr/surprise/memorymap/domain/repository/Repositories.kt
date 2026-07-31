@@ -33,8 +33,8 @@ interface SpaceRepository {
     suspend fun refresh(): Outcome<Unit>
 
     /**
-     * 이름을 정하는 순간 초대 코드도 같이 나옵니다 — **둘이 쓰는 짜국만**.
-     * 혼자 쓰는 짜국은 초대할 상대가 없어 코드가 `null` 입니다.
+     * 이름을 정하는 순간 초대 코드도 같이 나옵니다 — **같이 쓰는 짜국만**.
+     * 혼자 쓰는 짜국은 초대할 사람이 없어 코드가 `null` 입니다.
      */
     suspend fun create(name: String, kind: SpaceKind): Outcome<Pair<Space, Invite?>>
     suspend fun join(code: String): Outcome<Space>

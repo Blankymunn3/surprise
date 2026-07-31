@@ -31,7 +31,7 @@ import java.util.UUID
  * filesDir/spaces/<짜국ID>/covers.json
  * ```
  *
- * [FirebasePhotoRepository] 와 **파일 이름·폴더 모양이 같습니다.** 나중에 '둘이' 로 바꿀 때
+ * [FirebasePhotoRepository] 와 **파일 이름·폴더 모양이 같습니다.** 나중에 '같이' 로 바꿀 때
  * 이 폴더를 그대로 올리면 되도록 하려는 것입니다 (`docs/app/AUTH.md`).
  *
  * 이름에 지역·날짜가 들어 있어 목록 한 번으로 다 알 수 있는 것도 서버 쪽과 같습니다.

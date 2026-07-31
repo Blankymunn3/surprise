@@ -71,7 +71,7 @@ class SharedSpaceRepository(
         val id = SpaceId(InviteCode.generate())
 
         // 혼자 쓰는 짜국은 여기서 끝입니다. 서버에 아무것도 안 만듭니다.
-        // 초대 코드도 없습니다 — 초대할 상대가 없으니까요.
+        // 초대 코드도 없습니다 — 초대할 사람이 없으니까요.
         if (kind == SpaceKind.Personal) {
             val record = PersonalSpace(id.value, name)
             lock.withLock { writeLocal(local.copy(personal = local.personal + record)) }

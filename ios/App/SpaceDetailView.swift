@@ -9,7 +9,7 @@ import SwiftUI
 /// 두 탭은 같은 사진을 '어디' 와 '언제' 로 보는 것뿐입니다.
 struct SpaceDetailView: View {
     let spaceId: SpaceId
-    /// 혼자면 기기 안 사진, 둘이면 서버 사진. 고르는 일은 `AppContainer` 가 하고
+    /// 혼자면 기기 안 사진, 같이 쓰면 서버 사진. 고르는 일은 `AppContainer` 가 하고
     /// 이 화면은 어느 쪽인지 모릅니다.
     let kind: SpaceKind
 

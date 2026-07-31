@@ -23,7 +23,7 @@ fun AppContainer.spaceListFactory() = VmFactory {
 }
 
 /**
- * 짜국의 **종류**를 같이 받습니다 — 혼자면 기기 안 사진, 둘이면 서버 사진을 씁니다.
+ * 짜국의 **종류**를 같이 받습니다 — 혼자면 기기 안 사진, 같이 쓰면 서버 사진을 씁니다.
  * 고르는 일은 [AppContainer] 가 하고 화면은 어느 쪽인지 모릅니다.
  */
 fun AppContainer.mapFactory(spaceId: SpaceId, kind: SpaceKind) = VmFactory {

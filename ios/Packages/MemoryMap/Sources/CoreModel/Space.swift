@@ -1,9 +1,11 @@
 import Foundation
 
-/// 짜국을 **혼자** 쓰는지 **둘이** 쓰는지.
+/// 짜국을 **혼자** 쓰는지 **같이** 쓰는지.
 ///
 /// 혼자 쓰는 짜국은 사진이 기기 안에만 있습니다. 서버도, 로그인도 안 씁니다.
 /// (`docs/app/AUTH.md` 의 '혼자 쓰는 짜국은 서버에 안 올립니다')
+///
+/// `.shared` 는 **두 명 전용이 아닙니다** — 초대 코드를 받은 사람은 몇이든 들어옵니다.
 public enum SpaceKind: Sendable, Hashable { case personal, shared }
 
 public struct Space: Hashable, Sendable, Identifiable {

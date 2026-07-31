@@ -164,8 +164,8 @@ public final class SpaceListStore {
         case .createConfirmed:
             guard state.canCreate else { return }
             state = SpaceListReducer.working(state)
-            // 혼자/둘이를 고르는 화면은 아직 없습니다(`docs/app/AUTH.md` 0번의 5).
-            // 그때까지는 지금까지처럼 둘이 쓰는 짜국을 만듭니다 — 여기 한 줄만 바꾸면 됩니다.
+            // 혼자/같이를 고르는 화면은 아직 없습니다(`docs/app/AUTH.md` 0번의 5).
+            // 그때까지는 지금까지처럼 같이 쓰는 짜국을 만듭니다 — 여기 한 줄만 바꾸면 됩니다.
             switch await createSpace(state.pendingName, .shared) {
             case .ok(let (space, invite)):
                 state = SpaceListReducer.created(state, space, invite?.code)

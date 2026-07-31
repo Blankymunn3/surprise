@@ -174,8 +174,8 @@ struct SpaceCardView: View {
             .clipShape(RoundedRectangle(cornerRadius: MemoryRadius.card, style: .continuous))
             .overlay(alignment: .topTrailing) {
                 HStack(spacing: -7) {
-                    ForEach(space.members.prefix(4)) { member in
-                        Text(member.initial)
+                    ForEach(Array(avatarLabels.enumerated()), id: \.offset) { _, label in
+                        Text(label)
                             .memoryMicro()
                             .foregroundStyle(.white)
                             .frame(width: 26, height: 26)
@@ -187,6 +187,14 @@ struct SpaceCardView: View {
             }
         }
         .buttonStyle(.plain)
+    }
+
+    /// 이름 첫 글자 원. **넷을 넘으면 마지막이 `+N`** 이 됩니다 — 그냥 잘라 내면
+    /// 다섯째부터는 있는지조차 안 보입니다. 안드로이드 `MemberAvatars` 와 같은 규칙입니다.
+    private var avatarLabels: [String] {
+        let initials = space.members.map(\.initial)
+        guard initials.count > 4 else { return initials }
+        return Array(initials.prefix(3)) + ["+\(initials.count - 3)"]
     }
 
     private var meta: String {

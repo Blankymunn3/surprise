@@ -67,7 +67,7 @@ internal object SpaceListReducer {
 /**
  * 목록에서 짜국의 종류를 찾습니다.
  *
- * 못 찾으면 **둘이**로 봅니다 — 목록에 없는 것을 눌렀을 리는 없지만, 만에 하나 그렇다면
+ * 못 찾으면 **같이 쓰는 쪽**으로 봅니다 — 목록에 없는 것을 눌렀을 리는 없지만, 만에 하나 그렇다면
  * 지금까지의 짜국은 전부 서버 쪽이었으니 그쪽이 맞습니다.
  */
 internal fun SpaceListState.kindOf(id: SpaceId): SpaceKind =

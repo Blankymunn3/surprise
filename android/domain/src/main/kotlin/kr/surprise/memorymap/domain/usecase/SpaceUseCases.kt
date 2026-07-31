@@ -16,7 +16,7 @@ class RefreshSpacesUseCase(private val spaces: SpaceRepository) {
     suspend operator fun invoke(): Outcome<Unit> = spaces.refresh()
 }
 
-/** 이름을 정하는 순간 초대 코드도 함께 나옵니다 — 둘이 쓰는 짜국만. */
+/** 이름을 정하는 순간 초대 코드도 함께 나옵니다 — 같이 쓰는 짜국만. */
 class CreateSpaceUseCase(private val spaces: SpaceRepository) {
     suspend operator fun invoke(name: String, kind: SpaceKind): Outcome<Pair<Space, Invite?>> {
         val trimmed = name.trim()

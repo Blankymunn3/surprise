@@ -57,8 +57,8 @@ class SpaceListViewModel(
         setState { SpaceListReducer.working(this) }
 
         viewModelScope.launch {
-            // 혼자/둘이를 고르는 화면은 아직 없습니다(`docs/app/AUTH.md` 0번의 5).
-            // 그때까지는 지금까지처럼 둘이 쓰는 짜국을 만듭니다 — 여기 한 줄만 바꾸면 됩니다.
+            // 혼자/같이를 고르는 화면은 아직 없습니다(`docs/app/AUTH.md` 0번의 5).
+            // 그때까지는 지금까지처럼 같이 쓰는 짜국을 만듭니다 — 여기 한 줄만 바꾸면 됩니다.
             when (val result = createSpace(name, SpaceKind.Shared)) {
                 is Outcome.Ok -> {
                     val (space, invite) = result.value

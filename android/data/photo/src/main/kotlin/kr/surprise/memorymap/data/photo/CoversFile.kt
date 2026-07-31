@@ -12,7 +12,7 @@ import java.time.LocalDate
 /**
  * `covers.json` 의 모양. `{"region_11140":"a1b2c3", "day_2026-03-05":"d4e5f6"}`
  *
- * 서버에 두든 기기에 두든 **같은 형식**입니다. 혼자 쓰던 짜국을 나중에 둘이로 바꿀 때
+ * 서버에 두든 기기에 두든 **같은 형식**입니다. 혼자 쓰던 짜국을 나중에 같이로 바꿀 때
  * 파일을 그대로 올리면 되도록 하려는 것입니다 (`docs/app/AUTH.md`).
  */
 internal object CoversFile {
