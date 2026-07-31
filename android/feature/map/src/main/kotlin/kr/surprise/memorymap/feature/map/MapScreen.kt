@@ -153,12 +153,16 @@ fun MapScreen(
  * 요소가 터치를 소비하지 않으면 **밑의 지도까지 같이 눌립니다** — 시트 안의 버튼을 눌렀는데
  * 시트 뒤쪽 지역이 함께 선택되던 것이 이것 때문입니다.
  *
- * 처음 단계(Initial)에서 먹는 이유: 그 뒤에 먹으면 지도가 먼저 받아 갑니다.
+ * **Main 단계**에서 먹습니다. 이 단계는 자식부터 위로 올라오므로, 글자칸·버튼이 **먼저**
+ * 받고 남은 것만 우리가 먹습니다. Initial 에서 먹으면 자식한테 가기도 전에 가로채서
+ * 검색창을 눌러도 자판이 안 올라오고 시트 버튼도 안 눌립니다.
  */
 private fun Modifier.blockMapTouches(): Modifier = pointerInput(Unit) {
     awaitPointerEventScope {
         while (true) {
-            awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
+            awaitPointerEvent(PointerEventPass.Main).changes.forEach {
+                if (!it.isConsumed) it.consume()
+            }
         }
     }
 }

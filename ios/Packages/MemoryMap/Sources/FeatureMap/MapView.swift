@@ -21,7 +21,10 @@ public struct MapView: View {
     private let topInset: CGFloat
     private let onAddPhoto: () -> Void
 
-    public init(store: MapStore, topInset: CGFloat = 96, onAddPhoto: @escaping () -> Void) {
+    /// `topInset` 은 **안전영역 아래로** 더 미는 값입니다. 위 띠(뒤로 버튼 · 지도|달력)가
+    /// 안전영역 아래 8 + 높이 40 = 48 을 쓰므로, 그 바로 밑에 붙이려면 56 입니다.
+    /// 안드로이드의 96 은 상태바를 포함한 값이라 숫자가 다릅니다 — 같게 맞추면 오히려 어긋납니다.
+    public init(store: MapStore, topInset: CGFloat = 56, onAddPhoto: @escaping () -> Void) {
         self._store = State(initialValue: store)
         self.topInset = topInset
         self.onAddPhoto = onAddPhoto

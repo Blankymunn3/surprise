@@ -145,6 +145,16 @@ public final class CalendarStore {
         state = CalendarReducer.rebuild(state, board: board, regionNames: names)
     }
 
+    /// 옆으로 넘겨서 고른 달. 몇 칸을 건너뛰었는지 모르므로 달을 그대로 받습니다.
+    /// 안드로이드 `CalendarIntent.MonthSelected` 와 같은 자리입니다.
+    public func setMonth(year: Int, month: Int) {
+        guard year != state.year || month != state.month else { return }
+        state.year = year
+        state.month = month
+        state.selected = nil
+        state = CalendarReducer.rebuild(state, board: board, regionNames: names)
+    }
+
     public func select(_ date: CalendarDate) { state.selected = date }
 
     public func toggleCollapse() { state = CalendarReducer.collapseToggled(state) }
