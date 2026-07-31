@@ -109,7 +109,7 @@ private fun drawOutline(style: Style, outline: RegionOutline?) {
 }
 
 /** `design.html` 의 강조색. 지도 위에서도 같은 색이어야 같은 앱으로 보입니다. */
-private const val OUTLINE_COLOR = "#E11D5B"
+private const val OUTLINE_COLOR = "#E0764F"
 
 private fun RegionOutline.toGeoJson(): String = buildString {
     append("""{"type":"Feature","properties":{},"geometry":""")

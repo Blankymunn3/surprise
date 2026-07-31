@@ -101,6 +101,15 @@ public struct MapView: View {
                 }
             }
             .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
+            // 지도 위에 **종이를 한 겹** 덮습니다. MapKit 은 색을 직접 못 바꿔서,
+            // 옅게 깔아 앱의 다른 화면과 결을 맞춥니다 (안드로이드도 같은 방식).
+            // 표시(핀)까지 살짝 덮이지만 14% 라 알아보는 데 지장이 없습니다.
+            .overlay {
+                MemoryColor.mapLand
+                    .opacity(0.14)
+                    .allowsHitTesting(false)
+                    .ignoresSafeArea()
+            }
             .onTapGesture { point in
                 // 검색하다 지도를 누르면 자판부터 내려갑니다. 자판이 화면 절반을 덮은 채로
                 // 지역 시트가 올라오면 아무것도 안 보입니다.
