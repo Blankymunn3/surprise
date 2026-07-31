@@ -6,6 +6,9 @@ import kr.surprise.memorymap.domain.model.PhotoBoard
 
 internal object MapReducer {
 
+    fun fillsRebuilt(state: MapState, fills: List<RegionFill>): MapState =
+        state.copy(fills = fills)
+
     fun pinsRebuilt(state: MapState, pins: List<RegionPin>): MapState =
         state.copy(pins = pins)
 

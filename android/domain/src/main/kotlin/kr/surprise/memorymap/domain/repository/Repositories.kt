@@ -53,10 +53,14 @@ interface RegionCatalog {
     suspend fun centerOf(code: RegionCode): DoubleArray?
 
     /**
-     * 지역 **경계선**. 고른 지역에 테두리를 그릴 때 씁니다.
+     * 지역의 **면**. 테두리를 그릴 때도, 사진으로 칠할 때도 이걸 씁니다.
      *
-     * 고리(ring) 하나가 닫힌 선 하나이고, 점은 `(경도, 위도)` 순서입니다 — GeoJSON 과 같은
-     * 순서라 저장된 값을 뒤집지 않습니다. 섬이 많은 지역은 고리가 여러 개 나옵니다.
+     * `폴리곤 → 고리 → 점` 세 겹이고 점은 `(경도, 위도)` 순서입니다 — GeoJSON 과 같은
+     * 구조라 저장된 값을 뒤집지 않습니다. 섬이 많은 지역은 폴리곤이 여러 개,
+     * 안이 뚫린 지역은 한 폴리곤에 고리가 여러 개 나옵니다.
+     *
+     * 선만 필요하면 고리를 평평하게 펴서 쓰면 됩니다. 반대로 선에서 면을 되만들 수는
+     * 없어서(어느 고리가 구멍인지 잃어버립니다) 면으로 내줍니다.
      */
-    suspend fun outlineOf(code: RegionCode): List<List<DoubleArray>>
+    suspend fun shapeOf(code: RegionCode): List<List<List<DoubleArray>>>
 }

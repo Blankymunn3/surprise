@@ -29,6 +29,8 @@ public struct MapState: Equatable, Sendable {
     public var focus: CoordinatePair?
     /// 고른 지역의 테두리. 고리 하나가 닫힌 선 하나입니다.
     public var outline: [[GeoPoint]] = []
+    /// 다녀온 지역들 — 각자의 대표사진으로 칠할 면.
+    public var fills: [RegionFill] = []
 
     public init(spaceId: SpaceId) { self.spaceId = spaceId }
 
@@ -36,6 +38,24 @@ public struct MapState: Equatable, Sendable {
     public var canSetCover: Bool {
         guard let sheet, let picked = sheet.selected else { return false }
         return picked != sheet.coverId
+    }
+}
+
+/**
+ 사진으로 칠할 지역 하나.
+
+ 같은지 비교할 때 **코드와 사진 주소만** 봅니다 — 경계 점이 수천 개라 매번 견주면
+ 화면을 다시 그릴 때마다 그 값을 통째로 훑게 됩니다. 안드로이드 `RegionFill` 과 같습니다.
+ */
+public struct RegionFill: Equatable, Sendable, Identifiable {
+    public let code: String
+    public let coverURL: String
+    public let polygons: [[[GeoPoint]]]
+
+    public var id: String { code }
+
+    public static func == (lhs: RegionFill, rhs: RegionFill) -> Bool {
+        lhs.code == rhs.code && lhs.coverURL == rhs.coverURL
     }
 }
 
@@ -83,6 +103,17 @@ public final class MapStore {
             ))
         }
         state.pins = pins.sorted { $0.region.displayName < $1.region.displayName }
+
+        // 다녀온 지역을 그 지역의 대표사진으로 칠합니다.
+        // 사진이 없는 지역은 칠할 것이 없으니 건너뜁니다 — 표시만 찍힙니다.
+        var painted: [RegionFill] = []
+        for pin in state.pins {
+            guard let cover = pin.coverURL else { continue }
+            let polygons = await catalog.shape(of: pin.region.code)
+            guard !polygons.isEmpty else { continue }
+            painted.append(RegionFill(code: pin.region.code.value, coverURL: cover, polygons: polygons))
+        }
+        state.fills = painted
     }
 
     public func search(_ query: String) async {
@@ -95,7 +126,7 @@ public final class MapStore {
         state.query = region.displayName
         state.results = []
         state.focus = center.map { CoordinatePair(latitude: $0.0, longitude: $0.1) }
-        state.outline = await catalog.outline(of: region.code)
+        state.outline = (await catalog.shape(of: region.code)).flatMap { $0 }
         state.sheet = RegionSheetUi(
             region: region,
             photos: board.photos(in: region.code),

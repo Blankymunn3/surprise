@@ -1,13 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  짜국 아이콘 — 지도 핀 안의 발자국. 이름 그대로입니다.
+
+  적응형 아이콘의 **앞면**입니다. 바탕(종이색)은 뒷면이 따로 그리므로 여기엔 없습니다.
+  전체를 0.80 으로 줄인 이유: 108 중 가운데 72 만 안전한데(둥근·원형 마스크가 나머지를
+  깎습니다) 그림이 67 이라 그대로 두면 가장자리가 잘립니다.
+
+  좌표 원본은 `docs/app/icon.svg` 입니다. iOS 도 그 파일에서 뽑아 쓰므로,
+  모양을 고칠 때는 **거기를 고치고 여기로 옮겨** 주세요. 따로 고치면 두 앱이 달라집니다.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:pathData="M54,30C45.7,30 39,36.7 39,45C39,57 54,78 54,78C54,78 69,57 69,45C69,36.7 62.3,30 54,30Z"
-        android:fillColor="#E0764F" />
-    <path
-        android:pathData="M54,39.5m-5.5,0a5.5,5.5 0 1,0 11,0a5.5,5.5 0 1,0 -11,0"
-        android:fillColor="#FFFFFF" />
+
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.80"
+        android:scaleY="0.80">
+
+        <!-- 핀: 물방울에서 안쪽 원을 빼 고리로. 꼬리는 꼭짓점에서 원에 그은 접선입니다. -->
+        <path
+            android:fillColor="#E0764F"
+            android:fillType="evenOdd"
+            android:pathData="M33.9,64.3 A26.7,26.7,0,1,1,74.1,64.3 L54.0,87.3 Z M54.0,25.6 A21.1,21.1,0,1,1,54.0,67.8 A21.1,21.1,0,1,1,54.0,25.6 Z" />
+
+        <!-- 발바닥 -->
+        <path
+            android:fillColor="#E0764F"
+            android:pathData="M50.1,41.8 C56.5,40.0,61.6,44.2,60.8,51.6 C60.1,58.4,56.1,63.2,51.6,62.3 C47.4,61.5,47.1,57.0,48.9,53.6 C50.4,50.5,48.5,47.6,47.6,45.8 C46.6,43.6,47.6,42.4,50.1,41.8 Z" />
+
+        <!-- 발가락 넷 — 바깥으로 갈수록 작아집니다 -->
+        <path
+            android:fillColor="#E0764F"
+            android:pathData="M48.8,34.1 A2.5,2.4 0 1 1 48.8,38.9 A2.5,2.4 0 1 1 48.8,34.1 Z" />
+
+        <path
+            android:fillColor="#E0764F"
+            android:pathData="M54.5,34.8 A2.2,2.0 0 1 1 54.5,38.8 A2.2,2.0 0 1 1 54.5,34.8 Z" />
+
+        <path
+            android:fillColor="#E0764F"
+            android:pathData="M59.4,37.1 A1.9,1.8 0 1 1 59.4,40.7 A1.9,1.8 0 1 1 59.4,37.1 Z" />
+
+        <path
+            android:fillColor="#E0764F"
+            android:pathData="M62.9,40.9 A1.6,1.5 0 1 1 62.9,43.9 A1.6,1.5 0 1 1 62.9,40.9 Z" />
+    </group>
 </vector>

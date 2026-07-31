@@ -18,6 +18,9 @@ public struct MapView: View {
     @State private var camera: MapCameraPosition = .region(.korea)
     @State private var sheetHeight: CGFloat = 0
     @FocusState private var searching: Bool
+    /// 지역을 칠할 대표사진. 주소가 아니라 **그림 자체**가 있어야 채울 수 있어서
+    /// 미리 받아 둡니다.
+    @State private var covers: [String: Image] = [:]
     private let topInset: CGFloat
     private let onAddPhoto: () -> Void
 
@@ -64,6 +67,7 @@ public struct MapView: View {
         }
         .ignoresSafeArea(edges: .bottom)
         .task { await store.refresh() }
+        .task(id: store.state.fills) { await loadCovers() }
         .onChange(of: store.state.focus) { _, focus in
             guard let focus else { return }
             withAnimation(.easeInOut(duration: 0.4)) {
@@ -75,6 +79,20 @@ public struct MapView: View {
         }
     }
 
+    /// 대표사진을 한 번씩만 받아 둡니다. 이미 받은 주소는 건너뜁니다.
+    private func loadCovers() async {
+        for fill in store.state.fills where covers[fill.coverURL] == nil {
+            guard let url = URL(string: fill.coverURL),
+                  let (data, _) = try? await URLSession.shared.data(from: url)
+            else { continue }
+            #if canImport(UIKit)
+            if let image = UIImage(data: data) {
+                covers[fill.coverURL] = Image(uiImage: image)
+            }
+            #endif
+        }
+    }
+
     private var floatBottom: CGFloat {
         store.state.sheet == nil ? 40 : max(40, sheetHeight + MemorySpace.l)
     }
@@ -82,6 +100,24 @@ public struct MapView: View {
     private var map: some View {
         MapReader { proxy in
             Map(position: $camera) {
+                // 다녀온 지역을 **그 지역의 대표사진으로** 칠합니다.
+                //
+                // 살짝 비치게(85%) 두는 이유: 완전히 덮으면 그 지역의 길·지명이 사라져서
+                // 어디인지 알 수 없게 됩니다. 사진은 "다녀왔다" 는 표시이지 지도를
+                // 대신하는 것이 아닙니다.
+                ForEach(store.state.fills) { fill in
+                    if let image = covers[fill.coverURL] {
+                        ForEach(Array(fill.polygons.enumerated()), id: \.offset) { _, polygon in
+                            if let outer = polygon.first {
+                                MapPolygon(coordinates: outer.map {
+                                    CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+                                })
+                                .foregroundStyle(ImagePaint(image: image, scale: 0.25).opacity(0.85))
+                            }
+                        }
+                    }
+                }
+
                 // 고른 지역의 테두리. 웹과 같은 표시입니다 —
                 // "지금 이 지역을 보고 있다" 를 지도 위에서 알 수 있어야 합니다.
                 ForEach(Array(store.state.outline.enumerated()), id: \.offset) { _, ring in
