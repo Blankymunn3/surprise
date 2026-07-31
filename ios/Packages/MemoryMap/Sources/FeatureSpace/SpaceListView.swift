@@ -87,6 +87,7 @@ public struct SpaceListView: View {
     private func emptyScene(_ text: String) -> some View {
         VStack(spacing: MemorySpace.l) {
             HillScene()
+                .aspectRatio(HillScene.ratio, contentMode: .fit)
                 .frame(maxWidth: 220)
                 .clipShape(RoundedRectangle(cornerRadius: MemoryRadius.card, style: .continuous))
             Text(text)

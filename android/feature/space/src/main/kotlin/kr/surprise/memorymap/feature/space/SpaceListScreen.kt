@@ -3,6 +3,7 @@ package kr.surprise.memorymap.feature.space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kr.surprise.memorymap.core.designsystem.component.HillScene
+import kr.surprise.memorymap.core.designsystem.component.SCENE_RATIO
 import kr.surprise.memorymap.core.designsystem.component.MemberAvatars
 import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
 import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
@@ -139,6 +141,7 @@ private fun EmptyScene(text: String) {
         HillScene(
             Modifier
                 .fillMaxWidth(0.62f)
+                .aspectRatio(SCENE_RATIO)
                 .clip(MemoryShapes.Card),
         )
         Spacer(Modifier.height(Gap.l))

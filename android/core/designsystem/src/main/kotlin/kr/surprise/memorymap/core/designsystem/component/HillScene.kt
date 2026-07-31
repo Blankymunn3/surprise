@@ -1,8 +1,6 @@
 package kr.surprise.memorymap.core.designsystem.component
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -26,7 +24,9 @@ import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
  */
 @Composable
 fun HillScene(modifier: Modifier = Modifier, showPath: Boolean = true) {
-    Canvas(modifier.fillMaxWidth().aspectRatio(SCENE_RATIO)) {
+    // **비율을 스스로 정하지 않습니다.** 여기서 크기를 정하면 부모보다 커져 화면이
+    // 밀려납니다. 홀로 놓을 때는 부르는 쪽에서 `aspectRatio(SCENE_RATIO)` 를 겁니다.
+    Canvas(modifier) {
         drawRect(MemoryColors.MossSoft)
         drawScene(showPath)
     }

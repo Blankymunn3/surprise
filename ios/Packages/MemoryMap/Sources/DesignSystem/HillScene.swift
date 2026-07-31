@@ -86,7 +86,9 @@ public struct HillScene: View {
             dot(&context, x(0.36), y(0.92), h * 0.015, Self.honeyLight)
             dot(&context, x(0.70), y(0.89), h * 0.018, MemoryColor.accent.opacity(0.8))
         }
-        .aspectRatio(Self.ratio, contentMode: .fill)
+        // **비율을 스스로 정하지 않습니다.** `.fill` 을 걸면 부모보다 커져서 카드가
+        // 화면 밖으로 밀려납니다. 그림은 0~1 좌표라 어떤 크기를 받아도 알아서 맞습니다.
+        // 홀로 놓을 때는 부르는 쪽에서 `HillScene.ratio` 를 걸어 주세요.
         .accessibilityHidden(true)
     }
 
