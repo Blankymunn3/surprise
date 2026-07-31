@@ -41,7 +41,8 @@ public protocol RegionCatalog: Sendable {
     /// 지도에 표시할 자리 (위도, 경도)
     func center(of code: RegionCode) async -> (Double, Double)?
 
-    /// 지역 **경계선**. 고른 지역에 테두리를 그릴 때 씁니다.
-    /// 고리 하나가 닫힌 선 하나이고, 섬이 많은 지역은 여러 개 나옵니다.
-    func outline(of code: RegionCode) async -> [[GeoPoint]]
+    /// 지역의 **면**. 테두리를 그릴 때도, 사진으로 칠할 때도 이걸 씁니다.
+    /// `폴리곤 → 고리 → 점` 세 겹입니다. 섬이 많으면 폴리곤이 여럿, 안이 뚫렸으면
+    /// 한 폴리곤에 고리가 여럿입니다.
+    func shape(of code: RegionCode) async -> [[[GeoPoint]]]
 }

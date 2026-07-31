@@ -37,7 +37,7 @@ class MapViewModel(
      */
     private suspend fun open(region: Region) {
         val center = regions.centerOf(region.code)
-        val outline = RegionOutline(region.code.value, regions.outlineOf(region.code))
+        val outline = RegionOutline(region.code.value, regions.shapeOf(region.code))
         setState { MapReducer.regionOpened(this, region, board, center, outline) }
     }
 
@@ -100,6 +100,16 @@ class MapViewModel(
                 )
             }
             setState { MapReducer.pinsRebuilt(this, pins) }
+
+            // 다녀온 지역을 그 지역의 대표사진으로 칠합니다. 사진이 없는 지역은
+            // 칠할 것이 없으니 건너뜁니다 — 표시(핀)만 찍힙니다.
+            val fills = pins.mapNotNull { pin ->
+                val cover = pin.coverUrl ?: return@mapNotNull null
+                val polygons = regions.shapeOf(pin.region.code)
+                if (polygons.isEmpty()) null
+                else RegionFill(pin.region.code.value, cover, polygons)
+            }
+            setState { MapReducer.fillsRebuilt(this, fills) }
         }
     }
 }

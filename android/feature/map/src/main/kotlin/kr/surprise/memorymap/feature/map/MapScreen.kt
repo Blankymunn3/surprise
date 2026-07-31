@@ -73,6 +73,7 @@ fun MapScreen(
             pins = state.pins,
             focus = state.focus,
             outline = state.outline,
+            fills = state.fills,
             onTap = { lat, lon ->
                 // 검색하다 지도를 누르면 자판부터 내려갑니다. 자판이 화면 절반을 덮은 채로
                 // 지역 시트가 올라오면 아무것도 안 보입니다.

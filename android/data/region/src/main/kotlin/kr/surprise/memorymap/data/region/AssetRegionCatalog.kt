@@ -66,10 +66,8 @@ class AssetRegionCatalog(private val context: Context) : RegionCatalog {
             lock.withLock { shapesKorea ?: loadShapes("boundaries_kr.json").also { shapesKorea = it } }
         }
 
-    override suspend fun outlineOf(code: RegionCode): List<List<DoubleArray>> =
-        shapesFor(code).firstOrNull { it.code == code.value }
-            ?.polygons?.flatten()
-            .orEmpty()
+    override suspend fun shapeOf(code: RegionCode): List<List<List<DoubleArray>>> =
+        shapesFor(code).firstOrNull { it.code == code.value }?.polygons.orEmpty()
 
     override suspend fun centerOf(code: RegionCode): DoubleArray? {
         val shape = shapesFor(code).firstOrNull { it.code == code.value } ?: return null
