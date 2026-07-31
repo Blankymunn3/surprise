@@ -11,6 +11,7 @@ import kr.surprise.memorymap.core.model.Region
 import kr.surprise.memorymap.core.model.RegionCode
 import kr.surprise.memorymap.core.model.Space
 import kr.surprise.memorymap.core.model.SpaceId
+import kr.surprise.memorymap.core.model.SpaceKind
 import kr.surprise.memorymap.domain.model.NewPhoto
 
 /**
@@ -31,8 +32,11 @@ interface SpaceRepository {
     fun observeSpaces(): Flow<List<Space>>
     suspend fun refresh(): Outcome<Unit>
 
-    /** 이름을 정하는 순간 초대 코드도 같이 나옵니다. */
-    suspend fun create(name: String): Outcome<Pair<Space, Invite>>
+    /**
+     * 이름을 정하는 순간 초대 코드도 같이 나옵니다 — **같이 쓰는 짜국만**.
+     * 혼자 쓰는 짜국은 초대할 사람이 없어 코드가 `null` 입니다.
+     */
+    suspend fun create(name: String, kind: SpaceKind): Outcome<Pair<Space, Invite?>>
     suspend fun join(code: String): Outcome<Space>
     suspend fun newInvite(spaceId: SpaceId): Outcome<Invite>
     suspend fun rename(spaceId: SpaceId, name: String): Outcome<Unit>

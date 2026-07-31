@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "419812459548",
+    "project_id": "our-surprise",
+    "storage_bucket": "our-surprise.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:419812459548:android:ccab28c6f8dce6eefd4bd9",
+        "android_client_info": {
+          "package_name": "kr.surprise.memorymap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "419812459548-bef0l3gdmfu2f0nmdog153db5dhnsfjb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kr.surprise.memorymap",
+            "certificate_hash": "dfdffbefd0ea6040461a88cb88ab0f8dc331cc5b"
+          }
+        },
+        {
+          "client_id": "419812459548-ldmh2hi0vb5lmjase8jpctqei4sk4mbp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMg1m08msg7_xPISuEwx5gwImi5MVz-1Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "419812459548-ldmh2hi0vb5lmjase8jpctqei4sk4mbp.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "419812459548-4vruv826mfgfkfi3dppobg87c3du1vdr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "kr.surprise.memorymap"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

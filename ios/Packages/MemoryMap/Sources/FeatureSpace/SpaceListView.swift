@@ -10,9 +10,11 @@ public struct SpaceListView: View {
     /// 시트 높이는 **내용에 맞춥니다.** 만들기·참여·초대코드가 각각 길이가 달라서
     /// 하나로 고정하면 어떤 것은 비고 어떤 것은 잘립니다.
     @State private var sheetHeight: CGFloat = 260
-    private let onOpen: (SpaceId) -> Void
+    /// ID 만이 아니라 짜국을 통째로 넘깁니다 — 들어간 화면이 **종류**를 알아야
+    /// 기기 안 사진을 볼지 서버 사진을 볼지 정할 수 있습니다.
+    private let onOpen: (Space) -> Void
 
-    public init(store: SpaceListStore, onOpen: @escaping (SpaceId) -> Void) {
+    public init(store: SpaceListStore, onOpen: @escaping (Space) -> Void) {
         self._store = State(initialValue: store)
         self.onOpen = onOpen
     }
@@ -42,7 +44,7 @@ public struct SpaceListView: View {
                         emptyScene("아직 짜국이 없어요. 하나 만들어 볼까요?")
                     }
                     ForEach(items) { space in
-                        SpaceCardView(space: space) { onOpen(space.spaceId) }
+                        SpaceCardView(space: space) { onOpen(space) }
                             .padding(.horizontal, MemorySpace.xl)
                     }
                 }
@@ -148,8 +150,7 @@ struct SpaceCardView: View {
                         MemoryColor.fill
                     }
                 } else {
-                    // 아직 사진이 없는 공간. 회색 네모 대신 그림을 깔아 둡니다.
-                    HillScene()
+                    MemoryColor.fill
                 }
 
                 // 흰 글자가 밝은 사진 위에서도 읽히도록 아래쪽을 어둡게
@@ -170,10 +171,13 @@ struct SpaceCardView: View {
             }
             .aspectRatio(16 / 9.6, contentMode: .fill)
             .clipShape(RoundedRectangle(cornerRadius: MemoryRadius.card, style: .continuous))
+            .overlay(alignment: .topLeading) {
+                if space.kind == .personal { onlyOnThisPhone }
+            }
             .overlay(alignment: .topTrailing) {
                 HStack(spacing: -7) {
-                    ForEach(space.members.prefix(4)) { member in
-                        Text(member.initial)
+                    ForEach(Array(avatarLabels.enumerated()), id: \.offset) { _, label in
+                        Text(label)
                             .memoryMicro()
                             .foregroundStyle(.white)
                             .frame(width: 26, height: 26)
@@ -185,6 +189,30 @@ struct SpaceCardView: View {
             }
         }
         .buttonStyle(.plain)
+    }
+
+    /// 사진이 이 기기 안에만 있다는 표시 (`docs/app/design.html` 의 '공간 목록').
+    ///
+    /// **다는 쪽이 예외입니다** — 같이 쓰는 짜국에는 아무것도 달지 않습니다. 둘 다 달면
+    /// 목록이 딱지투성이가 되고 어느 쪽이 특별한지도 알 수 없습니다.
+    ///
+    /// 감빛을 쓰지 않는 이유: 누르는 것이 아니라 그냥 알려 주는 것이라서요.
+    private var onlyOnThisPhone: some View {
+        Text("이 폰에만")
+            .memoryMicro()
+            .foregroundStyle(MemoryColor.ink2)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 3)
+            .background(Capsule().fill(.ultraThinMaterial))
+            .padding(14)
+    }
+
+    /// 이름 첫 글자 원. **넷을 넘으면 마지막이 `+N`** 이 됩니다 — 그냥 잘라 내면
+    /// 다섯째부터는 있는지조차 안 보입니다. 안드로이드 `MemberAvatars` 와 같은 규칙입니다.
+    private var avatarLabels: [String] {
+        let initials = space.members.map(\.initial)
+        guard initials.count > 4 else { return initials }
+        return Array(initials.prefix(3)) + ["+\(initials.count - 3)"]
     }
 
     private var meta: String {

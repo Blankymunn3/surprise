@@ -23,7 +23,20 @@ internal object PhotoObjectName {
 
     private const val EXT = ".jpg"
 
-    data class Parsed(val id: PhotoId, val regionCode: RegionCode, val takenOn: LocalDate)
+    data class Parsed(val id: PhotoId, val regionCode: RegionCode, val takenOn: LocalDate) {
+        /**
+         * 목록만 보고 만드는 **정렬용 값**. 찍은 날짜가 먼저, 같은 날이면 사진 ID 순입니다.
+         *
+         * 목록 API 도 파일 시스템도 '올린 시각' 을 주지 않습니다. 그때그때 다른 값을 쓰면
+         * 대표사진 기본값("가장 최근")이 실행할 때마다 흔들립니다. iOS 와 같은 규칙입니다.
+         */
+        fun stableOrder(): Long {
+            val day = takenOn.year * 10_000L + takenOn.monthValue * 100L + takenOn.dayOfMonth
+            var tail = 0L
+            for (c in id.value) tail = (tail * 31 + c.code) % 9_973
+            return day * 10_000L + tail
+        }
+    }
 
     fun build(id: PhotoId, regionCode: RegionCode, takenOn: LocalDate): String {
         PathSafe.require(id.value, "사진 ID")

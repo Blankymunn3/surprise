@@ -23,6 +23,9 @@ public struct SpaceListState: Equatable, Sendable {
     public var sheet: SpaceListSheet = .none
     public var pendingName: String = ""
     public var pendingCode: String = ""
+    /// 만들기 시트에서 고른 종류. 기본이 **혼자**인 이유는 잘못 골라도 사진이 폰 밖으로
+    /// 나가지 않기 때문입니다. 반대로 두면 무심코 넘긴 사람의 사진이 서버로 갑니다.
+    public var pendingKind: SpaceKind = .personal
     public var working: Bool = false
 
     public init() {}
@@ -43,6 +46,7 @@ public enum SpaceListIntent: Sendable {
     case joinTapped
     case sheetDismissed
     case nameTyped(String)
+    case kindSelected(SpaceKind)
     case codeTyped(String)
     case createConfirmed
     case joinConfirmed
@@ -67,11 +71,13 @@ public enum SpaceListReducer {
         return next
     }
 
+    /// 시트를 열 때마다 종류도 기본(혼자)으로 되돌립니다 — 지난번에 고른 것이 남아 있으면 안 됩니다.
     public static func sheetOpened(_ state: SpaceListState, _ sheet: SpaceListSheet) -> SpaceListState {
         var next = state
         next.sheet = sheet
         next.pendingName = ""
         next.pendingCode = ""
+        next.pendingKind = .personal
         return next
     }
 
@@ -80,17 +86,25 @@ public enum SpaceListReducer {
         next.sheet = .none
         next.pendingName = ""
         next.pendingCode = ""
+        next.pendingKind = .personal
         next.working = false
+        return next
+    }
+
+    public static func kindSelected(_ state: SpaceListState, _ kind: SpaceKind) -> SpaceListState {
+        var next = state
+        next.pendingKind = kind
         return next
     }
 
     /// 저장소도 목록에 넣고 여기서도 넣기 때문에 **같은 공간이 두 번 들어갈 수 있습니다.**
     /// 목록은 `id` 를 키로 그리므로 그러면 화면이 죽습니다. `joined` 와 같은 방식으로
     /// 같은 id 를 먼저 걷어냅니다.
-    public static func created(_ state: SpaceListState, _ space: Space, _ code: String) -> SpaceListState {
+    public static func created(_ state: SpaceListState, _ space: Space, _ code: String?) -> SpaceListState {
         var next = state
         next.spaces = .ready(state.items.filter { $0.spaceId != space.spaceId } + [space])
-        next.sheet = .invited(spaceName: space.name, code: code)
+        // 혼자 쓰는 짜국은 초대 코드가 없습니다. 보여 줄 것이 없으니 시트를 닫습니다.
+        next.sheet = code.map { SpaceListSheet.invited(spaceName: space.name, code: $0) } ?? SpaceListSheet.none
         next.pendingName = ""
         next.working = false
         return next
@@ -157,15 +171,18 @@ public final class SpaceListStore {
         case .nameTyped(let value):
             state.pendingName = value
 
+        case .kindSelected(let kind):
+            state = SpaceListReducer.kindSelected(state, kind)
+
         case .codeTyped(let value):
             state.pendingCode = value
 
         case .createConfirmed:
             guard state.canCreate else { return }
             state = SpaceListReducer.working(state)
-            switch await createSpace(state.pendingName) {
+            switch await createSpace(state.pendingName, state.pendingKind) {
             case .ok(let (space, invite)):
-                state = SpaceListReducer.created(state, space, invite.code)
+                state = SpaceListReducer.created(state, space, invite?.code)
             case .fail(let reason):
                 state = SpaceListReducer.loadFailed(state, reason)
             }

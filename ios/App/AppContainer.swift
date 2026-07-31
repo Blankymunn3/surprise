@@ -25,12 +25,21 @@ final class AppContainer {
     private let storage = FirebaseStorage(bucket: "our-surprise.firebasestorage.app")
 
     private let spaces: SharedSpaceRepository
-    private let photos: FirebasePhotoRepository
     private let regions = AssetRegionCatalog()
+
+    /// 사진 저장소가 **둘**입니다. 혼자 짜국은 기기 안, 같이 쓰는 짜국은 서버 —
+    /// 어느 쪽을 쓸지는 **여기서만** 정합니다. 화면과 도메인은 어느 쪽인지 모릅니다.
+    private let remotePhotos: FirebasePhotoRepository
+    private let localPhotos: LocalPhotoRepository
 
     private init() {
         spaces = SharedSpaceRepository(storage: storage)
-        photos = FirebasePhotoRepository(storage: storage, uploaderUid: DeviceIdentity.uid)
+        remotePhotos = FirebasePhotoRepository(storage: storage, uploaderUid: DeviceIdentity.uid)
+        localPhotos = LocalPhotoRepository(uploaderUid: DeviceIdentity.uid)
+    }
+
+    private func photoRepository(_ kind: SpaceKind) -> any PhotoRepository {
+        kind == .personal ? localPhotos : remotePhotos
     }
 
     func spaceListStore() -> SpaceListStore {
@@ -42,8 +51,9 @@ final class AppContainer {
         )
     }
 
-    func mapStore(_ spaceId: SpaceId) -> MapStore {
-        MapStore(
+    func mapStore(_ spaceId: SpaceId, _ kind: SpaceKind) -> MapStore {
+        let photos = photoRepository(kind)
+        return MapStore(
             spaceId: spaceId,
             observeBoard: ObservePhotoBoard(photos: photos),
             searchRegions: SearchRegions(catalog: regions),
@@ -52,8 +62,9 @@ final class AppContainer {
         )
     }
 
-    func uploadStore(_ spaceId: SpaceId) -> UploadStore {
+    func uploadStore(_ spaceId: SpaceId, _ kind: SpaceKind) -> UploadStore {
         let catalog = regions
+        let photos = photoRepository(kind)
         return UploadStore(
             spaceId: spaceId,
             // EXIF 는 파일만 읽고(PhotoFile), 좌표를 지역으로 바꾸는 건 도메인(catalog)이 합니다.
@@ -75,12 +86,13 @@ final class AppContainer {
     }
 
     /// 사진을 올린 뒤 지도·달력이 새 사진을 보게 합니다.
-    func refreshPhotos(_ spaceId: SpaceId) async {
-        _ = await RefreshPhotos(photos: photos)(spaceId)
+    func refreshPhotos(_ spaceId: SpaceId, _ kind: SpaceKind) async {
+        _ = await RefreshPhotos(photos: photoRepository(kind))(spaceId)
     }
 
-    func calendarStore(_ spaceId: SpaceId) -> CalendarStore {
-        CalendarStore(
+    func calendarStore(_ spaceId: SpaceId, _ kind: SpaceKind) -> CalendarStore {
+        let photos = photoRepository(kind)
+        return CalendarStore(
             spaceId: spaceId,
             today: .today,
             observeBoard: ObservePhotoBoard(photos: photos),

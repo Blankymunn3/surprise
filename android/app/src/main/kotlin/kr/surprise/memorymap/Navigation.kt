@@ -47,6 +47,7 @@ import kr.surprise.memorymap.core.designsystem.component.PlainIconButton
 import kr.surprise.memorymap.core.designsystem.component.Segmented
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.model.SpaceId
+import kr.surprise.memorymap.core.model.SpaceKind
 import kr.surprise.memorymap.feature.calendar.CalendarEffect
 import kr.surprise.memorymap.feature.calendar.CalendarIntent
 import kr.surprise.memorymap.feature.calendar.CalendarScreen
@@ -64,7 +65,12 @@ import kr.surprise.memorymap.feature.upload.UploadSheet
 import kr.surprise.memorymap.feature.upload.UploadViewModel
 
 private const val ROUTE_SPACES = "spaces"
-private const val ROUTE_SPACE = "space/{spaceId}"
+
+/**
+ * 짜국의 **종류**도 경로에 넣습니다. 들어간 화면이 기기 안 사진을 볼지 서버 사진을 볼지
+ * 정해야 하는데, 경로에 있으면 앱이 죽었다 살아나도 그대로 살아납니다.
+ */
+private const val ROUTE_SPACE = "space/{spaceId}/{kind}"
 
 /**
  * 화면이 오갈 때의 움직임.
@@ -102,7 +108,7 @@ fun MemoryMapNavHost(container: AppContainer) {
                 vm.effect.collect { effect ->
                     when (effect) {
                         is SpaceListEffect.OpenSpace ->
-                            navController.navigate("space/${effect.id.value}")
+                            navController.navigate("space/${effect.id.value}/${effect.kind.name}")
                         is SpaceListEffect.ShowMessage ->
                             snackbar.showSnackbar(effect.text)
                         is SpaceListEffect.ShareInvite ->
@@ -122,10 +128,21 @@ fun MemoryMapNavHost(container: AppContainer) {
 
         composable(
             route = ROUTE_SPACE,
-            arguments = listOf(navArgument("spaceId") { type = NavType.StringType }),
+            arguments = listOf(
+                navArgument("spaceId") { type = NavType.StringType },
+                navArgument("kind") { type = NavType.StringType },
+            ),
         ) { entry ->
             val spaceId = SpaceId(entry.arguments?.getString("spaceId").orEmpty())
-            SpaceTabs(container = container, spaceId = spaceId, onBack = { navController.popBackStack() })
+            // 못 읽으면 서버 쪽으로 봅니다 — 지금까지의 짜국이 전부 그쪽입니다.
+            val kind = runCatching { SpaceKind.valueOf(entry.arguments?.getString("kind").orEmpty()) }
+                .getOrDefault(SpaceKind.Shared)
+            SpaceTabs(
+                container = container,
+                spaceId = spaceId,
+                kind = kind,
+                onBack = { navController.popBackStack() },
+            )
         }
     }
 }
@@ -136,19 +153,25 @@ fun MemoryMapNavHost(container: AppContainer) {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SpaceTabs(container: AppContainer, spaceId: SpaceId, onBack: () -> Unit) {
+private fun SpaceTabs(
+    container: AppContainer,
+    spaceId: SpaceId,
+    kind: SpaceKind,
+    onBack: () -> Unit,
+) {
     var tab by remember { mutableStateOf(0) }
     var uploading by remember { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
 
-    val mapVm: MapViewModel = viewModel(key = "map-${spaceId.value}", factory = container.mapFactory(spaceId))
+    val mapVm: MapViewModel =
+        viewModel(key = "map-${spaceId.value}", factory = container.mapFactory(spaceId, kind))
     val calendarVm: CalendarViewModel =
-        viewModel(key = "cal-${spaceId.value}", factory = container.calendarFactory(spaceId))
+        viewModel(key = "cal-${spaceId.value}", factory = container.calendarFactory(spaceId, kind))
 
     val mapState by mapVm.state.collectAsStateWithLifecycle()
     val calendarState by calendarVm.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(spaceId) { container.refreshPhotos(spaceId) }
+    LaunchedEffect(spaceId) { container.refreshPhotos(kind, spaceId) }
 
     LaunchedEffect(mapVm) {
         mapVm.effect.collect { effect ->
@@ -212,7 +235,7 @@ private fun SpaceTabs(container: AppContainer, spaceId: SpaceId, onBack: () -> U
 
     if (uploading) {
         val uploadVm: UploadViewModel =
-            viewModel(key = "up-${spaceId.value}", factory = container.uploadFactory(spaceId))
+            viewModel(key = "up-${spaceId.value}", factory = container.uploadFactory(spaceId, kind))
         val uploadState by uploadVm.state.collectAsStateWithLifecycle()
 
         ModalBottomSheet(

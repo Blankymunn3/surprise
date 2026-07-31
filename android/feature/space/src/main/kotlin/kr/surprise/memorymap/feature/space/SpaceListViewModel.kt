@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kr.surprise.memorymap.core.common.Failure
 import kr.surprise.memorymap.core.common.Outcome
+import kr.surprise.memorymap.core.model.SpaceKind
 import kr.surprise.memorymap.core.ui.MviViewModel
 import kr.surprise.memorymap.domain.usecase.CreateSpaceUseCase
 import kr.surprise.memorymap.domain.usecase.JoinSpaceUseCase
@@ -28,11 +29,13 @@ class SpaceListViewModel(
     override fun onIntent(intent: SpaceListIntent) {
         when (intent) {
             SpaceListIntent.Appeared, SpaceListIntent.PullToRefresh -> refresh()
-            is SpaceListIntent.SpaceTapped -> sendEffect(SpaceListEffect.OpenSpace(intent.id))
+            is SpaceListIntent.SpaceTapped ->
+                sendEffect(SpaceListEffect.OpenSpace(intent.id, currentState().kindOf(intent.id)))
             SpaceListIntent.CreateTapped -> setState { SpaceListReducer.sheetOpened(this, SpaceListSheet.Create) }
             SpaceListIntent.JoinTapped -> setState { SpaceListReducer.sheetOpened(this, SpaceListSheet.Join) }
             SpaceListIntent.SheetDismissed -> setState { SpaceListReducer.sheetDismissed(this) }
             is SpaceListIntent.NameTyped -> setState { SpaceListReducer.nameTyped(this, intent.value) }
+            is SpaceListIntent.KindSelected -> setState { SpaceListReducer.kindSelected(this, intent.kind) }
             is SpaceListIntent.CodeTyped -> setState { SpaceListReducer.codeTyped(this, intent.value) }
             SpaceListIntent.CreateConfirmed -> create()
             SpaceListIntent.JoinConfirmed -> join()
@@ -52,13 +55,14 @@ class SpaceListViewModel(
     private fun create() {
         if (!currentState().canCreate()) return
         val name = currentState().pendingName
+        val kind = currentState().pendingKind
         setState { SpaceListReducer.working(this) }
 
         viewModelScope.launch {
-            when (val result = createSpace(name)) {
+            when (val result = createSpace(name, kind)) {
                 is Outcome.Ok -> {
                     val (space, invite) = result.value
-                    setState { SpaceListReducer.created(this, space, invite.code) }
+                    setState { SpaceListReducer.created(this, space, invite?.code) }
                 }
                 is Outcome.Fail -> {
                     setState { SpaceListReducer.failedAction(this) }

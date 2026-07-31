@@ -9,6 +9,9 @@ import SwiftUI
 /// 두 탭은 같은 사진을 '어디' 와 '언제' 로 보는 것뿐입니다.
 struct SpaceDetailView: View {
     let spaceId: SpaceId
+    /// 혼자면 기기 안 사진, 같이 쓰면 서버 사진. 고르는 일은 `AppContainer` 가 하고
+    /// 이 화면은 어느 쪽인지 모릅니다.
+    let kind: SpaceKind
 
     @Environment(\.dismiss) private var dismiss
     @State private var tab = 0
@@ -16,10 +19,11 @@ struct SpaceDetailView: View {
     @State private var calendar: CalendarStore
     @State private var map: MapStore
 
-    init(spaceId: SpaceId) {
+    init(spaceId: SpaceId, kind: SpaceKind) {
         self.spaceId = spaceId
-        _calendar = State(initialValue: AppContainer.shared.calendarStore(spaceId))
-        _map = State(initialValue: AppContainer.shared.mapStore(spaceId))
+        self.kind = kind
+        _calendar = State(initialValue: AppContainer.shared.calendarStore(spaceId, kind))
+        _map = State(initialValue: AppContainer.shared.mapStore(spaceId, kind))
     }
 
     var body: some View {
@@ -43,7 +47,7 @@ struct SpaceDetailView: View {
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $uploading) {
-            UploadView(store: AppContainer.shared.uploadStore(spaceId)) {
+            UploadView(store: AppContainer.shared.uploadStore(spaceId, kind)) {
                 uploading = false
             }
             .presentationDetents([.medium, .large])
@@ -53,7 +57,7 @@ struct SpaceDetailView: View {
             // 시트가 닫힌 뒤에 새로 받아옵니다. 방금 올린 사진이 바로 보여야 합니다.
             guard !open else { return }
             Task {
-                await AppContainer.shared.refreshPhotos(spaceId)
+                await AppContainer.shared.refreshPhotos(spaceId, kind)
                 await map.refresh()
                 await calendar.refresh()
             }

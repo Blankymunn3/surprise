@@ -5,6 +5,7 @@ import kr.surprise.memorymap.core.model.Member
 import kr.surprise.memorymap.core.model.MemberRole
 import kr.surprise.memorymap.core.model.Space
 import kr.surprise.memorymap.core.model.SpaceId
+import kr.surprise.memorymap.core.model.SpaceKind
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -72,6 +73,37 @@ class SpaceListReducerTest {
 
         val after = SpaceListReducer.joined(state, space("A", "가족 여행"))
 
+        assertEquals(1, (after.spaces as SpacesUi.Ready).items.size)
+    }
+
+    /**
+     * 기본이 혼자여야 하는 이유: 잘못 골라도 사진이 폰 밖으로 나가지 않습니다.
+     * 반대로 두면 무심코 넘긴 사람의 사진이 서버로 갑니다.
+     */
+    @Test
+    fun `만들기 시트를 열면 혼자가 기본으로 잡힌다`() {
+        val opened = SpaceListReducer.sheetOpened(SpaceListState(), SpaceListSheet.Create)
+
+        assertEquals(SpaceKind.Personal, opened.pendingKind)
+    }
+
+    @Test
+    fun `지난번에 같이를 골랐어도 시트를 다시 열면 혼자로 돌아온다`() {
+        val chose = SpaceListReducer.kindSelected(SpaceListState(), SpaceKind.Shared)
+
+        val reopened = SpaceListReducer.sheetOpened(chose, SpaceListSheet.Create)
+
+        assertEquals(SpaceKind.Personal, reopened.pendingKind)
+    }
+
+    /** 혼자 짜국에는 초대 코드가 없습니다 — 보여 줄 것이 없으니 시트를 닫습니다. */
+    @Test
+    fun `혼자 짜국을 만들면 초대 코드 시트가 뜨지 않는다`() {
+        val state = SpaceListReducer.spacesLoaded(SpaceListState(), emptyList())
+
+        val after = SpaceListReducer.created(state, space("A1B2C3"), null)
+
+        assertEquals(SpaceListSheet.None, after.sheet)
         assertEquals(1, (after.spaces as SpacesUi.Ready).items.size)
     }
 

@@ -1,0 +1,61 @@
+rules_version = '2';
+
+// 짜국의 이름·멤버·사진 정보가 여기 있습니다. 사진 파일 자체는 Storage 에 있고,
+// **누가 그 짜국의 멤버인가**는 여기서만 알 수 있습니다 — Storage 규칙이
+// `firestore.exists(...)` 로 이 문서를 보고 판단합니다 (`storage.rules`).
+//
+// 아직 앱에 로그인이 붙기 전이라 지금은 쓰이지 않습니다. 계획은 `docs/app/AUTH.md`.
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isMember(spaceId) {
+      return signedIn() &&
+             exists(/databases/$(db)/documents/spaces/$(spaceId)/members/$(request.auth.uid));
+    }
+
+    match /spaces/{spaceId} {
+      // 멤버만 봅니다. 초대 코드를 안다고 들어와지지 않습니다.
+      allow read: if isMember(spaceId);
+      // 만드는 사람이 곧 첫 멤버입니다. 자기를 주인으로 적을 때만 허용합니다.
+      allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isMember(spaceId);
+      // 지우기는 아직 앱에 없습니다. 없는 기능은 열어 두지 않습니다.
+      allow delete: if false;
+
+      match /members/{uid} {
+        allow read: if isMember(spaceId);
+        // **자기 자신만** 넣고 뺍니다. 남을 강제로 멤버로 만들 수 없습니다.
+        allow create: if signedIn() && uid == request.auth.uid;
+        allow delete: if signedIn() && uid == request.auth.uid;
+        allow update: if signedIn() && uid == request.auth.uid;
+      }
+
+      match /photos/{photoId} {
+        allow read: if isMember(spaceId);
+        allow create: if isMember(spaceId) &&
+                         request.resource.data.uploadedBy == request.auth.uid;
+        allow update: if isMember(spaceId);
+        // 사진은 **올린 사람만** 지웁니다. 상대가 내 사진을 지우지 못합니다.
+        allow delete: if isMember(spaceId) &&
+                         resource.data.uploadedBy == request.auth.uid;
+      }
+    }
+
+    // 초대 코드 → 짜국 ID. 코드로는 **문 앞까지만** 옵니다 —
+    // 여기서 짜국 ID 를 알아내도, 멤버가 되기 전에는 사진을 못 봅니다.
+    match /invites/{code} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update, delete: if false;
+    }
+
+    // 위에 적지 않은 것은 전부 막습니다.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
