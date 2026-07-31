@@ -34,7 +34,11 @@ object MemoryColors {
     val MapLand = Color(0xFFEFE3CB)
 
     val OnAccent = Color(0xFFFFFFFF)
-    val Scrim = Color(0x522C5240)    // 시트 뒤 어둡게 (32%)
+    /**
+     * 시트 뒤를 어둡게 (32%). **색을 넣지 않습니다** — 화면 절반을 덮는 자리라
+     * 조금만 물들여도 눈에 걸립니다. 먹색(따뜻한 회색) 그대로 씁니다.
+     */
+    val Scrim = Color(0x5235302A)
 
     /** 콘텐츠 위에 떠 있는 것에만 쓰는 반투명 흰색. 카드·시트에는 쓰지 않습니다. */
     val Glass = Color(0xD6FFFDF7)    // 84% — 종이색이라 흰색보다 덜 튑니다
