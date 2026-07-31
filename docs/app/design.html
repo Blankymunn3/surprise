@@ -268,6 +268,38 @@ h3{font-size:15px;font-weight:700;margin:0 0 12px;letter-spacing:-.01em}
 }
 .field .val u{margin-left:auto;color:var(--ink-3);text-decoration:none;font-size:11px}
 
+/* 5. 짜국 만들기 */
+.s-new{padding:0;height:100%;background:rgba(44,82,64,.28);position:relative}
+.new-sheet{
+  position:absolute;left:0;right:0;bottom:0;background:var(--card);
+  border-radius:var(--r-sheet) var(--r-sheet) 0 0;padding:9px 16px 20px
+}
+.new-sheet h4{margin:6px 0 3px;font-size:17px;font-weight:800;letter-spacing:-.02em}
+.new-sheet .lead{margin:0 0 12px;font-size:11px;color:var(--ink-2)}
+/* 두 갈래는 **세로로 쌓습니다.** 줄마다 설명이 한 줄씩 붙어서
+   지도|달력 같은 알약(.seg)에는 들어가지 않습니다. */
+.pick2{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+.opt{
+  display:flex;align-items:flex-start;gap:9px;padding:10px 12px;
+  border-radius:var(--r-btn);background:var(--paper-2)
+}
+/* 고른 쪽만 감빛. 테두리를 안쪽 그림자로 넣어 **칸이 커지지 않게** 합니다 —
+   border 로 하면 고를 때마다 1.5px 씩 흔들립니다. */
+.opt.on{background:var(--persimmon-soft);box-shadow:inset 0 0 0 1.5px var(--persimmon)}
+.opt i{
+  width:15px;height:15px;border-radius:50%;flex:none;margin-top:2px;
+  background:var(--card);box-shadow:inset 0 0 0 1.5px var(--line);
+  display:grid;place-items:center
+}
+.opt.on i{box-shadow:inset 0 0 0 1.5px var(--persimmon)}
+.opt.on i::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--persimmon)}
+.opt b{display:block;font-size:12.5px;font-weight:700}
+.opt span{display:block;font-size:10px;color:var(--ink-2);margin-top:1px;line-height:1.45}
+.namebox{
+  background:var(--paper-2);border-radius:var(--r-btn);padding:11px 13px;
+  font-size:12px;color:var(--ink-3);margin-bottom:11px
+}
+
 /* ── 부품표 ── */
 .specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
 .spec{background:var(--card);border-radius:var(--r-card);padding:18px;box-shadow:var(--shadow-card)}
@@ -296,7 +328,7 @@ footer{color:var(--ink-3);font-size:13px;text-align:center;padding-top:8px}
 <div class="cover">
   <div class="cover-text">
     <p class="eyebrow">짜국 · 앱 디자인</p>
-    <h1>둘이 다닌 곳이<br>한 장의 그림이 되게</h1>
+    <h1>같이 다닌 곳이<br>한 장의 그림이 되게</h1>
     <p>지도에 찍힌 핀 하나하나가 그날의 사진입니다.</p>
   </div>
 
@@ -419,7 +451,7 @@ footer{color:var(--ink-3);font-size:13px;text-align:center;padding-top:8px}
 
 <section>
   <h2>화면</h2>
-  <p class="sub">네 화면이 전부입니다. 공간을 고르고, 지도나 달력으로 보고, 사진을 올립니다.</p>
+  <p class="sub">다섯 화면이 전부입니다. 짜국을 만들고 고르고, 지도나 달력으로 보고, 사진을 올립니다.</p>
 
   <div class="screens">
 
@@ -448,6 +480,35 @@ footer{color:var(--ink-3);font-size:13px;text-align:center;padding-top:8px}
       </div>
       <p class="screen-note"><b>공간 목록.</b> 카드는 사진이 전부입니다 —
         공간을 알아보는 건 이름이 아니라 그 안의 사진이라서요.</p>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="s-new">
+          <div class="new-sheet">
+            <div class="grip"></div>
+            <h4>새 짜국 만들기</h4>
+            <p class="lead">사진을 어디에 둘지 먼저 고릅니다.</p>
+
+            <div class="pick2">
+              <div class="opt on">
+                <i></i>
+                <div><b>혼자 쓸래요</b><span>사진이 이 폰에만 있어요 · 로그인 없이 바로</span></div>
+              </div>
+              <div class="opt">
+                <i></i>
+                <div><b>같이 볼래요</b><span>초대한 사람들과 같이 봐요 · 로그인이 필요해요</span></div>
+              </div>
+            </div>
+
+            <div class="namebox">우리 추억 지도</div>
+            <div class="btn solid">만들기</div>
+          </div>
+        </div>
+      </div>
+      <p class="screen-note"><b>짜국 만들기.</b> <b>혼자가 기본</b>입니다 —
+        로그인 없이 바로 시작하고 사진도 폰 밖으로 안 나갑니다.
+        '같이'를 고를 때만 로그인을 묻고, 초대 코드도 그때 나옵니다.</p>
     </div>
 
     <div>
