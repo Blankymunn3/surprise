@@ -243,3 +243,96 @@ Firebase ID 토큰 → Storage · Firestore 요청 헤더에 얹음
 
 **웹(`map/`)은 로그인이 없어서 `spaces/` 를 못 읽게 됩니다.** 웹은 `regions/` 만 쓰므로
 당장 깨지지는 않지만, 앱과 웹이 같은 사진을 보는 일은 웹에도 로그인이 붙어야 합니다.
+
+---
+
+# 부록: 0번 — 혼자/둘이 나누기 (구현 계획)
+
+로그인과 무관해서 **지금 바로 할 수 있는** 부분입니다. 파일 단위로 적어 둡니다.
+
+## 무엇이 달라지나
+
+`Space` 에 종류가 하나 붙고, 사진 저장소 구현이 **둘**이 됩니다. 화면과 도메인은
+그대로입니다 — 어느 저장소를 쓸지는 **조립하는 곳**이 정합니다.
+
+## 손대는 파일
+
+### 1. 모델 (양쪽)
+
+`core/model/Space.kt` · `CoreModel/Space.swift`
+
+```kotlin
+/** 혼자 쓰는 짜국은 사진이 기기 안에만 있습니다. 서버도, 로그인도 안 씁니다. */
+enum class SpaceKind { Personal, Shared }
+
+data class Space(..., val kind: SpaceKind = SpaceKind.Personal, ...)
+```
+
+기본값을 `Personal` 로 두는 이유: 새 값이 없는 옛 데이터를 읽었을 때 **서버로 나가지
+않는 쪽**이 안전합니다. 반대로 두면 옛 짜국이 조용히 공유로 취급됩니다.
+
+### 2. 기기 안 사진 저장소 (새 파일, 양쪽)
+
+`data/photo/LocalPhotoRepository.kt` · `DataPhoto/LocalPhotoRepository.swift`
+
+`PhotoRepository` 를 그대로 구현합니다. 서버 대신 앱 폴더에 씁니다.
+
+```
+안드로이드:  filesDir/spaces/<짜국ID>/photos/<파일이름>.jpg
+iOS:        Application Support/spaces/<짜국ID>/photos/<파일이름>.jpg
+```
+
+- 파일 이름 규칙은 **지금 것을 그대로** 씁니다 (`PhotoObjectName`) — 지역·날짜가
+  이름에 들어 있어 목록 한 번으로 다 알 수 있습니다. 로그인이 붙어도 **혼자 짜국은
+  이 방식 그대로** 둡니다. 기기 안에는 Firestore 가 없으니까요.
+- `downloadUrl` 자리에는 `file://` 경로를 넣습니다. Coil 과 AsyncImage 둘 다 그대로 읽습니다.
+- 대표사진(`covers.json`)도 같은 폴더에 파일로 둡니다.
+
+### 3. 공간 저장소 (양쪽)
+
+`data/space/SharedSpaceRepository.kt` · `DataSpace/SharedSpaceRepository.swift`
+
+- `create(name, kind)` 로 종류를 받습니다
+- **`kind == Personal` 이면 네트워크를 아예 안 탑니다.** 기기 안 목록에만 적습니다
+- `kind == Shared` 일 때만 지금처럼 `space.json` 을 올립니다
+- 종류는 기기 안 목록(`spaces.json` / UserDefaults)에 같이 적습니다
+
+### 4. 조립 (양쪽)
+
+`app/AppContainer.kt` · `App/AppContainer.swift`
+
+```kotlin
+fun photoRepository(kind: SpaceKind): PhotoRepository =
+    if (kind == SpaceKind.Personal) local else remote
+```
+
+`mapFactory` · `calendarFactory` · `uploadFactory` 가 짜국의 종류를 보고 고릅니다.
+
+### 5. 화면
+
+**만들기 시트** — 이름 입력 위에 두 갈래를 놓습니다.
+
+```
+혼자 쓸래요        사진이 이 폰에만 있어요
+둘이 볼래요        상대와 같이 봐요 · 로그인이 필요해요
+```
+
+기본은 **혼자**입니다. 둘이를 고를 때만 로그인을 물어봅니다(3번이 붙은 뒤).
+
+**짜국 카드** — 혼자면 작은 표시 하나. 어느 것이 폰에만 있는지 한눈에 보여야 합니다.
+
+**초대 코드** — 혼자 짜국에는 없습니다. 초대할 상대가 없으니까요.
+
+## 순서
+
+1. 모델에 `SpaceKind` (양쪽) — 여기부터 하면 나머지가 컴파일 오류로 안내해 줍니다
+2. `LocalPhotoRepository` (양쪽)
+3. `SharedSpaceRepository` 에 종류 반영
+4. 조립에서 갈라 쓰기
+5. 만들기 시트 · 카드 표시
+
+## 확인할 것
+
+- 혼자 짜국을 만들고 사진을 올린 뒤 **비행기 모드**에서 그대로 보이는지
+- 앱을 껐다 켜도 남아 있는지
+- 둘이 짜국은 지금처럼 동작하는지 (되돌아간 것이 없는지)
