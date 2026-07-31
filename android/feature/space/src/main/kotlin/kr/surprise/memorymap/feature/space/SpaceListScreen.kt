@@ -70,7 +70,7 @@ fun SpaceListScreen(
                     Modifier.fillMaxWidth().padding(start = Gap.xl, end = Gap.xl, top = Gap.s),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("공간", style = MemoryType.Display, modifier = Modifier.weight(1f))
+                    Text("짜국", style = MemoryType.Display, modifier = Modifier.weight(1f))
                     MemberAvatars(initials = listOf(myInitial))
                 }
             }
@@ -84,7 +84,7 @@ fun SpaceListScreen(
 
                 is SpacesUi.Ready -> {
                     if (ui.items.isEmpty()) {
-                        item { EmptyScene("아직 공간이 없어요. 하나 만들어 볼까요?") }
+                        item { EmptyScene("아직 짜국이 없어요. 하나 만들어 볼까요?") }
                     }
                     items(ui.items, key = { it.id.value }) { space ->
                         SpaceCard(
@@ -103,7 +103,7 @@ fun SpaceListScreen(
 
             item {
                 ActionRow(
-                    label = "새 공간 만들기",
+                    label = "새 짜국 만들기",
                     tinted = true,
                     onClick = { onIntent(SpaceListIntent.CreateTapped) },
                 )
@@ -204,7 +204,7 @@ private fun SpaceSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Uni
                 SpaceListSheet.None -> Unit
 
                 SpaceListSheet.Create -> {
-                    Text("새 공간 만들기", style = MemoryType.Title)
+                    Text("새 짜국 만들기", style = MemoryType.Title)
                     Text(
                         "이름을 정하면 초대 코드가 함께 나와요",
                         style = MemoryType.Label,

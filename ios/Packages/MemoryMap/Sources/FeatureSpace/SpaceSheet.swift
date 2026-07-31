@@ -22,7 +22,10 @@ struct SpaceSheet: View {
         }
         .padding(.horizontal, MemorySpace.xl)
         .padding(.top, MemorySpace.xxl)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        // 아래 여백은 홈 인디케이터를 피할 만큼만. `maxHeight: .infinity` 를 주면
+        // 시트가 화면을 채우려 들어서, 높이를 재 봐야 늘 같은 값이 나옵니다.
+        .padding(.bottom, MemorySpace.xxxl)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(MemoryColor.surface)
     }
 
@@ -30,7 +33,7 @@ struct SpaceSheet: View {
 
     @ViewBuilder
     private var create: some View {
-        Text("새 공간 만들기").memoryTitle()
+        Text("새 짜국 만들기").memoryTitle()
         Text("둘이 같이 채울 지도예요. 이름은 나중에 바꿀 수 있어요.")
             .memoryLabel()
             .foregroundStyle(MemoryColor.ink2)
@@ -77,7 +80,7 @@ struct SpaceSheet: View {
     @ViewBuilder
     private func invited(name: String, code: String) -> some View {
         Text("\(name) 을(를) 만들었어요").memoryTitle()
-        Text("이 코드를 상대에게 알려 주면 같은 공간을 보게 돼요.")
+        Text("이 코드를 상대에게 알려 주면 같은 짜국을 보게 돼요.")
             .memoryLabel()
             .foregroundStyle(MemoryColor.ink2)
 
