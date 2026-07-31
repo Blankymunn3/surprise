@@ -55,6 +55,10 @@ fun SpaceCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.matchParentSize(),
             )
+        } else {
+            // 아직 사진이 없는 공간. 회색 네모 대신 그림을 깔아 둡니다 —
+            // 빈 카드도 "여기에 뭔가 쌓일 자리" 로 보여야 합니다.
+            HillScene(Modifier.matchParentSize())
         }
 
         // 흰 글자가 밝은 사진 위에서도 읽히도록 아래쪽을 어둡게

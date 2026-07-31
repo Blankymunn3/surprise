@@ -3,20 +3,21 @@ package kr.surprise.memorymap.feature.space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
@@ -31,7 +32,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import kr.surprise.memorymap.core.model.Space
+import kr.surprise.memorymap.core.designsystem.component.HillScene
+import kr.surprise.memorymap.core.designsystem.component.SCENE_RATIO
 import kr.surprise.memorymap.core.designsystem.component.MemberAvatars
 import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
 import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
@@ -40,6 +42,7 @@ import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
+import kr.surprise.memorymap.core.model.Space
 
 /**
  * 앱의 메인. **공간이 하나뿐이어도 여기서 시작합니다** —
@@ -69,7 +72,7 @@ fun SpaceListScreen(
                     Modifier.fillMaxWidth().padding(start = Gap.xl, end = Gap.xl, top = Gap.s),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("공간", style = MemoryType.Display, modifier = Modifier.weight(1f))
+                    Text("짜국", style = MemoryType.Display, modifier = Modifier.weight(1f))
                     MemberAvatars(initials = listOf(myInitial))
                 }
             }
@@ -83,7 +86,7 @@ fun SpaceListScreen(
 
                 is SpacesUi.Ready -> {
                     if (ui.items.isEmpty()) {
-                        item { Hint("아직 공간이 없어요. 하나 만들어 볼까요?") }
+                        item { EmptyScene("아직 짜국이 없어요. 하나 만들어 볼까요?") }
                     }
                     items(ui.items, key = { it.id.value }) { space ->
                         SpaceCard(
@@ -102,7 +105,7 @@ fun SpaceListScreen(
 
             item {
                 ActionRow(
-                    label = "새 공간 만들기",
+                    label = "새 짜국 만들기",
                     tinted = true,
                     onClick = { onIntent(SpaceListIntent.CreateTapped) },
                 )
@@ -127,6 +130,23 @@ private fun Space.metaLine(): String = buildString {
     append("사진 ").append(photoCount).append("장")
     append(" · 지역 ").append(regionCount).append("곳")
     lastPhotoOn?.let { append(" · ").append(it.monthValue).append("월 ").append(it.dayOfMonth).append("일") }
+}
+
+@Composable
+private fun EmptyScene(text: String) {
+    Column(
+        Modifier.fillMaxWidth().padding(horizontal = Gap.xl, vertical = Gap.xxl),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        HillScene(
+            Modifier
+                .fillMaxWidth(0.62f)
+                .aspectRatio(SCENE_RATIO)
+                .clip(MemoryShapes.Card),
+        )
+        Spacer(Modifier.height(Gap.l))
+        Text(text, style = MemoryType.Body, color = MemoryColors.Ink3, textAlign = TextAlign.Center)
+    }
 }
 
 @Composable
@@ -187,7 +207,7 @@ private fun SpaceSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Uni
                 SpaceListSheet.None -> Unit
 
                 SpaceListSheet.Create -> {
-                    Text("새 공간 만들기", style = MemoryType.Title)
+                    Text("새 짜국 만들기", style = MemoryType.Title)
                     Text(
                         "이름을 정하면 초대 코드가 함께 나와요",
                         style = MemoryType.Label,

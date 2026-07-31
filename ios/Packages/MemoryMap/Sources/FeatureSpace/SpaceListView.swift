@@ -7,6 +7,9 @@ import SwiftUI
 /// 카드는 사진이 전부입니다 — 공간을 알아보는 건 이름이 아니라 사진이라서요.
 public struct SpaceListView: View {
     @State private var store: SpaceListStore
+    /// 시트 높이는 **내용에 맞춥니다.** 만들기·참여·초대코드가 각각 길이가 달라서
+    /// 하나로 고정하면 어떤 것은 비고 어떤 것은 잘립니다.
+    @State private var sheetHeight: CGFloat = 260
     private let onOpen: (SpaceId) -> Void
 
     public init(store: SpaceListStore, onOpen: @escaping (SpaceId) -> Void) {
@@ -18,7 +21,7 @@ public struct SpaceListView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: MemorySpace.m) {
                 HStack {
-                    Text("공간").memoryDisplay()
+                    Text("짜국").memoryDisplay()
                     Spacer()
                     Text("나")
                         .memoryMicro()
@@ -36,7 +39,7 @@ public struct SpaceListView: View {
                     hint("목록을 불러오지 못했어요")
                 case .ready(let items):
                     if items.isEmpty {
-                        hint("아직 공간이 없어요. 하나 만들어 볼까요?")
+                        emptyScene("아직 짜국이 없어요. 하나 만들어 볼까요?")
                     }
                     ForEach(items) { space in
                         SpaceCardView(space: space) { onOpen(space.spaceId) }
@@ -44,7 +47,7 @@ public struct SpaceListView: View {
                     }
                 }
 
-                actionRow("새 공간 만들기", system: "plus", tinted: true) {
+                actionRow("새 짜국 만들기", system: "plus", tinted: true) {
                     Task { await store.send(.createTapped) }
                 }
                 actionRow("초대 코드로 참여", system: "person.2", tinted: false) {
@@ -57,7 +60,14 @@ public struct SpaceListView: View {
         .task { await store.send(.appeared) }
         .sheet(isPresented: sheetShown) {
             SpaceSheet(store: store)
-                .presentationDetents([.medium])
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear
+                            .onAppear { sheetHeight = proxy.size.height }
+                            .onChange(of: proxy.size.height) { _, value in sheetHeight = value }
+                    }
+                )
+                .presentationDetents([.height(sheetHeight)])
                 .presentationDragIndicator(.visible)
         }
     }
@@ -71,6 +81,22 @@ public struct SpaceListView: View {
                 if !shown { Task { await store.send(.sheetDismissed) } }
             }
         )
+    }
+
+    /// 빈 화면에 글자만 남기지 않습니다 — "여기에 뭔가 쌓일 자리" 로 보여야 합니다.
+    private func emptyScene(_ text: String) -> some View {
+        VStack(spacing: MemorySpace.l) {
+            HillScene()
+                .aspectRatio(HillScene.ratio, contentMode: .fit)
+                .frame(maxWidth: 220)
+                .clipShape(RoundedRectangle(cornerRadius: MemoryRadius.card, style: .continuous))
+            Text(text)
+                .memoryBody()
+                .foregroundStyle(MemoryColor.ink3)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, MemorySpace.xxl)
     }
 
     private func hint(_ text: String) -> some View {
@@ -122,7 +148,8 @@ struct SpaceCardView: View {
                         MemoryColor.fill
                     }
                 } else {
-                    MemoryColor.fill
+                    // 아직 사진이 없는 공간. 회색 네모 대신 그림을 깔아 둡니다.
+                    HillScene()
                 }
 
                 // 흰 글자가 밝은 사진 위에서도 읽히도록 아래쪽을 어둡게

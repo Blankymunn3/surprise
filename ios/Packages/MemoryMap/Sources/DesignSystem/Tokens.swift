@@ -4,21 +4,30 @@ import SwiftUI
 /// 색·글씨·모서리는 `docs/app/design.html` 이 원본입니다.
 /// 안드로이드 `MemoryColors` 와 **같은 값**이어야 두 앱이 같아 보입니다.
 public enum MemoryColor {
-    public static let accent = Color(hex: 0xE11D5B)
-    public static let accentTint = Color(hex: 0xFDEDF2)
+    /// 강조는 **좁게**. 오늘·대표사진·올리기처럼 딱 한 번 눌러야 하는 것에만.
+    public static let accent = Color(hex: 0xE0764F)   // 감빛 — 종이·초록과 같은 온도
+    public static let accentTint = Color(hex: 0xFBE7DD)
 
-    public static let ink = Color(hex: 0x1A1416)      // 검정이 아니라 따뜻한 먹색
-    public static let ink2 = Color(hex: 0x6E6266)
-    public static let ink3 = Color(hex: 0xA2969A)
+    public static let ink = Color(hex: 0x35302A)      // 검정이 아니라 따뜻한 먹색
+    public static let ink2 = Color(hex: 0x6E675C)
+    public static let ink3 = Color(hex: 0xA79E90)
 
-    public static let paper = Color(hex: 0xFBF8F9)
-    public static let surface = Color.white
-    public static let fill = Color(hex: 0xF4EFF1)
-    public static let line = Color(hex: 0xEDE5E8)
-    public static let line2 = Color(hex: 0xE0D5DA)
+    public static let paper = Color(hex: 0xF5EFE1)    // 화면 바탕 — 따뜻한 종이
+    public static let surface = Color(hex: 0xFFFDF7)  // 떠 있는 면
+    public static let fill = Color(hex: 0xEFE7D5)
+    public static let line = Color(hex: 0xE6DDCA)
+    public static let line2 = Color(hex: 0xDCD2BC)
 
-    public static let mapSea = Color(hex: 0xDEEAEF)
-    public static let mapLand = Color(hex: 0xEFEAE3)
+    /// 지도에 넓게 깔리는 초록.
+    public static let moss = Color(hex: 0x7FA98C)
+    public static let mossSoft = Color(hex: 0xDCEBE0)
+    public static let mossDeep = Color(hex: 0x2C5240)
+
+    /// 그림 속 작은 것들. 강조색과 다투지 않게 아주 좁게 씁니다.
+    public static let honey = Color(hex: 0xF0C46A)
+
+    public static let mapSea = Color(hex: 0xDCEBE0)
+    public static let mapLand = Color(hex: 0xEFE3CB)
 }
 
 extension Color {
@@ -78,11 +87,11 @@ public extension View {
 }
 
 public enum MemoryRadius {
-    public static let dayCell: CGFloat = 10
-    public static let thumb: CGFloat = 12
-    public static let button: CGFloat = 16
-    public static let card: CGFloat = 20
-    public static let sheet: CGFloat = 24
+    public static let dayCell: CGFloat = 14
+    public static let thumb: CGFloat = 18
+    public static let button: CGFloat = 20
+    public static let card: CGFloat = 26
+    public static let sheet: CGFloat = 30
 }
 
 public enum MemorySpace {
