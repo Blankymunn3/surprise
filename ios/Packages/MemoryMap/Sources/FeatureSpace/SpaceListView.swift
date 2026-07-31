@@ -36,7 +36,7 @@ public struct SpaceListView: View {
                     hint("목록을 불러오지 못했어요")
                 case .ready(let items):
                     if items.isEmpty {
-                        hint("아직 공간이 없어요. 하나 만들어 볼까요?")
+                        emptyScene("아직 공간이 없어요. 하나 만들어 볼까요?")
                     }
                     ForEach(items) { space in
                         SpaceCardView(space: space) { onOpen(space.spaceId) }
@@ -71,6 +71,21 @@ public struct SpaceListView: View {
                 if !shown { Task { await store.send(.sheetDismissed) } }
             }
         )
+    }
+
+    /// 빈 화면에 글자만 남기지 않습니다 — "여기에 뭔가 쌓일 자리" 로 보여야 합니다.
+    private func emptyScene(_ text: String) -> some View {
+        VStack(spacing: MemorySpace.l) {
+            HillScene()
+                .frame(maxWidth: 220)
+                .clipShape(RoundedRectangle(cornerRadius: MemoryRadius.card, style: .continuous))
+            Text(text)
+                .memoryBody()
+                .foregroundStyle(MemoryColor.ink3)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, MemorySpace.xxl)
     }
 
     private func hint(_ text: String) -> some View {
@@ -122,7 +137,8 @@ struct SpaceCardView: View {
                         MemoryColor.fill
                     }
                 } else {
-                    MemoryColor.fill
+                    // 아직 사진이 없는 공간. 회색 네모 대신 그림을 깔아 둡니다.
+                    HillScene()
                 }
 
                 // 흰 글자가 밝은 사진 위에서도 읽히도록 아래쪽을 어둡게

@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kr.surprise.memorymap.domain.CalendarMonth
 import kr.surprise.memorymap.core.designsystem.component.DayCell
+import kr.surprise.memorymap.core.designsystem.component.HillScene
 import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
 import kr.surprise.memorymap.core.designsystem.component.PhotoThumb
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
@@ -71,13 +72,19 @@ fun CalendarScreen(
         val groups = state.visibleDays()
         if (groups.isEmpty()) {
             item {
-                Text(
-                    "이 달엔 아직 사진이 없어요",
-                    style = MemoryType.Body,
-                    color = MemoryColors.Ink3,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
-                )
+                Column(
+                    Modifier.fillMaxWidth().padding(horizontal = 40.dp, vertical = 28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    HillScene(Modifier.fillMaxWidth(0.66f).clip(MemoryShapes.Card))
+                    Spacer(Modifier.height(Gap.l))
+                    Text(
+                        "이 달엔 아직 사진이 없어요",
+                        style = MemoryType.Body,
+                        color = MemoryColors.Ink3,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
         }
 
