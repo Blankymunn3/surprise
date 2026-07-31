@@ -30,6 +30,16 @@ class MapViewModel(
             .launchIn(viewModelScope)
     }
 
+    /**
+     * 지역 하나를 여는 길은 **한 곳뿐**입니다 — 검색으로 고르든 지도를 누르든 같습니다.
+     * 가운데 좌표와 경계선을 함께 받아 옵니다.
+     */
+    private suspend fun open(region: Region) {
+        val center = regions.centerOf(region.code)
+        val outline = RegionOutline(region.code.value, regions.outlineOf(region.code))
+        setState { MapReducer.regionOpened(this, region, board, center, outline) }
+    }
+
     override fun onIntent(intent: MapIntent) {
         when (intent) {
             is MapIntent.QueryTyped -> viewModelScope.launch {
@@ -40,8 +50,7 @@ class MapViewModel(
             MapIntent.QueryCleared -> setState { MapReducer.queryCleared(this) }
 
             is MapIntent.RegionChosen -> viewModelScope.launch {
-                val center = regions.centerOf(intent.region.code)
-                setState { MapReducer.regionOpened(this, intent.region, board, center) }
+                open(intent.region)
             }
 
             // 지도를 누르면 그 좌표가 어느 지역인지 기기 안에서 판정합니다 (사진 EXIF 와 같은 길)
@@ -50,8 +59,7 @@ class MapViewModel(
                 if (region == null) {
                     sendEffect(MapEffect.ShowMessage("여기는 아직 지역을 알 수 없어요."))
                 } else {
-                    val center = regions.centerOf(region.code)
-                    setState { MapReducer.regionOpened(this, region, board, center) }
+                    open(region)
                 }
             }
 

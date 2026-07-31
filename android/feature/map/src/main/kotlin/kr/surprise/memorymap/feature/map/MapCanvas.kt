@@ -14,6 +14,9 @@ import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
+import org.maplibre.android.style.layers.LineLayer
+import org.maplibre.android.style.layers.PropertyFactory
+import org.maplibre.android.style.sources.GeoJsonSource
 
 /**
  * 실제 지도. MapLibre 를 쓰는 이유는 **API 키도 결제 계정도 필요 없고**,
@@ -26,6 +29,7 @@ import org.maplibre.android.maps.Style
 internal fun MapCanvas(
     pins: List<RegionPin>,
     focus: DoubleArray?,
+    outline: RegionOutline?,
     onTap: (latitude: Double, longitude: Double) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -62,7 +66,9 @@ internal fun MapCanvas(
         modifier = modifier,
         update = { view ->
             view.getMapAsync { map ->
-                map.setStyle(Style.Builder().fromJson(OsmStyle.json()))
+                map.setStyle(Style.Builder().fromJson(OsmStyle.json())) { style ->
+                    drawOutline(style, outline)
+                }
                 map.addOnMapClickListener { point ->
                     onTap(point.latitude, point.longitude)
                     true
@@ -75,9 +81,52 @@ internal fun MapCanvas(
     )
 }
 
+private const val OUTLINE_SOURCE = "region-outline"
+private const val OUTLINE_LAYER = "region-outline-line"
+
+/**
+ * 고른 지역에 **테두리**를 그립니다. 웹과 같은 표시입니다 —
+ * "지금 이 지역을 보고 있다" 를 지도 위에서 알 수 있어야 합니다.
+ *
+ * 선은 GeoJSON 으로 넣습니다. 점을 하나씩 그리는 것보다 훨씬 적게 손대고,
+ * 저장된 경계 데이터가 이미 GeoJSON 순서 `(경도, 위도)` 라 뒤집을 것도 없습니다.
+ */
+private fun drawOutline(style: Style, outline: RegionOutline?) {
+    // 고른 지역이 없으면 지웁니다. 남겨 두면 다른 지역을 눌러도 옛 테두리가 남습니다.
+    style.getLayer(OUTLINE_LAYER)?.let { style.removeLayer(it) }
+    style.getSource(OUTLINE_SOURCE)?.let { style.removeSource(it) }
+    if (outline == null || outline.rings.isEmpty()) return
+
+    style.addSource(GeoJsonSource(OUTLINE_SOURCE, outline.toGeoJson()))
+    style.addLayer(
+        LineLayer(OUTLINE_LAYER, OUTLINE_SOURCE).withProperties(
+            PropertyFactory.lineColor(OUTLINE_COLOR),
+            PropertyFactory.lineWidth(3f),
+            PropertyFactory.lineJoin("round"),
+            PropertyFactory.lineCap("round"),
+        )
+    )
+}
+
+/** `design.html` 의 강조색. 지도 위에서도 같은 색이어야 같은 앱으로 보입니다. */
+private const val OUTLINE_COLOR = "#E11D5B"
+
+private fun RegionOutline.toGeoJson(): String = buildString {
+    append("""{"type":"Feature","properties":{},"geometry":""")
+    append("""{"type":"MultiLineString","coordinates":[""")
+    rings.forEachIndexed { ringIndex, ring ->
+        if (ringIndex > 0) append(',')
+        append('[')
+        ring.forEachIndexed { pointIndex, point ->
+            if (pointIndex > 0) append(',')
+            append('[').append(point[0]).append(',').append(point[1]).append(']')
+        }
+        append(']')
+    }
+    append("]}}")
+}
+
 /*
  * 다녀온 지역을 **대표사진으로 칠하는** 것은 런타임 이미지를 `fill-pattern` 으로
  * 등록해야 해서 다음 단계로 미뤘습니다 (`docs/app/STATUS.md`).
- * 지금은 기본 지도와 "누른 곳이 어느 지역인지" 까지만 합니다 —
- * 지역 판정은 지도가 아니라 도메인이 경계 데이터로 하므로 화면 흐름은 이미 완성입니다.
  */

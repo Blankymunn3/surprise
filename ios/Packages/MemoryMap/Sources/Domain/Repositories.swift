@@ -40,4 +40,8 @@ public protocol RegionCatalog: Sendable {
     func regionAt(latitude: Double, longitude: Double) async -> Region?
     /// 지도에 표시할 자리 (위도, 경도)
     func center(of code: RegionCode) async -> (Double, Double)?
+
+    /// 지역 **경계선**. 고른 지역에 테두리를 그릴 때 씁니다.
+    /// 고리 하나가 닫힌 선 하나이고, 섬이 많은 지역은 여러 개 나옵니다.
+    func outline(of code: RegionCode) async -> [[GeoPoint]]
 }

@@ -27,6 +27,8 @@ public struct MapState: Equatable, Sendable {
     public var results: [Region] = []
     public var sheet: RegionSheetUi?
     public var focus: CoordinatePair?
+    /// 고른 지역의 테두리. 고리 하나가 닫힌 선 하나입니다.
+    public var outline: [[GeoPoint]] = []
 
     public init(spaceId: SpaceId) { self.spaceId = spaceId }
 
@@ -93,6 +95,7 @@ public final class MapStore {
         state.query = region.displayName
         state.results = []
         state.focus = center.map { CoordinatePair(latitude: $0.0, longitude: $0.1) }
+        state.outline = await catalog.outline(of: region.code)
         state.sheet = RegionSheetUi(
             region: region,
             photos: board.photos(in: region.code),
@@ -126,5 +129,7 @@ public final class MapStore {
         state.sheet = nil
         state.query = ""
         state.results = []
+        // 테두리도 같이 지웁니다. 남겨 두면 닫은 지역이 계속 표시된 채로 남습니다.
+        state.outline = []
     }
 }

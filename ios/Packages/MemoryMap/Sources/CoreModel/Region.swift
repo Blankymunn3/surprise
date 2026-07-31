@@ -50,3 +50,14 @@ public struct Region: Hashable, Sendable, Identifiable {
         return "\(parentName) \(name)"
     }
 }
+
+/// 지도 위의 한 점. 경계선을 주고받을 때 씁니다.
+public struct GeoPoint: Hashable, Sendable {
+    public let latitude: Double
+    public let longitude: Double
+
+    public init(latitude: Double, longitude: Double) {
+        self.latitude = latitude
+        self.longitude = longitude
+    }
+}

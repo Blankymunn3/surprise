@@ -17,6 +17,7 @@ public struct MapView: View {
     @State private var store: MapStore
     @State private var camera: MapCameraPosition = .region(.korea)
     @State private var sheetHeight: CGFloat = 0
+    @FocusState private var searching: Bool
     private let topInset: CGFloat
     private let onAddPhoto: () -> Void
 
@@ -78,6 +79,15 @@ public struct MapView: View {
     private var map: some View {
         MapReader { proxy in
             Map(position: $camera) {
+                // 고른 지역의 테두리. 웹과 같은 표시입니다 —
+                // "지금 이 지역을 보고 있다" 를 지도 위에서 알 수 있어야 합니다.
+                ForEach(Array(store.state.outline.enumerated()), id: \.offset) { _, ring in
+                    MapPolyline(coordinates: ring.map {
+                        CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+                    })
+                    .stroke(MemoryColor.accent, lineWidth: 3)
+                }
+
                 ForEach(store.state.pins) { pin in
                     Annotation(
                         pin.region.displayName,
@@ -89,6 +99,9 @@ public struct MapView: View {
             }
             .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
             .onTapGesture { point in
+                // 검색하다 지도를 누르면 자판부터 내려갑니다. 자판이 화면 절반을 덮은 채로
+                // 지역 시트가 올라오면 아무것도 안 보입니다.
+                searching = false
                 // 누른 자리가 어느 지역인지 **기기 안에서** 판정합니다. 사진 EXIF 와 같은 길입니다.
                 guard let coordinate = proxy.convert(point, from: .local) else { return }
                 Task { await store.tapMap(latitude: coordinate.latitude, longitude: coordinate.longitude) }
@@ -108,6 +121,7 @@ public struct MapView: View {
             ))
             .textFieldStyle(.plain)
             .memoryBody()
+            .focused($searching)
 
             if !store.state.query.isEmpty {
                 Button {
