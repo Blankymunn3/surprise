@@ -108,17 +108,7 @@ public struct UploadView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: MemorySpace.s) {
                 PhotosPicker(selection: $items, matching: .images, photoLibrary: .shared()) {
-                    VStack(spacing: 4) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 18, weight: .medium))
-                        Text("고르기").memoryMicro()
-                    }
-                    .foregroundStyle(MemoryColor.ink2)
-                    .frame(width: 92, height: 92)
-                    .background(
-                        RoundedRectangle(cornerRadius: MemoryRadius.thumb, style: .continuous)
-                            .fill(MemoryColor.fill)
-                    )
+                    PickerTile()
                 }
 
                 ForEach(store.state.picked) { picked in
@@ -230,6 +220,29 @@ public struct UploadView: View {
         .padding(.vertical, MemorySpace.m)
         .background(
             RoundedRectangle(cornerRadius: MemoryRadius.button, style: .continuous)
+                .fill(MemoryColor.fill)
+        )
+    }
+}
+
+/**
+ 사진 고르기 칸.
+
+ `PhotosPicker` 의 라벨 자리는 **MainActor 가 아니라서** 거기서 `memoryMicro()` 같은
+ 디자인 시스템 함수를 바로 부르면 컴파일되지 않습니다. 별도 View 로 빼면 그 안쪽은
+ 다시 MainActor 라 평소처럼 쓸 수 있습니다.
+ */
+private struct PickerTile: View {
+    var body: some View {
+        VStack(spacing: 4) {
+            Image(systemName: "plus")
+                .font(.system(size: 18, weight: .medium))
+            Text("고르기").memoryMicro()
+        }
+        .foregroundStyle(MemoryColor.ink2)
+        .frame(width: 92, height: 92)
+        .background(
+            RoundedRectangle(cornerRadius: MemoryRadius.thumb, style: .continuous)
                 .fill(MemoryColor.fill)
         )
     }
