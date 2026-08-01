@@ -11,33 +11,13 @@ data class MapState(
     val query: String = "",
     val results: List<Region> = emptyList(),
     val sheet: RegionSheetUi? = null,
-    val focus: DoubleArray? = null,
+    val focus: MapFocus? = null,
+    /** 몇 번째 맞춤인지. 같은 지역을 다시 골라도 화면을 다시 맞추려고 셉니다 —
+     *  맞출 곳만 보면 값이 그대로라 지도가 꿈쩍도 안 합니다. */
+    val focusCount: Int = 0,
     val outline: RegionOutline? = null,
     val fills: List<RegionFill> = emptyList(),
-) {
-    // focus 가 DoubleArray 라 data class 의 equals 가 참조 비교를 합니다.
-    // 화면을 다시 그릴지 판단할 때 틀리지 않게 직접 씁니다.
-    override fun equals(other: Any?): Boolean =
-        this === other || (
-            other is MapState &&
-                spaceId == other.spaceId && pins == other.pins && query == other.query &&
-                results == other.results && sheet == other.sheet &&
-                outline == other.outline && fills == other.fills &&
-                (focus?.toList() == other.focus?.toList())
-            )
-
-    override fun hashCode(): Int {
-        var result = spaceId.hashCode()
-        result = 31 * result + pins.hashCode()
-        result = 31 * result + query.hashCode()
-        result = 31 * result + results.hashCode()
-        result = 31 * result + (sheet?.hashCode() ?: 0)
-        result = 31 * result + (focus?.toList()?.hashCode() ?: 0)
-        result = 31 * result + (outline?.hashCode() ?: 0)
-        result = 31 * result + fills.hashCode()
-        return result
-    }
-}
+)
 
 /**
  * 고른 지역의 **경계선**. 지도에 테두리를 그립니다.

@@ -14,13 +14,18 @@ import coil3.request.SuccessResult
 import coil3.toBitmap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import org.maplibre.android.MapLibre
+import org.maplibre.android.camera.CameraUpdate
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.expressions.Expression
@@ -39,14 +44,17 @@ import org.maplibre.android.style.sources.GeoJsonSource
 @Composable
 internal fun MapCanvas(
     pins: List<RegionPin>,
-    focus: DoubleArray?,
+    focus: MapFocus?,
+    focusCount: Int,
     outline: RegionOutline?,
     fills: List<RegionFill>,
+    coveredBelow: Dp,
     onTap: (latitude: Double, longitude: Double) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val density = LocalDensity.current
 
     val mapView = remember {
         MapLibre.getInstance(context)
@@ -93,10 +101,24 @@ internal fun MapCanvas(
         }
     }
 
+    // 이미 맞춘 화면을 기억합니다. `update` 는 다시 그릴 때마다 불리는데, 그때마다 지도를
+    // 움직이면 시트를 만지기만 해도 지도가 도로 튕겨 갑니다.
+    //
+    // **몇 번째 맞춤인지**와 **시트가 덮는 높이**를 함께 봅니다. 같은 지역을 다시 골라도
+    // 횟수가 늘어 다시 맞추고, 시트 높이를 뒤늦게 재도 그 높이만큼 다시 맞춥니다.
+    var applied by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+
     AndroidView(
         factory = { mapView },
         modifier = modifier,
         update = { view ->
+            val edge = with(density) { EDGE.roundToPx() }
+            // 시트가 아무리 높아도 지도 절반까지만 뺍니다. 남는 자리가 없으면 맞출 배율도
+            // 나오지 않습니다.
+            val covered = with(density) { coveredBelow.roundToPx() }
+                .coerceAtMost(view.height / 2)
+            val bottom = edge + covered
+
             view.getMapAsync { map ->
                 map.setStyle(Style.Builder().fromJson(OsmStyle.json())) { style ->
                     paintRegions(style, fills, covers)
@@ -106,13 +128,36 @@ internal fun MapCanvas(
                     onTap(point.latitude, point.longitude)
                     true
                 }
-                focus?.let {
-                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it[0], it[1]), 9.0))
+                if (focus != null && applied != focusCount to bottom) {
+                    applied = focusCount to bottom
+                    map.animateCamera(focus.toUpdate(edge, bottom))
                 }
             }
         },
     )
 }
+
+/**
+ * 고른 지역에 화면을 맞춥니다.
+ *
+ * [bottom] 이 [edge] 보다 큰 이유는 **시트가 아래를 덮기 때문**입니다. 그만큼 빼 두지
+ * 않으면 지역이 화면에는 들어와도 아래쪽 절반이 시트 뒤에 가려 안 보입니다.
+ */
+private fun MapFocus.toUpdate(edge: Int, bottom: Int): CameraUpdate = when (this) {
+    is MapFocus.Spot ->
+        CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), SPOT_ZOOM)
+
+    is MapFocus.Area -> CameraUpdateFactory.newLatLngBounds(
+        LatLngBounds.from(north, east, south, west),
+        edge, edge, edge, bottom,
+    )
+}
+
+/** 테두리가 화면 끝에 딱 붙으면 잘린 것처럼 보입니다. 사방에 이만큼 여유를 둡니다. */
+private val EDGE = 28.dp
+
+/** 경계가 없는 장소의 배율. 맞출 넓이가 없어 정해 둡니다 — 전에 쓰던 값 그대로입니다. */
+private const val SPOT_ZOOM = 9.0
 
 /** 지도에 넣을 대표사진 크기. 크게 넣어 봐야 지역 안에서는 티가 안 나고 메모리만 먹습니다. */
 private const val COVER_PX = 256

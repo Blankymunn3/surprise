@@ -15,8 +15,10 @@ import SwiftUI
  */
 public struct MapView: View {
     @State private var store: MapStore
-    @State private var camera: MapCameraPosition = .region(.korea)
+    @State private var position: MapCameraPosition = .region(.korea)
     @State private var sheetHeight: CGFloat = 0
+    /// 지도가 실제로 몇 점 높이인지. 시트가 덮는 만큼을 빼고 맞추려면 있어야 합니다.
+    @State private var mapHeight: CGFloat = 0
     @FocusState private var searching: Bool
     /// 지역을 칠할 대표사진. 주소가 아니라 **그림 자체**가 있어야 채울 수 있어서
     /// 미리 받아 둡니다.
@@ -66,17 +68,51 @@ public struct MapView: View {
             }
         }
         .ignoresSafeArea(edges: .bottom)
+        .background(
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { mapHeight = proxy.size.height }
+                    .onChange(of: proxy.size.height) { _, value in mapHeight = value }
+            }
+        )
         .task { await store.refresh() }
         .task(id: store.state.fills) { await loadCovers() }
-        .onChange(of: store.state.focus) { _, focus in
-            guard let focus else { return }
-            withAnimation(.easeInOut(duration: 0.4)) {
-                camera = .region(MKCoordinateRegion(
-                    center: .init(latitude: focus.latitude, longitude: focus.longitude),
-                    span: MKCoordinateSpan(latitudeDelta: 1.2, longitudeDelta: 1.2)
-                ))
-            }
+        // **몇 번째 맞춤인지**를 봅니다. 맞출 곳만 보면 같은 지역을 다시 골랐을 때
+        // 값이 그대로라 지도가 꿈쩍도 안 합니다.
+        .onChange(of: store.state.focusCount) { _, _ in fitToFocus() }
+        // 시트 높이는 시트가 뜬 뒤에야 잽니다. 재고 나면 그만큼 빼고 다시 맞춥니다.
+        .onChange(of: sheetHeight) { _, _ in fitToFocus() }
+    }
+
+    /// 고른 지역이 **시트 위쪽 화면 안에** 다 들어오게 맞춥니다.
+    private func fitToFocus() {
+        guard let focus = store.state.focus else { return }
+        let covered = store.state.sheet == nil ? 0 : sheetHeight
+        withAnimation(.easeInOut(duration: 0.4)) {
+            position = .region(lifted(focus.region, above: covered))
         }
+    }
+
+    /**
+     아래를 시트가 덮는 만큼 **위로 올려** 잡습니다.
+
+     지도 위쪽 `높이 - 덮인 높이` 안에 지역이 들어가야 하므로, 남는 자리 비율만큼 위아래를
+     넓히고 그 넓어진 만큼 가운데를 아래로 내립니다 — 지역의 윗변은 그대로 두고 아래로만
+     자리를 벌리는 셈입니다. 안 그러면 화면에는 들어와도 아래 절반이 시트 뒤에 가립니다.
+     */
+    private func lifted(_ region: MKCoordinateRegion, above covered: CGFloat) -> MKCoordinateRegion {
+        guard mapHeight > 0, covered > 0 else { return region }
+        // 시트가 아무리 높아도 지도 절반까지만 뺍니다. 남는 자리가 없으면 맞출 배율도
+        // 나오지 않습니다.
+        let room = mapHeight - min(covered, mapHeight / 2)
+        let grown = region.span.latitudeDelta * mapHeight / room
+        let top = region.center.latitude + region.span.latitudeDelta / 2
+        return MKCoordinateRegion(
+            center: .init(latitude: top - grown / 2, longitude: region.center.longitude),
+            span: MKCoordinateSpan(
+                latitudeDelta: min(grown, 170), longitudeDelta: region.span.longitudeDelta
+            )
+        )
     }
 
     /// 대표사진을 한 번씩만 받아 둡니다. 이미 받은 주소는 건너뜁니다.
@@ -99,7 +135,7 @@ public struct MapView: View {
 
     private var map: some View {
         MapReader { proxy in
-            Map(position: $camera) {
+            Map(position: $position) {
                 // 다녀온 지역을 **그 지역의 대표사진으로** 칠합니다.
                 //
                 // 살짝 비치게(85%) 두는 이유: 완전히 덮으면 그 지역의 길·지명이 사라져서
@@ -329,4 +365,40 @@ extension MKCoordinateRegion {
         center: .init(latitude: 36.5, longitude: 127.8),
         span: MKCoordinateSpan(latitudeDelta: 5.5, longitudeDelta: 5.5)
     )
+}
+
+extension MapFocus {
+    /// 맞출 곳을 MapKit 이 아는 말로 옮깁니다.
+    var region: MKCoordinateRegion {
+        switch self {
+        case let .spot(latitude, longitude):
+            // 맞출 넓이가 없는 장소. 전에 쓰던 배율 그대로입니다.
+            return MKCoordinateRegion(
+                center: .init(latitude: latitude, longitude: longitude),
+                span: MKCoordinateSpan(latitudeDelta: 1.2, longitudeDelta: 1.2)
+            )
+
+        case let .area(south, west, north, east):
+            // 테두리가 화면 끝에 딱 붙으면 잘린 것처럼 보입니다. 사방에 조금 여유를 둡니다.
+            let center = CLLocationCoordinate2D(
+                latitude: (south + north) / 2, longitude: wrapped((west + east) / 2)
+            )
+            return MKCoordinateRegion(
+                center: center,
+                span: MKCoordinateSpan(
+                    latitudeDelta: min(max(north - south, 0.02) * edgeRoom, 170),
+                    longitudeDelta: min(max(east - west, 0.02) * edgeRoom, 350)
+                )
+            )
+        }
+    }
+}
+
+/// 테두리와 화면 끝 사이에 남길 여유.
+private let edgeRoom = 1.18
+
+/// 날짜변경선을 넘는 지역은 가운데가 180 을 넘어갑니다. 지도에 줄 때는 접어서 줍니다 —
+/// 넓이(span)는 그대로라 접어도 보이는 범위는 같습니다.
+private func wrapped(_ longitude: Double) -> Double {
+    (longitude + 540).truncatingRemainder(dividingBy: 360) - 180
 }
