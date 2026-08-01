@@ -45,6 +45,7 @@ let package = Package(
         .testTarget(name: "DataPhotoTests", dependencies: ["DataPhoto", "CoreModel"]),
         .testTarget(name: "DataRegionTests", dependencies: ["DataRegion", "CoreModel"]),
         .testTarget(name: "FeatureSpaceTests", dependencies: ["FeatureSpace", "CoreModel", "CoreCommon"]),
+        .testTarget(name: "FeatureMapTests", dependencies: ["FeatureMap", "CoreModel"]),
         .testTarget(name: "FeatureUploadTests", dependencies: ["FeatureUpload", "CoreModel", "Domain"]),
     ]
 )

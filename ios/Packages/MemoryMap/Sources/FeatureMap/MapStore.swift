@@ -26,7 +26,10 @@ public struct MapState: Equatable, Sendable {
     public var query = ""
     public var results: [Region] = []
     public var sheet: RegionSheetUi?
-    public var focus: CoordinatePair?
+    public var focus: MapFocus?
+    /// 몇 번째 맞춤인지. 같은 지역을 다시 골라도 화면을 다시 맞추려고 셉니다 —
+    /// 맞출 곳만 보면 값이 그대로라 지도가 꿈쩍도 안 합니다.
+    public var focusCount = 0
     /// 고른 지역의 테두리. 고리 하나가 닫힌 선 하나입니다.
     public var outline: [[GeoPoint]] = []
     /// 다녀온 지역들 — 각자의 대표사진으로 칠할 면.
@@ -59,14 +62,74 @@ public struct RegionFill: Equatable, Sendable, Identifiable {
     }
 }
 
-public struct CoordinatePair: Equatable, Sendable {
-    public let latitude: Double
-    public let longitude: Double
-    public init(latitude: Double, longitude: Double) {
-        self.latitude = latitude
-        self.longitude = longitude
-    }
+/**
+ 지역을 골랐을 때 지도를 **어디에 맞출 것인가**. 안드로이드 `MapFocus` 와 같습니다.
+
+ 배율 하나로 고정하면 안 됩니다 — 시군구에 맞춘 배율로 나라를 열면 나라 한복판만 크게
+ 보이고 정작 고른 곳이 어디까지인지는 안 보입니다. 경계가 있으면 **그 경계가 통째로
+ 들어오게** 맞춥니다.
+ */
+public enum MapFocus: Equatable, Sendable {
+    /// 경계가 있는 지역 — 이 네모가 화면 안에 다 들어오게.
+    case area(south: Double, west: Double, north: Double, east: Double)
+    /// 경계 없이 좌표만 있는 장소 — 맞출 넓이가 없어 배율을 정해 줍니다.
+    case spot(latitude: Double, longitude: Double)
 }
+
+/**
+ 경계를 감싸는 가장 작은 네모.
+
+ 경도는 **짧은 쪽으로** 감쌉니다. 러시아·피지처럼 날짜변경선을 넘는 나라는 경도가
+ -180 과 180 양쪽에 흩어져 있어서, 그냥 최솟값과 최댓값을 쓰면 지구 한 바퀴가 됩니다.
+ 대신 경도들 사이에서 **가장 넓게 빈 구간**을 찾아 그 반대쪽을 씁니다 — 아무 점도 없는
+ 그 구간이 곧 지역의 바깥입니다.
+
+ 선을 넘는 경우 `east` 가 180 을 넘어갑니다 (러시아는 서 19°, 동 191°).
+ 지도가 그대로 받아 씁니다 — 180 안으로 접으면 다시 지구 한 바퀴가 되니까요.
+
+ 안드로이드 `boundsOf` 와 같은 규칙입니다.
+ */
+public func boundsOf(_ polygons: [[[GeoPoint]]]) -> MapFocus? {
+    var south = Double.greatestFiniteMagnitude
+    var north = -Double.greatestFiniteMagnitude
+    var longitudes: [Double] = []
+
+    for polygon in polygons {
+        for ring in polygon {
+            for point in ring {
+                south = min(south, point.latitude)
+                north = max(north, point.latitude)
+                longitudes.append(point.longitude)
+            }
+        }
+    }
+    guard !longitudes.isEmpty else { return nil }
+    longitudes.sort()
+
+    // 선을 넘지 않는 경우: 가장 넓게 빈 구간은 최댓값에서 최솟값으로 되돌아가는 바깥쪽입니다.
+    var west = longitudes[0]
+    var east = longitudes[longitudes.count - 1]
+    var widest = longitudes[0] + fullTurn - longitudes[longitudes.count - 1]
+
+    for i in 1..<longitudes.count {
+        let hole = longitudes[i] - longitudes[i - 1]
+        if hole > widest {
+            widest = hole
+            west = longitudes[i]
+            east = longitudes[i - 1] + fullTurn
+        }
+    }
+
+    // 한 점으로 뭉친 경계는 맞출 넓이가 없습니다. 배율을 정해 주는 쪽에 맡깁니다.
+    if north - south < hair && east - west < hair { return nil }
+
+    return .area(south: south, west: west, north: north, east: east)
+}
+
+private let fullTurn = 360.0
+
+/// 100m 남짓. 이보다 좁은 네모는 넓이가 있다고 보지 않습니다.
+private let hair = 0.001
 
 @MainActor
 @Observable
@@ -121,12 +184,25 @@ public final class MapStore {
         state.results = query.isEmpty ? [] : await searchRegions(query)
     }
 
+    /**
+     경계선을 받아 와 테두리로도 쓰고, 지도를 맞출 범위로도 씁니다.
+
+     경계가 있으면 **그 경계가 다 들어오게** 맞춥니다. 경계가 없는 장소만 가운데 좌표에
+     배율을 정해 세웁니다 — 맞출 넓이가 없으니까요.
+     */
     public func open(_ region: Region) async {
-        let center = await catalog.center(of: region.code)
+        let polygons = await catalog.shape(of: region.code)
         state.query = region.displayName
         state.results = []
-        state.focus = center.map { CoordinatePair(latitude: $0.0, longitude: $0.1) }
-        state.outline = (await catalog.shape(of: region.code)).flatMap { $0 }
+        if let bounds = boundsOf(polygons) {
+            state.focus = bounds
+        } else if let center = await catalog.center(of: region.code) {
+            state.focus = .spot(latitude: center.0, longitude: center.1)
+        } else {
+            state.focus = nil
+        }
+        state.focusCount += 1
+        state.outline = polygons.flatMap { $0 }
         state.sheet = RegionSheetUi(
             region: region,
             photos: board.photos(in: region.code),

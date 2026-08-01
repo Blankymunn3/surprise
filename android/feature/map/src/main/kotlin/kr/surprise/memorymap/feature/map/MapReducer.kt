@@ -19,21 +19,22 @@ internal object MapReducer {
         state.copy(query = "", results = emptyList(), sheet = null)
 
     /**
-     * 지역을 고르면 그 지역으로 확대하고 아래에서 시트가 올라옵니다.
+     * 지역을 고르면 그 지역에 지도를 맞추고 아래에서 시트가 올라옵니다.
      * 검색창은 고른 지역 이름으로 **채워집니다**.
      */
     fun regionOpened(
         state: MapState,
         region: Region,
         board: PhotoBoard,
-        center: DoubleArray?,
+        focus: MapFocus?,
         outline: RegionOutline?,
     ): MapState {
         val photos = board.photosIn(region.code)
         return state.copy(
             query = region.displayName,
             results = emptyList(),
-            focus = center,
+            focus = focus,
+            focusCount = state.focusCount + 1,
             outline = outline,
             sheet = RegionSheetUi(
                 region = region,

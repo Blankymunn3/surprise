@@ -33,12 +33,17 @@ class MapViewModel(
 
     /**
      * 지역 하나를 여는 길은 **한 곳뿐**입니다 — 검색으로 고르든 지도를 누르든 같습니다.
-     * 가운데 좌표와 경계선을 함께 받아 옵니다.
+     * 경계선을 받아 와 테두리로도 쓰고, 지도를 맞출 범위로도 씁니다.
+     *
+     * 경계가 있으면 **그 경계가 다 들어오게** 맞춥니다. 경계가 없는 장소만 가운데 좌표에
+     * 배율을 정해 세웁니다 — 맞출 넓이가 없으니까요.
      */
     private suspend fun open(region: Region) {
-        val center = regions.centerOf(region.code)
-        val outline = RegionOutline(region.code.value, regions.shapeOf(region.code))
-        setState { MapReducer.regionOpened(this, region, board, center, outline) }
+        val polygons = regions.shapeOf(region.code)
+        val outline = RegionOutline(region.code.value, polygons)
+        val focus = boundsOf(polygons)
+            ?: regions.centerOf(region.code)?.let { MapFocus.Spot(it[0], it[1]) }
+        setState { MapReducer.regionOpened(this, region, board, focus, outline) }
     }
 
     override fun onIntent(intent: MapIntent) {
