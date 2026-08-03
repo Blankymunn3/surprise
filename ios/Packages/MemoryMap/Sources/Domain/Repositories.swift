@@ -34,6 +34,24 @@ public protocol SpaceRepository: Sendable {
     func join(code: String) async -> Outcome<Space>
 }
 
+/// 로그인. **같이 쓰는 짜국에서만** 필요합니다 (`docs/app/AUTH.md`).
+///
+/// 구글 로그인 SDK 는 이 뒤에 숨어 있습니다 — 도메인은 "구글 ID 토큰을 받아 왔다" 까지만
+/// 알고, 그것을 Firebase 토큰으로 바꾸는 일은 데이터 계층이 합니다.
+public protocol AuthRepository: Sendable {
+    /// 지금 로그인한 사람. 로그인 전에는 `nil`.
+    func account() async -> Account?
+
+    /// 구글 로그인 SDK 가 받아 온 ID 토큰으로 Firebase 세션을 엽니다.
+    func signInWithGoogle(idToken: String) async -> Outcome<Account>
+
+    func signOut() async
+
+    /// 요청 헤더에 얹을 Firebase ID 토큰. 낡았으면 **여기서 알아서 새로 받습니다.**
+    /// 로그인 전이거나 갱신이 실패하면 `nil` — 부르는 쪽은 헤더를 빼고 보냅니다.
+    func idToken() async -> String?
+}
+
 public protocol RegionCatalog: Sendable {
     func all() async -> [Region]
     func find(_ codeValue: String) async -> Region?
