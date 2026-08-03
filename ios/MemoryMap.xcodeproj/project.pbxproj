@@ -15,6 +15,8 @@
 		56FE4FB80EAFA8F18BD811C9 /* DataRegion in Frameworks */ = {isa = PBXBuildFile; productRef = 22E7645577B945935F19B293 /* DataRegion */; };
 		7841657A6581AFC813162778 /* DataPhoto in Frameworks */ = {isa = PBXBuildFile; productRef = E050AA3F162CCDC1C2B7AE0A /* DataPhoto */; };
 		83F6C5DE2D242686EFBA6958 /* CoreCommon in Frameworks */ = {isa = PBXBuildFile; productRef = 11CA26CF2FC0B40046F4D05E /* CoreCommon */; };
+		9A0E51C1F0B24D0A8C7E0001 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 9A0E51C1F0B24D0A8C7E0002 /* GoogleSignIn */; };
+		9A0E51C1F0B24D0A8C7E0004 /* DataAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 9A0E51C1F0B24D0A8C7E0005 /* DataAuth */; };
 		88FC64417B15DBA557E664BB /* pretendard_semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD7E02C571198367730E50E3 /* pretendard_semibold.ttf */; };
 		8B9633259C3E2A508D98C129 /* pretendard_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 03BD3A80AC0D0DA57B0C203B /* pretendard_regular.ttf */; };
 		8C983EA5067D21AEA1C35114 /* FeatureCalendar in Frameworks */ = {isa = PBXBuildFile; productRef = 764D403AA97D342B241AD041 /* FeatureCalendar */; };
@@ -43,11 +45,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A0E51C1F0B24D0A8C7E0001 /* GoogleSignIn in Frameworks */,
 				4E12C3A9B678996AA420305D /* CoreModel in Frameworks */,
 				83F6C5DE2D242686EFBA6958 /* CoreCommon in Frameworks */,
 				0E6864231FCCDE61389A5297 /* CoreNetwork in Frameworks */,
 				8E95087C0F4232E1CB5AD54B /* DesignSystem in Frameworks */,
 				4706375632C01D13DCF7D156 /* Domain in Frameworks */,
+				9A0E51C1F0B24D0A8C7E0004 /* DataAuth in Frameworks */,
 				7841657A6581AFC813162778 /* DataPhoto in Frameworks */,
 				DDF6AC523D04EC794E8945BD /* DataSpace in Frameworks */,
 				56FE4FB80EAFA8F18BD811C9 /* DataRegion in Frameworks */,
@@ -110,11 +114,13 @@
 			);
 			name = MemoryMap;
 			packageProductDependencies = (
+				9A0E51C1F0B24D0A8C7E0002 /* GoogleSignIn */,
 				AFF0D399698FDD1287AA25EE /* CoreModel */,
 				11CA26CF2FC0B40046F4D05E /* CoreCommon */,
 				CB933EC0B25274A34EB2A3AF /* CoreNetwork */,
 				F3684779C5A4BA8F390AC418 /* DesignSystem */,
 				84765E591670663B50BD7481 /* Domain */,
+				9A0E51C1F0B24D0A8C7E0005 /* DataAuth */,
 				E050AA3F162CCDC1C2B7AE0A /* DataPhoto */,
 				84E19CDDFAEE2F82788463D0 /* DataSpace */,
 				22E7645577B945935F19B293 /* DataRegion */,
@@ -154,6 +160,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				D920F27FFE40764D4C347036 /* XCLocalSwiftPackageReference "Packages/MemoryMap" */,
+				9A0E51C1F0B24D0A8C7E0003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			productRefGroup = 174F6EF85BAA9168B3CF6C0C /* Products */;
 			projectDirPath = "";
@@ -305,7 +312,27 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		9A0E51C1F0B24D0A8C7E0003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
+		9A0E51C1F0B24D0A8C7E0005 /* DataAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DataAuth;
+		};
+		9A0E51C1F0B24D0A8C7E0002 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9A0E51C1F0B24D0A8C7E0003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
 		11CA26CF2FC0B40046F4D05E /* CoreCommon */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = CoreCommon;

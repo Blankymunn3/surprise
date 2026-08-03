@@ -1,5 +1,6 @@
 import CoreModel
 import CoreNetwork
+import DataAuth
 import DataPhoto
 import DataRegion
 import DataSpace
@@ -24,8 +25,18 @@ final class AppContainer {
     /// 웹(`assets/firebase.js`)·안드로이드와 **같은 버킷**이어야 셋이 같은 사진을 봅니다.
     private let storage = FirebaseStorage(bucket: "our-surprise.firebasestorage.app")
 
+    /// `GoogleService-Info.plist` 에 들어 있는 값들입니다. **비밀이 아닙니다** — 실제 보안은
+    /// 규칙이 합니다. 파일을 읽어 꺼내지 않고 여기 적어 두는 이유는 버킷과 같습니다:
+    /// 조립하는 곳 한 군데만 보면 이 앱이 어디에 붙는지 알 수 있게 하려는 것입니다.
+    private let apiKey = "AIzaSyBLC3qqFukg__VivJe2HkN23UI_X94ENEc"
+
+    /// iOS 는 **자기 클라이언트 ID** 를 씁니다. 안드로이드가 web 클라이언트를 쓰는 것과
+    /// 다릅니다 — 자주 헷갈리는 곳입니다.
+    let googleClientID = "419812459548-4vruv826mfgfkfi3dppobg87c3du1vdr.apps.googleusercontent.com"
+
     private let spaces: SharedSpaceRepository
     private let regions = AssetRegionCatalog()
+    let accounts: FirebaseAuthRepository
 
     /// 사진 저장소가 **둘**입니다. 혼자 짜국은 기기 안, 같이 쓰는 짜국은 서버 —
     /// 어느 쪽을 쓸지는 **여기서만** 정합니다. 화면과 도메인은 어느 쪽인지 모릅니다.
@@ -33,6 +44,7 @@ final class AppContainer {
     private let localPhotos: LocalPhotoRepository
 
     private init() {
+        accounts = FirebaseAuthRepository(auth: FirebaseAuth(apiKey: apiKey))
         spaces = SharedSpaceRepository(storage: storage)
         remotePhotos = FirebasePhotoRepository(storage: storage, uploaderUid: DeviceIdentity.uid)
         localPhotos = LocalPhotoRepository(uploaderUid: DeviceIdentity.uid)
