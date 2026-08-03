@@ -1,5 +1,6 @@
 package kr.surprise.memorymap
 
+import android.app.Activity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -31,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -99,8 +101,13 @@ fun MemoryMapNavHost(container: AppContainer) {
             val vm: SpaceListViewModel = viewModel(factory = container.spaceListFactory())
             val state by vm.state.collectAsStateWithLifecycle()
             val snackbar = remember { SnackbarHostState() }
+            val context = LocalContext.current
 
-            LaunchedEffect(Unit) { vm.onIntent(SpaceListIntent.Appeared) }
+            LaunchedEffect(Unit) {
+                // 저장해 둔 로그인을 먼저 읽습니다. 안 읽으면 켤 때마다 로그아웃으로 보입니다.
+                container.accounts.restore()
+                vm.onIntent(SpaceListIntent.Appeared)
+            }
 
             // 실패를 조용히 삼키면 사용자에게는 "눌러도 아무 일이 없다" 로 보입니다.
             // Effect 를 하나도 빠뜨리지 않도록 when 으로 받습니다.
@@ -113,6 +120,19 @@ fun MemoryMapNavHost(container: AppContainer) {
                             snackbar.showSnackbar(effect.text)
                         is SpaceListEffect.ShareInvite ->
                             snackbar.showSnackbar("초대 코드: ${effect.code}")
+                        // 계정 고르기 창은 Activity 가 있어야 떠서 여기서 띄웁니다.
+                        // 사용자가 닫으면 아무 인텐트도 보내지 않습니다 — 스스로 그만둔 것을
+                        // '실패했어요' 로 알리지 않으려는 것입니다.
+                        SpaceListEffect.StartGoogleSignIn -> {
+                            val activity = context as? Activity
+                            when (val result = activity?.let { container.googleSignIn.idToken(it) }) {
+                                is GoogleSignIn.Result.Token ->
+                                    vm.onIntent(SpaceListIntent.GoogleTokenReceived(result.value))
+                                is GoogleSignIn.Result.Failed ->
+                                    snackbar.showSnackbar("구글 계정을 가져오지 못했어요.")
+                                GoogleSignIn.Result.Cancelled, null -> Unit
+                            }
+                        }
                     }
                 }
             }

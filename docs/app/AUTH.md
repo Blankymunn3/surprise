@@ -291,6 +291,23 @@ identitytoolkit.googleapis.com/v1/accounts:signInWithIdp   (REST)
 Firebase ID 토큰 → Storage · Firestore 요청 헤더에 얹음
 ```
 
+> ✅ **3번은 여기까지 됐습니다** — 토큰 교환·보관·갱신, 양쪽 구글 로그인 SDK,
+> 로그인 시트, `FirebaseStorage` 의 `Authorization` 헤더.
+
+### ⚠️ 아직 남은 것 — 사진이 안 보이게 됩니다
+
+헤더는 **REST 요청에만** 실립니다. 사진을 화면에 그릴 때는 `downloadUrl()` 을 이미지
+로더에 넘기는데, **그 요청은 우리 헤더를 안 탑니다.** 규칙이 로그인을 요구하는 순간
+목록은 나오는데 사진만 안 뜨는 상태가 됩니다.
+
+| | 지금 | 해야 할 일 |
+|---|---|---|
+| 안드로이드 | Coil 이 자기 OkHttp 로 받아 옴 | ImageLoader 에 **인터셉터**로 헤더를 얹음 |
+| iOS | `AsyncImage(url:)` | **헤더를 못 붙입니다.** URLSession 으로 직접 받아 그리는 뷰가 필요 |
+
+**그래서 `storage.rules` 를 아직 바꾸면 안 됩니다.** 지금 규칙은 로그인을 요구하지
+않으니 사진이 그대로 보입니다 — 이미지 로더까지 고친 뒤에 규칙을 바꿉니다.
+
 ## 5. 기존 데이터
 
 지금 짜국에 올린 사진들은 **규칙이 바뀌는 순간 안 보이게 됩니다.** 멤버 문서가 없어서요.

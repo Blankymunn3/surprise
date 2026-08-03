@@ -36,8 +36,16 @@ class AppContainer(context: Context) {
 
     private val appContext = context.applicationContext
 
-    /** 웹과 **같은 버킷**입니다. 한쪽에서 넣은 사진이 다른 쪽에서 보여야 합니다. */
-    private val storage = FirebaseStorage(bucket = "our-surprise.firebasestorage.app")
+    /**
+     * 웹과 **같은 버킷**입니다. 한쪽에서 넣은 사진이 다른 쪽에서 보여야 합니다.
+     *
+     * 토큰을 **함수로** 넘기는 이유: 저장소가 만들어지는 시점에는 아직 로그인 전입니다.
+     * 요청할 때마다 물어봐야 그때의 토큰(필요하면 갱신된 것)이 실립니다.
+     */
+    private val storage = FirebaseStorage(
+        bucket = "our-surprise.firebasestorage.app",
+        token = { accounts.idToken() },
+    )
 
     /**
      * `google-services.json` 에 들어 있는 값들입니다. **비밀이 아닙니다** — 실제 보안은

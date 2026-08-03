@@ -13,10 +13,21 @@ public actor FirebaseStorage {
 
     private let bucket: String
     private let session: URLSession
+    /// 요청에 얹을 Firebase ID 토큰. **로그인 전에는 `nil`** 이고 그때는 헤더를 안 붙입니다 —
+    /// 규칙이 아직 로그인을 요구하지 않는 경로(`regions/`)가 있어서, 붙이지 않는 쪽이
+    /// 지금까지처럼 동작합니다.
+    ///
+    /// 매 요청마다 부릅니다. 낡은 토큰을 새로 받는 일은 부르는 쪽(`AuthRepository`)이 합니다.
+    private let token: @Sendable () async -> String?
 
-    public init(bucket: String, session: URLSession = .shared) {
+    public init(
+        bucket: String,
+        session: URLSession = .shared,
+        token: @escaping @Sendable () async -> String? = { nil }
+    ) {
         self.bucket = bucket
         self.session = session
+        self.token = token
     }
 
     public func list(prefix: String) async -> Outcome<[Item]> {
@@ -89,6 +100,11 @@ public actor FirebaseStorage {
     private func send(_ request: URLRequest, timeout: TimeInterval) async -> Outcome<Data> {
         var request = request
         request.timeoutInterval = timeout
+        // 헤더는 **여기 한 곳에서만** 붙입니다. 요청을 만드는 자리마다 붙이면 하나 빠뜨렸을 때
+        // 그 요청만 조용히 403 이 됩니다.
+        if let token = await token() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
         do {
             let (data, response) = try await session.data(for: request)
             guard let http = response as? HTTPURLResponse else { return .fail(.unknown) }

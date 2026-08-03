@@ -22,9 +22,19 @@ internal object SpaceListReducer {
             working = false,
         )
 
+    fun accountChanged(state: SpaceListState, signedIn: Boolean): SpaceListState =
+        state.copy(signedIn = signedIn)
+
     /** 시트를 열 때마다 종류도 기본(혼자)으로 되돌립니다 — 지난번에 고른 것이 남아 있으면 안 됩니다. */
     fun sheetOpened(state: SpaceListState, sheet: SpaceListSheet): SpaceListState =
         state.copy(sheet = sheet, pendingName = "", pendingCode = "", pendingKind = SpaceKind.Personal)
+
+    /**
+     * 로그인을 마치고 **원래 시트로 돌아올 때**. [sheetOpened] 와 달리 입력해 둔 것을
+     * 지우지 않습니다 — 지우면 방금 적은 이름이 사라집니다.
+     */
+    fun sheetOpenedKeepingInput(state: SpaceListState, sheet: SpaceListSheet): SpaceListState =
+        state.copy(sheet = sheet)
 
     fun sheetDismissed(state: SpaceListState): SpaceListState =
         state.copy(
@@ -40,6 +50,25 @@ internal object SpaceListReducer {
 
     fun kindSelected(state: SpaceListState, kind: SpaceKind): SpaceListState =
         state.copy(pendingKind = kind)
+
+    /**
+     * 로그인 창이 끼어듭니다. **입력해 둔 것을 지우지 않습니다** — 로그인이 끝나면
+     * 그대로 이어서 만들거나 참여해야 합니다.
+     */
+    fun signInNeeded(state: SpaceListState, next: SpaceListSheet.Next): SpaceListState =
+        state.copy(sheet = SpaceListSheet.SignIn(next), working = false)
+
+    /**
+     * '그냥 혼자 쓸래요'. 만들기 시트로 **되돌아가되 혼자로 바꿔 둡니다** —
+     * 곧장 만들어 버리면 방금 무엇이 만들어졌는지 모른 채 목록이 하나 늘어납니다.
+     * 이름은 그대로 두어 다시 입력하지 않게 합니다.
+     */
+    fun signInGaveUp(state: SpaceListState): SpaceListState =
+        state.copy(
+            sheet = SpaceListSheet.Create,
+            pendingKind = SpaceKind.Personal,
+            working = false,
+        )
 
     fun codeTyped(state: SpaceListState, value: String): SpaceListState =
         state.copy(pendingCode = value)

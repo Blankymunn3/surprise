@@ -8,6 +8,7 @@ import kr.surprise.memorymap.core.common.Failure
 import kr.surprise.memorymap.core.common.Outcome
 import kr.surprise.memorymap.core.model.SpaceKind
 import kr.surprise.memorymap.core.ui.MviViewModel
+import kr.surprise.memorymap.domain.repository.AuthRepository
 import kr.surprise.memorymap.domain.usecase.CreateSpaceUseCase
 import kr.surprise.memorymap.domain.usecase.JoinSpaceUseCase
 import kr.surprise.memorymap.domain.usecase.ObserveSpacesUseCase
@@ -18,11 +19,16 @@ class SpaceListViewModel(
     private val refreshSpaces: RefreshSpacesUseCase,
     private val createSpace: CreateSpaceUseCase,
     private val joinSpace: JoinSpaceUseCase,
+    private val accounts: AuthRepository,
 ) : MviViewModel<SpaceListIntent, SpaceListState, SpaceListEffect>(SpaceListState()) {
 
     init {
         observeSpaces()
             .onEach { items -> setState { SpaceListReducer.spacesLoaded(this, items) } }
+            .launchIn(viewModelScope)
+
+        accounts.observeAccount()
+            .onEach { account -> setState { SpaceListReducer.accountChanged(this, account != null) } }
             .launchIn(viewModelScope)
     }
 
@@ -37,9 +43,63 @@ class SpaceListViewModel(
             is SpaceListIntent.NameTyped -> setState { SpaceListReducer.nameTyped(this, intent.value) }
             is SpaceListIntent.KindSelected -> setState { SpaceListReducer.kindSelected(this, intent.kind) }
             is SpaceListIntent.CodeTyped -> setState { SpaceListReducer.codeTyped(this, intent.value) }
-            SpaceListIntent.CreateConfirmed -> create()
-            SpaceListIntent.JoinConfirmed -> join()
+            SpaceListIntent.CreateConfirmed -> confirmCreate()
+            SpaceListIntent.JoinConfirmed -> confirmJoin()
             is SpaceListIntent.InviteCopied -> sendEffect(SpaceListEffect.ShareInvite(intent.code))
+            SpaceListIntent.SignInTapped -> sendEffect(SpaceListEffect.StartGoogleSignIn)
+            is SpaceListIntent.GoogleTokenReceived -> signIn(intent.idToken)
+            SpaceListIntent.SignInGaveUp -> setState { SpaceListReducer.signInGaveUp(this) }
+        }
+    }
+
+    /**
+     * 같이 쓰는 짜국은 **로그인이 있어야** 만들어집니다. 없으면 로그인 창이 끼어들고,
+     * 끝나면 여기로 돌아옵니다.
+     */
+    private fun confirmCreate() {
+        if (!currentState().canCreate()) return
+        if (currentState().pendingKind == SpaceKind.Shared && !signedIn()) {
+            setState { SpaceListReducer.signInNeeded(this, SpaceListSheet.Next.Create) }
+            return
+        }
+        create()
+    }
+
+    /** 참여는 늘 같이 쓰는 짜국이라 로그인이 필요합니다. */
+    private fun confirmJoin() {
+        if (!currentState().canJoin()) return
+        if (!signedIn()) {
+            setState { SpaceListReducer.signInNeeded(this, SpaceListSheet.Next.Join) }
+            return
+        }
+        join()
+    }
+
+    private fun signedIn(): Boolean = currentState().signedIn
+
+    private fun signIn(idToken: String) {
+        val next = (currentState().sheet as? SpaceListSheet.SignIn)?.next
+        setState { SpaceListReducer.working(this) }
+
+        viewModelScope.launch {
+            when (val result = accounts.signInWithGoogle(idToken)) {
+                is Outcome.Ok -> when (next) {
+                    // 로그인만 하고 멈추지 않습니다 — 하던 일을 이어서 합니다.
+                    SpaceListSheet.Next.Create -> {
+                        setState { SpaceListReducer.sheetOpenedKeepingInput(this, SpaceListSheet.Create) }
+                        create()
+                    }
+                    SpaceListSheet.Next.Join -> {
+                        setState { SpaceListReducer.sheetOpenedKeepingInput(this, SpaceListSheet.Join) }
+                        join()
+                    }
+                    null -> setState { SpaceListReducer.sheetDismissed(this) }
+                }
+                is Outcome.Fail -> {
+                    setState { SpaceListReducer.failedAction(this) }
+                    sendEffect(SpaceListEffect.ShowMessage("로그인하지 못했어요. 다시 해 주세요."))
+                }
+            }
         }
     }
 

@@ -19,7 +19,7 @@ class VmFactory(private val build: () -> ViewModel) : ViewModelProvider.Factory 
 }
 
 fun AppContainer.spaceListFactory() = VmFactory {
-    SpaceListViewModel(observeSpaces, refreshSpaces, createSpace, joinSpace)
+    SpaceListViewModel(observeSpaces, refreshSpaces, createSpace, joinSpace, accounts)
 }
 
 /**

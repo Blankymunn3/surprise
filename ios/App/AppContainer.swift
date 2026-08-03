@@ -23,7 +23,9 @@ final class AppContainer {
     static let shared = AppContainer()
 
     /// 웹(`assets/firebase.js`)·안드로이드와 **같은 버킷**이어야 셋이 같은 사진을 봅니다.
-    private let storage = FirebaseStorage(bucket: "our-surprise.firebasestorage.app")
+    /// 토큰을 **함수로** 넘기는 이유: 저장소가 만들어지는 시점에는 아직 로그인 전입니다.
+    /// 요청할 때마다 물어봐야 그때의 토큰(필요하면 갱신된 것)이 실립니다.
+    private let storage: FirebaseStorage
 
     /// `GoogleService-Info.plist` 에 들어 있는 값들입니다. **비밀이 아닙니다** — 실제 보안은
     /// 규칙이 합니다. 파일을 읽어 꺼내지 않고 여기 적어 두는 이유는 버킷과 같습니다:
@@ -44,7 +46,12 @@ final class AppContainer {
     private let localPhotos: LocalPhotoRepository
 
     private init() {
-        accounts = FirebaseAuthRepository(auth: FirebaseAuth(apiKey: apiKey))
+        let accounts = FirebaseAuthRepository(auth: FirebaseAuth(apiKey: apiKey))
+        self.accounts = accounts
+        storage = FirebaseStorage(
+            bucket: "our-surprise.firebasestorage.app",
+            token: { await accounts.idToken() }
+        )
         spaces = SharedSpaceRepository(storage: storage)
         remotePhotos = FirebasePhotoRepository(storage: storage, uploaderUid: DeviceIdentity.uid)
         localPhotos = LocalPhotoRepository(uploaderUid: DeviceIdentity.uid)
@@ -55,11 +62,20 @@ final class AppContainer {
     }
 
     func spaceListStore() -> SpaceListStore {
-        SpaceListStore(
+        let clientID = googleClientID
+        return SpaceListStore(
             observeSpaces: ObserveSpaces(spaces: spaces),
             refreshSpaces: RefreshSpaces(spaces: spaces),
             createSpace: CreateSpace(spaces: spaces),
-            joinSpace: JoinSpace(spaces: spaces)
+            joinSpace: JoinSpace(spaces: spaces),
+            accounts: accounts,
+            // 창을 띄우는 일만 껍데기가 합니다. 화면은 문자열 하나만 돌려받습니다.
+            presentGoogleSignIn: {
+                switch await GoogleSignInBridge.idToken(clientID: clientID) {
+                case .token(let value): return value
+                case .cancelled, .failed: return nil
+                }
+            }
         )
     }
 

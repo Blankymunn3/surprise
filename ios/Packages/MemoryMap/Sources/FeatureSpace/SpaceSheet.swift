@@ -18,6 +18,7 @@ struct SpaceSheet: View {
             case .create: create
             case .join: join
             case .invited(let name, let code): invited(name: name, code: code)
+            case .signIn(let next): signIn(next: next)
             case .none: EmptyView()
             }
         }
@@ -108,6 +109,56 @@ struct SpaceSheet: View {
 
         PrimaryButton("닫기") {
             Task { await store.send(.sheetDismissed) }
+        }
+    }
+
+    // MARK: - 로그인
+
+    @ViewBuilder
+    private func signIn(next: SignInNext) -> some View {
+        Text("구글로 로그인").memoryTitle()
+        Text("같이 보려면 누가 이 짜국의 멤버인지 서버가 알아야 해요. 남이 사진을 못 보게 막는 것도 이걸로 합니다.")
+            .memoryLabel()
+            .foregroundStyle(MemoryColor.ink2)
+
+        // 구글 버튼만 **감빛이 아닙니다.** 남의 서비스로 넘어가는 문이라 앱의 강조색을
+        // 입히면 우리가 하는 일처럼 보입니다. 구글이 권하는 모양이기도 합니다.
+        Button {
+            Task { await store.send(.signInTapped) }
+        } label: {
+            HStack(spacing: MemorySpace.s) {
+                GoogleMark().frame(width: 18, height: 18)
+                Text(store.state.working ? "로그인 중…" : "구글로 계속하기")
+                    .memoryHeadline()
+                    .foregroundStyle(MemoryColor.ink)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, MemorySpace.l)
+            .background(
+                RoundedRectangle(cornerRadius: MemoryRadius.button, style: .continuous)
+                    .fill(MemoryColor.surface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: MemoryRadius.button, style: .continuous)
+                    .strokeBorder(MemoryColor.line, lineWidth: 1.5)
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(store.state.working)
+
+        // 만들기에서 왔을 때만 빠져나갈 길을 둡니다. 참여로 왔으면 혼자로 갈 곳이
+        // 없습니다 — 남의 짜국에 혼자 들어갈 수는 없으니까요.
+        if next == .create {
+            Button {
+                Task { await store.send(.signInGaveUp) }
+            } label: {
+                Text("그냥 혼자 쓸래요")
+                    .memoryLabel()
+                    .foregroundStyle(MemoryColor.ink2)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, MemorySpace.xs)
+            }
+            .buttonStyle(.plain)
         }
     }
 

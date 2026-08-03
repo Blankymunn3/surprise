@@ -1,5 +1,6 @@
 package kr.surprise.memorymap.feature.space
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,7 +32,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -260,6 +264,36 @@ private fun SpaceSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Uni
                     )
                 }
 
+                is SpaceListSheet.SignIn -> {
+                    Text("구글로 로그인", style = MemoryType.Title)
+                    Text(
+                        "같이 보려면 누가 이 짜국의 멤버인지 서버가 알아야 해요. " +
+                            "남이 사진을 못 보게 막는 것도 이걸로 합니다.",
+                        style = MemoryType.Label,
+                        color = MemoryColors.Ink2,
+                        modifier = Modifier.padding(top = Gap.xs, bottom = Gap.l),
+                    )
+                    GoogleButton(
+                        text = if (state.working) "로그인 중…" else "구글로 계속하기",
+                        enabled = !state.working,
+                        onClick = { onIntent(SpaceListIntent.SignInTapped) },
+                    )
+                    // 만들기에서 왔을 때만 빠져나갈 길을 둡니다. 참여로 왔으면 혼자로 갈
+                    // 곳이 없습니다 — 남의 짜국에 혼자 들어갈 수는 없으니까요.
+                    if (sheet.next == SpaceListSheet.Next.Create) {
+                        Text(
+                            "그냥 혼자 쓸래요",
+                            style = MemoryType.Label,
+                            color = MemoryColors.Ink2,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onIntent(SpaceListIntent.SignInGaveUp) }
+                                .padding(top = Gap.m, bottom = Gap.xs),
+                        )
+                    }
+                }
+
                 is SpaceListSheet.Invited -> {
                     Text("${sheet.spaceName} 만들었어요", style = MemoryType.Title)
                     Text(
@@ -287,6 +321,66 @@ private fun SpaceSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Uni
                 }
             }
         }
+    }
+}
+
+/**
+ * 구글 버튼만 **감빛이 아닙니다.** 우리 것이 아니라 남의 서비스로 넘어가는 문이라
+ * 앱의 강조색을 입히면 우리가 하는 일처럼 보입니다. 흰 바탕에 가는 테두리 —
+ * 구글이 권하는 모양이기도 합니다 (`docs/app/design.html` 의 '로그인').
+ */
+@Composable
+private fun GoogleButton(text: String, enabled: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(MemoryShapes.Button)
+            .background(MemoryColors.Surface)
+            .border(1.5.dp, MemoryColors.Line, MemoryShapes.Button)
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(vertical = Gap.l),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        GoogleMark(Modifier.size(18.dp))
+        Spacer(Modifier.width(Gap.s))
+        Text(text, style = MemoryType.Headline, color = MemoryColors.Ink)
+    }
+}
+
+/** 구글 4색 G. 로고라 색을 우리 팔레트로 바꾸지 않습니다. */
+@Composable
+private fun GoogleMark(modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        val s = size.minDimension
+        fun p(path: String, color: Color) {
+            drawPath(
+                path = PathParser().parsePathString(path).toPath().also {
+                    it.transform(Matrix().apply { scale(s / 48f, s / 48f) })
+                },
+                color = color,
+            )
+        }
+        p(
+            "M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 " +
+                "6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z",
+            Color(0xFF4285F4),
+        )
+        p(
+            "M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 " +
+                "2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z",
+            Color(0xFF34A853),
+        )
+        p(
+            "M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 " +
+                "2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z",
+            Color(0xFFFBBC05),
+        )
+        p(
+            "M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 " +
+                "7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z",
+            Color(0xFFEA4335),
+        )
     }
 }
 
