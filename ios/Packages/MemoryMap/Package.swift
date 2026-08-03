@@ -43,6 +43,7 @@ let package = Package(
         .target(name: "FeatureCalendar", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"]),
         .target(name: "FeatureUpload", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"]),
 
+        .testTarget(name: "CoreNetworkTests", dependencies: ["CoreNetwork"]),
         .testTarget(name: "DomainTests", dependencies: ["Domain", "CoreModel", "CoreCommon"]),
         .testTarget(name: "DataPhotoTests", dependencies: ["DataPhoto", "CoreModel"]),
         .testTarget(name: "DataRegionTests", dependencies: ["DataRegion", "CoreModel"]),
