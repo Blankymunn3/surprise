@@ -8,7 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import android.graphics.Bitmap
-import coil3.ImageLoader
+import coil3.SingletonImageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.toBitmap
@@ -65,7 +65,9 @@ internal fun MapCanvas(
     // 있어야 해서, 화면 쪽에서 미리 받아 놓고 넘깁니다.
     var covers by remember { mutableStateOf<Map<String, Bitmap>>(emptyMap()) }
     LaunchedEffect(fills) {
-        val loader = ImageLoader(context)
+        // 앱이 만들어 둔 **싱글턴 로더**를 씁니다. 여기서 새로 만들면 토큰을 다는
+        // 인터셉터가 빠져서 대표사진만 조용히 안 뜹니다 (`docs/app/AUTH.md`).
+        val loader = SingletonImageLoader.get(context)
         val loaded = LinkedHashMap<String, Bitmap>(covers)
         for (fill in fills) {
             if (loaded.containsKey(fill.coverUrl)) continue

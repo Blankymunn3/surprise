@@ -259,12 +259,8 @@ private struct PinBubble: View {
             ZStack {
                 Circle().fill(MemoryColor.surface)
                 if let cover = pin.coverURL, let url = URL(string: cover) {
-                    AsyncImage(url: url) { image in
-                        image.resizable().scaledToFill()
-                    } placeholder: {
-                        MemoryColor.fill
-                    }
-                    .clipShape(Circle())
+                    RemotePhoto(url: url) { MemoryColor.fill }
+                        .clipShape(Circle())
                 } else {
                     Text("\(pin.photoCount)")
                         .memoryMicro()

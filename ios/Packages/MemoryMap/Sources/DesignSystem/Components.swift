@@ -135,11 +135,7 @@ public struct DayCell: View {
             Color.clear
 
             if let photoURL, let url = URL(string: photoURL) {
-                AsyncImage(url: url) { image in
-                    image.resizable().scaledToFill()
-                } placeholder: {
-                    MemoryColor.fill
-                }
+                RemotePhoto(url: url) { MemoryColor.fill }
                 .clipShape(RoundedRectangle(cornerRadius: MemoryRadius.dayCell, style: .continuous))
                 // 밝은 사진 위에서도 흰 숫자가 읽히도록 왼쪽 위만 어둡게
                 .overlay(alignment: .topLeading) {
@@ -190,12 +186,8 @@ public struct PhotoThumb: View {
                 .fill(MemoryColor.fill)
 
             if let url, let parsed = URL(string: url) {
-                AsyncImage(url: parsed) { image in
-                    image.resizable().scaledToFill()
-                } placeholder: {
-                    MemoryColor.fill
-                }
-                .clipShape(RoundedRectangle(cornerRadius: MemoryRadius.thumb, style: .continuous))
+                RemotePhoto(url: parsed) { MemoryColor.fill }
+                    .clipShape(RoundedRectangle(cornerRadius: MemoryRadius.thumb, style: .continuous))
             }
 
             if isCover {

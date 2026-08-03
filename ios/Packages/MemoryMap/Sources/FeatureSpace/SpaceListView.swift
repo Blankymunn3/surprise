@@ -144,11 +144,7 @@ struct SpaceCardView: View {
         Button(action: onTap) {
             ZStack(alignment: .bottomLeading) {
                 if let cover = space.coverPhotoURL, let url = URL(string: cover) {
-                    AsyncImage(url: url) { image in
-                        image.resizable().scaledToFill()
-                    } placeholder: {
-                        MemoryColor.fill
-                    }
+                    RemotePhoto(url: url) { MemoryColor.fill }
                 } else {
                     MemoryColor.fill
                 }
