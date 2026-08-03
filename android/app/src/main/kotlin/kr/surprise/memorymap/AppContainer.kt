@@ -4,7 +4,9 @@ import android.content.Context
 import kr.surprise.memorymap.core.common.Outcome
 import kr.surprise.memorymap.core.model.SpaceId
 import kr.surprise.memorymap.core.model.SpaceKind
+import kr.surprise.memorymap.core.network.FirebaseAuth
 import kr.surprise.memorymap.core.network.FirebaseStorage
+import kr.surprise.memorymap.data.auth.FirebaseAuthRepository
 import kr.surprise.memorymap.data.photo.ExifReader
 import kr.surprise.memorymap.data.photo.FirebasePhotoRepository
 import kr.surprise.memorymap.data.photo.ImageDownscaler
@@ -36,6 +38,23 @@ class AppContainer(context: Context) {
 
     /** 웹과 **같은 버킷**입니다. 한쪽에서 넣은 사진이 다른 쪽에서 보여야 합니다. */
     private val storage = FirebaseStorage(bucket = "our-surprise.firebasestorage.app")
+
+    /**
+     * `google-services.json` 에 들어 있는 값들입니다. **비밀이 아닙니다** — 실제 보안은
+     * 규칙이 합니다. 파일을 읽어 꺼내지 않고 여기 적어 두는 이유는 버킷과 같습니다:
+     * 조립하는 곳 한 군데만 보면 이 앱이 어디에 붙는지 알 수 있게 하려는 것입니다.
+     */
+    private val auth = FirebaseAuth(apiKey = "AIzaSyBMg1m08msg7_xPISuEwx5gwImi5MVz-1Q")
+
+    /**
+     * ⚠️ **web 클라이언트(type 3)** 입니다. android 클라이언트(type 1)를 주면 ID 토큰이
+     * 안 나옵니다 — 자주 틀리는 곳이라 `docs/app/AUTH.md` 에도 적어 뒀습니다.
+     */
+    val googleSignIn = GoogleSignIn(
+        serverClientId = "419812459548-ldmh2hi0vb5lmjase8jpctqei4sk4mbp.apps.googleusercontent.com",
+    )
+
+    val accounts = FirebaseAuthRepository(appContext, auth)
 
     val regions = AssetRegionCatalog(appContext)
     val spaces = SharedSpaceRepository(appContext, storage)

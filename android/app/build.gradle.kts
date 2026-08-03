@@ -45,6 +45,7 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:network"))
     implementation(project(":domain"))
+    implementation(project(":data:auth"))
     implementation(project(":data:photo"))
     implementation(project(":data:space"))
     implementation(project(":data:region"))
@@ -65,6 +66,11 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.compose.ui.tooling.preview)
     debugImplementation(libs.compose.ui.tooling)
+
+    // 구글 로그인. play-services 쪽은 런타임 구현체라 implementation 으로만 씁니다.
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.googleid)
 
     implementation(libs.okhttp)
     implementation(libs.coil.compose)
