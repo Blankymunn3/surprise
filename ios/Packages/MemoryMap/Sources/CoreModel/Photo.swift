@@ -69,6 +69,21 @@ public enum CoverKey: Hashable, Sendable {
         case .day(let date): return "day_\(date.iso)"
         }
     }
+
+    /// `documentId` 의 반대. 규칙에 안 맞으면 `nil` — 손으로 넣은 문서가 섞여도
+    /// 앱이 죽지 않아야 합니다.
+    ///
+    /// 짝이 되는 두 함수라 **한 파일에 둡니다.** 떨어뜨려 놓으면 한쪽만 고치게 됩니다.
+    public init?(documentId: String) {
+        if documentId.hasPrefix("region_") {
+            self = .region(RegionCode(String(documentId.dropFirst(7))))
+        } else if documentId.hasPrefix("day_"),
+                  let date = CalendarDate(iso: String(documentId.dropFirst(4))) {
+            self = .day(date)
+        } else {
+            return nil
+        }
+    }
 }
 
 public struct Cover: Hashable, Sendable {

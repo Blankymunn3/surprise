@@ -35,4 +35,23 @@ sealed interface CoverKey {
             is ForRegion -> "region_${code.value}"
             is ForDay -> "day_$date"
         }
+
+    companion object {
+        /**
+         * [documentId] 의 반대. 규칙에 안 맞으면 `null` — 손으로 넣은 문서가 섞여도
+         * 앱이 죽지 않아야 합니다.
+         *
+         * 짝이 되는 두 함수라 **한 파일에 둡니다.** 떨어뜨려 놓으면 한쪽만 고치게 됩니다.
+         */
+        fun of(documentId: String): CoverKey? = when {
+            documentId.startsWith("region_") ->
+                ForRegion(RegionCode(documentId.removePrefix("region_")))
+            documentId.startsWith("day_") -> try {
+                ForDay(LocalDate.parse(documentId.removePrefix("day_")))
+            } catch (e: Exception) {
+                null
+            }
+            else -> null
+        }
+    }
 }

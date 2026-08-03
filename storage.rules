@@ -43,22 +43,15 @@ service firebase.storage {
              );
     }
 
-    // 대표사진 목록 — 작은 JSON 하나
-    match /spaces/{spaceId}/{doc} {
-      allow read: if isMember(spaceId);
-      allow write: if isMember(spaceId)
-                   && doc == 'covers.json'
-                   && request.resource != null
-                   && request.resource.size < 256 * 1024;
-    }
-
-    // 사진 목록 조회(list). regions 와 같은 이유로 폴더 경로에 읽기 권한이 필요하고,
-    // 클라이언트가 delimiter 를 같이 보내야 이 규칙이 적용됩니다.
+    // 사진 목록 조회(list)는 **이제 안 씁니다** — 목록은 Firestore 문서로 받습니다.
+    // 그래도 열어 두는 이유: 앱이 옛 버전일 때 목록만 못 받고 조용히 비는 것보다,
+    // 멤버라면 볼 수 있게 두는 편이 덜 헷갈립니다.
     match /spaces/{spaceId}/photos {
       allow read: if isMember(spaceId);
     }
 
-    // 사진 한 장: spaces/<짜국ID>/photos/<날짜>_<지역코드>_<사진ID>.jpg
+    // 사진 한 장: spaces/<짜국ID>/photos/<사진ID>.jpg
+    // (지역·날짜는 파일 이름이 아니라 Firestore 문서에 있습니다)
     match /spaces/{spaceId}/photos/{file} {
       allow read: if isMember(spaceId);
       allow write: if isMember(spaceId)

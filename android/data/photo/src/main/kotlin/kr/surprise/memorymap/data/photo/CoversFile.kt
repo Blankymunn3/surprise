@@ -6,8 +6,6 @@ import kotlinx.serialization.json.jsonObject
 import kr.surprise.memorymap.core.model.Cover
 import kr.surprise.memorymap.core.model.CoverKey
 import kr.surprise.memorymap.core.model.PhotoId
-import kr.surprise.memorymap.core.model.RegionCode
-import java.time.LocalDate
 
 /**
  * `covers.json` 의 모양. `{"region_11140":"a1b2c3", "day_2026-03-05":"d4e5f6"}`
@@ -22,7 +20,7 @@ internal object CoversFile {
     fun parse(text: String): List<Cover> = try {
         json.parseToJsonElement(text).jsonObject.mapNotNull { (documentId, value) ->
             val photoId = (value as? JsonPrimitive)?.content ?: return@mapNotNull null
-            keyOf(documentId)?.let { Cover(it, PhotoId(photoId)) }
+            CoverKey.of(documentId)?.let { Cover(it, PhotoId(photoId)) }
         }
     } catch (e: Exception) {
         emptyList()
@@ -34,14 +32,4 @@ internal object CoversFile {
         append('}')
     }.toByteArray()
 
-    private fun keyOf(documentId: String): CoverKey? = when {
-        documentId.startsWith("region_") ->
-            CoverKey.ForRegion(RegionCode(documentId.removePrefix("region_")))
-        documentId.startsWith("day_") -> try {
-            CoverKey.ForDay(LocalDate.parse(documentId.removePrefix("day_")))
-        } catch (e: Exception) {
-            null
-        }
-        else -> null
-    }
 }

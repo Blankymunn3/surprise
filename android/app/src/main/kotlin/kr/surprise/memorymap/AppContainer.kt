@@ -88,7 +88,7 @@ class AppContainer(context: Context) {
      * 저장소는 종류마다 한 벌씩만 만들어 돌려씁니다. 받아 둔 사진을 자기 안에 들고 있어서
      * 화면마다 새로 만들면 매번 다시 받아오게 됩니다.
      */
-    private val remote = PhotoUseCases(FirebasePhotoRepository(storage, uploaderUid = "me"))
+    private val remote = PhotoUseCases(FirebasePhotoRepository(storage, firestore, accounts))
     private val local = PhotoUseCases(LocalPhotoRepository(appContext, uploaderUid = "me"))
 
     internal fun photoUseCases(kind: SpaceKind): PhotoUseCases =

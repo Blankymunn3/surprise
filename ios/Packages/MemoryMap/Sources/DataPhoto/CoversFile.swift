@@ -13,7 +13,7 @@ enum CoversFile {
             return []
         }
         return raw.compactMap { documentId, photoId in
-            guard let key = key(from: documentId) else { return nil }
+            guard let key = CoverKey(documentId: documentId) else { return nil }
             return Cover(key: key, photoId: PhotoId(photoId))
         }
     }
@@ -24,13 +24,4 @@ enum CoversFile {
         return try? JSONSerialization.data(withJSONObject: dictionary)
     }
 
-    static func key(from documentId: String) -> CoverKey? {
-        if documentId.hasPrefix("region_") {
-            return .region(RegionCode(String(documentId.dropFirst(7))))
-        }
-        if documentId.hasPrefix("day_"), let date = CalendarDate(iso: String(documentId.dropFirst(4))) {
-            return .day(date)
-        }
-        return nil
-    }
 }
