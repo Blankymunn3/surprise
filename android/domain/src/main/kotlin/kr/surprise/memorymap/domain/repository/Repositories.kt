@@ -53,6 +53,9 @@ interface AuthRepository {
     /** 지금 로그인한 사람. 로그인 전에는 `null` 이 흐릅니다. */
     fun observeAccount(): Flow<Account?>
 
+    /** 지금 값이 필요할 때. 저장소가 문서를 쓰려면 uid 를 알아야 합니다. */
+    suspend fun account(): Account?
+
     /** 구글 로그인 SDK 가 받아 온 ID 토큰으로 Firebase 세션을 엽니다. */
     suspend fun signInWithGoogle(googleIdToken: String): Outcome<Account>
 

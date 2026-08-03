@@ -6,6 +6,7 @@ import kr.surprise.memorymap.core.model.SpaceId
 import kr.surprise.memorymap.core.model.SpaceKind
 import kr.surprise.memorymap.core.network.FirebaseAuth
 import kr.surprise.memorymap.core.network.FirebaseStorage
+import kr.surprise.memorymap.core.network.Firestore
 import kr.surprise.memorymap.data.auth.FirebaseAuthRepository
 import kr.surprise.memorymap.data.photo.ExifReader
 import kr.surprise.memorymap.data.photo.FirebasePhotoRepository
@@ -64,8 +65,11 @@ class AppContainer(context: Context) {
 
     val accounts = FirebaseAuthRepository(appContext, auth)
 
+    /** 멤버 판정이 사는 곳. 규칙이 여기를 봅니다 (`firestore.rules`). */
+    private val firestore = Firestore(projectId = "our-surprise", token = { accounts.idToken() })
+
     val regions = AssetRegionCatalog(appContext)
-    val spaces = SharedSpaceRepository(appContext, storage)
+    val spaces = SharedSpaceRepository(appContext, firestore, accounts)
 
     val exif = ExifReader(appContext, regions)
     val downscaler = ImageDownscaler(appContext)

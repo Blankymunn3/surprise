@@ -45,6 +45,15 @@ service cloud.firestore {
       }
     }
 
+    // 내가 어느 짜국에 속하는지. **기기를 바꿔도 따라오게** 하려고 서버에 둡니다 —
+    // 기기 안 목록만 있으면 새 폰에서 로그인해도 짜국이 하나도 안 보입니다.
+    //
+    // 자기 것만 읽고 씁니다. 남의 목록을 들여다보면 그 사람이 어느 짜국에 있는지
+    // 알게 되므로 열지 않습니다.
+    match /users/{uid}/spaces/{spaceId} {
+      allow read, write: if signedIn() && uid == request.auth.uid;
+    }
+
     // 초대 코드 → 짜국 ID. 코드로는 **문 앞까지만** 옵니다 —
     // 여기서 짜국 ID 를 알아내도, 멤버가 되기 전에는 사진을 못 봅니다.
     match /invites/{code} {

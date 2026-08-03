@@ -48,6 +48,14 @@ class FirebaseAuthRepository(
 
     override fun observeAccount(): Flow<Account?> = account.asStateFlow()
 
+    override suspend fun account(): Account? {
+        account.value?.let { return it }
+        // 아직 안 읽었을 수 있습니다 — 저장된 것을 한 번 봅니다.
+        val saved = lock.withLock { read() }?.account()
+        if (saved != null) account.value = saved
+        return saved
+    }
+
     override suspend fun signInWithGoogle(googleIdToken: String): Outcome<Account> =
         when (val result = auth.signInWithGoogle(googleIdToken)) {
             is Outcome.Fail -> result

@@ -312,19 +312,32 @@ Firebase ID 토큰 → Storage · Firestore 요청 헤더에 얹음
 > 씁니다. 거기서 `ImageLoader(context)` 를 새로 만들면 인터셉터가 빠져 대표사진만
 > 조용히 안 뜹니다.
 
-### ⚠️ 그래도 `storage.rules` 는 아직 바꾸면 안 됩니다
-
-목표 규칙은 Firestore 의 **멤버 문서**를 봅니다:
+### 짜국은 Firestore 로 옮겼습니다
 
 ```
-firestore.exists(/databases/(default)/documents/spaces/$(spaceId)/members/$(request.auth.uid))
+spaces/{짜국ID}                 이름 · 주인
+spaces/{짜국ID}/members/{uid}   누가 멤버인가  ← 규칙이 보는 곳
+invites/{코드}                  코드 → 짜국ID
+users/{uid}/spaces/{짜국ID}     내가 어느 짜국에 속하나
 ```
 
-그런데 앱은 아직 짜국을 **Storage 의 `space.json`** 으로 관리합니다 — 그 멤버 문서를
-아무도 만들지 않습니다. 지금 규칙을 조이면 **로그인한 사람까지 전부 막힙니다.**
+**초대 코드가 더 이상 짜국 ID 가 아닙니다.** 코드를 알아도 경로를 모르고, 경로를 알아도
+멤버가 아니면 못 읽습니다.
 
-규칙을 조이는 것은 **4번(공간·사진을 Firestore 로 옮기기)이 끝난 뒤**입니다.
-로그인·토큰·이미지 로더는 그 준비가 끝난 상태입니다.
+`users/{uid}/spaces` 를 둔 이유: 기기 안에만 목록이 있으면 **새 폰에서 로그인해도 짜국이
+하나도 안 보입니다.** '다른 기기에서 보임' 이 같이 쓰는 짜국의 값이라 서버에 둡니다.
+
+그래서 **`storage.rules` 를 조였습니다** — `spaces/` 는 이제 멤버만 봅니다.
+`regions/`(웹이 쓰는 자리)는 로그인이 없어 그대로 열려 있습니다.
+
+> ⚠️ **규칙을 게시하는 순간 옛 버전 앱은 사진을 못 봅니다.** 로그인이 없어서요.
+> 게시는 `firebase deploy --only firestore:rules,storage`.
+
+### 아직 남은 것
+
+사진 **문서**는 아직 Firestore 로 안 갔습니다. 파일 이름에 지역·날짜가 들어 있는
+방식(`PhotoObjectName`)을 그대로 씁니다 — 규칙에는 영향이 없고(멤버 판정은 이미 되므로),
+`spaces/<짜국ID>/photos/<사진ID>.jpg` + 문서로 바꾸는 것은 그다음 정리입니다.
 
 ## 5. 기존 데이터
 

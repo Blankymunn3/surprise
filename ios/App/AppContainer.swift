@@ -52,7 +52,9 @@ final class AppContainer {
             bucket: "our-surprise.firebasestorage.app",
             token: { await accounts.idToken() }
         )
-        spaces = SharedSpaceRepository(storage: storage)
+        // 멤버 판정이 사는 곳. 규칙이 여기를 봅니다 (`firestore.rules`).
+        let firestore = Firestore(projectId: "our-surprise", token: { await accounts.idToken() })
+        spaces = SharedSpaceRepository(firestore: firestore, accounts: accounts)
         remotePhotos = FirebasePhotoRepository(storage: storage, uploaderUid: DeviceIdentity.uid)
         localPhotos = LocalPhotoRepository(uploaderUid: DeviceIdentity.uid)
     }
