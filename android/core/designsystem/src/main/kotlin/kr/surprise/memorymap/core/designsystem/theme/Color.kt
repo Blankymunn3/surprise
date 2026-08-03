@@ -16,11 +16,16 @@ object MemoryColors {
     val Ink2 = Color(0xFF6E675C)
     val Ink3 = Color(0xFFA79E90)
 
-    val Paper = Color(0xFFF5EFE1)    // 화면 바탕 — 따뜻한 종이
-    val Surface = Color(0xFFFFFDF7)  // 떠 있는 면 — 흰색에 종이 한 방울
-    val Fill = Color(0xFFEFE7D5)     // 보조 버튼 · 입력칸
-    val Line = Color(0xFFE6DDCA)
-    val Line2 = Color(0xFFDCD2BC)
+    /**
+     * 바탕에 **색을 넣지 않습니다.** 사진이 주인공이라, 바탕이 누러면 사진의 흰색까지
+     * 같이 누레 보입니다. 카드는 순백이고 바탕은 한 톤 낮아 층만 구분합니다 —
+     * 나머지는 그림자가 맡습니다.
+     */
+    val Paper = Color(0xFFFAFAFA)    // 화면 바탕
+    val Surface = Color(0xFFFFFFFF)  // 떠 있는 면 — 순백
+    val Fill = Color(0xFFF0F0F0)     // 보조 버튼 · 입력칸
+    val Line = Color(0xFFE6E6E6)
+    val Line2 = Color(0xFFD8D8D8)
 
     /** 지도에 넓게 깔리는 초록. 표지의 언덕과 같은 색입니다. */
     val Moss = Color(0xFF7FA98C)
@@ -41,6 +46,6 @@ object MemoryColors {
     val Scrim = Color(0x5235302A)
 
     /** 콘텐츠 위에 떠 있는 것에만 쓰는 반투명 흰색. 카드·시트에는 쓰지 않습니다. */
-    val Glass = Color(0xD6FFFDF7)    // 84% — 종이색이라 흰색보다 덜 튑니다
+    val Glass = Color(0xD6FFFFFF)    // 84% 흰색
     val GlassBorder = Color(0x1235302A)
 }

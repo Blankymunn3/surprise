@@ -10,16 +10,17 @@
   --moss:#7FA98C;
   --moss-soft:#DCEBE0;
   --moss-deep:#2C5240;
-  --paper:#F5EFE1;
-  --paper-2:#EFE7D5;
-  --card:#FFFDF7;
+  --paper:#FAFAFA;
+  --paper-2:#F0F0F0;
+  --card:#FFFFFF;
   --ink:#35302A;
   --ink-2:#6E675C;
   --ink-3:#A79E90;
   --persimmon:#E0764F;
   --persimmon-soft:#FBE7DD;
   --honey:#F0C46A;
-  --line:#E6DDCA;
+  --line:#E6E6E6;
+  --line-2:#D8D8D8;
 
   --r-cell:14px; --r-thumb:18px; --r-btn:20px; --r-card:26px; --r-sheet:30px;
 
@@ -456,7 +457,11 @@ footer{color:var(--ink-3);font-size:13px;text-align:center;padding-top:8px}
 <section>
   <h2>색</h2>
   <p class="sub">
-    바탕은 <b>종이</b>, 카드는 <b>흰색</b>, 강조는 <b>감빛 하나</b>입니다.
+    바탕은 <b>흰색</b>, 카드는 <b>더 흰색</b>, 강조는 <b>감빛 하나</b>입니다.
+    바탕에 색을 넣지 않는 이유는 <b>사진이 주인공이기 때문</b>입니다 — 바탕이 누러면
+    사진의 흰색까지 같이 누레 보입니다.
+    카드는 순백(<code>#FFFFFF</code>), 바탕은 그보다 한 톤 낮은 <code>#FAFAFA</code>로
+    <b>층만 구분</b>합니다. 나머지는 그림자가 맡습니다.
     초록은 바탕과 지도에서 넓게 깔리고, 감빛은 좁게 씁니다 — 오늘·대표사진·올리기처럼
     <b>딱 한 번 눌러야 하는 것</b>에만.
   </p>
@@ -464,15 +469,15 @@ footer{color:var(--ink-3);font-size:13px;text-align:center;padding-top:8px}
     <div class="sw"><div class="chip" style="background:#7FA98C"></div><b>모스</b><code>#7FA98C</code><span>지도·표지의 초록</span></div>
     <div class="sw"><div class="chip" style="background:#DCEBE0"></div><b>연한 모스</b><code>#DCEBE0</code><span>넓게 깔리는 바탕</span></div>
     <div class="sw"><div class="chip" style="background:#2C5240"></div><b>깊은 숲</b><code>#2C5240</code><span>초록 위의 글씨</span></div>
-    <div class="sw"><div class="chip" style="background:#F5EFE1"></div><b>종이</b><code>#F5EFE1</code><span>화면 바탕</span></div>
-    <div class="sw"><div class="chip" style="background:#FFFDF7"></div><b>카드</b><code>#FFFDF7</code><span>떠 있는 면</span></div>
+    <div class="sw"><div class="chip" style="background:#FAFAFA"></div><b>바탕</b><code>#FAFAFA</code><span>화면 바탕</span></div>
+    <div class="sw"><div class="chip" style="background:#FFFFFF"></div><b>카드</b><code>#FFFFFF</code><span>떠 있는 면</span></div>
     <div class="sw"><div class="chip" style="background:#E0764F"></div><b>감빛</b><code>#E0764F</code><span>강조 — 좁게</span></div>
     <div class="sw"><div class="chip" style="background:#F0C46A"></div><b>꿀빛</b><code>#F0C46A</code><span>그림 속 작은 것들</span></div>
     <div class="sw"><div class="chip" style="background:#35302A"></div><b>먹</b><code>#35302A</code><span>검정이 아닌 따뜻한 먹색</span></div>
   </div>
   <p class="note">
     <b>다크 모드는 만들지 않습니다.</b> 기기가 어두워도 이 화면 그대로입니다 —
-    종이 위의 사진첩이라는 게 이 앱의 전부라서, 검게 뒤집으면 다른 앱이 됩니다.
+    흰 종이 위의 사진첩이라는 게 이 앱의 전부라서, 검게 뒤집으면 다른 앱이 됩니다.
   </p>
 </section>
 
@@ -788,7 +793,7 @@ footer{color:var(--ink-3);font-size:13px;text-align:center;padding-top:8px}
       <thead><tr><th>항목</th><th>지금</th><th>바뀔 것</th></tr></thead>
       <tbody>
         <tr><td>강조색</td><td><code>#E11D5B</code> 로즈</td><td><code>#E0764F</code> 감빛 — 종이·초록과 같은 온도</td></tr>
-        <tr><td>바탕</td><td><code>#FBF8F9</code> 차가운 흰색</td><td><code>#F5EFE1</code> 따뜻한 종이 + 종이결</td></tr>
+        <tr><td>바탕</td><td><code>#FBF8F9</code> 분홍기 도는 흰색</td><td><code>#FAFAFA</code> 색 없는 흰색 — 사진 색을 건드리지 않게</td></tr>
         <tr><td>지도</td><td>기본 지도색</td><td>연한 초록 · 흙색 길 · 사진이 곧 핀</td></tr>
         <tr><td>모서리</td><td>10 / 12 / 16 / 20 / 24</td><td>14 / 18 / 20 / 26 / 30 — 한 단계씩 더 둥글게</td></tr>
         <tr><td>그림</td><td>선으로 그린 아이콘</td><td>면으로 채운 동화풍</td></tr>

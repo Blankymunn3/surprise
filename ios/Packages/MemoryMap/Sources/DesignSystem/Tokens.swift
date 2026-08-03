@@ -12,11 +12,14 @@ public enum MemoryColor {
     public static let ink2 = Color(hex: 0x6E675C)
     public static let ink3 = Color(hex: 0xA79E90)
 
-    public static let paper = Color(hex: 0xF5EFE1)    // 화면 바탕 — 따뜻한 종이
-    public static let surface = Color(hex: 0xFFFDF7)  // 떠 있는 면
-    public static let fill = Color(hex: 0xEFE7D5)
-    public static let line = Color(hex: 0xE6DDCA)
-    public static let line2 = Color(hex: 0xDCD2BC)
+    /// 바탕에 **색을 넣지 않습니다.** 사진이 주인공이라, 바탕이 누러면 사진의 흰색까지
+    /// 같이 누레 보입니다. 카드는 순백이고 바탕은 한 톤 낮아 층만 구분합니다 —
+    /// 나머지는 그림자가 맡습니다.
+    public static let paper = Color(hex: 0xFAFAFA)    // 화면 바탕
+    public static let surface = Color(hex: 0xFFFFFF)  // 떠 있는 면 — 순백
+    public static let fill = Color(hex: 0xF0F0F0)
+    public static let line = Color(hex: 0xE6E6E6)
+    public static let line2 = Color(hex: 0xD8D8D8)
 
     /// 지도에 넓게 깔리는 초록.
     public static let moss = Color(hex: 0x7FA98C)
