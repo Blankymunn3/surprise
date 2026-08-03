@@ -21,6 +21,11 @@ object MemoryColors {
      * 같이 누레 보입니다. 카드는 순백이고 바탕은 한 톤 낮아 층만 구분합니다 —
      * 나머지는 그림자가 맡습니다.
      */
+    /**
+     * ⚠️ 이 값의 **사본이 `app/src/main/res/values/colors.xml` 에 있습니다**
+     * (`windowBackground`). XML 은 여기 상수를 못 읽습니다. 여기만 고치면 Compose 가
+     * 그려지기 전에 깔리는 색이 옛 색으로 남아 앱이 통째로 그 색으로 보입니다.
+     */
     val Paper = Color(0xFFFAFAFA)    // 화면 바탕
     val Surface = Color(0xFFFFFFFF)  // 떠 있는 면 — 순백
     val Fill = Color(0xFFF0F0F0)     // 보조 버튼 · 입력칸

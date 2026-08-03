@@ -1,11 +1,13 @@
 package kr.surprise.memorymap.feature.map
 
+import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import android.graphics.Bitmap
 import coil3.SingletonImageLoader
@@ -103,22 +105,45 @@ internal fun MapCanvas(
         }
     }
 
+    // 탭을 듣는 것은 **한 번만** 답니다. 그래도 최신 콜백을 부르도록 여기서 붙잡아 둡니다.
+    val currentOnTap by rememberUpdatedState(onTap)
+
+    /**
+     * 지도의 실제 크기. **화면에 놓이기 전에는 0 입니다.**
+     *
+     * `AndroidView` 의 `update` 는 크기가 잡히기 전에 먼저 불릴 수 있고, 그 뒤로 다시
+     * 불린다는 보장이 없습니다. 그래서 크기가 바뀌는 것을 직접 듣고 상태로 들고 있습니다 —
+     * 이 값이 바뀌면 `update` 가 다시 돌아 그때 카메라를 맞춥니다.
+     */
+    var mapSize by remember { mutableStateOf(0 to 0) }
+    DisposableEffect(mapView) {
+        val listener = View.OnLayoutChangeListener { view, _, _, _, _, _, _, _, _ ->
+            val next = view.width to view.height
+            if (next != mapSize) mapSize = next
+        }
+        mapView.addOnLayoutChangeListener(listener)
+        onDispose { mapView.removeOnLayoutChangeListener(listener) }
+    }
+
     // 이미 맞춘 화면을 기억합니다. `update` 는 다시 그릴 때마다 불리는데, 그때마다 지도를
     // 움직이면 시트를 만지기만 해도 지도가 도로 튕겨 갑니다.
     //
-    // **몇 번째 맞춤인지**와 **시트가 덮는 높이**를 함께 봅니다. 같은 지역을 다시 골라도
-    // 횟수가 늘어 다시 맞추고, 시트 높이를 뒤늦게 재도 그 높이만큼 다시 맞춥니다.
-    var applied by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+    // **몇 번째 맞춤인지**·**시트가 덮는 높이**·**지도 크기**를 함께 봅니다. 같은 지역을
+    // 다시 골라도 횟수가 늘어 다시 맞추고, 시트 높이나 지도 크기를 뒤늦게 알게 되면
+    // 그 값으로 다시 맞춥니다.
+    var applied by remember { mutableStateOf<Focused?>(null) }
+    var listening by remember { mutableStateOf(false) }
 
     AndroidView(
         factory = { mapView },
         modifier = modifier,
         update = { view ->
+            val (width, height) = mapSize
             val edge = with(density) { EDGE.roundToPx() }
             // 시트가 아무리 높아도 지도 절반까지만 뺍니다. 남는 자리가 없으면 맞출 배율도
             // 나오지 않습니다.
             val covered = with(density) { coveredBelow.roundToPx() }
-                .coerceAtMost(view.height / 2)
+                .coerceAtMost(if (height > 0) height / 2 else 0)
             val bottom = edge + covered
 
             view.getMapAsync { map ->
@@ -126,18 +151,32 @@ internal fun MapCanvas(
                     paintRegions(style, fills, covers)
                     drawOutline(style, outline)
                 }
-                map.addOnMapClickListener { point ->
-                    onTap(point.latitude, point.longitude)
-                    true
+
+                // `update` 마다 달면 한 번 눌러도 여러 번 눌린 것이 됩니다.
+                if (!listening) {
+                    listening = true
+                    map.addOnMapClickListener { point ->
+                        currentOnTap(point.latitude, point.longitude)
+                        true
+                    }
                 }
-                if (focus != null && applied != focusCount to bottom) {
-                    applied = focusCount to bottom
-                    map.animateCamera(focus.toUpdate(edge, bottom))
+
+                // **크기를 알기 전에는 맞추지 않습니다.** 0 인 채로 맞추면 지도가 고른
+                // 지역보다 훨씬 크게 확대됩니다 — 넣을 화면이 없으니 배율이 끝까지 올라갑니다.
+                if (focus != null && width > 0 && height > 0) {
+                    val next = Focused(focusCount, bottom, width, height)
+                    if (applied != next) {
+                        applied = next
+                        map.animateCamera(focus.toUpdate(edge, bottom))
+                    }
                 }
             }
         },
     )
 }
+
+/** 어떤 조건으로 화면을 맞췄는지. 하나라도 달라지면 다시 맞춥니다. */
+private data class Focused(val count: Int, val bottom: Int, val width: Int, val height: Int)
 
 /**
  * 고른 지역에 화면을 맞춥니다.

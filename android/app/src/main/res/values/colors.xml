@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="paper">#F5EFE1</color>
+    <!--
+      윈도우 배경. Compose 가 그려지기 **전에** 먼저 보이는 색이라
+      `MemoryColors.Paper` 와 **같은 값**이어야 합니다 — 다르면 앱을 켤 때
+      한 번 번쩍입니다. XML 에서는 Kotlin 상수를 못 읽어서 사본을 둡니다.
+      한쪽을 고치면 반드시 다른 쪽도 고치세요.
+    -->
+    <color name="paper">#FAFAFA</color>
 </resources>
