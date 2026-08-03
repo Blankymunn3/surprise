@@ -87,9 +87,12 @@ public struct MapView: View {
     /// 고른 지역이 **시트 위쪽 화면 안에** 다 들어오게 맞춥니다.
     private func fitToFocus() {
         guard let focus = store.state.focus else { return }
-        let covered = store.state.sheet == nil ? 0 : sheetHeight
+        // 위(띠·검색칸)와 아래(시트)가 덮는 만큼을 함께 뺍니다. 위를 안 빼면 러시아처럼
+        // 위아래로 긴 나라의 윗부분이 띠 뒤로 숨습니다.
+        let above = topInset + searchPillHeight
+        let below = store.state.sheet == nil ? 0 : sheetHeight
         withAnimation(.easeInOut(duration: 0.4)) {
-            position = .region(lifted(focus.region, above: covered))
+            position = .region(fitted(focus.region, above: above, below: below))
         }
     }
 
@@ -100,15 +103,31 @@ public struct MapView: View {
      넓히고 그 넓어진 만큼 가운데를 아래로 내립니다 — 지역의 윗변은 그대로 두고 아래로만
      자리를 벌리는 셈입니다. 안 그러면 화면에는 들어와도 아래 절반이 시트 뒤에 가립니다.
      */
-    private func lifted(_ region: MKCoordinateRegion, above covered: CGFloat) -> MKCoordinateRegion {
-        guard mapHeight > 0, covered > 0 else { return region }
-        // 시트가 아무리 높아도 지도 절반까지만 뺍니다. 남는 자리가 없으면 맞출 배율도
-        // 나오지 않습니다.
-        let room = mapHeight - min(covered, mapHeight / 2)
+    private func fitted(
+        _ region: MKCoordinateRegion, above: CGFloat, below: CGFloat
+    ) -> MKCoordinateRegion {
+        guard mapHeight > 0, above + below > 0 else { return region }
+
+        // 위아래를 합쳐 화면의 **2/3** 를 넘지 않게 줄입니다. 남는 자리가 없으면
+        // 맞출 배율도 나오지 않습니다.
+        let limit = mapHeight * 2 / 3
+        let wanted = above + below
+        let scale = wanted > limit ? limit / wanted : 1
+        let top = above * scale
+        let bottom = below * scale
+
+        let room = mapHeight - top - bottom
+        guard room > 0 else { return region }
+
+        // 가려진 만큼 위아래로 넓히고, 위·아래가 다르게 가려진 만큼 가운데를 옮깁니다.
+        // 그래야 지역이 **보이는 띠의 한가운데**에 옵니다.
         let grown = region.span.latitudeDelta * mapHeight / room
-        let top = region.center.latitude + region.span.latitudeDelta / 2
+        let shift = grown * (top - bottom) / (2 * mapHeight)
+
         return MKCoordinateRegion(
-            center: .init(latitude: top - grown / 2, longitude: region.center.longitude),
+            center: .init(
+                latitude: region.center.latitude + shift, longitude: region.center.longitude
+            ),
             span: MKCoordinateSpan(
                 latitudeDelta: min(grown, 170), longitudeDelta: region.span.longitudeDelta
             )
@@ -392,6 +411,10 @@ extension MapFocus {
 
 /// 테두리와 화면 끝 사이에 남길 여유.
 private let edgeRoom = 1.18
+
+/// 검색칸이 지도 위를 덮는 높이. 지역을 맞출 때 이만큼은 빼 둡니다 —
+/// 안드로이드는 실제로 재서 쓰고, 이쪽은 모양이 고정이라 값으로 둡니다.
+private let searchPillHeight: CGFloat = 48
 
 /// 날짜변경선을 넘는 지역은 가운데가 180 을 넘어갑니다. 지도에 줄 때는 접어서 줍니다 —
 /// 넓이(span)는 그대로라 접어도 보이는 범위는 같습니다.

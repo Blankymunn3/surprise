@@ -61,6 +61,8 @@ fun MapScreen(
     // 시트 높이는 **재서** 씁니다. 사진이 있느냐에 따라 시트가 훌쩍 달라지는데,
     // 고정값으로 두면 시트가 짧을 때 버튼만 허공에 뜹니다.
     var sheetHeight by remember { mutableStateOf(0.dp) }
+    // 검색칸도 **재서** 씁니다. 글자 크기를 키운 폰에서는 이 칸이 더 높아집니다.
+    var pillHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
     val keyboard = LocalSoftwareKeyboardController.current
 
@@ -75,7 +77,9 @@ fun MapScreen(
             focusCount = state.focusCount,
             outline = state.outline,
             fills = state.fills,
-            // 지역에 화면을 맞출 때 시트가 덮는 만큼은 빼고 맞춥니다.
+            // 지역에 화면을 맞출 때 **위아래로 가려지는 만큼**은 빼고 맞춥니다.
+            // 위를 안 빼면 러시아처럼 위아래로 긴 나라의 윗부분이 바 뒤로 숨습니다.
+            coveredAbove = topBarHeight + Gap.s + pillHeight,
             coveredBelow = if (state.sheet == null) 0.dp else sheetHeight,
             onTap = { lat, lon ->
                 // 검색하다 지도를 누르면 자판부터 내려갑니다. 자판이 화면 절반을 덮은 채로
@@ -93,6 +97,7 @@ fun MapScreen(
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(start = Gap.l, end = Gap.l, top = topBarHeight + Gap.s)
+                .onSizeChanged { pillHeight = with(density) { it.height.toDp() } }
                 .blockMapTouches(),
         )
 

@@ -50,6 +50,7 @@ internal fun MapCanvas(
     focusCount: Int,
     outline: RegionOutline?,
     fills: List<RegionFill>,
+    coveredAbove: Dp,
     coveredBelow: Dp,
     onTap: (latitude: Double, longitude: Double) -> Unit,
     modifier: Modifier = Modifier,
@@ -139,12 +140,23 @@ internal fun MapCanvas(
         modifier = modifier,
         update = { view ->
             val (width, height) = mapSize
-            val edge = with(density) { EDGE.roundToPx() }
-            // 시트가 아무리 높아도 지도 절반까지만 뺍니다. 남는 자리가 없으면 맞출 배율도
-            // 나오지 않습니다.
-            val covered = with(density) { coveredBelow.roundToPx() }
-                .coerceAtMost(if (height > 0) height / 2 else 0)
-            val bottom = edge + covered
+            val side = with(density) { EDGE.roundToPx() }
+            val vertical = with(density) { EDGE_VERTICAL.roundToPx() }
+
+            // 위(바·검색칸)와 아래(시트)가 덮는 만큼을 뺍니다. 다만 **둘을 합쳐 화면의
+            // 2/3** 를 넘지 않게 줄입니다 — 남는 자리가 없으면 맞출 배율이 안 나옵니다.
+            val wantAbove = with(density) { coveredAbove.roundToPx() }
+            val wantBelow = with(density) { coveredBelow.roundToPx() }
+            val room = if (height > 0) height * 2 / 3 else 0
+            val shrink =
+                if (room > 0 && wantAbove + wantBelow > room) {
+                    room.toDouble() / (wantAbove + wantBelow)
+                } else {
+                    1.0
+                }
+
+            val top = vertical + (wantAbove * shrink).toInt()
+            val bottom = vertical + (wantBelow * shrink).toInt()
 
             view.getMapAsync { map ->
                 map.setStyle(Style.Builder().fromJson(OsmStyle.json())) { style ->
@@ -164,10 +176,10 @@ internal fun MapCanvas(
                 // **크기를 알기 전에는 맞추지 않습니다.** 0 인 채로 맞추면 지도가 고른
                 // 지역보다 훨씬 크게 확대됩니다 — 넣을 화면이 없으니 배율이 끝까지 올라갑니다.
                 if (focus != null && width > 0 && height > 0) {
-                    val next = Focused(focusCount, bottom, width, height)
+                    val next = Focused(focusCount, top, bottom, width, height)
                     if (applied != next) {
                         applied = next
-                        map.animateCamera(focus.toUpdate(edge, bottom))
+                        map.animateCamera(focus.toUpdate(side, top, bottom))
                     }
                 }
             }
@@ -176,26 +188,39 @@ internal fun MapCanvas(
 }
 
 /** 어떤 조건으로 화면을 맞췄는지. 하나라도 달라지면 다시 맞춥니다. */
-private data class Focused(val count: Int, val bottom: Int, val width: Int, val height: Int)
+private data class Focused(
+    val count: Int,
+    val top: Int,
+    val bottom: Int,
+    val width: Int,
+    val height: Int,
+)
 
 /**
  * 고른 지역에 화면을 맞춥니다.
  *
- * [bottom] 이 [edge] 보다 큰 이유는 **시트가 아래를 덮기 때문**입니다. 그만큼 빼 두지
- * 않으면 지역이 화면에는 들어와도 아래쪽 절반이 시트 뒤에 가려 안 보입니다.
+ * [top] 과 [bottom] 이 [side] 보다 큰 이유는 **위는 바와 검색칸이, 아래는 시트가
+ * 지도를 덮기 때문**입니다. 그만큼 빼 두지 않으면 지역이 화면에는 들어와도
+ * 위아래 끝이 그 뒤에 가려 안 보입니다 — 러시아처럼 위아래로 긴 나라에서 특히 그렇습니다.
  */
-private fun MapFocus.toUpdate(edge: Int, bottom: Int): CameraUpdate = when (this) {
+private fun MapFocus.toUpdate(side: Int, top: Int, bottom: Int): CameraUpdate = when (this) {
     is MapFocus.Spot ->
         CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), SPOT_ZOOM)
 
     is MapFocus.Area -> CameraUpdateFactory.newLatLngBounds(
         LatLngBounds.from(north, east, south, west),
-        edge, edge, edge, bottom,
+        side, top, side, bottom,
     )
 }
 
-/** 테두리가 화면 끝에 딱 붙으면 잘린 것처럼 보입니다. 사방에 이만큼 여유를 둡니다. */
+/** 테두리가 화면 끝에 딱 붙으면 잘린 것처럼 보입니다. 좌우에 이만큼 여유를 둡니다. */
 private val EDGE = 28.dp
+
+/**
+ * 위아래는 좌우보다 **더 띄웁니다.** 위에는 바가, 아래에는 시트가 붙어 있어서
+ * 같은 여백을 주면 지역이 그 사이에 낀 것처럼 답답해 보입니다.
+ */
+private val EDGE_VERTICAL = 40.dp
 
 /** 경계가 없는 장소의 배율. 맞출 넓이가 없어 정해 둡니다 — 전에 쓰던 값 그대로입니다. */
 private const val SPOT_ZOOM = 9.0
