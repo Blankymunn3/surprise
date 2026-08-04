@@ -127,6 +127,55 @@ public actor SharedSpaceRepository: SpaceRepository {
         return .ok((made, Invite(code: code, spaceId: id)))
     }
 
+    /// 초대 코드를 하나 더 만듭니다. `invites/{코드}` 는 코드→짜국 한 방향이라
+    /// 쓰던 코드를 되찾을 길이 없어, 다시 나눠 줄 때는 새로 만듭니다.
+    public func newInvite(spaceId: SpaceId) async -> Outcome<Invite> {
+        // 혼자 쓰는 짜국에는 초대할 사람이 없습니다.
+        guard cached.first(where: { $0.spaceId == spaceId })?.kind != .personal else {
+            return .fail(.notFound)
+        }
+        let code = InviteCode.generate()
+        if case .fail(let reason) = await firestore.set(
+            "invites/\(code)", fields: ["spaceId": .text(spaceId.value)]
+        ) { return .fail(reason) }
+        return .ok(Invite(code: code, spaceId: spaceId))
+    }
+
+    public func rename(spaceId: SpaceId, name: String) async -> Outcome<Void> {
+        // 혼자 짜국의 이름은 기기 안에만 있습니다.
+        if cached.first(where: { $0.spaceId == spaceId })?.kind == .personal {
+            renamePersonal(id: spaceId, name: name)
+            cached = cached.map { $0.spaceId == spaceId ? renamed($0, name) : $0 }
+            return .ok(())
+        }
+
+        let current: Firestore.Document
+        switch await firestore.get("spaces/\(spaceId.value)") {
+        case .fail(let reason): return .fail(reason)
+        case .ok(let found):
+            guard let found else { return .fail(.notFound) }
+            current = found
+        }
+
+        var fields = current.fields
+        fields["name"] = .text(name)
+        if case .fail(let reason) = await firestore.set("spaces/\(spaceId.value)", fields: fields) {
+            return .fail(reason)
+        }
+        cached = cached.map { $0.spaceId == spaceId ? renamed($0, name) : $0 }
+        return .ok(())
+    }
+
+    private func renamed(_ space: Space, _ name: String) -> Space {
+        Space(spaceId: space.spaceId, name: name, members: space.members, kind: space.kind)
+    }
+
+    private func renamePersonal(id: SpaceId, name: String) {
+        var raw = defaults.array(forKey: Self.personalKey) as? [[String: String]] ?? []
+        raw = raw.map { $0["id"] == id.value ? ["id": id.value, "name": name] : $0 }
+        defaults.set(raw, forKey: Self.personalKey)
+    }
+
     public func join(code: String) async -> Outcome<Space> {
         guard let normalized = InviteCode.normalize(code) else { return .fail(.notFound) }
         guard let account = await accounts.account() else { return .fail(.denied) }

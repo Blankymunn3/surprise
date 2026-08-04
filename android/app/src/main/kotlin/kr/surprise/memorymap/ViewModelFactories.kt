@@ -7,6 +7,7 @@ import kr.surprise.memorymap.core.model.SpaceKind
 import kr.surprise.memorymap.feature.calendar.CalendarViewModel
 import kr.surprise.memorymap.feature.map.MapViewModel
 import kr.surprise.memorymap.feature.space.SpaceListViewModel
+import kr.surprise.memorymap.feature.space.SpaceMenuViewModel
 import kr.surprise.memorymap.feature.upload.UploadViewModel
 
 /**
@@ -26,6 +27,10 @@ fun AppContainer.spaceListFactory() = VmFactory {
  * 짜국의 **종류**를 같이 받습니다 — 혼자면 기기 안 사진, 같이 쓰면 서버 사진을 씁니다.
  * 고르는 일은 [AppContainer] 가 하고 화면은 어느 쪽인지 모릅니다.
  */
+fun AppContainer.spaceMenuFactory(spaceId: SpaceId) = VmFactory {
+    SpaceMenuViewModel(spaceId, observeSpaces, newInvite, renameSpace)
+}
+
 fun AppContainer.mapFactory(spaceId: SpaceId, kind: SpaceKind) = VmFactory {
     val photos = photoUseCases(kind)
     MapViewModel(spaceId, photos.observeBoard, searchRegions, photos.setCover, regions)

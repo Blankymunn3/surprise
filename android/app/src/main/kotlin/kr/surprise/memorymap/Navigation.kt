@@ -5,6 +5,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,11 +29,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,6 +47,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -56,6 +61,7 @@ import kr.surprise.memorymap.core.designsystem.component.FloatingIconButton
 import kr.surprise.memorymap.core.designsystem.component.MemoryFab
 import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
 import kr.surprise.memorymap.core.designsystem.component.PlainIconButton
+import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
 import kr.surprise.memorymap.core.designsystem.component.Segmented
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
@@ -75,7 +81,12 @@ import kr.surprise.memorymap.feature.space.SpaceListEffect
 import kr.surprise.memorymap.feature.space.SpaceListIntent
 import kr.surprise.memorymap.feature.space.SpaceListScreen
 import kr.surprise.memorymap.feature.space.SpaceListViewModel
+import kr.surprise.memorymap.feature.space.SpaceMenu
+import kr.surprise.memorymap.feature.space.SpaceMenuEffect
+import kr.surprise.memorymap.feature.space.SpaceMenuIntent
+import kr.surprise.memorymap.feature.space.SpaceMenuViewModel
 import kr.surprise.memorymap.feature.upload.PickedPhoto
+import kr.surprise.memorymap.feature.upload.UploadEffect
 import kr.surprise.memorymap.feature.upload.UploadIntent
 import kr.surprise.memorymap.feature.upload.UploadSheet
 import kr.surprise.memorymap.feature.upload.UploadViewModel
@@ -214,6 +225,8 @@ private fun SpaceTabs(
 ) {
     var tab by remember { mutableStateOf(0) }
     var uploading by remember { mutableStateOf(false) }
+    var menuOpen by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     // 지역 시트에서 열었으면 그 지역을 들고 갑니다. 이미 고른 곳을 아는데 올리기 화면에서
     // 다시 고르게 하면 안 됩니다. 아래쪽 ＋ 로 열었으면 null 이고, 그때는 사진의 EXIF 가 정합니다.
     var uploadRegion by remember { mutableStateOf<Region?>(null) }
@@ -262,6 +275,7 @@ private fun SpaceTabs(
                 spaceName = spaceName,
                 onlyOnThisPhone = kind == SpaceKind.Personal,
                 onBack = onBack,
+                onMore = { menuOpen = true },
             )
             Segmented(
                 options = listOf("지도", "달력"),
@@ -302,6 +316,30 @@ private fun SpaceTabs(
         }
 
         SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 110.dp))
+
+        if (menuOpen) {
+            val menuVm: SpaceMenuViewModel =
+                viewModel(key = "menu-${spaceId.value}", factory = container.spaceMenuFactory(spaceId))
+            val menuState by menuVm.state.collectAsStateWithLifecycle()
+
+            LaunchedEffect(menuVm) {
+                menuVm.onIntent(SpaceMenuIntent.Appeared)
+                menuVm.effect.collect { effect ->
+                    when (effect) {
+                        SpaceMenuEffect.Close -> menuOpen = false
+                        is SpaceMenuEffect.ShowMessage -> snackbar.showSnackbar(effect.text)
+                        is SpaceMenuEffect.CopyCode -> {
+                            val board = context.getSystemService(ClipboardManager::class.java)
+                            board?.setPrimaryClip(ClipData.newPlainText("짜국 초대 코드", effect.code))
+                            snackbar.showSnackbar("코드를 복사했어요")
+                        }
+                    }
+                }
+            }
+
+            SpaceMenu(state = menuState, onIntent = menuVm::onIntent, modifier = Modifier.systemBarsPadding())
+            BackHandler { menuVm.onIntent(SpaceMenuIntent.Dismissed) }
+        }
     }
 
     if (uploading) {
@@ -322,27 +360,51 @@ private fun SpaceTabs(
             }
         }
 
-        // 지역 시트에서 열었으면 그 지역을 미리 넣어 둡니다. 시트가 뜰 때 한 번만 합니다.
-        LaunchedEffect(uploadVm, uploadRegion) {
-            uploadRegion?.let { uploadVm.onIntent(UploadIntent.RegionChosen(it)) }
+        // 지역 시트에서 열었으면 그 지역을 **고른 사진 전부에** 미리 넣습니다.
+        // 사진마다 지역을 들게 되면서 한 번에 하나씩만 넣을 수 있게 됐습니다.
+        LaunchedEffect(uploadVm, uploadRegion, uploadState.items.size) {
+            val region = uploadRegion ?: return@LaunchedEffect
+            uploadState.items.forEach { item ->
+                uploadVm.onIntent(UploadIntent.RegionFieldTapped(item.uri))
+                uploadVm.onIntent(UploadIntent.RegionChosen(region))
+            }
         }
 
-        ModalBottomSheet(
-            onDismissRequest = { uploading = false },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = MemoryColors.Surface,
-            dragHandle = null,
-        ) {
+        // 날짜 고르기. 어느 사진의 날짜인지 들고 있다가 고르면 그 사진에만 넣습니다.
+        var pickingDateOf by remember { mutableStateOf<Pair<String, LocalDate>?>(null) }
+        LaunchedEffect(uploadVm) {
+            uploadVm.effect.collect { effect ->
+                when (effect) {
+                    UploadEffect.Close -> uploading = false
+                    is UploadEffect.ShowMessage -> snackbar.showSnackbar(effect.text)
+                    is UploadEffect.OpenDatePicker -> pickingDateOf = effect.uri to effect.current
+                }
+            }
+        }
+
+        // 올리기는 **전체 화면**입니다. 사진마다 어디·언제를 훑어 내리는 일이라
+        // 지도를 가린 시트 안에서 할 일이 아닙니다.
+        Box(Modifier.fillMaxSize().background(MemoryColors.Paper).systemBarsPadding()) {
             UploadSheet(
                 state = uploadState,
-                onIntent = { intent ->
-                    if (intent is UploadIntent.Dismissed) uploading = false
-                    uploadVm.onIntent(intent)
-                },
+                onIntent = uploadVm::onIntent,
                 onPickPhotos = {
                     pickPhotos.launch(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )
+                },
+            )
+        }
+
+        BackHandler { uploadVm.onIntent(UploadIntent.Dismissed) }
+
+        pickingDateOf?.let { (uri, current) ->
+            DateSheet(
+                current = current,
+                onDismiss = { pickingDateOf = null },
+                onPick = { date ->
+                    uploadVm.onIntent(UploadIntent.DateChosen(uri, date))
+                    pickingDateOf = null
                 },
             )
         }
@@ -366,6 +428,7 @@ private fun TopBar(
     spaceName: String,
     onlyOnThisPhone: Boolean,
     onBack: () -> Unit,
+    onMore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -396,6 +459,35 @@ private fun TopBar(
             )
         }
 
-        PlainIconButton(MemoryIcons.More, "더 보기", { })
+        PlainIconButton(MemoryIcons.More, "더 보기", onMore)
+    }
+}
+
+/**
+ * 날짜 고르기. 안드로이드 기본 달력을 그대로 씁니다 —
+ * 우리가 다시 그리면 시스템 달력과 미묘하게 달라서 오히려 낯섭니다.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DateSheet(current: LocalDate, onDismiss: () -> Unit, onPick: (LocalDate) -> Unit) {
+    val zone = ZoneId.systemDefault()
+    val picker = rememberDatePickerState(
+        initialSelectedDateMillis = current.atStartOfDay(zone).toInstant().toEpochMilli()
+    )
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = MemoryColors.Surface,
+        dragHandle = null,
+    ) {
+        DatePicker(state = picker)
+        PrimaryButton(
+            text = "이 날로",
+            onClick = {
+                val millis = picker.selectedDateMillis ?: return@PrimaryButton onDismiss()
+                onPick(Instant.ofEpochMilli(millis).atZone(zone).toLocalDate())
+            },
+            modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, bottom = 32.dp),
+        )
     }
 }

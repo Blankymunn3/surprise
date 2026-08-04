@@ -17,6 +17,8 @@ import kr.surprise.memorymap.data.space.SharedSpaceRepository
 import kr.surprise.memorymap.domain.repository.PhotoRepository
 import kr.surprise.memorymap.domain.usecase.CreateSpaceUseCase
 import kr.surprise.memorymap.domain.usecase.JoinSpaceUseCase
+import kr.surprise.memorymap.domain.usecase.NewInviteUseCase
+import kr.surprise.memorymap.domain.usecase.RenameSpaceUseCase
 import kr.surprise.memorymap.domain.usecase.ObservePhotoBoardUseCase
 import kr.surprise.memorymap.domain.usecase.ObserveSpacesUseCase
 import kr.surprise.memorymap.domain.usecase.RefreshPhotosUseCase
@@ -78,6 +80,8 @@ class AppContainer(context: Context) {
     val refreshSpaces = RefreshSpacesUseCase(spaces)
     val createSpace = CreateSpaceUseCase(spaces)
     val joinSpace = JoinSpaceUseCase(spaces)
+    val newInvite = NewInviteUseCase(spaces)
+    val renameSpace = RenameSpaceUseCase(spaces)
 
     val searchRegions = SearchRegionsUseCase(regions)
 

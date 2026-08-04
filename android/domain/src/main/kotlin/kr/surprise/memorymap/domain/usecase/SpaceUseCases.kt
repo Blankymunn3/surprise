@@ -33,3 +33,12 @@ class JoinSpaceUseCase(private val spaces: SpaceRepository) {
 class NewInviteUseCase(private val spaces: SpaceRepository) {
     suspend operator fun invoke(spaceId: SpaceId): Outcome<Invite> = spaces.newInvite(spaceId)
 }
+
+/** 짜국 이름 바꾸기. 빈 이름은 막습니다 — 목록에서 알아볼 수 없게 됩니다. */
+class RenameSpaceUseCase(private val spaces: SpaceRepository) {
+    suspend operator fun invoke(spaceId: SpaceId, name: String): Outcome<Unit> {
+        val trimmed = name.trim()
+        require(trimmed.isNotEmpty()) { "공간 이름이 비었습니다" }
+        return spaces.rename(spaceId, trimmed)
+    }
+}

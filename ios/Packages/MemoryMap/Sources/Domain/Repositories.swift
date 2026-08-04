@@ -32,6 +32,9 @@ public protocol SpaceRepository: Sendable {
     /// 혼자 쓰는 짜국은 초대할 사람이 없어 코드가 `nil` 입니다.
     func create(name: String, kind: SpaceKind) async -> Outcome<(Space, Invite?)>
     func join(code: String) async -> Outcome<Space>
+    /// 초대 코드를 하나 더 만듭니다. 코드는 여럿이어도 모두 같은 짜국을 가리킵니다.
+    func newInvite(spaceId: SpaceId) async -> Outcome<Invite>
+    func rename(spaceId: SpaceId, name: String) async -> Outcome<Void>
 }
 
 /// 로그인. **같이 쓰는 짜국에서만** 필요합니다 (`docs/app/AUTH.md`).

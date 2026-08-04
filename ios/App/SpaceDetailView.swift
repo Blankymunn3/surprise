@@ -2,6 +2,7 @@ import CoreModel
 import DesignSystem
 import FeatureCalendar
 import FeatureMap
+import FeatureSpace
 import FeatureUpload
 import SwiftUI
 
@@ -18,6 +19,7 @@ struct SpaceDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var tab = 0
     @State private var uploading = false
+    @State private var menuOpen = false
     /// 지역 시트에서 열었으면 그 지역. 아래 ＋ 로 열었으면 `nil` 입니다.
     @State private var uploadRegion: Region?
     @State private var calendar: CalendarStore
@@ -60,10 +62,15 @@ struct SpaceDetailView: View {
         .background(MemoryColor.paper)
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
-        .sheet(isPresented: $uploading) {
+        // 올리기는 **전체 화면**입니다. 사진마다 어디·언제를 훑어 내리는 일이라
+        // 지도를 가린 시트 안에서 할 일이 아닙니다.
+        .fullScreenCover(isPresented: $uploading) {
             UploadView(store: uploadStore()) { uploading = false }
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.hidden)
+        }
+        .overlay {
+            if menuOpen {
+                SpaceMenu(store: AppContainer.shared.spaceMenuStore(spaceId)) { menuOpen = false }
+            }
         }
         .onChange(of: uploading) { _, open in
             // 시트가 닫힌 뒤에 새로 받아옵니다. 방금 올린 사진이 바로 보여야 합니다.
@@ -80,7 +87,9 @@ struct SpaceDetailView: View {
     /// 이미 아는 곳을 다시 고르게 하지 않으려는 것입니다.
     private func uploadStore() -> UploadStore {
         let store = AppContainer.shared.uploadStore(spaceId, kind)
-        if let uploadRegion { store.choose(uploadRegion) }
+        // 아직 사진을 고르기 전이라 바로 못 넣습니다. Store 가 들고 있다가
+        // 사진이 들어오면 EXIF 값 대신 이 값을 씁니다.
+        if let uploadRegion { store.preselect(uploadRegion) }
         return store
     }
 
@@ -124,7 +133,7 @@ struct SpaceDetailView: View {
                     .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
             }
 
-            barButton("ellipsis", label: "더 보기") { }
+            barButton("ellipsis", label: "더 보기") { menuOpen = true }
         }
         .padding(.horizontal, MemorySpace.s)
         .padding(.vertical, 6)

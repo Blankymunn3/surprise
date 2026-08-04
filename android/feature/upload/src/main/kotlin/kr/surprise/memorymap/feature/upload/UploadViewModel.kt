@@ -29,12 +29,25 @@ class UploadViewModel(
     override fun onIntent(intent: UploadIntent) {
         when (intent) {
             is UploadIntent.PhotosPicked -> pick(intent.uris)
-            UploadIntent.RegionFieldTapped -> setState { UploadReducer.regionPickerOpened(this) }
+            is UploadIntent.RegionFieldTapped ->
+                setState { UploadReducer.regionPickerOpened(this, intent.uri) }
             is UploadIntent.RegionQueryTyped -> search(intent.value)
             is UploadIntent.RegionChosen -> setState { UploadReducer.regionChosen(this, intent.region) }
-            is UploadIntent.DateChosen -> setState { UploadReducer.dateChosen(this, intent.date) }
+            is UploadIntent.DateFieldTapped -> {
+                val item = currentState().items.firstOrNull { it.uri == intent.uri } ?: return
+                sendEffect(UploadEffect.OpenDatePicker(intent.uri, item.takenOn))
+            }
+            is UploadIntent.DateChosen ->
+                setState { UploadReducer.dateChosen(this, intent.uri, intent.date) }
             UploadIntent.Confirmed -> upload()
-            UploadIntent.Dismissed -> sendEffect(UploadEffect.Close)
+            UploadIntent.RetryTapped -> setState { UploadReducer.retry(this) }
+            UploadIntent.Dismissed ->
+                // 지역 고르기 중이면 그것만 닫습니다 — 화면째 닫으면 고른 사진이 다 날아갑니다.
+                if (currentState().editingRegionOf != null) {
+                    setState { UploadReducer.regionPickerDismissed(this) }
+                } else {
+                    sendEffect(UploadEffect.Close)
+                }
         }
     }
 
@@ -43,10 +56,27 @@ class UploadViewModel(
         if (uris.isEmpty()) return
 
         viewModelScope.launch {
+            val today = LocalDate.now(clock)
             val hints = uris.map { readHints(it.uri) }
-            val defaults = UploadPlan.defaults(hints, LocalDate.now(clock))
-            val region = defaults.regionCode?.let { regions.find(it.value) }
-            setState { UploadReducer.hintsRead(this, defaults, region) }
+
+            // 제 값이 없는 사진은 **여럿의 값**으로 메웁니다. 한 장만 위치가 안 찍혀
+            // 있다고 그 한 장만 빈칸으로 두면, 사용자가 그것만 따로 찾아 채워야 합니다.
+            val fallback = UploadPlan.defaults(hints, today)
+            val fallbackRegion = fallback.regionCode?.let { regions.find(it.value) }
+
+            val items = uris.mapIndexed { index, picked ->
+                val hint = hints[index]
+                val own = hint.regionCode?.let { regions.find(it.value) }
+                UploadItem(
+                    uri = picked.uri,
+                    region = own ?: fallbackRegion,
+                    takenOn = hint.takenOn ?: fallback.takenOn,
+                    // 사진에서 왔든 여럿에서 메웠든 사용자가 고른 값은 아닙니다.
+                    regionAuto = (own ?: fallbackRegion) != null,
+                    dateAuto = hint.takenOn != null || fallback.dateFromExif,
+                )
+            }
+            setState { UploadReducer.hintsRead(this, items) }
         }
     }
 
@@ -60,24 +90,24 @@ class UploadViewModel(
     private fun upload() {
         val state = currentState()
         if (!state.canUpload()) return
-        val region = state.region ?: return
-        val takenOn = state.takenOn ?: return
 
         setState { UploadReducer.uploading(this) }
 
         viewModelScope.launch {
-            val drafts = ArrayList<NewPhoto>(state.picked.size)
-            for ((index, picked) in state.picked.withIndex()) {
-                val bytes = toJpeg(picked.uri)
+            val drafts = ArrayList<NewPhoto>(state.items.size)
+            for ((index, item) in state.items.withIndex()) {
+                val region = item.region ?: continue
+                val bytes = toJpeg(item.uri)
                 if (bytes == null) {
-                    keepLocally(picked.uri)
+                    keepLocally(item.uri)
                     continue
                 }
+                // 사진마다 **제 지역·제 날짜**로 올라갑니다.
                 drafts += NewPhoto(
-                    localId = "${picked.uri}#${index}",
+                    localId = "${item.uri}#${index}",
                     bytes = bytes,
                     regionCode = region.code,
-                    takenOn = takenOn,
+                    takenOn = item.takenOn,
                 )
             }
 
@@ -94,7 +124,7 @@ class UploadViewModel(
                 }
                 is Outcome.Fail -> {
                     // 사진을 잃지 않는 것이 먼저입니다
-                    state.picked.forEach { keepLocally(it.uri) }
+                    state.items.forEach { keepLocally(it.uri) }
                     setState { UploadReducer.failed(this, savedLocally = true) }
                     sendEffect(UploadEffect.ShowMessage("지금은 못 올려서 기기에 저장했어요. 나중에 다시 올릴게요."))
                 }

@@ -67,6 +67,25 @@ public struct JoinSpace: Sendable {
     }
 }
 
+public struct NewInvite: Sendable {
+    private let spaces: any SpaceRepository
+    public init(spaces: any SpaceRepository) { self.spaces = spaces }
+    public func callAsFunction(_ spaceId: SpaceId) async -> Outcome<Invite> {
+        await spaces.newInvite(spaceId: spaceId)
+    }
+}
+
+/// 짜국 이름 바꾸기. 빈 이름은 막습니다 — 목록에서 알아볼 수 없게 됩니다.
+public struct RenameSpace: Sendable {
+    private let spaces: any SpaceRepository
+    public init(spaces: any SpaceRepository) { self.spaces = spaces }
+    public func callAsFunction(_ spaceId: SpaceId, _ name: String) async -> Outcome<Void> {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return .fail(.unknown) }
+        return await spaces.rename(spaceId: spaceId, name: trimmed)
+    }
+}
+
 public struct SearchRegions: Sendable {
     private let catalog: any RegionCatalog
     public init(catalog: any RegionCatalog) { self.catalog = catalog }

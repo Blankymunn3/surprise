@@ -20,32 +20,63 @@ public enum UploadStep: Equatable, Sendable {
     case failed(savedLocally: Bool)
 }
 
+/// 올릴 사진 한 장과 거기 붙은 값들.
+public struct UploadItem: Equatable, Sendable, Identifiable {
+    public let uri: String
+    public var region: Region?
+    public var takenOn: CalendarDate
+    /// '자동' 딱지 — 사진에서 읽어 채웠다는 표시. 사용자가 고치면 떨어집니다.
+    public var regionAuto: Bool
+    public var dateAuto: Bool
+
+    public var id: String { uri }
+
+    public init(
+        uri: String, region: Region?, takenOn: CalendarDate,
+        regionAuto: Bool = false, dateAuto: Bool = false
+    ) {
+        self.uri = uri
+        self.region = region
+        self.takenOn = takenOn
+        self.regionAuto = regionAuto
+        self.dateAuto = dateAuto
+    }
+}
+
 public struct UploadState: Equatable, Sendable {
     public let spaceId: SpaceId
-    public var picked: [PickedPhoto] = []
-    public var region: Region?
-    public var takenOn: CalendarDate?
-    public var regionFromExif = false
-    public var dateFromExif = false
-    public var regionMismatch = 0
-    public var dateMismatch = 0
+    /**
+     고른 사진들. **한 장 한 장이 제 지역·날짜를 듭니다.**
+
+     예전에는 화면 전체에 지역 하나·날짜 하나였습니다. 그러면 강릉에서 찍은 것과
+     속초에서 찍은 것을 한 번에 고른 사람은, 많은 쪽으로 뭉뚱그려 올리거나
+     두 번에 나눠 올려야 했습니다. 사진마다 들고 있으면 그냥 한 번에 올라갑니다.
+     */
+    public var items: [UploadItem] = []
     public var step: UploadStep = .editing
+    /// 지역을 고르는 중인 사진. `nil` 이면 목록 화면입니다.
+    public var editingRegionOf: String?
     public var regionQuery = ""
     public var regionResults: [Region] = []
-    public var pickingRegion = false
 
     public init(spaceId: SpaceId) { self.spaceId = spaceId }
 
-    /// **지역은 비울 수 없습니다** — 지도에 올라갈 자리가 없어집니다.
+    /// **지역이 빈 사진이 하나라도 있으면 안 됩니다** — 지도에 올라갈 자리가 없어집니다.
     public var canUpload: Bool {
-        !picked.isEmpty && region != nil && takenOn != nil && step == .editing
+        guard !items.isEmpty, items.allSatisfy({ $0.region != nil }) else { return false }
+        if case .failed = step { return true }
+        return step == .editing
     }
 
-    /// "3장 중 2장은 다른 곳이에요" — 나눠 올리라고 알려 주는 문구.
-    public var mismatchNotice: String? {
-        if regionMismatch > 0 { return "\(picked.count)장 중 \(regionMismatch)장은 다른 곳이에요" }
-        if dateMismatch > 0 { return "\(picked.count)장 중 \(dateMismatch)장은 다른 날이에요" }
-        return nil
+    /**
+     "지역 2곳 · 날짜 2일로 나눠 올라가요" — 한 번에 고른 사진이 여러 곳·여러 날에
+     걸쳐 있을 때만 알립니다. 한 곳 한 날이면 알릴 것이 없습니다.
+     */
+    public var splitNotice: String? {
+        let places = Set(items.compactMap { $0.region?.code }).count
+        let days = Set(items.map(\.takenOn)).count
+        guard places > 1 || days > 1 else { return nil }
+        return "지역 \(places)곳 · 날짜 \(days)일로 나눠 올라가요"
     }
 }
 
@@ -53,34 +84,62 @@ public enum UploadReducer {
 
     public static func picked(_ state: UploadState, _ items: [PickedPhoto]) -> UploadState {
         var next = state
-        next.picked = items
+        next.items = items.map {
+            UploadItem(uri: $0.uri, region: nil, takenOn: CalendarDate(year: 1, month: 1, day: 1))
+        }
         next.step = items.isEmpty ? .editing : .reading
         return next
     }
 
-    public static func hintsRead(
-        _ state: UploadState, _ defaults: UploadPlan.Defaults, region: Region?
-    ) -> UploadState {
+    /// 사진에서 읽은 값을 **한 장씩** 채웁니다.
+    public static func hintsRead(_ state: UploadState, _ items: [UploadItem]) -> UploadState {
         var next = state
-        next.region = region ?? state.region
-        next.takenOn = defaults.takenOn
-        next.regionFromExif = defaults.regionFromExif && region != nil
-        next.dateFromExif = defaults.dateFromExif
-        next.regionMismatch = defaults.regionMismatch
-        next.dateMismatch = defaults.dateMismatch
+        next.items = items
         next.step = .editing
         return next
     }
 
-    public static func regionChosen(_ state: UploadState, _ region: Region) -> UploadState {
+    public static func regionPickerOpened(_ state: UploadState, _ uri: String) -> UploadState {
         var next = state
-        next.region = region
-        // 사용자가 직접 고른 값이므로 '자동' 딱지를 뗍니다
-        next.regionFromExif = false
-        next.regionMismatch = 0
-        next.pickingRegion = false
+        next.editingRegionOf = uri
         next.regionQuery = ""
         next.regionResults = []
+        return next
+    }
+
+    public static func regionPickerDismissed(_ state: UploadState) -> UploadState {
+        var next = state
+        next.editingRegionOf = nil
+        next.regionQuery = ""
+        next.regionResults = []
+        return next
+    }
+
+    public static func regionChosen(_ state: UploadState, _ region: Region) -> UploadState {
+        guard let uri = state.editingRegionOf else { return state }
+        var next = state
+        next.items = state.items.map {
+            // 사용자가 직접 고른 값이므로 '자동' 딱지를 뗍니다
+            guard $0.uri == uri else { return $0 }
+            var item = $0
+            item.region = region
+            item.regionAuto = false
+            return item
+        }
+        return regionPickerDismissed(next)
+    }
+
+    public static func dateChosen(
+        _ state: UploadState, _ uri: String, _ date: CalendarDate
+    ) -> UploadState {
+        var next = state
+        next.items = state.items.map {
+            guard $0.uri == uri else { return $0 }
+            var item = $0
+            item.takenOn = date
+            item.dateAuto = false
+            return item
+        }
         return next
     }
 
@@ -88,6 +147,13 @@ public enum UploadReducer {
     public static func failed(_ state: UploadState, savedLocally: Bool) -> UploadState {
         var next = state
         next.step = .failed(savedLocally: savedLocally)
+        return next
+    }
+
+    /// '다시 시도' — 고친 값은 그대로 두고 올릴 수 있는 상태로만 되돌립니다.
+    public static func retry(_ state: UploadState) -> UploadState {
+        var next = state
+        next.step = .editing
         return next
     }
 }
@@ -103,6 +169,8 @@ public final class UploadStore {
     private let searchRegions: SearchRegions
     private let catalog: any RegionCatalog
     private let today: CalendarDate
+    /// 지역 시트에서 열었을 때 미리 정해 둔 지역.
+    private var preselected: Region?
 
     public init(
         spaceId: SpaceId,
@@ -129,12 +197,29 @@ public final class UploadStore {
         var hints: [UploadPlan.ExifHint] = []
         for item in items { hints.append(await readHints(item.uri)) }
 
-        let defaults = UploadPlan.defaults(hints: hints, today: today)
-        var region: Region?
-        if let code = defaults.regionCode {
-            region = await catalog.find(code.value)
+        // 제 값이 없는 사진은 **여럿의 값**으로 메웁니다. 한 장만 위치가 안 찍혀
+        // 있다고 그 한 장만 빈칸으로 두면, 사용자가 그것만 따로 찾아 채워야 합니다.
+        let fallback = UploadPlan.defaults(hints: hints, today: today)
+        var fallbackRegion: Region?
+        if let code = fallback.regionCode { fallbackRegion = await catalog.find(code.value) }
+
+        var built: [UploadItem] = []
+        for (index, item) in items.enumerated() {
+            let hint = hints[index]
+            var own: Region?
+            if let code = hint.regionCode { own = await catalog.find(code.value) }
+            // 지도에서 콕 집어 고른 곳이 있으면 그것이 먼저입니다.
+            let region = preselected ?? own ?? fallbackRegion
+            built.append(UploadItem(
+                uri: item.uri,
+                region: region,
+                takenOn: hint.takenOn ?? fallback.takenOn,
+                // 사진에서 왔든 여럿에서 메웠든 사용자가 고른 값은 아닙니다.
+                regionAuto: preselected == nil && region != nil,
+                dateAuto: hint.takenOn != nil || fallback.dateFromExif
+            ))
         }
-        state = UploadReducer.hintsRead(state, defaults, region: region)
+        state = UploadReducer.hintsRead(state, built)
     }
 
     public func search(_ query: String) async {
@@ -146,32 +231,42 @@ public final class UploadStore {
         state = UploadReducer.regionChosen(state, region)
     }
 
-    public func startPickingRegion() { state.pickingRegion = true }
+    /**
+     지역 시트에서 열었을 때 — 그 지역을 **미리 정해 둡니다.**
+
+     사진을 고르기 **전에** 불리므로 여기서 바로 넣을 수는 없습니다. 들고 있다가
+     사진이 들어온 뒤 EXIF 값 대신 이 값을 씁니다 — 사용자가 지도에서 콕 집어
+     고른 곳이 사진에 찍힌 좌표보다 정확합니다.
+     */
+    public func preselect(_ region: Region) { preselected = region }
+
+    public func startPickingRegion(_ uri: String) {
+        state = UploadReducer.regionPickerOpened(state, uri)
+    }
 
     /// 고르다 말고 닫아도 **원래 값은 그대로** 둡니다. 검색어만 지웁니다.
     public func cancelPickingRegion() {
-        state.pickingRegion = false
-        state.regionQuery = ""
-        state.regionResults = []
+        state = UploadReducer.regionPickerDismissed(state)
     }
 
     /// 날짜를 직접 고르면 '자동' 딱지를 뗍니다 — 지역과 같은 규칙입니다.
-    public func setDate(_ date: CalendarDate) {
-        state.takenOn = date
-        state.dateFromExif = false
-        state.dateMismatch = 0
+    public func setDate(_ uri: String, _ date: CalendarDate) {
+        state = UploadReducer.dateChosen(state, uri, date)
     }
 
+    public func retry() { state = UploadReducer.retry(state) }
+
     public func confirm() async {
-        guard state.canUpload, let region = state.region, let takenOn = state.takenOn else { return }
+        guard state.canUpload else { return }
         state.step = .uploading
 
         var drafts: [NewPhoto] = []
-        for (index, picked) in state.picked.enumerated() {
-            guard let data = await toJpeg(picked.uri) else { continue }
+        for (index, item) in state.items.enumerated() {
+            guard let region = item.region, let data = await toJpeg(item.uri) else { continue }
+            // 사진마다 **제 지역·제 날짜**로 올라갑니다.
             drafts.append(NewPhoto(
-                localId: "\(picked.uri)#\(index)",
-                data: data, regionCode: region.code, takenOn: takenOn
+                localId: "\(item.uri)#\(index)",
+                data: data, regionCode: region.code, takenOn: item.takenOn
             ))
         }
 

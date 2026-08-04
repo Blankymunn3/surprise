@@ -83,6 +83,15 @@ final class AppContainer {
         )
     }
 
+    func spaceMenuStore(_ spaceId: SpaceId) -> SpaceMenuStore {
+        SpaceMenuStore(
+            spaceId: spaceId,
+            observeSpaces: ObserveSpaces(spaces: spaces),
+            newInvite: NewInvite(spaces: spaces),
+            renameSpace: RenameSpace(spaces: spaces)
+        )
+    }
+
     func mapStore(_ spaceId: SpaceId, _ kind: SpaceKind) -> MapStore {
         let photos = photoRepository(kind)
         return MapStore(
