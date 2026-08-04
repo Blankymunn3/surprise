@@ -36,7 +36,13 @@ class SpaceListViewModel(
         when (intent) {
             SpaceListIntent.Appeared, SpaceListIntent.PullToRefresh -> refresh()
             is SpaceListIntent.SpaceTapped ->
-                sendEffect(SpaceListEffect.OpenSpace(intent.id, currentState().kindOf(intent.id)))
+                sendEffect(
+                    SpaceListEffect.OpenSpace(
+                        id = intent.id,
+                        kind = currentState().kindOf(intent.id),
+                        name = currentState().nameOf(intent.id),
+                    )
+                )
             SpaceListIntent.CreateTapped -> setState { SpaceListReducer.sheetOpened(this, SpaceListSheet.Create) }
             SpaceListIntent.JoinTapped -> setState { SpaceListReducer.sheetOpened(this, SpaceListSheet.Join) }
             SpaceListIntent.SheetDismissed -> setState { SpaceListReducer.sheetDismissed(this) }

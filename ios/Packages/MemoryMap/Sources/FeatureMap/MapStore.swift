@@ -17,7 +17,6 @@ public struct RegionSheetUi: Equatable, Sendable {
     public let region: Region
     public let photos: [Photo]
     public var coverId: PhotoId?
-    public var selected: PhotoId?
 }
 
 public struct MapState: Equatable, Sendable {
@@ -37,11 +36,6 @@ public struct MapState: Equatable, Sendable {
 
     public init(spaceId: SpaceId) { self.spaceId = spaceId }
 
-    /// 대표로 지정할 수 있는가 — 사진을 하나 골랐고 그게 이미 대표가 아닐 때만.
-    public var canSetCover: Bool {
-        guard let sheet, let picked = sheet.selected else { return false }
-        return picked != sheet.coverId
-    }
 }
 
 /**
@@ -206,8 +200,7 @@ public final class MapStore {
         state.sheet = RegionSheetUi(
             region: region,
             photos: board.photos(in: region.code),
-            coverId: board.regionCover(region.code)?.id,
-            selected: nil
+            coverId: board.regionCover(region.code)?.id
         )
     }
 
@@ -217,18 +210,16 @@ public final class MapStore {
         await open(region)
     }
 
-    public func select(_ id: PhotoId) {
-        guard var sheet = state.sheet else { return }
-        sheet.selected = sheet.selected == id ? nil : id
-        state.sheet = sheet
-    }
-
-    public func setCover() async {
-        guard state.canSetCover, let sheet = state.sheet, let picked = sheet.selected else { return }
-        _ = await setCoverPhoto(state.spaceId, .region(sheet.region.code), picked)
+    /// 시트에서 사진을 누름 = **그 사진을 대표로 지정.**
+    ///
+    /// 고르고 나서 '대표로 지정' 을 또 누르는 두 단계였는데, 시트에서 사진을 누르는
+    /// 일이 그것 말고는 없어서 한 단계로 합쳤습니다. 이미 대표인 것을 또 누르면
+    /// 아무 일도 없습니다 — 같은 값을 서버에 다시 쓸 까닭이 없습니다.
+    public func setCover(_ id: PhotoId) async {
+        guard let sheet = state.sheet, sheet.coverId != id else { return }
+        _ = await setCoverPhoto(state.spaceId, .region(sheet.region.code), id)
         var next = sheet
-        next.coverId = picked
-        next.selected = nil
+        next.coverId = id
         state.sheet = next
     }
 

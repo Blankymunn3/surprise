@@ -51,6 +51,7 @@ internal fun MapCanvas(
     fills: List<RegionFill>,
     onTap: (latitude: Double, longitude: Double) -> Unit,
     modifier: Modifier = Modifier,
+    zoom: ZoomNudge = ZoomNudge(),
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -131,6 +132,9 @@ internal fun MapCanvas(
     // 그 값으로 다시 맞춥니다.
     var applied by remember { mutableStateOf<Focused?>(null) }
     var listening by remember { mutableStateOf(false) }
+    // 확대·축소도 **몇 번째 눌렀는지**로 셉니다. 방향만 보면 ＋ 를 연달아 눌러도
+    // 값이 그대로라 두 번째부터 아무 일이 없습니다.
+    var appliedZoom by remember { mutableStateOf(0) }
 
     AndroidView(
         factory = { mapView },
@@ -166,6 +170,11 @@ internal fun MapCanvas(
                         map.animateCamera(focus.toUpdate(side, vertical))
                     }
                 }
+
+                if (zoom.serial != appliedZoom) {
+                    appliedZoom = zoom.serial
+                    map.animateCamera(CameraUpdateFactory.zoomBy(zoom.delta))
+                }
             }
         },
     )
@@ -178,6 +187,15 @@ internal fun MapCanvas(
  * 그때마다 다시 맞춰야 고른 지역이 계속 가운데에 있습니다.
  */
 private data class Focused(val count: Int, val width: Int, val height: Int)
+
+/**
+ * 확대·축소 요청.
+ *
+ * [serial] 이 늘 때만 [delta] 만큼 배율을 옮깁니다. 방향만 들고 다니면 ＋ 를 연달아
+ * 눌렀을 때 값이 그대로라 두 번째부터 아무 일도 일어나지 않습니다 — 지역 맞춤에
+ * `focusCount` 를 두는 것과 같은 이유입니다.
+ */
+internal data class ZoomNudge(val serial: Int = 0, val delta: Double = 0.0)
 
 /**
  * 고른 지역에 화면을 맞춥니다. 지도는 이미 가려지는 만큼 줄여 놓았으므로

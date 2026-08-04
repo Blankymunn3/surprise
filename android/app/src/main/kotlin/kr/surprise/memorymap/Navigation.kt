@@ -1,6 +1,7 @@
 package kr.surprise.memorymap
 
 import android.app.Activity
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,6 +15,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,6 +55,8 @@ import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
 import kr.surprise.memorymap.core.designsystem.component.PlainIconButton
 import kr.surprise.memorymap.core.designsystem.component.Segmented
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
+import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
+import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 import kr.surprise.memorymap.core.model.Region
 import kr.surprise.memorymap.core.model.SpaceId
 import kr.surprise.memorymap.core.model.SpaceKind
@@ -77,7 +83,7 @@ private const val ROUTE_SPACES = "spaces"
  * 짜국의 **종류**도 경로에 넣습니다. 들어간 화면이 기기 안 사진을 볼지 서버 사진을 볼지
  * 정해야 하는데, 경로에 있으면 앱이 죽었다 살아나도 그대로 살아납니다.
  */
-private const val ROUTE_SPACE = "space/{spaceId}/{kind}"
+private const val ROUTE_SPACE = "space/{spaceId}/{kind}?name={name}"
 
 /**
  * 화면이 오갈 때의 움직임.
@@ -120,7 +126,12 @@ fun MemoryMapNavHost(container: AppContainer) {
                 vm.effect.collect { effect ->
                     when (effect) {
                         is SpaceListEffect.OpenSpace ->
-                            navController.navigate("space/${effect.id.value}/${effect.kind.name}")
+                            // 이름은 사용자가 지은 것이라 `/` 나 `?` 가 들어 있을 수 있습니다.
+                            // 그대로 붙이면 경로가 갈라져 화면을 못 찾습니다.
+                            navController.navigate(
+                                "space/${effect.id.value}/${effect.kind.name}" +
+                                    "?name=${Uri.encode(effect.name)}"
+                            )
                         is SpaceListEffect.ShowMessage ->
                             snackbar.showSnackbar(effect.text)
                         is SpaceListEffect.ShareInvite ->
@@ -156,6 +167,7 @@ fun MemoryMapNavHost(container: AppContainer) {
             arguments = listOf(
                 navArgument("spaceId") { type = NavType.StringType },
                 navArgument("kind") { type = NavType.StringType },
+                navArgument("name") { type = NavType.StringType; defaultValue = "" },
             ),
         ) { entry ->
             val spaceId = SpaceId(entry.arguments?.getString("spaceId").orEmpty())
@@ -166,6 +178,7 @@ fun MemoryMapNavHost(container: AppContainer) {
                 container = container,
                 spaceId = spaceId,
                 kind = kind,
+                spaceName = entry.arguments?.getString("name").orEmpty(),
                 onBack = { navController.popBackStack() },
             )
         }
@@ -182,6 +195,7 @@ private fun SpaceTabs(
     container: AppContainer,
     spaceId: SpaceId,
     kind: SpaceKind,
+    spaceName: String,
     onBack: () -> Unit,
 ) {
     var tab by remember { mutableStateOf(0) }
@@ -227,41 +241,49 @@ private fun SpaceTabs(
     }
 
     Box(Modifier.fillMaxSize().background(MemoryColors.Paper)) {
-        // 탭도 옆으로 밀립니다. 누른 쪽으로 미끄러져야 어느 쪽으로 옮겼는지 보입니다.
-        AnimatedContent(
-            targetState = tab,
-            transitionSpec = {
-                val toRight = targetState > initialState
-                val dir = if (toRight) 1 else -1
-                (slideInHorizontally(SLIDE) { dir * it } + fadeIn(FADE)) togetherWith
-                    (slideOutHorizontally(SLIDE) { -dir * it } + fadeOut(FADE))
-            },
-            label = "탭",
-        ) { current ->
-            if (current == 0) {
-                MapScreen(state = mapState, onIntent = mapVm::onIntent, topBarHeight = 96.dp)
-            } else {
-                Column(Modifier.fillMaxSize().systemBarsPadding()) {
-                    Box(Modifier.fillMaxWidth().padding(top = 44.dp))
+        // 머리말과 탭은 **지도 위에 떠 있지 않고 자리를 차지합니다.** 지도가 그 아래에서
+        // 시작하니, 러시아처럼 위로 긴 나라가 검색칸 뒤로 숨을 자리 자체가 없습니다.
+        Column(Modifier.fillMaxSize().systemBarsPadding()) {
+            TopBar(
+                spaceName = spaceName,
+                onlyOnThisPhone = kind == SpaceKind.Personal,
+                onBack = onBack,
+            )
+            Segmented(
+                options = listOf("지도", "달력"),
+                selectedIndex = tab,
+                onSelect = { tab = it },
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 2.dp, bottom = 10.dp),
+            )
+
+            // 탭도 옆으로 밀립니다. 누른 쪽으로 미끄러져야 어느 쪽으로 옮겼는지 보입니다.
+            AnimatedContent(
+                targetState = tab,
+                transitionSpec = {
+                    val toRight = targetState > initialState
+                    val dir = if (toRight) 1 else -1
+                    (slideInHorizontally(SLIDE) { dir * it } + fadeIn(FADE)) togetherWith
+                        (slideOutHorizontally(SLIDE) { -dir * it } + fadeOut(FADE))
+                },
+                label = "탭",
+                modifier = Modifier.weight(1f),
+            ) { current ->
+                if (current == 0) {
+                    MapScreen(state = mapState, onIntent = mapVm::onIntent)
+                } else {
                     CalendarScreen(state = calendarState, onIntent = calendarVm::onIntent)
                 }
             }
         }
 
-        // 지도 위에서는 유리, 달력(종이 위)에서는 그냥 놓입니다 — 같은 부품, 다른 층
-        TopBar(
-            floating = tab == 0,
-            selected = tab,
-            onSelect = { tab = it },
-            onBack = onBack,
-            modifier = Modifier.align(Alignment.TopCenter),
-        )
-
         if (tab == 1) {
             MemoryFab(
                 onClick = { uploading = true },
                 contentDescription = "사진 올리기",
-                modifier = Modifier.align(Alignment.BottomEnd).padding(end = 20.dp, bottom = 40.dp),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .systemBarsPadding()
+                    .padding(end = 14.dp, bottom = 18.dp),
             )
         }
 
@@ -319,39 +341,47 @@ private fun SpaceTabs(
  */
 private const val MAX_PICK = 20
 
+/**
+ * 짜국 안쪽의 머리말 — 뒤로 · 이름 · ⋯.
+ *
+ * 이름이 **가운데가 아니라 왼쪽**입니다. 가운데에 두면 이름 길이에 따라 자리가
+ * 매번 달라지는데, 왼쪽에 붙이면 늘 같은 곳에서 시작합니다.
+ */
 @Composable
 private fun TopBar(
-    floating: Boolean,
-    selected: Int,
-    onSelect: (Int) -> Unit,
+    spaceName: String,
+    onlyOnThisPhone: Boolean,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier
-            .systemBarsPadding()
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(start = 8.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        if (floating) {
-            FloatingIconButton(MemoryIcons.Back, "뒤로", onBack)
-        } else {
-            PlainIconButton(MemoryIcons.Back, "뒤로", onBack)
-        }
+        PlainIconButton(MemoryIcons.Back, "뒤로", onBack)
 
-        Segmented(
-            options = listOf("지도", "달력"),
-            selectedIndex = selected,
-            onSelect = onSelect,
-            floating = floating,
+        Text(
+            text = spaceName,
+            style = MemoryType.Title,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f).padding(horizontal = 2.dp),
         )
 
-        if (floating) {
-            FloatingIconButton(MemoryIcons.More, "더 보기", { })
-        } else {
-            PlainIconButton(MemoryIcons.More, "더 보기", { })
+        if (onlyOnThisPhone) {
+            Text(
+                text = "이 폰에만",
+                style = MemoryType.Micro,
+                color = MemoryColors.Ink,
+                modifier = Modifier
+                    .background(MemoryColors.Surface)
+                    .border(MemoryStroke.Border, MemoryColors.Line)
+                    .padding(horizontal = 7.dp, vertical = 2.dp),
+            )
         }
+
+        PlainIconButton(MemoryIcons.More, "더 보기", { })
     }
 }

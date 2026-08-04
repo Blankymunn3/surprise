@@ -40,24 +40,13 @@ internal object MapReducer {
                 region = region,
                 photos = photos,
                 coverId = board.regionCover(region.code)?.id,
-                selected = null,
             ),
         )
     }
 
-    fun photoSelected(state: MapState, id: PhotoId): MapState =
-        state.copy(sheet = state.sheet?.copy(selected = if (state.sheet.selected == id) null else id))
-
     fun coverChanged(state: MapState, id: PhotoId): MapState =
-        state.copy(sheet = state.sheet?.copy(coverId = id, selected = null))
+        state.copy(sheet = state.sheet?.copy(coverId = id))
 
     fun sheetDismissed(state: MapState): MapState =
         state.copy(sheet = null, query = "", results = emptyList())
-}
-
-/** 대표로 지정할 수 있는가 — 사진을 하나 골랐고 그게 이미 대표가 아닐 때만. */
-internal fun MapState.canSetCover(): Boolean {
-    val sheet = sheet ?: return false
-    val picked = sheet.selected ?: return false
-    return picked != sheet.coverId
 }

@@ -19,7 +19,7 @@ struct RootView: View {
             // 사진 요청에 토큰을 얹을 길. 뿌리에서 한 번 꽂으면 아래 모든 사진이 씁니다.
             .environment(\.photoToken, { await AppContainer.shared.accounts.idToken() })
             .navigationDestination(item: $opened) { space in
-                SpaceDetailView(spaceId: space.spaceId, kind: space.kind)
+                SpaceDetailView(spaceId: space.spaceId, kind: space.kind, name: space.name)
             }
         }
     }

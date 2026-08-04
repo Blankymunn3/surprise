@@ -22,20 +22,16 @@ public struct MapView: View {
     /// 지역을 칠할 대표사진. 주소가 아니라 **그림 자체**가 있어야 채울 수 있어서
     /// 미리 받아 둡니다.
     @State private var covers: [String: Image] = [:]
-    private let topInset: CGFloat
+    /// 지금 지도가 보여 주고 있는 범위. 확대·축소를 여기서부터 계산합니다 —
+    /// `MapCameraPosition` 은 우리가 넣은 값만 알려 주고, 손으로 옮긴 것은 모릅니다.
+    @State private var visibleRegion: MKCoordinateRegion?
     /// 사진 올리기를 엽니다. **지역 시트에서 눌렀으면 그 지역**이 넘어갑니다 —
     /// 이미 아는 곳을 올리기 화면에서 다시 고르게 하면 안 됩니다.
     /// 아래 ＋ 로 눌렀으면 `nil` 이고, 그때는 사진의 정보가 지역을 정합니다.
     private let onAddPhoto: (Region?) -> Void
 
-    /// `topInset` 은 **안전영역 아래로** 더 미는 값입니다. 위 띠(뒤로 버튼 · 지도|달력)가
-    /// 안전영역 아래 8 + 높이 40 = 48 을 쓰므로, 그 바로 밑에 붙이려면 56 입니다.
-    /// 안드로이드의 96 은 상태바를 포함한 값이라 숫자가 다릅니다 — 같게 맞추면 오히려 어긋납니다.
-    public init(
-        store: MapStore, topInset: CGFloat = 56, onAddPhoto: @escaping (Region?) -> Void
-    ) {
+    public init(store: MapStore, onAddPhoto: @escaping (Region?) -> Void) {
         self._store = State(initialValue: store)
-        self.topInset = topInset
         self.onAddPhoto = onAddPhoto
     }
 
@@ -50,27 +46,29 @@ public struct MapView: View {
             MemoryColor.mapSea.ignoresSafeArea()
 
             map
-                .padding(.top, topInset + searchPillHeight)
+                .padding(.top, searchTop + searchFieldHeight)
                 .padding(.bottom, store.state.sheet == nil ? 0 : sheetHeight)
 
-            VStack(spacing: MemorySpace.s) {
-                searchPill
+            VStack(spacing: MemorySpace.xs) {
+                searchField
                 if !store.state.results.isEmpty { results }
             }
-            .padding(.horizontal, MemorySpace.l)
-            .padding(.top, topInset)
+            .padding(.horizontal, edge)
+            .padding(.top, searchTop)
+        }
+        .overlay(alignment: .bottomLeading) {
+            controls
+                .padding(.leading, edge)
+                .padding(.bottom, floatBottom)
         }
         .overlay(alignment: .bottomTrailing) {
             MemoryFab { onAddPhoto(nil) }
-                .padding(.trailing, MemorySpace.xl)
+                .padding(.trailing, edge)
                 .padding(.bottom, floatBottom)
         }
         .overlay(alignment: .bottom) {
             if let sheet = store.state.sheet {
-                RegionSheet(
-                    sheet: sheet, canSetCover: store.state.canSetCover,
-                    store: store, onAddPhoto: onAddPhoto
-                )
+                RegionSheet(sheet: sheet, store: store, onAddPhoto: onAddPhoto)
                     // 시트 높이는 **재서** 씁니다. 사진이 있느냐에 따라 훌쩍 달라져서,
                     // 고정값으로 두면 시트가 짧을 때 FAB 만 허공에 뜹니다.
                     .background(
@@ -123,7 +121,7 @@ public struct MapView: View {
     }
 
     private var floatBottom: CGFloat {
-        store.state.sheet == nil ? 40 : max(40, sheetHeight + MemorySpace.l)
+        store.state.sheet == nil ? 18 : sheetHeight + MemorySpace.m
     }
 
     private var map: some View {
@@ -161,7 +159,7 @@ public struct MapView: View {
                         pin.region.displayName,
                         coordinate: .init(latitude: pin.latitude, longitude: pin.longitude)
                     ) {
-                        PinBubble(pin: pin) { Task { await store.open(pin.region) } }
+                        PinBadge(count: pin.photoCount)
                     }
                 }
             }
@@ -175,6 +173,10 @@ public struct MapView: View {
                     .allowsHitTesting(false)
                     .ignoresSafeArea()
             }
+            // 손으로 옮긴 것까지 알아야 확대·축소가 지금 보이는 곳을 기준으로 움직입니다.
+            .onMapCameraChange(frequency: .onEnd) { context in
+                visibleRegion = context.region
+            }
             .onTapGesture { point in
                 // 검색하다 지도를 누르면 자판부터 내려갑니다. 자판이 화면 절반을 덮은 채로
                 // 지역 시트가 올라오면 아무것도 안 보입니다.
@@ -186,13 +188,14 @@ public struct MapView: View {
         }
     }
 
-    private var searchPill: some View {
-        HStack(spacing: 10) {
+    /// 지도 위 검색칸. 흰 면에 1px 잉크 선 — 반투명이 아닙니다.
+    private var searchField: some View {
+        HStack(spacing: MemorySpace.s) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 15))
-                .foregroundStyle(MemoryColor.ink3)
+                .foregroundStyle(MemoryColor.ink)
 
-            TextField("지역 검색", text: Binding(
+            TextField("지역 검색 — 강릉, 제주…", text: Binding(
                 get: { store.state.query },
                 set: { value in Task { await store.search(value) } }
             ))
@@ -206,145 +209,192 @@ public struct MapView: View {
                 } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(MemoryColor.ink3)
+                        .foregroundStyle(MemoryColor.ink)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, MemorySpace.l)
-        .padding(.vertical, 11)
-        .glass()
+        .padding(.horizontal, MemorySpace.m)
+        .frame(height: 44)
+        .background(MemoryColor.surface)
+        .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
+        .shadow(color: MemoryColor.ink.opacity(0.16), radius: 6, y: 2)
     }
 
+    /**
+     검색 결과. **사진이 있는 지역이 먼저** 옵니다 — 이미 다녀온 곳을 다시 찾는 일이
+     새 곳을 찾는 일보다 훨씬 잦습니다. 그 순서는 Store 가 정하고 여기서는 그리기만 합니다.
+     */
     private var results: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
                 ForEach(store.state.results) { region in
                     Button { Task { await store.open(region) } } label: {
-                        HStack {
+                        HStack(alignment: .lastTextBaseline, spacing: MemorySpace.s) {
                             Text(region.name).memoryBody()
-                            Spacer()
                             if let parent = region.parentName {
-                                Text(parent).memoryLabel().foregroundStyle(MemoryColor.ink3)
+                                Text(parent).memoryMicro().foregroundStyle(MemoryColor.ink2)
                             }
+                            Spacer(minLength: 0)
                         }
-                        .padding(.horizontal, MemorySpace.l)
-                        .padding(.vertical, MemorySpace.m)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 13)
+                        .padding(.vertical, 11)
                     }
                     .buttonStyle(.plain)
+
+                    MemoryColor.fill.frame(height: MemoryStroke.border)
                 }
             }
         }
         .frame(maxHeight: 260)
-        .background(MemoryColor.surface, in: RoundedRectangle(cornerRadius: MemoryRadius.card, style: .continuous))
-        .shadow(color: MemoryColor.ink.opacity(0.12), radius: 12, y: 8)
+        .background(MemoryColor.surface)
+        .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
+        .shadow(color: MemoryColor.ink.opacity(0.16), radius: 6, y: 2)
     }
-}
 
-/// 지도 위의 표시. 대표사진이 있으면 **사진이 곧 표시**입니다 —
-/// 어디에 뭘 남겼는지 지도만 봐도 알 수 있게.
-private struct PinBubble: View {
-    let pin: RegionPin
-    let onTap: () -> Void
+    /**
+     왼쪽 아래: 확대 · 축소 · 내 위치.
 
-    var body: some View {
-        Button(action: onTap) {
-            ZStack {
-                Circle().fill(MemoryColor.surface)
-                if let cover = pin.coverURL, let url = URL(string: cover) {
-                    RemotePhoto(url: url) { MemoryColor.fill }
-                        .clipShape(Circle())
-                } else {
-                    Text("\(pin.photoCount)")
-                        .memoryMicro()
-                        .foregroundStyle(MemoryColor.accent)
-                }
-            }
-            .frame(width: 44, height: 44)
-            .overlay(Circle().strokeBorder(MemoryColor.accent, lineWidth: 2))
-            .shadow(color: MemoryColor.ink.opacity(0.25), radius: 6, y: 3)
+     세 칸이 **따로 떨어져** 섭니다 — 붙여 놓으면 가운데 선이 두 겹이 되고,
+     무엇이 한 벌인지도 흐려집니다.
+     */
+    /// 시안에는 '내 위치' 도 있지만 아직 어느 쪽에도 만들지 않은 기능이라 빼 뒀습니다.
+    /// 눌러도 아무 일 없는 칸을 두는 것보다 없는 편이 낫습니다.
+    private var controls: some View {
+        VStack(spacing: 6) {
+            ctlButton("plus", "확대") { nudgeZoom(by: 0.5) }
+            ctlButton("minus", "축소") { nudgeZoom(by: 2) }
+        }
+    }
+
+    private func ctlButton(_ symbol: String, _ label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(MemoryColor.ink)
+                .frame(width: 40, height: 40)
+                .background(MemoryColor.surface)
+                .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
+                .shadow(color: MemoryColor.ink.opacity(0.16), radius: 6, y: 2)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(label)
+    }
+
+    /// 보이는 넓이를 [factor] 배로. 0.5 면 확대, 2 면 축소입니다.
+    ///
+    /// 지금 무엇을 보고 있는지는 지도가 움직일 때마다 받아 둡니다 —
+    /// `MapCameraPosition` 은 우리가 넣은 값만 알려 주고 사용자가 손으로 옮긴 것은 모릅니다.
+    private func nudgeZoom(by factor: Double) {
+        guard let now = visibleRegion else { return }
+        let span = MKCoordinateSpan(
+            latitudeDelta: min(150, now.span.latitudeDelta * factor),
+            longitudeDelta: min(300, now.span.longitudeDelta * factor)
+        )
+        withAnimation(.easeInOut(duration: 0.25)) {
+            position = .region(MKCoordinateRegion(center: now.center, span: span))
+        }
     }
 }
 
-/// 시트는 **불투명 흰색**입니다. 유리로 만들면 뒤의 지도가 비쳐 사진이 지저분해 보입니다.
+/**
+ 지도 위의 표시 — **사진 수만 적은 작은 잉크 딱지**입니다.
+
+ 예전에는 지름 44 짜리 원에 대표사진을 넣었는데, 이제 지역 자체가 그 사진으로
+ 칠해집니다. 같은 사진을 두 번 보여 줄 까닭이 없고, 원이 지역을 덮어 가렸습니다.
+
+ **누를 수 없습니다.** 지역을 고르는 일은 지도를 누르면 되고, 딱지까지 누르게 하면
+ 딱지를 살짝 빗나갔을 때만 되는 이상한 경계가 생깁니다.
+ */
+private struct PinBadge: View {
+    let count: Int
+
+    var body: some View {
+        Text("\(count)")
+            .memoryMicro()
+            .foregroundStyle(MemoryColor.onAccent)
+            .frame(width: 22, height: 16)
+            .background(MemoryColor.ink)
+            .allowsHitTesting(false)
+    }
+}
+
+/**
+ 지역 시트. **위쪽에만 2px 잉크 선**을 긋고 나머지는 흰 면입니다.
+
+ 손잡이(작은 막대)를 두지 않습니다 — 이 시트는 끌어 올리는 것이 아니라 지역을
+ 누르면 나타났다가 × 로 닫는 것이라, 끌 수 있게 생기면 안 됩니다.
+ */
 private struct RegionSheet: View {
     let sheet: RegionSheetUi
-    let canSetCover: Bool
     let store: MapStore
     let onAddPhoto: (Region?) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Capsule()
-                .fill(MemoryColor.line2)
-                .frame(width: 36, height: 4)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 10)
-                .onTapGesture { store.dismissSheet() }
+            MemoryColor.ink.frame(height: MemoryStroke.divider)
 
-            Spacer().frame(height: MemorySpace.l)
-
-            HStack(alignment: .bottom) {
-                Text(sheet.region.name).memoryTitle()
-                if let parent = sheet.region.parentName {
-                    Text(parent).memoryLabel().foregroundStyle(MemoryColor.ink3)
-                }
-                Spacer()
-                Text("사진 \(sheet.photos.count)장").memoryLabel().foregroundStyle(MemoryColor.ink2)
-            }
-
-            Spacer().frame(height: 14)
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: MemorySpace.s) {
-                    ForEach(sheet.photos) { photo in
-                        PhotoThumb(
-                            url: photo.downloadURL,
-                            isCover: photo.id == sheet.coverId,
-                            dateLabel: "\(photo.takenOn.month).\(photo.takenOn.day)"
-                        )
-                        .frame(width: 92, height: 92)
-                        .background {
-                            if photo.id == sheet.selected {
-                                RoundedRectangle(cornerRadius: MemoryRadius.thumb, style: .continuous)
-                                    .fill(MemoryColor.fill)
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .top, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(alignment: .lastTextBaseline, spacing: MemorySpace.s) {
+                            Text(sheet.region.name).memoryTitle()
+                            if let parent = sheet.region.parentName {
+                                Text(parent).memoryMicro().foregroundStyle(MemoryColor.ink2)
                             }
                         }
-                        .onTapGesture { store.select(photo.id) }
+                        Text("사진 \(sheet.photos.count)장")
+                            .memoryLabel()
+                            .foregroundStyle(MemoryColor.ink2)
+                    }
+                    Spacer(minLength: 0)
+                    Button { store.dismissSheet() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(MemoryColor.ink)
+                            .frame(width: 34, height: 34)
+                            .overlay(
+                                Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("닫기")
+                }
+
+                Spacer().frame(height: MemorySpace.m)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: MemorySpace.s) {
+                        ForEach(sheet.photos) { photo in
+                            PhotoThumb(
+                                url: photo.downloadURL,
+                                isCover: photo.id == sheet.coverId,
+                                dateLabel: "\(photo.takenOn.month).\(photo.takenOn.day)"
+                            )
+                            .frame(width: 92, height: 92)
+                            .onTapGesture { Task { await store.setCover(photo.id) } }
+                        }
                     }
                 }
-            }
 
-            Spacer().frame(height: MemorySpace.l)
+                // 누르면 바로 대표가 되므로, 그렇다고 **말해 줘야** 합니다. 버튼이 없으니
+                // 알려 주지 않으면 누를 수 있다는 것 자체를 모릅니다.
+                Text("사진을 누르면 지도에 칠해지는 대표사진이 돼요")
+                    .memoryMicro()
+                    .foregroundStyle(MemoryColor.ink2)
+                    .padding(.top, 6)
 
-            HStack(spacing: MemorySpace.s) {
-                Button { Task { await store.setCover() } } label: {
-                    Text("대표로 지정")
-                        .memoryHeadline()
-                        .foregroundStyle(canSetCover ? MemoryColor.ink : MemoryColor.ink3)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            RoundedRectangle(cornerRadius: MemoryRadius.button, style: .continuous)
-                                .fill(MemoryColor.fill)
-                        )
-                }
-                .buttonStyle(.plain)
-                .disabled(!canSetCover)
+                Spacer().frame(height: MemorySpace.m)
 
                 // 이 시트가 아는 지역을 그대로 들려 보냅니다.
-                PrimaryButton("사진 추가") { onAddPhoto(sheet.region) }
+                PrimaryButton("이 지역에 사진 추가") { onAddPhoto(sheet.region) }
             }
+            .padding(.horizontal, 18)
+            .padding(.top, 14)
+            .padding(.bottom, 26)
         }
-        .padding(.horizontal, MemorySpace.xl)
-        .padding(.bottom, 34)
         .background(MemoryColor.surface)
-        .clipShape(UnevenRoundedRectangle(
-            topLeadingRadius: MemoryRadius.sheet, topTrailingRadius: MemoryRadius.sheet,
-            style: .continuous
-        ))
         .transition(.move(edge: .bottom))
     }
 }
@@ -387,9 +437,15 @@ extension MapFocus {
 /// 테두리와 화면 끝 사이에 남길 여유.
 private let edgeRoom = 1.18
 
+/// 지도 위 물건들의 가장자리 여백. 시안이 정한 값입니다. 안드로이드 `Edge` 와 같습니다.
+private let edge: CGFloat = 14
+
+/// 검색칸이 지도 꼭대기에서 떨어진 거리.
+private let searchTop: CGFloat = 10
+
 /// 검색칸이 지도 위를 덮는 높이. 지역을 맞출 때 이만큼은 빼 둡니다 —
 /// 안드로이드는 실제로 재서 쓰고, 이쪽은 모양이 고정이라 값으로 둡니다.
-private let searchPillHeight: CGFloat = 48
+private let searchFieldHeight: CGFloat = 44
 
 /// 날짜변경선을 넘는 지역은 가운데가 180 을 넘어갑니다. 지도에 줄 때는 접어서 줍니다 —
 /// 넓이(span)는 그대로라 접어도 보이는 범위는 같습니다.

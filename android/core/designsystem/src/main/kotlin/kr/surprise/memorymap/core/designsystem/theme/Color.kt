@@ -45,5 +45,12 @@ object MemoryColors {
      * 나머지는 이 회색입니다 — 지도 자체가 빈 화면의 그림 역할을 합니다.
      */
     val MapLand = Color(0xFFEAE9E9)
-    val MapSea = Color(0xFFF3F2F2)
+
+    /**
+     * 바다. **여섯 색 밖의 유일한 예외입니다.**
+     *
+     * 지도는 UI 가 아니라 콘텐츠라, 사진과 마찬가지로 제 색을 냅니다. 땅과 바다가
+     * 둘 다 회색이면 어디까지가 뭍인지 알 수 없어서, 바다에만 푸른 기를 남깁니다.
+     */
+    val MapSea = Color(0xFFE3E9EC)
 }

@@ -112,6 +112,15 @@ internal object SpaceListReducer {
 internal fun SpaceListState.kindOf(id: SpaceId): SpaceKind =
     (spaces as? SpacesUi.Ready)?.items?.firstOrNull { it.id == id }?.kind ?: SpaceKind.Shared
 
+/**
+ * 들어갈 짜국의 이름. 안쪽 화면의 머리말에 그대로 나옵니다.
+ *
+ * 못 찾으면 빈 글자를 줍니다 — 머리말이 잠깐 비는 것이, 없는 이름을 지어내
+ * 보여 주는 것보다 낫습니다.
+ */
+internal fun SpaceListState.nameOf(id: SpaceId): String =
+    (spaces as? SpacesUi.Ready)?.items?.firstOrNull { it.id == id }?.name.orEmpty()
+
 /** 공간을 만들 수 있는가. 화면의 버튼이 꺼지는 조건과 같아야 합니다. */
 internal fun SpaceListState.canCreate(): Boolean = pendingName.isNotBlank() && !working
 

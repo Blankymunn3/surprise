@@ -12,6 +12,8 @@ struct SpaceDetailView: View {
     /// 혼자면 기기 안 사진, 같이 쓰면 서버 사진. 고르는 일은 `AppContainer` 가 하고
     /// 이 화면은 어느 쪽인지 모릅니다.
     let kind: SpaceKind
+    /// 머리말에 그대로 나오는 짜국 이름.
+    let name: String
 
     @Environment(\.dismiss) private var dismiss
     @State private var tab = 0
@@ -21,16 +23,23 @@ struct SpaceDetailView: View {
     @State private var calendar: CalendarStore
     @State private var map: MapStore
 
-    init(spaceId: SpaceId, kind: SpaceKind) {
+    init(spaceId: SpaceId, kind: SpaceKind, name: String) {
         self.spaceId = spaceId
         self.kind = kind
+        self.name = name
         _calendar = State(initialValue: AppContainer.shared.calendarStore(spaceId, kind))
         _map = State(initialValue: AppContainer.shared.mapStore(spaceId, kind))
     }
 
     var body: some View {
-        ZStack(alignment: .top) {
-            MemoryColor.paper.ignoresSafeArea()
+        // 머리말과 탭은 **지도 위에 떠 있지 않고 자리를 차지합니다.** 지도가 그 아래에서
+        // 시작하니, 러시아처럼 위로 긴 나라가 검색칸 뒤로 숨을 자리 자체가 없습니다.
+        VStack(spacing: 0) {
+            topBar
+            Segmented(options: ["지도", "달력"], selection: $tab)
+                .padding(.horizontal, MemorySpace.xl)
+                .padding(.top, 2)
+                .padding(.bottom, 10)
 
             // 탭도 옆으로 밀립니다. 누른 쪽으로 미끄러져야 어느 쪽으로 옮겼는지 보입니다.
             Group {
@@ -45,10 +54,10 @@ struct SpaceDetailView: View {
                         .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .animation(.easeInOut(duration: 0.3), value: tab)
-
-            topBar
         }
+        .background(MemoryColor.paper)
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $uploading) {
@@ -76,50 +85,60 @@ struct SpaceDetailView: View {
     }
 
     private var calendarTab: some View {
-        VStack(spacing: 0) {
-            Color.clear.frame(height: 52)
-            CalendarView(store: calendar)
-        }
-        .overlay(alignment: .bottomTrailing) {
-            // 달력에서는 지역을 알 수 없습니다 — 날짜만 아는 자리라서요.
-            // 지난번에 지역 시트에서 열어 둔 값이 남지 않게 비웁니다.
-            MemoryFab {
-                uploadRegion = nil
-                uploading = true
+        CalendarView(store: calendar)
+            .overlay(alignment: .bottomTrailing) {
+                // 달력에서는 지역을 알 수 없습니다 — 날짜만 아는 자리라서요.
+                // 지난번에 지역 시트에서 열어 둔 값이 남지 않게 비웁니다.
+                MemoryFab {
+                    uploadRegion = nil
+                    uploading = true
+                }
+                    .padding(.trailing, 14)
+                    .padding(.bottom, 18)
             }
-                .padding(.trailing, MemorySpace.xl)
-                .padding(.bottom, 40)
-        }
     }
 
-    /// 지도 위에서는 유리, 달력(종이 위)에서는 그냥 놓입니다 — 같은 부품, 다른 층.
+    /**
+     짜국 안쪽의 머리말 — 뒤로 · 이름 · ⋯.
+
+     이름이 **가운데가 아니라 왼쪽**입니다. 가운데에 두면 이름 길이에 따라 자리가
+     매번 달라지는데, 왼쪽에 붙이면 늘 같은 곳에서 시작합니다.
+     */
     private var topBar: some View {
-        HStack {
-            circleButton("arrow.left", label: "뒤로", floating: tab == 0) { dismiss() }
-            Spacer()
-            Segmented(options: ["지도", "달력"], selection: $tab, floating: tab == 0)
-            Spacer()
-            circleButton("ellipsis", label: "더 보기", floating: tab == 0) { }
+        HStack(spacing: 2) {
+            barButton("chevron.left", label: "뒤로") { dismiss() }
+
+            Text(name)
+                .memoryTitle()
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if kind == .personal {
+                Text("이 폰에만")
+                    .memoryMicro()
+                    .foregroundStyle(MemoryColor.ink)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 2)
+                    .background(MemoryColor.surface)
+                    .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
+            }
+
+            barButton("ellipsis", label: "더 보기") { }
         }
-        .padding(.horizontal, MemorySpace.l)
-        .padding(.top, MemorySpace.s)
+        .padding(.horizontal, MemorySpace.s)
+        .padding(.vertical, 6)
     }
 
-    private func circleButton(
-        _ symbol: String, label: String, floating: Bool, action: @escaping () -> Void
+    private func barButton(
+        _ symbol: String, label: String, action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(MemoryColor.ink)
-                .frame(width: 40, height: 40)
-                .background {
-                    if floating {
-                        Circle().fill(.ultraThinMaterial)
-                            .overlay(Circle().strokeBorder(MemoryColor.ink.opacity(0.07), lineWidth: 0.5))
-                            .shadow(color: MemoryColor.ink.opacity(0.14), radius: 12, y: 8)
-                    }
-                }
+                .frame(width: 38, height: 38)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)

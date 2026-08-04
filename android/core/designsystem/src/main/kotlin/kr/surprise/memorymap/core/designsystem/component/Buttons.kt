@@ -25,9 +25,11 @@ import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 
 /**
- * 사진 올리기 버튼. **원, 지름 56, 단색.**
- * 지도처럼 배경이 복잡한 화면에서는 원이 형태로 먼저 읽힙니다.
- * 그라디언트와 안쪽 광택은 쓰지 않습니다 (2013년 문법).
+ * 사진 올리기 버튼. **네모, 54, 단색 레드.**
+ *
+ * 동그라미가 아닌 이유: 이 디자인에는 둥근 것이 하나도 없습니다. 지도 위에서
+ * 형태로 먼저 읽히게 하는 일은 모서리가 아니라 **레드 한 색**이 맡습니다 —
+ * 화면에서 유일하게 꽉 찬 레드라 다른 것과 헷갈릴 수가 없습니다.
  */
 @Composable
 fun MemoryFab(
@@ -38,15 +40,14 @@ fun MemoryFab(
 ) {
     Box(
         modifier = modifier
-            .size(56.dp)
-            .shadow(12.dp, MemoryShapes.Pill, spotColor = MemoryColors.Accent)
-            .clip(MemoryShapes.Pill)
+            .size(54.dp)
+            .shadow(8.dp, MemoryShapes.Square, spotColor = MemoryColors.Ink)
             .background(MemoryColors.Accent)
             .clickable(onClick = onClick)
             .semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, contentDescription = null, tint = MemoryColors.OnAccent, modifier = Modifier.size(26.dp))
+        Icon(icon, contentDescription = null, tint = MemoryColors.OnAccent, modifier = Modifier.size(22.dp))
     }
 }
 

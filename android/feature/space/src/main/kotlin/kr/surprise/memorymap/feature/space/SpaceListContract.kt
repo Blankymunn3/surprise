@@ -77,7 +77,7 @@ sealed interface SpaceListIntent {
 /** 한 번만 일어나는 일. 화면에 남아 있어야 하는 건 State 로 갑니다. */
 sealed interface SpaceListEffect {
     /** 종류를 같이 넘깁니다 — 들어간 화면이 기기 안 사진을 볼지 서버 사진을 볼지 정합니다. */
-    data class OpenSpace(val id: SpaceId, val kind: SpaceKind) : SpaceListEffect
+    data class OpenSpace(val id: SpaceId, val kind: SpaceKind, val name: String) : SpaceListEffect
     data class ShowMessage(val text: String) : SpaceListEffect
     data class ShareInvite(val code: String) : SpaceListEffect
 

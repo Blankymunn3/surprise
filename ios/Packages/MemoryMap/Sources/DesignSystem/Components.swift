@@ -2,68 +2,83 @@ import CoreModel
 import Foundation
 import SwiftUI
 
-/// 콘텐츠 **위에 떠 있는** 조작 층. 유리는 여기에만 씁니다 —
-/// iOS 26 Liquid Glass 의 규칙이 "콘텐츠 자체에는 쓰지 말 것" 입니다.
-public struct GlassBackground: ViewModifier {
+/**
+ 콘텐츠 **위에 떠 있는** 조작 층 — 지도 위 검색칸·버튼 같은 것.
+
+ **유리가 아닙니다.** 예전에는 반투명 흰색으로 뒤가 비치게 했는데, 새 디자인은
+ 유리를 아예 쓰지 않습니다 — 꽉 찬 흰 면과 1px 잉크 선으로만 떠 있음을 나타냅니다.
+ 사진 위에 반투명을 얹으면 사진 색이 그대로 올라와, 글자가 읽히는 정도가
+ 사진마다 달라지기 때문입니다.
+
+ 이름에 Glass 를 다시 붙이지 마세요. 반투명을 되살리는 첫걸음이 됩니다.
+ */
+public struct FloatingBackground: ViewModifier {
     public func body(content: Content) -> some View {
         content
-            .background(.ultraThinMaterial, in: Capsule())
-            .overlay(Capsule().strokeBorder(MemoryColor.ink.opacity(0.07), lineWidth: 0.5))
-            .shadow(color: MemoryColor.ink.opacity(0.14), radius: 12, y: 8)
+            .background(MemoryColor.surface)
+            .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
+            .shadow(color: MemoryColor.ink.opacity(0.16), radius: 6, y: 2)
     }
 }
 
 public extension View {
-    func glass() -> some View { modifier(GlassBackground()) }
+    func floatingSurface() -> some View { modifier(FloatingBackground()) }
 }
 
-/// 지도 | 달력 탭. 밑줄이 아니라 알약 세그먼트 — 지도 위에서 밑줄은 보이지 않습니다.
+/// 탭 높이. 시안이 정한 값입니다.
+private let tabHeight: CGFloat = 40
+
+/**
+ 지도 | 달력 탭. **가로를 꽉 채운 네모 두 칸**입니다.
+
+ 알약이 아닌 이유: 이 탭은 지도 위에 떠 있지 않고 지도 **위쪽에 자리를 차지하고**
+ 있습니다. 떠 있지 않으니 알약으로 만들어 배경과 떼어 놓을 까닭이 없고,
+ 가로를 꽉 채우면 두 칸이 정확히 반씩이라 어느 쪽이 켜졌는지 한눈에 보입니다.
+
+ 고른 칸은 **잉크로 꽉 채웁니다** — 선만으로는 두 칸 중 어느 쪽인지 헷갈립니다.
+ */
 public struct Segmented: View {
     let options: [String]
     @Binding var selection: Int
-    let floating: Bool
 
-    public init(options: [String], selection: Binding<Int>, floating: Bool) {
+    public init(options: [String], selection: Binding<Int>) {
         self.options = options
         self._selection = selection
-        self.floating = floating
     }
 
     public var body: some View {
-        HStack(spacing: 2) {
+        HStack(spacing: 0) {
             ForEach(options.indices, id: \.self) { index in
                 let on = index == selection
+
+                // 칸 사이 선은 **한 줄만** 긋습니다. 칸마다 테두리를 두르면 가운데가
+                // 두 겹이 되어 그 선만 굵어 보입니다.
+                if index > 0 {
+                    MemoryColor.line.frame(width: MemoryStroke.border)
+                }
+
                 Text(options[index])
-                    .memoryLabel()
-                    .fontWeight(.semibold)
-                    .foregroundStyle(on ? MemoryColor.ink : MemoryColor.ink2)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 7)
-                    .background {
-                        if on {
-                            Capsule().fill(MemoryColor.surface)
-                                .shadow(color: MemoryColor.ink.opacity(0.14), radius: 2, y: 1)
-                        }
-                    }
-                    .contentShape(Capsule())
+                    .memoryBody()
+                    .foregroundStyle(on ? MemoryColor.paper : MemoryColor.ink)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(on ? MemoryColor.ink : MemoryColor.surface)
+                    .contentShape(Rectangle())
                     .onTapGesture { selection = index }
                     .accessibilityAddTraits(on ? [.isSelected, .isButton] : .isButton)
             }
         }
-        .padding(3)
-        .background { if !floating { Capsule().fill(MemoryColor.fill) } }
-        .modifier(GlassIfNeeded(floating: floating))
+        .frame(height: tabHeight)
+        .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
     }
 }
 
-private struct GlassIfNeeded: ViewModifier {
-    let floating: Bool
-    func body(content: Content) -> some View {
-        if floating { content.glass() } else { content }
-    }
-}
+/**
+ 사진 올리기 버튼. **네모, 54, 단색 레드.**
 
-/// 사진 올리기 버튼. **원, 지름 56, 단색.** 그라디언트도 광택도 쓰지 않습니다.
+ 동그라미가 아닌 이유: 이 디자인에는 둥근 것이 하나도 없습니다. 지도 위에서
+ 형태로 먼저 읽히게 하는 일은 모서리가 아니라 **레드 한 색**이 맡습니다 —
+ 화면에서 유일하게 꽉 찬 레드라 다른 것과 헷갈릴 수가 없습니다.
+ */
 public struct MemoryFab: View {
     let action: () -> Void
     let label: String
@@ -76,11 +91,11 @@ public struct MemoryFab: View {
     public var body: some View {
         Button(action: action) {
             Image(systemName: "plus")
-                .font(.system(size: 24, weight: .medium))
-                .foregroundStyle(.white)
-                .frame(width: 56, height: 56)
-                .background(Circle().fill(MemoryColor.accent))
-                .shadow(color: MemoryColor.accent.opacity(0.55), radius: 12, y: 10)
+                .font(.system(size: 21, weight: .semibold))
+                .foregroundStyle(MemoryColor.onAccent)
+                .frame(width: 54, height: 54)
+                .background(MemoryColor.accent)
+                .shadow(color: MemoryColor.ink.opacity(0.28), radius: 8, y: 4)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)

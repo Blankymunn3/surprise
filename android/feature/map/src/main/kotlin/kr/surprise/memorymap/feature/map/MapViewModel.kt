@@ -69,17 +69,16 @@ class MapViewModel(
                 }
             }
 
-            is MapIntent.PhotoTapped -> setState { MapReducer.photoSelected(this, intent.id) }
-
-            MapIntent.SetCoverTapped -> {
+            // 누르면 **바로** 대표가 됩니다. 이미 대표인 것을 또 누르면 아무 일도
+            // 없습니다 — 같은 값을 서버에 다시 쓸 까닭이 없습니다.
+            is MapIntent.PhotoTapped -> {
                 val state = currentState()
                 val sheet = state.sheet
-                val picked = sheet?.selected
-                if (sheet == null || picked == null || !state.canSetCover()) return
+                if (sheet == null || sheet.coverId == intent.id) return
                 viewModelScope.launch {
-                    val result = setCover(state.spaceId, CoverKey.ForRegion(sheet.region.code), picked)
+                    val result = setCover(state.spaceId, CoverKey.ForRegion(sheet.region.code), intent.id)
                     when (result) {
-                        is Outcome.Ok -> setState { MapReducer.coverChanged(this, picked) }
+                        is Outcome.Ok -> setState { MapReducer.coverChanged(this, intent.id) }
                         is Outcome.Fail -> sendEffect(MapEffect.ShowMessage("대표사진을 바꾸지 못했어요."))
                     }
                 }

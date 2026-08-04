@@ -64,7 +64,6 @@ data class RegionSheetUi(
     val region: Region,
     val photos: List<Photo>,
     val coverId: PhotoId?,
-    val selected: PhotoId?,
 )
 
 sealed interface MapIntent {
@@ -72,8 +71,13 @@ sealed interface MapIntent {
     data object QueryCleared : MapIntent
     data class RegionChosen(val region: Region) : MapIntent
     data class MapTapped(val latitude: Double, val longitude: Double) : MapIntent
+    /**
+     * 시트에서 사진을 누름 = **그 사진을 대표로 지정.**
+     *
+     * 고르고 나서 '대표로 지정' 을 또 누르는 두 단계였는데, 시트에서 사진을 누르는
+     * 일이 그것 말고는 없어서 한 단계로 합쳤습니다.
+     */
     data class PhotoTapped(val id: PhotoId) : MapIntent
-    data object SetCoverTapped : MapIntent
     data object AddPhotoTapped : MapIntent
     data object SheetDismissed : MapIntent
     data object MyLocationTapped : MapIntent
