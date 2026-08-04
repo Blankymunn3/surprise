@@ -17,7 +17,6 @@ import coil3.toBitmap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -50,8 +49,6 @@ internal fun MapCanvas(
     focusCount: Int,
     outline: RegionOutline?,
     fills: List<RegionFill>,
-    coveredAbove: Dp,
-    coveredBelow: Dp,
     onTap: (latitude: Double, longitude: Double) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -140,23 +137,10 @@ internal fun MapCanvas(
         modifier = modifier,
         update = { view ->
             val (width, height) = mapSize
+            // 가려지는 자리는 **지도를 놓을 때 이미 빼 뒀습니다**(`MapScreen`).
+            // 여기서는 테두리가 가장자리에 딱 붙지 않을 만큼만 띄웁니다.
             val side = with(density) { EDGE.roundToPx() }
             val vertical = with(density) { EDGE_VERTICAL.roundToPx() }
-
-            // 위(바·검색칸)와 아래(시트)가 덮는 만큼을 뺍니다. 다만 **둘을 합쳐 화면의
-            // 2/3** 를 넘지 않게 줄입니다 — 남는 자리가 없으면 맞출 배율이 안 나옵니다.
-            val wantAbove = with(density) { coveredAbove.roundToPx() }
-            val wantBelow = with(density) { coveredBelow.roundToPx() }
-            val room = if (height > 0) height * 2 / 3 else 0
-            val shrink =
-                if (room > 0 && wantAbove + wantBelow > room) {
-                    room.toDouble() / (wantAbove + wantBelow)
-                } else {
-                    1.0
-                }
-
-            val top = vertical + (wantAbove * shrink).toInt()
-            val bottom = vertical + (wantBelow * shrink).toInt()
 
             view.getMapAsync { map ->
                 map.setStyle(Style.Builder().fromJson(OsmStyle.json())) { style ->
@@ -176,10 +160,10 @@ internal fun MapCanvas(
                 // **크기를 알기 전에는 맞추지 않습니다.** 0 인 채로 맞추면 지도가 고른
                 // 지역보다 훨씬 크게 확대됩니다 — 넣을 화면이 없으니 배율이 끝까지 올라갑니다.
                 if (focus != null && width > 0 && height > 0) {
-                    val next = Focused(focusCount, top, bottom, width, height)
+                    val next = Focused(focusCount, width, height)
                     if (applied != next) {
                         applied = next
-                        map.animateCamera(focus.toUpdate(side, top, bottom))
+                        map.animateCamera(focus.toUpdate(side, vertical))
                     }
                 }
             }
@@ -187,29 +171,25 @@ internal fun MapCanvas(
     )
 }
 
-/** 어떤 조건으로 화면을 맞췄는지. 하나라도 달라지면 다시 맞춥니다. */
-private data class Focused(
-    val count: Int,
-    val top: Int,
-    val bottom: Int,
-    val width: Int,
-    val height: Int,
-)
+/**
+ * 어떤 조건으로 화면을 맞췄는지. 하나라도 달라지면 다시 맞춥니다.
+ *
+ * **지도 크기**가 들어 있는 것이 중요합니다 — 시트가 뜨고 지면 지도가 줄었다 늘고,
+ * 그때마다 다시 맞춰야 고른 지역이 계속 가운데에 있습니다.
+ */
+private data class Focused(val count: Int, val width: Int, val height: Int)
 
 /**
- * 고른 지역에 화면을 맞춥니다.
- *
- * [top] 과 [bottom] 이 [side] 보다 큰 이유는 **위는 바와 검색칸이, 아래는 시트가
- * 지도를 덮기 때문**입니다. 그만큼 빼 두지 않으면 지역이 화면에는 들어와도
- * 위아래 끝이 그 뒤에 가려 안 보입니다 — 러시아처럼 위아래로 긴 나라에서 특히 그렇습니다.
+ * 고른 지역에 화면을 맞춥니다. 지도는 이미 가려지는 만큼 줄여 놓았으므로
+ * 여기서는 **사방으로 조금씩만** 띄웁니다.
  */
-private fun MapFocus.toUpdate(side: Int, top: Int, bottom: Int): CameraUpdate = when (this) {
+private fun MapFocus.toUpdate(side: Int, vertical: Int): CameraUpdate = when (this) {
     is MapFocus.Spot ->
         CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), SPOT_ZOOM)
 
     is MapFocus.Area -> CameraUpdateFactory.newLatLngBounds(
         LatLngBounds.from(north, east, south, west),
-        side, top, side, bottom,
+        side, vertical, side, vertical,
     )
 }
 

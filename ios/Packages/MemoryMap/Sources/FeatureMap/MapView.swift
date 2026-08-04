@@ -18,7 +18,6 @@ public struct MapView: View {
     @State private var position: MapCameraPosition = .region(.korea)
     @State private var sheetHeight: CGFloat = 0
     /// 지도가 실제로 몇 점 높이인지. 시트가 덮는 만큼을 빼고 맞추려면 있어야 합니다.
-    @State private var mapHeight: CGFloat = 0
     @FocusState private var searching: Bool
     /// 지역을 칠할 대표사진. 주소가 아니라 **그림 자체**가 있어야 채울 수 있어서
     /// 미리 받아 둡니다.
@@ -37,7 +36,17 @@ public struct MapView: View {
 
     public var body: some View {
         ZStack(alignment: .top) {
+            // **지도를 가려지는 만큼 줄여 놓습니다.** 카메라에 여백을 주는 것으로는
+            // 러시아처럼 위아래로 긴 나라의 윗부분이 검색칸 뒤로 계속 숨었습니다.
+            // 지도 자체가 그 자리에 없으면 숨을 곳도 없습니다.
+            //
+            // 남는 위아래는 바다색이 채웁니다 — 지도 배경과 같은 색이라 띠가 따로
+            // 보이지 않고 지도가 이어지는 것처럼 보입니다. 안드로이드와 같은 방식입니다.
+            MemoryColor.mapSea.ignoresSafeArea()
+
             map
+                .padding(.top, topInset + searchPillHeight)
+                .padding(.bottom, store.state.sheet == nil ? 0 : sheetHeight)
 
             VStack(spacing: MemorySpace.s) {
                 searchPill
@@ -68,13 +77,6 @@ public struct MapView: View {
             }
         }
         .ignoresSafeArea(edges: .bottom)
-        .background(
-            GeometryReader { proxy in
-                Color.clear
-                    .onAppear { mapHeight = proxy.size.height }
-                    .onChange(of: proxy.size.height) { _, value in mapHeight = value }
-            }
-        )
         .task { await store.refresh() }
         .task(id: store.state.fills) { await loadCovers() }
         // **몇 번째 맞춤인지**를 봅니다. 맞출 곳만 보면 같은 지역을 다시 골랐을 때
@@ -85,14 +87,12 @@ public struct MapView: View {
     }
 
     /// 고른 지역이 **시트 위쪽 화면 안에** 다 들어오게 맞춥니다.
+    /// 지도는 이미 가려지는 만큼 줄여 놓았으므로, 고른 곳을 그대로 주면 됩니다.
+    /// 남는 자리를 계산해 가운데를 옮기던 일은 더 안 합니다.
     private func fitToFocus() {
         guard let focus = store.state.focus else { return }
-        // 위(띠·검색칸)와 아래(시트)가 덮는 만큼을 함께 뺍니다. 위를 안 빼면 러시아처럼
-        // 위아래로 긴 나라의 윗부분이 띠 뒤로 숨습니다.
-        let above = topInset + searchPillHeight
-        let below = store.state.sheet == nil ? 0 : sheetHeight
         withAnimation(.easeInOut(duration: 0.4)) {
-            position = .region(fitted(focus.region, above: above, below: below))
+            position = .region(focus.region)
         }
     }
 
@@ -103,37 +103,6 @@ public struct MapView: View {
      넓히고 그 넓어진 만큼 가운데를 아래로 내립니다 — 지역의 윗변은 그대로 두고 아래로만
      자리를 벌리는 셈입니다. 안 그러면 화면에는 들어와도 아래 절반이 시트 뒤에 가립니다.
      */
-    private func fitted(
-        _ region: MKCoordinateRegion, above: CGFloat, below: CGFloat
-    ) -> MKCoordinateRegion {
-        guard mapHeight > 0, above + below > 0 else { return region }
-
-        // 위아래를 합쳐 화면의 **2/3** 를 넘지 않게 줄입니다. 남는 자리가 없으면
-        // 맞출 배율도 나오지 않습니다.
-        let limit = mapHeight * 2 / 3
-        let wanted = above + below
-        let scale = wanted > limit ? limit / wanted : 1
-        let top = above * scale
-        let bottom = below * scale
-
-        let room = mapHeight - top - bottom
-        guard room > 0 else { return region }
-
-        // 가려진 만큼 위아래로 넓히고, 위·아래가 다르게 가려진 만큼 가운데를 옮깁니다.
-        // 그래야 지역이 **보이는 띠의 한가운데**에 옵니다.
-        let grown = region.span.latitudeDelta * mapHeight / room
-        let shift = grown * (top - bottom) / (2 * mapHeight)
-
-        return MKCoordinateRegion(
-            center: .init(
-                latitude: region.center.latitude + shift, longitude: region.center.longitude
-            ),
-            span: MKCoordinateSpan(
-                latitudeDelta: min(grown, 170), longitudeDelta: region.span.longitudeDelta
-            )
-        )
-    }
-
     /// 대표사진을 한 번씩만 받아 둡니다. 이미 받은 주소는 건너뜁니다.
     private func loadCovers() async {
         for fill in store.state.fills where covers[fill.coverURL] == nil {

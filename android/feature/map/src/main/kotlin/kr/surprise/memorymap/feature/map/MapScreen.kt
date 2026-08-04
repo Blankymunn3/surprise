@@ -77,17 +77,24 @@ fun MapScreen(
             focusCount = state.focusCount,
             outline = state.outline,
             fills = state.fills,
-            // 지역에 화면을 맞출 때 **위아래로 가려지는 만큼**은 빼고 맞춥니다.
-            // 위를 안 빼면 러시아처럼 위아래로 긴 나라의 윗부분이 바 뒤로 숨습니다.
-            coveredAbove = topBarHeight + Gap.s + pillHeight,
-            coveredBelow = if (state.sheet == null) 0.dp else sheetHeight,
             onTap = { lat, lon ->
                 // 검색하다 지도를 누르면 자판부터 내려갑니다. 자판이 화면 절반을 덮은 채로
                 // 지역 시트가 올라오면 아무것도 안 보입니다.
                 keyboard?.hide()
                 onIntent(MapIntent.MapTapped(lat, lon))
             },
-            modifier = Modifier.fillMaxSize(),
+            // **지도를 가려지는 만큼 줄여 놓습니다.** 카메라에 여백을 주는 것으로는
+            // 러시아처럼 위아래로 긴 나라의 윗부분이 검색칸 뒤로 계속 숨었습니다.
+            // 지도 자체가 그 자리에 없으면 숨을 곳도 없습니다.
+            //
+            // 남는 위아래는 이 Box 의 바다색이 채웁니다 — 지도 배경과 같은 색이라
+            // 띠가 따로 보이지 않고 지도가 이어지는 것처럼 보입니다.
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    top = topBarHeight + Gap.s + pillHeight,
+                    bottom = if (state.sheet == null) 0.dp else sheetHeight,
+                ),
         )
 
         SearchPill(
