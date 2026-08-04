@@ -16,6 +16,8 @@ struct SpaceDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var tab = 0
     @State private var uploading = false
+    /// 지역 시트에서 열었으면 그 지역. 아래 ＋ 로 열었으면 `nil` 입니다.
+    @State private var uploadRegion: Region?
     @State private var calendar: CalendarStore
     @State private var map: MapStore
 
@@ -33,8 +35,11 @@ struct SpaceDetailView: View {
             // 탭도 옆으로 밀립니다. 누른 쪽으로 미끄러져야 어느 쪽으로 옮겼는지 보입니다.
             Group {
                 if tab == 0 {
-                    MapView(store: map) { uploading = true }
-                        .transition(.move(edge: .leading).combined(with: .opacity))
+                    MapView(store: map) { region in
+                        uploadRegion = region
+                        uploading = true
+                    }
+                    .transition(.move(edge: .leading).combined(with: .opacity))
                 } else {
                     calendarTab
                         .transition(.move(edge: .trailing).combined(with: .opacity))
@@ -47,11 +52,9 @@ struct SpaceDetailView: View {
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $uploading) {
-            UploadView(store: AppContainer.shared.uploadStore(spaceId, kind)) {
-                uploading = false
-            }
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.hidden)
+            UploadView(store: uploadStore()) { uploading = false }
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.hidden)
         }
         .onChange(of: uploading) { _, open in
             // 시트가 닫힌 뒤에 새로 받아옵니다. 방금 올린 사진이 바로 보여야 합니다.
@@ -64,13 +67,26 @@ struct SpaceDetailView: View {
         }
     }
 
+    /// 올리기 스토어. 지역 시트에서 왔으면 **그 지역을 미리 넣어** 둡니다 —
+    /// 이미 아는 곳을 다시 고르게 하지 않으려는 것입니다.
+    private func uploadStore() -> UploadStore {
+        let store = AppContainer.shared.uploadStore(spaceId, kind)
+        if let uploadRegion { store.choose(uploadRegion) }
+        return store
+    }
+
     private var calendarTab: some View {
         VStack(spacing: 0) {
             Color.clear.frame(height: 52)
             CalendarView(store: calendar)
         }
         .overlay(alignment: .bottomTrailing) {
-            MemoryFab { uploading = true }
+            // 달력에서는 지역을 알 수 없습니다 — 날짜만 아는 자리라서요.
+            // 지난번에 지역 시트에서 열어 둔 값이 남지 않게 비웁니다.
+            MemoryFab {
+                uploadRegion = nil
+                uploading = true
+            }
                 .padding(.trailing, MemorySpace.xl)
                 .padding(.bottom, 40)
         }

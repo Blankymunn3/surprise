@@ -23,12 +23,17 @@ public struct MapView: View {
     /// 미리 받아 둡니다.
     @State private var covers: [String: Image] = [:]
     private let topInset: CGFloat
-    private let onAddPhoto: () -> Void
+    /// 사진 올리기를 엽니다. **지역 시트에서 눌렀으면 그 지역**이 넘어갑니다 —
+    /// 이미 아는 곳을 올리기 화면에서 다시 고르게 하면 안 됩니다.
+    /// 아래 ＋ 로 눌렀으면 `nil` 이고, 그때는 사진의 정보가 지역을 정합니다.
+    private let onAddPhoto: (Region?) -> Void
 
     /// `topInset` 은 **안전영역 아래로** 더 미는 값입니다. 위 띠(뒤로 버튼 · 지도|달력)가
     /// 안전영역 아래 8 + 높이 40 = 48 을 쓰므로, 그 바로 밑에 붙이려면 56 입니다.
     /// 안드로이드의 96 은 상태바를 포함한 값이라 숫자가 다릅니다 — 같게 맞추면 오히려 어긋납니다.
-    public init(store: MapStore, topInset: CGFloat = 56, onAddPhoto: @escaping () -> Void) {
+    public init(
+        store: MapStore, topInset: CGFloat = 56, onAddPhoto: @escaping (Region?) -> Void
+    ) {
         self._store = State(initialValue: store)
         self.topInset = topInset
         self.onAddPhoto = onAddPhoto
@@ -56,7 +61,7 @@ public struct MapView: View {
             .padding(.top, topInset)
         }
         .overlay(alignment: .bottomTrailing) {
-            MemoryFab(action: onAddPhoto)
+            MemoryFab { onAddPhoto(nil) }
                 .padding(.trailing, MemorySpace.xl)
                 .padding(.bottom, floatBottom)
         }
@@ -268,7 +273,7 @@ private struct RegionSheet: View {
     let sheet: RegionSheetUi
     let canSetCover: Bool
     let store: MapStore
-    let onAddPhoto: () -> Void
+    let onAddPhoto: (Region?) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -329,7 +334,8 @@ private struct RegionSheet: View {
                 .buttonStyle(.plain)
                 .disabled(!canSetCover)
 
-                PrimaryButton("사진 추가", action: onAddPhoto)
+                // 이 시트가 아는 지역을 그대로 들려 보냅니다.
+                PrimaryButton("사진 추가") { onAddPhoto(sheet.region) }
             }
         }
         .padding(.horizontal, MemorySpace.xl)
