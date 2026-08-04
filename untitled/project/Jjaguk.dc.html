@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-7ddbdd22-d93b-42e6-b22b-8e71e5d87f80/styles.css">
+  <script src="_ds/modernist-7ddbdd22-d93b-42e6-b22b-8e71e5d87f80/_ds_bundle.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <script src="assets/korea-map.js"></script>
+  <script src="assets/world-map.js"></script>
+  <script src="assets/japan-adm1.js"></script>
+  <style>
+    body{margin:0;background:#f3f2f2}
+    a{color:#ec3013}a:hover{color:#ae1800}
+    input{font-family:'Archivo','Pretendard Variable',Pretendard,system-ui,sans-serif}
+    @keyframes toastin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    ::-webkit-scrollbar{width:0;height:0}
+  </style>
+</helmet>
+<div style="min-height:100vh;display:flex;gap:40px;padding:40px 44px 70px;justify-content:center;align-items:flex-start;background:var(--color-bg);font-family:'Archivo','Pretendard Variable',Pretendard,system-ui,sans-serif;color:var(--color-text)">
+  <div style="width:252px;flex:none;padding-top:8px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:baseline;gap:8px">
+      <div style="width:13px;height:13px;background:var(--color-accent)"></div>
+      <div style="font-size:24px;font-weight:800;letter-spacing:-0.02em">짜국</div>
+      <div style="font-size:12px;color:var(--color-neutral-600)">프로토타입</div>
+    </div>
+    <div style="height:2px;background:var(--color-divider)"></div>
+    <div style="font-size:12.5px;line-height:1.65;color:var(--color-neutral-700)">여섯 화면이 모두 이어져 있어요. 카드·지도·달력을 직접 눌러 보세요.<br>사진은 컬러 그대로, UI는 모더니스트(잉크·레드·직각)로 갔어요. 다크 모드는 만들지 않았어요.</div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <sc-for list="{{ jumpList }}" as="jb" hint-placeholder-count="6">
+        <div onClick="{{ jb.go }}" style="cursor:pointer;border:1px solid {{ jb.bd }};background:{{ jb.bg }};color:{{ jb.fg }};padding:8px 11px;font-size:12.5px;font-weight:700" style-hover="background:#201e1d;color:#f3f2f2">{{ jb.label }}</div>
+      </sc-for>
+    </div>
+    <div style="height:2px;background:var(--color-divider)"></div>
+    <div style="font-size:11.5px;line-height:1.6;color:var(--color-neutral-600)">Tweaks에서 변주를 바꿔 보세요 — 지도 위 UI 배치 · 여러 장 올리기 방식 · 혼자 표시 · 오프라인 실패 · 빈 목록.</div>
+    <div style="font-size:11.5px;line-height:1.6;color:var(--color-neutral-600)">가정: 사진은 자리표시 그라데이션(실제 사진 주시면 교체), 지도 확대·축소 버튼은 장식이에요. ‘일본’을 눌러 시트의 <b>시도로 나누기</b>를 눌러 보세요 — 47개 부·현으로 갈라지고 오사카·교토가 따로 칠해져요. (실제 앱처럼 시도 경계는 나라별로 필요할 때 받아와요 — 이 시안엔 일본만 담았어요.)</div>
+  </div>
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+    <div style="height:100%;position:relative;display:flex;flex-direction:column;background:var(--color-bg);font-family:'Archivo','Pretendard Variable',Pretendard,system-ui,sans-serif;color:var(--color-text);overflow:hidden">
+
+      <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+        <div data-screen-label="짜국 목록" style="height:100%;display:flex;flex-direction:column;overflow:hidden">
+          <div style="padding:76px 20px 12px;display:flex;align-items:baseline;gap:9px">
+            <div style="width:13px;height:13px;background:var(--color-accent)"></div>
+            <div style="font-size:25px;font-weight:800;letter-spacing:-0.02em">짜국</div>
+            <div style="flex:1"></div>
+            <div style="font-size:11.5px;color:var(--color-neutral-600)">어디와 언제로 보는 사진첩</div>
+          </div>
+          <div style="height:2px;background:var(--color-divider);margin:0 20px"></div>
+          <sc-if value="{{ listEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 28px;gap:14px">
+              <svg width="150" height="110" viewBox="0 0 150 110">
+                <rect x="6" y="18" width="76" height="58" fill="none" stroke="#201e1d" stroke-width="2"></rect>
+                <rect x="26" y="34" width="76" height="58" fill="#eae9e9" stroke="#201e1d" stroke-width="2"></rect>
+                <rect x="46" y="50" width="76" height="58" fill="#fff" stroke="#201e1d" stroke-width="2"></rect>
+                <rect x="98" y="10" width="22" height="22" fill="#ec3013"></rect>
+                <path d="M60 79 L74 64 L86 74 L98 60" fill="none" stroke="#201e1d" stroke-width="2"></path>
+              </svg>
+              <div style="font-size:20px;font-weight:800;line-height:1.3">아직 짜국이 없어요</div>
+              <div style="font-size:13px;line-height:1.65;color:var(--color-neutral-700)">짜국은 사진을 <b>지도</b>와 <b>달력</b>, 두 가지로 보는 사진첩이에요. 혼자 써도 되고, 가까운 사람들과 같이 채워도 돼요.</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ listHasCards }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:1;overflow:auto;padding:16px 20px 8px;display:flex;flex-direction:column;gap:14px">
+              <sc-for list="{{ jjCards }}" as="c" hint-placeholder-count="3">
+                <div onClick="{{ c.open }}" style="position:relative;height:150px;flex:none;cursor:pointer;background:{{ c.coverCss }};box-shadow:var(--shadow-sm)">
+                  <sc-if value="{{ c.scrim }}" hint-placeholder-val="{{ true }}">
+                    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(32,30,29,0) 38%,rgba(32,30,29,0.78) 100%)"></div>
+                  </sc-if>
+                  <sc-if value="{{ c.dashed }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;inset:7px;border:1.5px dashed {{ c.dashColor }};pointer-events:none"></div>
+                  </sc-if>
+                  <sc-if value="{{ c.isSolo }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;top:12px;left:12px;background:#fff;border:1px solid #201e1d;color:#201e1d;font-size:10.5px;font-weight:700;padding:3px 8px;letter-spacing:0.02em">이 폰에만</div>
+                  </sc-if>
+                  <div style="position:absolute;left:14px;right:14px;bottom:12px;display:flex;align-items:flex-end;gap:10px">
+                    <div style="flex:1;min-width:0">
+                      <div style="font-size:17px;font-weight:800;color:{{ c.fg }};letter-spacing:-0.01em">{{ c.name }}</div>
+                      <div style="font-size:11.5px;font-weight:500;color:{{ c.metaColor }};margin-top:2px">{{ c.meta }}</div>
+                    </div>
+                    <div style="display:flex;flex:none">
+                      <sc-for list="{{ c.members }}" as="mi" hint-placeholder-count="2">
+                        <div style="width:24px;height:24px;background:#fff;border:1px solid #201e1d;color:#201e1d;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-left:-6px">{{ mi }}</div>
+                      </sc-for>
+                      <sc-if value="{{ c.plusN }}" hint-placeholder-val="{{ false }}">
+                        <div style="width:24px;height:24px;background:#201e1d;border:1px solid #201e1d;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;margin-left:-6px">{{ c.plusN }}</div>
+                      </sc-if>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <div style="padding:12px 20px 48px;display:flex;flex-direction:column;gap:8px;border-top:2px solid var(--color-divider)">
+            <div onClick="{{ openCreate }}" style="cursor:pointer;background:var(--color-accent);color:#fff;padding:14px 16px;display:flex;align-items:center;font-weight:800;font-size:15px" style-hover="background:var(--color-accent-600)"><span style="flex:1;text-align:left">새 짜국 만들기</span><span>→</span></div>
+            <div onClick="{{ openJoin }}" style="cursor:pointer;background:#fff;border:1px solid #201e1d;padding:13px 16px;display:flex;align-items:center;font-weight:700;font-size:14px" style-hover="background:var(--color-neutral-200)"><span style="flex:1;text-align:left">초대 코드로 참여</span></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCreate }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="짜국 만들기" style="height:100%;display:flex;flex-direction:column;overflow:hidden">
+          <div style="padding:66px 12px 8px 8px;display:flex;align-items:center;gap:2px">
+            <div onClick="{{ goList }}" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="11" height="18" viewBox="0 0 11 18"><path d="M9.5 1.5 L2 9 L9.5 16.5" fill="none" stroke="#201e1d" stroke-width="2.2"></path></svg></div>
+            <div style="font-size:17px;font-weight:800">새 짜국</div>
+          </div>
+          <div style="height:2px;background:var(--color-divider);margin:0 20px"></div>
+          <div style="flex:1;overflow:auto;padding:18px 20px">
+            <div style="font-size:11px;font-weight:800;letter-spacing:0.06em;color:var(--color-neutral-600);margin-bottom:8px">어떻게 쓸까요</div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div onClick="{{ pickSolo }}" style="cursor:pointer;background:#fff;border:{{ soloBorder }};padding:14px 15px;display:flex;gap:12px">
+                <div style="width:16px;height:16px;border:1px solid #201e1d;flex:none;margin-top:2px;display:flex;align-items:center;justify-content:center"><sc-if value="{{ typeSolo }}" hint-placeholder-val="{{ true }}"><div style="width:8px;height:8px;background:var(--color-accent)"></div></sc-if></div>
+                <div>
+                  <div style="font-size:15px;font-weight:800">혼자</div>
+                  <div style="font-size:12.5px;line-height:1.55;color:var(--color-neutral-700);margin-top:3px">사진이 이 폰에만 남아요 · 로그인 없이 바로 시작해요<br><span style="color:var(--color-neutral-600)">폰을 잃어버리면 사진도 함께 사라져요</span></div>
+                </div>
+              </div>
+              <div onClick="{{ pickTogether }}" style="cursor:pointer;background:#fff;border:{{ togetherBorder }};padding:14px 15px;display:flex;gap:12px">
+                <div style="width:16px;height:16px;border:1px solid #201e1d;flex:none;margin-top:2px;display:flex;align-items:center;justify-content:center"><sc-if value="{{ typeTogether }}" hint-placeholder-val="{{ false }}"><div style="width:8px;height:8px;background:var(--color-accent)"></div></sc-if></div>
+                <div>
+                  <div style="font-size:15px;font-weight:800">같이</div>
+                  <div style="font-size:12.5px;line-height:1.55;color:var(--color-neutral-700);margin-top:3px">초대한 사람들과 같이 채우고 같이 봐요 · 로그인이 필요해요<br><span style="color:var(--color-neutral-600)">만들면 초대 코드가 바로 나와요</span></div>
+                </div>
+              </div>
+            </div>
+            <div style="font-size:11px;font-weight:800;letter-spacing:0.06em;color:var(--color-neutral-600);margin:20px 0 8px">이름</div>
+            <input value="{{ createName }}" onChange="{{ setCreateName }}" placeholder="예) 우리 여름, 제주 한 달" style="width:100%;box-sizing:border-box;border:1px solid #201e1d;background:#fff;padding:13px 14px;font-size:15px;outline:none">
+            <div style="font-size:11.5px;color:var(--color-neutral-600);margin-top:8px">나중에 혼자 → 같이로 바꿀 수 있어요. 반대로는 안 돼요.</div>
+          </div>
+          <div style="padding:12px 20px 48px;border-top:2px solid var(--color-divider)">
+            <div onClick="{{ doCreate }}" style="cursor:pointer;background:var(--color-accent);color:#fff;padding:14px 16px;display:flex;align-items:center;font-weight:800;font-size:15px" style-hover="background:var(--color-accent-600)"><span style="flex:1;text-align:left">만들기</span><span>→</span></div>
+            <div style="font-size:11.5px;color:var(--color-neutral-600);margin-top:8px">{{ createNote }}</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="로그인" style="height:100%;display:flex;flex-direction:column;overflow:hidden">
+          <div style="padding:66px 12px 8px 8px;display:flex;align-items:center;gap:2px">
+            <div onClick="{{ loginBack }}" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="11" height="18" viewBox="0 0 11 18"><path d="M9.5 1.5 L2 9 L9.5 16.5" fill="none" stroke="#201e1d" stroke-width="2.2"></path></svg></div>
+          </div>
+          <div style="flex:1;padding:8px 26px;display:flex;flex-direction:column">
+            <div style="width:13px;height:13px;background:var(--color-accent);margin-bottom:14px"></div>
+            <div style="font-size:23px;font-weight:800;line-height:1.3;letter-spacing:-0.01em">같이 보려면<br>계정이 필요해요</div>
+            <div style="font-size:13.5px;line-height:1.7;color:var(--color-neutral-700);margin-top:14px">로그인은 멤버가 아닌 사람이 우리 사진을 못 보게 막는 잠금장치예요. 계정 확인 말고 다른 데는 쓰지 않아요.</div>
+            <div style="flex:1"></div>
+            <div onClick="{{ loginDo }}" style="cursor:pointer;background:#fff;border:1px solid #201e1d;padding:14px 16px;display:flex;align-items:center;gap:11px;font-weight:700;font-size:15px" style-hover="background:var(--color-neutral-200)">
+              <div style="width:20px;height:20px;border:1.5px solid #201e1d;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">G</div>
+              <span style="flex:1;text-align:left">Google로 계속하기</span>
+            </div>
+            <sc-if value="{{ loginFromCreate }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ loginSolo }}" style="cursor:pointer;margin-top:14px;font-size:13.5px;font-weight:700;text-decoration:underline;text-underline-offset:3px" style-hover="color:var(--color-accent-700)">그냥 혼자 쓸래요 — 이 폰에만 저장할게요</div>
+            </sc-if>
+            <div style="font-size:11.5px;color:var(--color-neutral-600);margin:16px 0 40px">지금은 Google 계정만 돼요.</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCode }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="초대 코드" style="height:100%;display:flex;flex-direction:column;overflow:hidden">
+          <div style="flex:1;padding:96px 26px 0;display:flex;flex-direction:column">
+            <div style="font-size:21px;font-weight:800;line-height:1.35">{{ codeHeadline }}</div>
+            <div style="font-size:13px;line-height:1.65;color:var(--color-neutral-700);margin-top:10px">이 코드를 받은 사람이 들어올 수 있어요. 지금 보내 두면 나중에 다시 찾지 않아도 돼요.</div>
+            <div style="background:#fff;border:1px solid #201e1d;padding:22px 20px;margin-top:22px">
+              <div style="font-size:38px;font-weight:800;letter-spacing:10px;font-family:'Archivo',monospace">K7QF2M</div>
+              <div style="font-size:11px;color:var(--color-neutral-600);margin-top:6px">7일 동안 쓸 수 있어요</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+              <div onClick="{{ copyCode }}" style="cursor:pointer;background:#fff;border:1px solid #201e1d;padding:11px 14px;font-weight:700;font-size:13.5px;text-align:left" style-hover="background:var(--color-neutral-200)">코드 복사</div>
+              <div onClick="{{ shareCode }}" style="cursor:pointer;background:#fff;border:1px solid #201e1d;padding:11px 14px;font-weight:700;font-size:13.5px;text-align:left" style-hover="background:var(--color-neutral-200)">공유하기</div>
+            </div>
+            <div style="font-size:11.5px;color:var(--color-neutral-600);margin-top:12px">위쪽 ⋯ 메뉴에서 언제든 다시 볼 수 있어요.</div>
+          </div>
+          <div style="padding:12px 20px 48px">
+            <div onClick="{{ codeOpen }}" style="cursor:pointer;background:var(--color-accent);color:#fff;padding:14px 16px;display:flex;align-items:center;font-weight:800;font-size:15px" style-hover="background:var(--color-accent-600)"><span style="flex:1;text-align:left">짜국 열기</span><span>→</span></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSpace }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="지도·달력" style="height:100%;display:flex;flex-direction:column;overflow:hidden">
+          <div style="padding:64px 10px 6px 8px;display:flex;align-items:center;gap:2px">
+            <div onClick="{{ goList }}" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none"><svg width="11" height="18" viewBox="0 0 11 18"><path d="M9.5 1.5 L2 9 L9.5 16.5" fill="none" stroke="#201e1d" stroke-width="2.2"></path></svg></div>
+            <div style="font-size:16px;font-weight:800;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ jjName }}</div>
+            <sc-if value="{{ curSolo }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border:1px solid #201e1d;font-size:10px;font-weight:700;padding:2px 7px;flex:none">이 폰에만</div>
+            </sc-if>
+            <div onClick="{{ menuToggle }}" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;font-weight:800;font-size:18px;letter-spacing:1px">⋯</div>
+          </div>
+          <div style="display:flex;margin:2px 20px 10px;border:1px solid #201e1d;height:40px;flex:none">
+            <div onClick="{{ tabMap }}" style="flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;font-weight:700;background:{{ mapTabBg }};color:{{ mapTabFg }}">지도</div>
+            <div onClick="{{ tabCal }}" style="flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;font-weight:700;border-left:1px solid #201e1d;background:{{ calTabBg }};color:{{ calTabFg }}">달력</div>
+          </div>
+          <sc-if value="{{ showDockedSearch }}" hint-placeholder-val="{{ false }}">
+            <div style="margin:0 20px 10px;display:flex;align-items:center;gap:8px;border:1px solid #201e1d;background:#fff;height:42px;padding:0 12px;flex:none">
+              <svg width="15" height="15" viewBox="0 0 15 15"><circle cx="6.5" cy="6.5" r="5" fill="none" stroke="#201e1d" stroke-width="1.8"></circle><path d="M10.5 10.5 L14 14" stroke="#201e1d" stroke-width="1.8"></path></svg>
+              <input value="{{ searchVal }}" onChange="{{ setSearch }}" onFocus="{{ openSearch }}" placeholder="지역 검색 — 강릉, 제주…" style="flex:1;border:none;outline:none;font-size:13.5px;background:transparent">
+            </div>
+          </sc-if>
+          <div style="flex:1;position:relative;overflow:hidden" onClick="{{ closeSearch }}">
+            <sc-if value="{{ isMap }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;inset:0;background:#e3e9ec">
+                <svg viewBox="0 0 760 806" style="position:absolute;left:0;top:6px;width:100%;height:auto">
+                  <defs>
+                    <linearGradient id="g0" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#7fb4c9"></stop><stop offset="0.55" stopColor="#2e6f8e"></stop><stop offset="1" stopColor="#1b4965"></stop></linearGradient>
+                    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f2a65a"></stop><stop offset="0.55" stopColor="#d95d39"></stop><stop offset="1" stopColor="#6d3b47"></stop></linearGradient>
+                    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#9ab87a"></stop><stop offset="0.55" stopColor="#4f7942"></stop><stop offset="1" stopColor="#2c4a2e"></stop></linearGradient>
+                    <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#d9c7b2"></stop><stop offset="0.55" stopColor="#a98f76"></stop><stop offset="1" stopColor="#5e4b3c"></stop></linearGradient>
+                    <linearGradient id="g4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#23395d"></stop><stop offset="0.55" stopColor="#406e8e"></stop><stop offset="1" stopColor="#8ea8c3"></stop></linearGradient>
+                    <linearGradient id="g5" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f4d35e"></stop><stop offset="0.55" stopColor="#ee964b"></stop><stop offset="1" stopColor="#f95738"></stop></linearGradient>
+                    <linearGradient id="g6" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#dbe9f4"></stop><stop offset="0.55" stopColor="#a3c1d4"></stop><stop offset="1" stopColor="#6e8ca0"></stop></linearGradient>
+                    <linearGradient id="g7" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#e56b6f"></stop><stop offset="0.55" stopColor="#b56576"></stop><stop offset="1" stopColor="#6d597a"></stop></linearGradient>
+                    <linearGradient id="g8" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#b08968"></stop><stop offset="0.55" stopColor="#7f5539"></stop><stop offset="1" stopColor="#3f2d23"></stop></linearGradient>
+                    <linearGradient id="g9" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#48cae4"></stop><stop offset="0.55" stopColor="#0096c7"></stop><stop offset="1" stopColor="#023e8a"></stop></linearGradient>
+                  </defs>
+                  <g style="transform:{{ mapTransform }};transition:transform 0.45s cubic-bezier(.22,.8,.3,1)">
+                    <sc-for list="{{ mapRegions }}" as="r" hint-placeholder-count="0">
+                      <path d="{{ r.d }}" fill="{{ r.fill }}" stroke="{{ r.stroke }}" strokeWidth="{{ r.sw }}" onClick="{{ r.go }}" style="cursor:pointer"></path>
+                    </sc-for>
+                  </g>
+                  <sc-for list="{{ mapBadges }}" as="b" hint-placeholder-count="0">
+                    <g style="pointer-events:none">
+                      <rect x="{{ b.rx }}" y="{{ b.ry }}" width="22" height="16" fill="#201e1d"></rect>
+                      <text x="{{ b.x }}" y="{{ b.ty }}" fill="#fff" style="font-size:10px;font-weight:700" textAnchor="middle">{{ b.n }}</text>
+                    </g>
+                  </sc-for>
+                </svg>
+                <sc-if value="{{ showOverlaySearch }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:10px;left:14px;right:14px;display:flex;align-items:center;gap:8px;border:1px solid #201e1d;background:#fff;height:44px;padding:0 12px;box-shadow:var(--shadow-sm)">
+                    <svg width="15" height="15" viewBox="0 0 15 15"><circle cx="6.5" cy="6.5" r="5" fill="none" stroke="#201e1d" stroke-width="1.8"></circle><path d="M10.5 10.5 L14 14" stroke="#201e1d" stroke-width="1.8"></path></svg>
+                    <input value="{{ searchVal }}" onChange="{{ setSearch }}" onFocus="{{ openSearch }}" placeholder="지역 검색 — 강릉, 제주…" style="flex:1;border:none;outline:none;font-size:13.5px;background:transparent">
+                  </div>
+                </sc-if>
+                <sc-if value="{{ showSearchRows }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:{{ searchTop }};left:14px;right:14px;background:#fff;border:1px solid #201e1d;box-shadow:var(--shadow-md);max-height:280px;overflow:auto;z-index:5">
+                    <sc-for list="{{ searchRows }}" as="sr" hint-placeholder-count="3">
+                      <div onClick="{{ sr.go }}" style="cursor:pointer;padding:11px 13px;border-bottom:1px solid var(--color-neutral-200);display:flex;align-items:baseline;gap:8px" style-hover="background:var(--color-neutral-100)">
+                        <span style="font-size:14px;font-weight:700">{{ sr.name }}</span>
+                        <span style="font-size:11.5px;color:var(--color-neutral-600);flex:1">{{ sr.sub }}</span>
+                        <span style="font-size:11.5px;font-weight:700;color:{{ sr.cntColor }}">{{ sr.cnt }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ showZoomStack }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:14px;bottom:18px;display:flex;flex-direction:column;gap:6px">
+                    <div style="width:40px;height:40px;background:#fff;border:1px solid #201e1d;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px">+</div>
+                    <div style="width:40px;height:40px;background:#fff;border:1px solid #201e1d;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px">−</div>
+                    <div style="width:40px;height:40px;background:#fff;border:1px solid #201e1d;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5" fill="none" stroke="#201e1d" stroke-width="1.8"></circle><circle cx="8" cy="8" r="1.6" fill="#201e1d"></circle></svg></div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ spaceEmptyMap }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:34px;right:34px;top:34%;background:#fff;border:1px solid #201e1d;box-shadow:var(--shadow-md);padding:18px 20px">
+                    <svg width="96" height="62" viewBox="0 0 96 62" style="margin-bottom:10px">
+                      <path d="M6 44 C14 20 34 10 50 16 C66 22 82 14 90 30" fill="none" stroke="#201e1d" stroke-width="2" stroke-dasharray="5 4"></path>
+                      <rect x="42" y="26" width="16" height="16" fill="#ec3013"></rect>
+                    </svg>
+                    <div style="font-size:16px;font-weight:800">아직 찍힌 곳이 없어요</div>
+                    <div style="font-size:12.5px;line-height:1.6;color:var(--color-neutral-700);margin-top:5px">첫 사진을 넣으면 그 지역이 사진으로 칠해져요.</div>
+                    <div onClick="{{ fabAdd }}" style="cursor:pointer;margin-top:12px;background:var(--color-accent);color:#fff;padding:11px 14px;font-weight:800;font-size:13.5px;display:inline-block" style-hover="background:var(--color-accent-600)">사진 넣기 →</div>
+                  </div>
+                </sc-if>
+                <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:2px solid #201e1d;padding:14px 18px 26px;transition:transform 0.35s cubic-bezier(.22,.8,.3,1);transform:{{ sheetTransform }}">
+                  <div style="display:flex;align-items:flex-start;gap:10px">
+                    <div style="flex:1">
+                      <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:18px;font-weight:800">{{ sheetName }}</span><span style="font-size:12px;color:var(--color-neutral-600)">{{ sheetSido }}</span></div>
+                      <div style="font-size:12.5px;color:var(--color-neutral-600);margin-top:2px">{{ sheetCount }}</div>
+                    </div>
+                    <div onClick="{{ closeSheet }}" style="width:34px;height:34px;border:1px solid #201e1d;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;font-weight:800" style-hover="background:var(--color-neutral-200)">×</div>
+                  </div>
+                  <sc-if value="{{ sheetHasPhotos }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;gap:8px;overflow-x:auto;margin:12px 0 6px">
+                      <sc-for list="{{ sheetPhotos }}" as="sp" hint-placeholder-count="3">
+                        <div onClick="{{ sp.set }}" style="width:92px;height:92px;flex:none;position:relative;cursor:pointer;background:{{ sp.css }};outline:{{ sp.outline }}">
+                          <sc-if value="{{ sp.isCover }}" hint-placeholder-val="{{ false }}">
+                            <div style="position:absolute;top:0;left:0;background:var(--color-accent);color:#fff;font-size:10px;font-weight:700;padding:2px 7px">대표</div>
+                          </sc-if>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <div style="font-size:11px;color:var(--color-neutral-600)">사진을 누르면 지도에 칠해지는 대표사진이 돼요</div>
+                  </sc-if>
+                  <sc-if value="{{ sheetNoPhotos }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:12.5px;color:var(--color-neutral-700);margin:12px 0 4px">이 지역엔 아직 사진이 없어요.</div>
+                  </sc-if>
+                  <div style="display:flex;gap:8px;margin-top:12px">
+                    <div onClick="{{ addHere }}" style="cursor:pointer;flex:1;background:var(--color-accent);color:#fff;padding:13px 15px;display:flex;align-items:center;font-weight:800;font-size:14px" style-hover="background:var(--color-accent-600)"><span style="flex:1;text-align:left">이 지역에 사진 추가</span><span>+</span></div>
+                    <sc-if value="{{ sheetSplitShow }}" hint-placeholder-val="{{ false }}">
+                      <div onClick="{{ sheetSplitGo }}" style="cursor:pointer;flex:none;background:#fff;border:1px solid #201e1d;padding:13px 14px;display:flex;align-items:center;font-weight:700;font-size:13px" style-hover="background:var(--color-neutral-200)">{{ sheetSplitLabel }}</div>
+                    </sc-if>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ isCal }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden">
+                <div style="padding:8px 20px 10px;display:flex;align-items:center;gap:8px;flex:none">
+                  <div style="font-size:18px;font-weight:800;flex:1">{{ calTitle }}</div>
+                  <div onClick="{{ prevMonth }}" style="width:34px;height:34px;border:1px solid #201e1d;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:800" style-hover="background:var(--color-neutral-200)">‹</div>
+                  <div onClick="{{ nextMonth }}" style="width:34px;height:34px;border:1px solid #201e1d;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:800" style-hover="background:var(--color-neutral-200)">›</div>
+                </div>
+                <sc-if value="{{ calExpanded }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:grid;grid-template-columns:repeat(7,1fr);margin:0 20px;font-size:10.5px;font-weight:700;color:var(--color-neutral-600);text-align:center;flex:none">
+                    <div style="color:var(--color-accent-700)">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:6px 20px 0;flex:none">
+                    <sc-for list="{{ calCells }}" as="cc" hint-placeholder-count="35">
+                      <div onClick="{{ cc.pick }}" style="aspect-ratio:1;position:relative;overflow:hidden;cursor:pointer;background:{{ cc.bg }}">
+                        <sc-if value="{{ cc.hasPhoto }}" hint-placeholder-val="{{ false }}">
+                          <div style="position:absolute;top:0;left:0;right:0;height:22px;background:linear-gradient(180deg,rgba(32,30,29,0.45),rgba(32,30,29,0))"></div>
+                        </sc-if>
+                        <div style="position:absolute;top:3px;left:5px;font-size:11px;font-weight:700;color:{{ cc.numColor }}">{{ cc.day }}</div>
+                        <sc-if value="{{ cc.isToday }}" hint-placeholder-val="{{ false }}">
+                          <div style="position:absolute;inset:0;border:2px solid var(--color-accent);pointer-events:none"></div>
+                        </sc-if>
+                        <sc-if value="{{ cc.sel }}" hint-placeholder-val="{{ false }}">
+                          <div style="position:absolute;inset:0;border:2px solid #201e1d;pointer-events:none"></div>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <div onClick="{{ toggleCal }}" style="padding:7px 20px;font-size:11.5px;font-weight:700;color:var(--color-neutral-600);cursor:pointer;flex:none" style-hover="color:#201e1d">{{ calToggleLabel }}</div>
+                <div style="height:2px;background:var(--color-divider);margin:0 20px;flex:none"></div>
+                <div style="flex:1;overflow:auto;padding:12px 20px 90px">
+                  <sc-if value="{{ selEmptyNote }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:12.5px;color:var(--color-neutral-600);margin-bottom:12px">{{ selEmptyNote }}</div>
+                  </sc-if>
+                  <sc-if value="{{ hasDays }}" hint-placeholder-val="{{ false }}">
+                    <sc-for list="{{ dayGroups }}" as="dg" hint-placeholder-count="2">
+                      <div style="margin-bottom:16px;border-left:{{ dg.bl }};padding-left:{{ dg.pl }}">
+                        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">
+                          <span style="font-size:14px;font-weight:800">{{ dg.label }}</span>
+                          <span style="font-size:11.5px;color:var(--color-neutral-600)">{{ dg.sub }}</span>
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px">
+                          <sc-for list="{{ dg.photos }}" as="dp" hint-placeholder-count="3">
+                            <div onClick="{{ dp.set }}" style="width:76px;height:76px;position:relative;cursor:pointer;background:{{ dp.css }};outline:{{ dp.outline }}">
+                              <sc-if value="{{ dp.isCover }}" hint-placeholder-val="{{ false }}">
+                                <div style="position:absolute;top:0;left:0;background:var(--color-accent);color:#fff;font-size:9.5px;font-weight:700;padding:1px 6px">대표</div>
+                              </sc-if>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </sc-for>
+                    <div style="font-size:11px;color:var(--color-neutral-600)">사진을 누르면 달력 칸에 깔리는 대표사진이 돼요</div>
+                  </sc-if>
+                  <sc-if value="{{ calEmpty }}" hint-placeholder-val="{{ false }}">
+                    <div style="padding:26px 4px;display:flex;flex-direction:column;gap:10px;align-items:flex-start">
+                      <svg width="88" height="56" viewBox="0 0 88 56"><rect x="4" y="6" width="80" height="46" fill="none" stroke="#201e1d" stroke-width="2"></rect><line x1="4" y1="20" x2="84" y2="20" stroke="#201e1d" stroke-width="2"></line><rect x="48" y="28" width="14" height="14" fill="#ec3013"></rect></svg>
+                      <div style="font-size:13px;color:var(--color-neutral-700);line-height:1.6">아직 사진이 없어요.<br>사진을 넣으면 찍은 날짜 칸에 깔려요.</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ showFab }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ fabAdd }}" style="position:absolute;right:14px;bottom:18px;width:54px;height:54px;background:var(--color-accent);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow-md)" style-hover="background:var(--color-accent-600)">
+                <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2 V18 M2 10 H18" stroke="#fff" stroke-width="2.6"></path></svg>
+              </div>
+            </sc-if>
+          </div>
+          <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closeMenu }}" style="position:absolute;inset:0;background:rgba(32,30,29,0.35);z-index:20"></div>
+            <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:2px solid #201e1d;padding:18px 20px 44px;z-index:21">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                <span style="font-size:15px;font-weight:800;flex:1">{{ jjName }}</span>
+                <div onClick="{{ closeMenu }}" style="width:30px;height:30px;border:1px solid #201e1d;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:800">×</div>
+              </div>
+              <div style="font-size:11px;font-weight:800;letter-spacing:0.06em;color:var(--color-neutral-600);margin-bottom:4px">멤버</div>
+              <sc-for list="{{ memberRows }}" as="mr" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--color-neutral-200)">
+                  <div style="width:28px;height:28px;background:#201e1d;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">{{ mr.init }}</div>
+                  <span style="font-size:14px;flex:1">{{ mr.name }}</span>
+                  <sc-if value="{{ mr.owner }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;border:1px solid #201e1d;padding:2px 6px">주인</span></sc-if>
+                </div>
+              </sc-for>
+              <sc-if value="{{ curTogether }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:11px;font-weight:800;letter-spacing:0.06em;color:var(--color-neutral-600);margin:14px 0 4px">초대 코드</div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="font-size:20px;font-weight:800;letter-spacing:4px;flex:1">K7QF2M</span>
+                  <div onClick="{{ copyCode }}" style="cursor:pointer;border:1px solid #201e1d;background:#fff;padding:7px 12px;font-size:12px;font-weight:700" style-hover="background:var(--color-neutral-200)">복사</div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ curSolo }}" hint-placeholder-val="{{ false }}">
+                <div onClick="{{ convert }}" style="cursor:pointer;margin-top:14px;border:1px solid var(--color-accent-700);color:var(--color-accent-700);background:#fff;padding:12px 14px;display:flex;align-items:center;font-weight:800;font-size:13.5px" style-hover="background:var(--color-accent-100)"><span style="flex:1;text-align:left">같이 쓰기로 바꾸기</span><span>→</span></div>
+                <div style="font-size:11.5px;color:var(--color-neutral-600);margin-top:6px">사진이 서버로 올라가고, 초대 코드가 생겨요. 로그인이 필요해요.</div>
+              </sc-if>
+              <div style="display:flex;align-items:center;padding:12px 0 0;margin-top:12px;border-top:1px solid var(--color-neutral-200);font-size:13.5px;color:var(--color-neutral-700)"><span style="flex:1">이름 바꾸기</span><span>›</span></div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isUpload }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="사진 올리기" style="height:100%;display:flex;flex-direction:column;overflow:hidden">
+          <div style="padding:66px 16px 8px 8px;display:flex;align-items:center;gap:2px">
+            <div onClick="{{ upBack }}" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="11" height="18" viewBox="0 0 11 18"><path d="M9.5 1.5 L2 9 L9.5 16.5" fill="none" stroke="#201e1d" stroke-width="2.2"></path></svg></div>
+            <div style="font-size:17px;font-weight:800;flex:1">사진 올리기</div>
+            <div style="border:1px solid #201e1d;background:#fff;font-size:11.5px;font-weight:800;padding:3px 9px">{{ upCountLabel }}</div>
+          </div>
+          <div style="height:2px;background:var(--color-divider);margin:0 20px"></div>
+          <sc-if value="{{ upFromNote }}" hint-placeholder-val="{{ false }}">
+            <div style="margin:12px 20px 0;background:var(--color-accent-100);color:var(--color-accent-800);font-size:12.5px;font-weight:600;padding:10px 13px">{{ upFromNote }}</div>
+          </sc-if>
+          <sc-if value="{{ uploadErr }}" hint-placeholder-val="{{ false }}">
+            <div style="margin:12px 20px 0;border:1px solid var(--color-accent);background:var(--color-accent-100);padding:12px 14px">
+              <div style="font-size:13px;font-weight:800;color:var(--color-accent-800)">인터넷이 안 돼요</div>
+              <div style="font-size:12px;line-height:1.55;color:var(--color-accent-800);margin-top:3px">지금은 올릴 수 없어서 사진을 폰에 저장해 뒀어요. 연결되면 여기서 다시 시도해 주세요.</div>
+              <div onClick="{{ doUpload }}" style="cursor:pointer;display:inline-block;margin-top:8px;border:1px solid var(--color-accent-700);color:var(--color-accent-700);font-size:12px;font-weight:800;padding:6px 11px;background:#fff">다시 시도</div>
+            </div>
+          </sc-if>
+          <div style="display:flex;gap:6px;align-items:baseline;padding:12px 20px 4px">
+            <span style="font-size:11.5px;color:var(--color-neutral-600)">ⓘ</span>
+            <span style="font-size:11.5px;line-height:1.5;color:var(--color-neutral-600)">지역·날짜는 사진에서 자동으로 읽었어요. 눌러서 고치면 <b>자동</b> 표시가 사라져요.</span>
+          </div>
+          <div style="flex:1;overflow:auto;padding:4px 20px 8px">
+            <sc-if value="{{ isPerStyle }}" hint-placeholder-val="{{ true }}">
+              <sc-for list="{{ upItems }}" as="it" hint-placeholder-count="4">
+                <div style="display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--color-neutral-300)">
+                  <div style="width:62px;height:62px;flex:none;background:{{ it.css }}"></div>
+                  <div style="flex:1;display:flex;flex-direction:column;gap:6px;min-width:0">
+                    <div onClick="{{ it.editRn }}" style="display:flex;align-items:center;gap:8px;border:1px solid #201e1d;background:#fff;padding:6px 10px;cursor:pointer" style-hover="background:var(--color-neutral-100)">
+                      <span style="font-size:10.5px;font-weight:800;color:var(--color-neutral-600);width:26px;flex:none">어디</span>
+                      <span style="font-size:13.5px;font-weight:700;flex:1">{{ it.rn }}</span>
+                      <sc-if value="{{ it.autoR }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;background:var(--color-neutral-200);color:var(--color-neutral-700);padding:2px 6px">자동</span></sc-if>
+                      <span style="color:var(--color-neutral-500)">›</span>
+                    </div>
+                    <div onClick="{{ it.editDate }}" style="display:flex;align-items:center;gap:8px;border:1px solid #201e1d;background:#fff;padding:6px 10px;cursor:pointer" style-hover="background:var(--color-neutral-100)">
+                      <span style="font-size:10.5px;font-weight:800;color:var(--color-neutral-600);width:26px;flex:none">언제</span>
+                      <span style="font-size:13.5px;font-weight:700;flex:1">{{ it.dateLabel }}</span>
+                      <sc-if value="{{ it.autoD }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;background:var(--color-neutral-200);color:var(--color-neutral-700);padding:2px 6px">자동</span></sc-if>
+                      <span style="color:var(--color-neutral-500)">›</span>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ isGroupStyle }}" hint-placeholder-val="{{ false }}">
+              <sc-for list="{{ upGroups }}" as="ug" hint-placeholder-count="2">
+                <div style="margin-bottom:10px">
+                  <div style="background:var(--color-surface);padding:10px 12px;display:flex;align-items:center;gap:8px">
+                    <span onClick="{{ ug.editRn }}" style="font-size:14px;font-weight:800;cursor:pointer;text-decoration:underline;text-underline-offset:3px">{{ ug.rn }}</span>
+                    <span style="color:var(--color-neutral-500)">·</span>
+                    <span onClick="{{ ug.editDate }}" style="font-size:13px;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px">{{ ug.dateLabel }}</span>
+                    <sc-if value="{{ ug.auto }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;background:#fff;color:var(--color-neutral-700);padding:2px 6px">자동</span></sc-if>
+                    <span style="flex:1"></span>
+                    <span style="font-size:12px;color:var(--color-neutral-600)">{{ ug.count }}</span>
+                  </div>
+                  <div style="display:flex;gap:6px;padding:8px 0;flex-wrap:wrap">
+                    <sc-for list="{{ ug.thumbs }}" as="ut" hint-placeholder-count="3">
+                      <div style="width:64px;height:64px;background:{{ ut.css }}"></div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </sc-if>
+          </div>
+          <div style="padding:12px 20px 48px;border-top:2px solid var(--color-divider)">
+            <sc-if value="{{ upSummary }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:11.5px;color:var(--color-neutral-600);margin-bottom:8px">{{ upSummary }}</div>
+            </sc-if>
+            <div onClick="{{ doUpload }}" style="cursor:pointer;background:var(--color-accent);color:#fff;padding:14px 16px;display:flex;align-items:center;font-weight:800;font-size:15px" style-hover="background:var(--color-accent-600)"><span style="flex:1;text-align:left">{{ upCtaLabel }}</span><span>↑</span></div>
+          </div>
+          <sc-if value="{{ pickerOpen }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closePicker }}" style="position:absolute;inset:0;background:rgba(32,30,29,0.35);z-index:20"></div>
+            <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:2px solid #201e1d;padding:16px 20px 40px;z-index:21;max-height:60%;overflow:auto">
+              <div style="font-size:14px;font-weight:800;margin-bottom:6px">{{ pickerTitle }}</div>
+              <sc-for list="{{ pickerRows }}" as="pr" hint-placeholder-count="4">
+                <div onClick="{{ pr.pick }}" style="cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:12px 2px;border-bottom:1px solid var(--color-neutral-200)" style-hover="background:var(--color-neutral-100)">
+                  <span style="font-size:14px;font-weight:700">{{ pr.label }}</span>
+                  <span style="font-size:11.5px;color:var(--color-neutral-600);flex:1">{{ pr.sub }}</span>
+                  <sc-if value="{{ pr.active }}" hint-placeholder-val="{{ false }}"><span style="color:var(--color-accent);font-weight:800">✓</span></sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ joinOpen }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ closeJoin }}" style="position:absolute;inset:0;background:rgba(32,30,29,0.35);z-index:30"></div>
+        <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:2px solid #201e1d;padding:18px 20px 46px;z-index:31">
+          <div style="font-size:17px;font-weight:800">초대 코드로 참여</div>
+          <div style="font-size:12.5px;color:var(--color-neutral-700);margin-top:4px">받은 여섯 글자를 넣어 주세요.</div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <input value="{{ joinCode }}" onChange="{{ setJoinCode }}" maxLength="6" placeholder="ABC123" style="flex:1;min-width:0;border:1px solid #201e1d;background:#fff;padding:11px 13px;font-size:18px;font-weight:800;letter-spacing:6px;text-transform:uppercase;outline:none">
+            <div onClick="{{ pasteCode }}" style="cursor:pointer;border:1px solid #201e1d;background:#fff;padding:0 12px;display:flex;align-items:center;font-size:12px;font-weight:700;flex:none" style-hover="background:var(--color-neutral-200)">붙여넣기</div>
+          </div>
+          <sc-if value="{{ joinErr }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12.5px;font-weight:700;color:var(--color-accent-700);margin-top:8px">이 코드를 못 찾았어요 — 글자를 다시 확인해 주세요.</div>
+          </sc-if>
+          <div onClick="{{ joinGo }}" style="cursor:pointer;margin-top:12px;background:var(--color-accent);color:#fff;padding:13px 15px;display:flex;align-items:center;font-weight:800;font-size:14px" style-hover="background:var(--color-accent-600)"><span style="flex:1;text-align:left">참여하기</span><span>→</span></div>
+          <div style="font-size:11.5px;color:var(--color-neutral-600);margin-top:8px">참여하려면 로그인이 필요해요.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;left:16px;right:16px;bottom:64px;background:#201e1d;color:#fff;padding:12px 15px;font-size:13px;font-weight:700;z-index:50;box-shadow:var(--shadow-lg);animation:toastin 0.25s ease">{{ toast }}</div>
+      </sc-if>
+    </div>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:980},&quot;mapUi&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;overlay&quot;,&quot;docked&quot;],&quot;default&quot;:&quot;overlay&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;변주&quot;},&quot;uploadStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;per-photo&quot;,&quot;grouped&quot;],&quot;default&quot;:&quot;per-photo&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;변주&quot;},&quot;soloMark&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;tag&quot;,&quot;dashed&quot;],&quot;default&quot;:&quot;tag&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;변주&quot;},&quot;simulateOffline&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;상태 실험&quot;},&quot;showEmptyList&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;상태 실험&quot;}}">
+class Component extends DCLogic {
+  GRADS = [['#7fb4c9','#2e6f8e','#1b4965'],['#f2a65a','#d95d39','#6d3b47'],['#9ab87a','#4f7942','#2c4a2e'],['#d9c7b2','#a98f76','#5e4b3c'],['#23395d','#406e8e','#8ea8c3'],['#f4d35e','#ee964b','#f95738'],['#dbe9f4','#a3c1d4','#6e8ca0'],['#e56b6f','#b56576','#6d597a'],['#b08968','#7f5539','#3f2d23'],['#48cae4','#0096c7','#023e8a']];
+  SIDO = {'11':'서울','21':'부산','22':'대구','23':'인천','24':'광주','25':'대전','26':'울산','29':'세종','31':'경기','32':'강원','33':'충북','34':'충남','35':'전북','36':'전남','37':'경북','38':'경남','39':'제주'};
+  UPRNS = ['강릉시','속초시','춘천시','경주시','여수시','제주시','서귀포시','오사카부','교토부','베트남'];
+  UPDATES = ['2026-07-25','2026-07-26','2026-07-27','2026-08-04'];
+  state = {
+    screen:'list', tab:'map', jjId:null, regionSel:null, search:'', searchOpen:false,
+    month:6, daySel:null, calCollapsed:false, menuOpen:false,
+    joinOpen:false, joinCode:'', joinErr:false,
+    createType:'solo', createName:'', pendingName:'', loginNext:null,
+    upload:null, picker:null, uploadErr:false, toast:null, mapReady:false, split:{},
+    jjs:[
+      {id:'j1', name:'우리 여름', type:'together', members:['이진','소라','하늘','준','미도'], covers:{}, dayCovers:{}, photos:[
+        {id:'p9', rn:'서귀포시', date:'2026-01-10', g:5},{id:'p10', rn:'서귀포시', date:'2026-01-10', g:7},
+        {id:'p8', rn:'여수시', date:'2026-03-01', g:4},
+        {id:'p6', rn:'경주시', date:'2026-05-16', g:8},{id:'p7', rn:'경주시', date:'2026-05-16', g:2},
+        {id:'p3', rn:'강릉시', date:'2026-07-25', g:3},{id:'p1', rn:'강릉시', date:'2026-07-26', g:0},{id:'p2', rn:'강릉시', date:'2026-07-26', g:9},
+        {id:'p4', rn:'속초시', date:'2026-07-27', g:1},{id:'p5', rn:'속초시', date:'2026-07-27', g:6},
+        {id:'p11', rn:'오사카부', date:'2026-06-12', g:4},{id:'p12', rn:'교토부', date:'2026-06-13', g:3},
+        {id:'p13', rn:'베트남', date:'2026-02-14', g:2}]},
+      {id:'j2', name:'혼자 제주', type:'solo', members:['나'], covers:{}, dayCovers:{}, photos:[
+        {id:'q1', rn:'제주시', date:'2026-04-05', g:5},{id:'q2', rn:'제주시', date:'2026-04-05', g:2},
+        {id:'q3', rn:'서귀포시', date:'2026-04-06', g:0},{id:'q4', rn:'서귀포시', date:'2026-04-06', g:1},{id:'q5', rn:'서귀포시', date:'2026-04-06', g:9}]},
+      {id:'j3', name:'우리 가족', type:'together', members:['엄마','아빠','민지','나'], covers:{}, dayCovers:{}, photos:[]}
+    ]
+  };
+  componentDidMount(){
+    const wait = () => {
+      if (window.KOREA_MAP && window.WORLD_MAP && window.JPN_ADM1) {
+        this.RN = {};
+        this.ALL = [...window.WORLD_MAP.regions, ...window.KOREA_MAP.regions];
+        this.ADM1 = {'일본': window.JPN_ADM1.regions};
+        this.PARENT = {};
+        for (const [c, regs] of Object.entries(this.ADM1)) for (const r of regs) this.PARENT[r.name]=c;
+        this.SEARCH = [...this.ALL, ...window.JPN_ADM1.regions];
+        for (const r of this.SEARCH) this.RN[r.name] = r;
+        this.setState({mapReady:true});
+      } else setTimeout(wait, 120);
+    };
+    wait();
+  }
+  css(g){ const s=this.GRADS[g]; return 'linear-gradient(160deg,'+s[0]+' 0%,'+s[1]+' 55%,'+s[2]+' 100%)'; }
+  jj(){ return this.state.jjs.find(j=>j.id===this.state.jjId); }
+  byRegion(j){ const m={}; for(const p of j.photos){ (m[p.rn]=m[p.rn]||[]).push(p); } return m; }
+  cover(j,rn){ const ps=this.byRegion(j)[rn]||[]; if(!ps.length) return null; const c=ps.find(p=>p.id===j.covers[rn]); return c||this.latest(ps); }
+  dcover(j,ds){ const ps=j.photos.filter(p=>p.date===ds); if(!ps.length) return null; const c=ps.find(p=>p.id===j.dayCovers[ds]); return c||ps[ps.length-1]; }
+  fmt(d){ const a=d.split('-'); return (+a[1])+'월 '+(+a[2])+'일'; }
+  latest(ps){ return ps.length ? [...ps].sort((a,b)=>a.date<b.date?-1:1)[ps.length-1] : null; }
+  sido(rn){ const r=this.RN&&this.RN[rn]; if(!r) return ''; if(this.PARENT&&this.PARENT[rn]) return this.PARENT[rn]; if(r.code.startsWith('C-')) return '해외'; return this.SIDO[r.code.slice(0,2)]||''; }
+  regionPhotos(j,name){ const br=this.byRegion(j); let ps=br[name]?[...br[name]]:[]; if(this.ADM1&&this.ADM1[name]) for(const c of this.ADM1[name]){ if(br[c.name]) ps=ps.concat(br[c.name]); } return ps; }
+  regionCover(j,name){ const ps=this.regionPhotos(j,name); if(!ps.length) return null; const c=ps.find(p=>p.id===j.covers[name]); return c||this.latest(ps); }
+  showToast(m){ clearTimeout(this._tt); this.setState({toast:m}); this._tt=setTimeout(()=>this.setState({toast:null}),2400); }
+  upd(fn){ this.setState(s=>({jjs:s.jjs.map(j=>j.id===s.jjId?fn(j):j)})); }
+  openJj(id, tab){
+    const j=this.state.jjs.find(x=>x.id===id);
+    const last=this.latest(j.photos);
+    this.setState({jjId:id, screen:'space', tab:tab||'map', regionSel:null, daySel:null, search:'', searchOpen:false, menuOpen:false, month: last? (+last.date.split('-')[1]-1) : 6});
+  }
+  selectRegion(rn){ const st={regionSel:rn, searchOpen:false, search:''}; const par=this.PARENT&&this.PARENT[rn]; if(par) st.split={...this.state.split, [par]:true}; this.setState(st); }
+  startUpload(fromRn){
+    const mk=(rn,date,g,i,autoR)=>({id:'u'+i, rn, date, g, autoR, autoD:true});
+    const items = fromRn
+      ? [mk(fromRn,'2026-07-27',2,1,false), mk(fromRn,'2026-07-27',7,2,false), mk(fromRn,'2026-07-27',4,3,false)]
+      : [mk('강릉시','2026-07-26',0,1,true), mk('강릉시','2026-07-26',3,2,true), mk('강릉시','2026-07-26',9,3,true), mk('속초시','2026-07-27',1,4,true), mk('속초시','2026-07-27',6,5,true)];
+    this.setState({screen:'upload', upload:{items, from:fromRn||null}, picker:null, uploadErr:false});
+  }
+  applyPick(v){
+    this.setState(s=>{
+      const pk=s.picker; if(!pk) return {};
+      const items=s.upload.items.map(it=> pk.ids.includes(it.id)
+        ? (pk.field==='rn' ? {...it, rn:v, autoR:false} : {...it, date:v, autoD:false})
+        : it);
+      return {upload:{...s.upload, items}, picker:null};
+    });
+  }
+  renderVals(){
+    const s=this.state, P=this.props;
+    const j=this.jj();
+    const ink='#201e1d';
+    const soloMark = P.soloMark ?? 'tag';
+    const docked = (P.mapUi ?? 'overlay')==='docked';
+    const perStyle = (P.uploadStyle ?? 'per-photo')!=='grouped';
+    const listEmpty = !!P.showEmptyList;
+    const isMap = s.screen==='space' && s.tab==='map';
+    const isCal = s.screen==='space' && s.tab==='cal';
+    const sheetOpen = isMap && !!s.regionSel;
+    // list cards
+    const jjCards = listEmpty? [] : s.jjs.map(x=>{
+      const last=this.latest(x.photos);
+      const nr=new Set(x.photos.map(p=>p.rn)).size;
+      const empty=!x.photos.length;
+      const shown=x.members.slice(0,3).map(m=>m[0]);
+      const plus=x.members.length-shown.length;
+      return {id:x.id, name:x.name, isSolo:x.type==='solo',
+        dashed:x.type==='solo'&&soloMark==='dashed', dashColor: empty?'rgba(32,30,29,0.5)':'rgba(255,255,255,0.85)',
+        empty, scrim:!empty, coverCss: empty?'#e5e2e1':this.css(last.g),
+        fg: empty?ink:'#fff', metaColor: empty?'#7d7979':'rgba(255,255,255,0.82)',
+        meta: empty?'아직 사진이 없어요':'사진 '+x.photos.length+' · 지역 '+nr+' · '+this.fmt(last.date),
+        members:shown, plusN: plus>0?('+'+plus):null,
+        open:()=>this.openJj(x.id)};
+    });
+    // map
+    const mapRegions=[], mapBadges=[];
+    let mapTransform='none';
+    if (s.mapReady && isMap && j) {
+      const pushR=(r)=>{
+        const ps=this.regionPhotos(j,r.name);
+        const cv=ps.length?this.regionCover(j,r.name):null;
+        const sel=r.name===s.regionSel;
+        mapRegions.push({key:r.code, d:r.d,
+          fill: cv?('url(#g'+cv.g+')'):'#dcdad9',
+          stroke: sel?'#ec3013':(cv?ink:'#f3f2f2'),
+          sw: sel?1.8:(cv?0.9:0.5),
+          go:(e)=>{ e.stopPropagation(); this.selectRegion(r.name); }});
+        if (ps.length>1&&!s.regionSel) mapBadges.push({x:r.cx, rx:r.cx-11, ry:r.cy-9, ty:r.cy+3.5, n:ps.length});
+      };
+      for (const r of this.ALL) {
+        if (s.split[r.name] && this.ADM1[r.name]) { for (const c of this.ADM1[r.name]) pushR(c); }
+        else pushR(r);
+      }
+      if (s.regionSel && this.RN[s.regionSel]) {
+        const bb=this.RN[s.regionSel].bb;
+        const bw=Math.max(bb[2]-bb[0],4), bh=Math.max(bb[3]-bb[1],4);
+        let sc=Math.min(600/bw, 420/bh); sc=Math.max(0.028, Math.min(sc,7));
+        const tx=380-sc*(bb[0]+bb[2])/2, ty=320-sc*(bb[1]+bb[3])/2;
+        mapTransform='translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px) scale('+sc.toFixed(3)+')';
+      }
+    }
+    // search
+    let searchRows=[];
+    if (s.mapReady && s.searchOpen && j) {
+      const q=s.search.trim();
+      const cnt=(name)=>this.regionPhotos(j,name).length;
+      let cand = q ? this.SEARCH.filter(r=>r.name.includes(q))
+                   : this.SEARCH.filter(r=>cnt(r.name)>0);
+      cand=[...cand].sort((a,b)=>((cnt(b.name)?1:0)-(cnt(a.name)?1:0)));
+      searchRows=cand.slice(0,7).map(r=>{
+        const n=cnt(r.name);
+        return {name:r.name, sub:this.sido(r.name), cnt:n?('사진 '+n+'장'):'아직 없음', cntColor:n?'#ae1800':'#9b9797', go:(e)=>{e.stopPropagation(); this.selectRegion(r.name);}};
+      });
+    }
+    // region sheet
+    const shR = s.regionSel;
+    const shPs = (j&&shR)?this.regionPhotos(j,shR):[];
+    const shCover = (j&&shR)?this.regionCover(j,shR):null;
+    let sheetSplitShow=false, sheetSplitLabel='', sheetSplitGo=()=>{};
+    if (shR && s.mapReady) {
+      if (this.ADM1[shR]) {
+        sheetSplitShow=true;
+        sheetSplitLabel = s.split[shR] ? '나라로 합치기' : '시도로 나누기';
+        sheetSplitGo=()=>this.setState({split:{...s.split, [shR]:!s.split[shR]}});
+      } else if (this.PARENT[shR]) {
+        const par=this.PARENT[shR];
+        sheetSplitShow=true;
+        sheetSplitLabel='나라로 합치기 ('+par+')';
+        sheetSplitGo=()=>this.setState({split:{...s.split, [par]:false}, regionSel:par});
+      }
+    }
+    const sheetPhotos = shPs.map(p=>({id:p.id, css:this.css(p.g), isCover:shCover&&p.id===shCover.id,
+      outline:(shCover&&p.id===shCover.id)?'2px solid #ec3013':'none',
+      set:()=>{ const rn=shR; this.upd(x=>({...x, covers:{...x.covers,[rn]:p.id}})); this.showToast('이제 지도에 이 사진이 칠해져요'); }}));
+    // calendar
+    const y=2026, m=s.month;
+    const first=new Date(y,m,1).getDay(), dim=new Date(y,m+1,0).getDate();
+    const calCells=[];
+    for(let i=0;i<first;i++) calCells.push({k:'b'+i, day:'', bg:'transparent', hasPhoto:false, numColor:ink, isToday:false, sel:false, pick:()=>{}});
+    for(let d=1;d<=dim;d++){
+      const ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      const cv=j?this.dcover(j,ds):null;
+      const dow=(first+d-1)%7;
+      calCells.push({k:ds, day:d, bg:cv?this.css(cv.g):'transparent', hasPhoto:!!cv,
+        numColor: cv?'#fff':(dow===0?'#ae1800':ink),
+        isToday: ds==='2026-08-04', sel: ds===s.daySel,
+        pick:()=>this.setState({daySel:ds})});
+    }
+    let dayGroups=[], selEmptyNote=null;
+    if (j) {
+      const dates=[...new Set(j.photos.map(p=>p.date))].sort().reverse();
+      dayGroups=dates.map(ds=>{
+        const ps=j.photos.filter(p=>p.date===ds);
+        const cv=this.dcover(j,ds);
+        const rns=[...new Set(ps.map(p=>p.rn))].join(' · ');
+        const hl=ds===s.daySel;
+        return {key:ds, label:this.fmt(ds), sub:rns+' · '+ps.length+'장',
+          bl: hl?'3px solid #ec3013':'3px solid transparent', pl: '10px',
+          photos: ps.map(p=>({id:p.id, css:this.css(p.g), isCover:cv&&p.id===cv.id,
+            outline:(cv&&p.id===cv.id)?'2px solid #ec3013':'none',
+            set:()=>{ this.upd(x=>({...x, dayCovers:{...x.dayCovers,[ds]:p.id}})); this.showToast('그날의 대표사진으로 정했어요'); }}))};
+      });
+      if (s.daySel && !dates.includes(s.daySel)) selEmptyNote=this.fmt(s.daySel)+'엔 사진이 없어요.';
+    }
+    // upload
+    const up=s.upload;
+    let upItems=[], upGroups=[], upSummary=null, upFromNote=null, upCta='올리기', upCountLabel='';
+    if (up) {
+      upCountLabel=up.items.length+'장';
+      upCta=up.items.length+'장 올리기';
+      upItems=up.items.map(it=>({id:it.id, css:this.css(it.g), rn:it.rn, dateLabel:this.fmt(it.date), autoR:it.autoR, autoD:it.autoD,
+        editRn:()=>this.setState({picker:{ids:[it.id], field:'rn'}}),
+        editDate:()=>this.setState({picker:{ids:[it.id], field:'date'}})}));
+      const gm={};
+      for (const it of up.items){ const k=it.rn+'|'+it.date; (gm[k]=gm[k]||[]).push(it); }
+      upGroups=Object.entries(gm).map(([k,items])=>({key:k, rn:items[0].rn, dateLabel:this.fmt(items[0].date),
+        auto: items[0].autoR||items[0].autoD, count:items.length+'장',
+        editRn:()=>this.setState({picker:{ids:items.map(i=>i.id), field:'rn'}}),
+        editDate:()=>this.setState({picker:{ids:items.map(i=>i.id), field:'date'}}),
+        thumbs: items.map(i=>({id:i.id, css:this.css(i.g)}))}));
+      const nr=new Set(up.items.map(i=>i.rn)).size, nd=new Set(up.items.map(i=>i.date)).size;
+      if (nr>1||nd>1) upSummary='지역 '+nr+'곳 · 날짜 '+nd+'일로 나눠 올라가요';
+      if (up.from) upFromNote=up.from+'에 추가해요 — 지역이 미리 골라져 있어요';
+    }
+    // picker rows
+    const pk=s.picker;
+    let pickerRows=[], pickerTitle='';
+    if (pk && up) {
+      pickerTitle = pk.field==='rn' ? '어디서 찍은 사진일까요' : '언제 찍은 사진일까요';
+      const cur=up.items.filter(i=>pk.ids.includes(i.id));
+      if (pk.field==='rn') pickerRows=this.UPRNS.map(rn=>({label:rn, sub:this.sido(rn), active:cur.every(i=>i.rn===rn), pick:()=>this.applyPick(rn)}));
+      else pickerRows=this.UPDATES.map(d=>({label:this.fmt(d)+(d==='2026-08-04'?' (오늘)':''), sub:'', active:cur.every(i=>i.date===d), pick:()=>this.applyPick(d)}));
+    }
+    // members
+    const memberRows = j ? (j.type==='solo'
+      ? [{init:'나', name:'나 (이 폰)', owner:true}]
+      : j.members.map((mn,i)=>({init:mn[0], name:mn, owner:i===0}))) : [];
+    const codeJj=j;
+    const jumps=[
+      {label:'① 짜국 목록', go:()=>this.setState({screen:'list', menuOpen:false, joinOpen:false}), on:s.screen==='list'},
+      {label:'② 새 짜국 만들기', go:()=>this.setState({screen:'create', createType:'solo', createName:''}), on:s.screen==='create'},
+      {label:'③ 로그인', go:()=>this.setState({screen:'login', loginNext:'code', pendingName:'우리 겨울'}), on:s.screen==='login'},
+      {label:'④ 지도', go:()=>this.openJj('j1','map'), on:isMap},
+      {label:'⑤ 달력', go:()=>this.openJj('j1','cal'), on:isCal},
+      {label:'⑥ 사진 올리기', go:()=>{ this.setState({jjId:'j1'}); this.startUpload(null); }, on:s.screen==='upload'},
+      {label:'· 초대 코드', go:()=>this.setState({jjId:'j1', screen:'code', pendingName:'우리 여름'}), on:s.screen==='code'},
+      {label:'· 빈 짜국 (우리 가족)', go:()=>this.openJj('j3','map'), on:false}
+    ];
+    return {
+      // page chrome
+      jumpList: jumps.map(x=>({label:x.label, go:x.go, bg:x.on?'#201e1d':'#fff', fg:x.on?'#f3f2f2':'#201e1d', bd:'#201e1d'})),
+      // routing flags
+      isList:s.screen==='list', isCreate:s.screen==='create', isLogin:s.screen==='login',
+      isCode:s.screen==='code', isSpace:s.screen==='space', isUpload:s.screen==='upload',
+      isMap, isCal,
+      // list
+      listEmpty, listHasCards:!listEmpty, jjCards,
+      openCreate:()=>this.setState({screen:'create', createType:'solo', createName:''}),
+      openJoin:()=>this.setState({joinOpen:true, joinCode:'', joinErr:false}),
+      closeJoin:()=>this.setState({joinOpen:false}),
+      joinOpen:s.joinOpen, joinCode:s.joinCode, joinErr:s.joinErr,
+      setJoinCode:(e)=>this.setState({joinCode:e.target.value.toUpperCase(), joinErr:false}),
+      pasteCode:()=>this.setState({joinCode:'K7QF2M', joinErr:false}),
+      joinGo:()=>{ if(s.joinCode==='K7QF2M') this.setState({joinOpen:false, loginNext:'join', screen:'login'}); else this.setState({joinErr:true}); },
+      // create
+      typeSolo:s.createType==='solo', typeTogether:s.createType==='together',
+      soloBorder: s.createType==='solo'?'2px solid #ec3013':'1px solid rgba(32,30,29,0.4)',
+      togetherBorder: s.createType==='together'?'2px solid #ec3013':'1px solid rgba(32,30,29,0.4)',
+      pickSolo:()=>this.setState({createType:'solo'}),
+      pickTogether:()=>this.setState({createType:'together'}),
+      createName:s.createName, setCreateName:(e)=>this.setState({createName:e.target.value}),
+      createNote: s.createType==='solo'?'로그인 없이 바로 만들어져요.':'다음 단계에서 로그인이 필요해요.',
+      doCreate:()=>{
+        const name=s.createName.trim()||'이름 없는 짜국';
+        if (s.createType==='solo') {
+          const id='s'+Date.now();
+          this.setState(st=>({jjs:[...st.jjs, {id, name, type:'solo', members:['나'], covers:{}, dayCovers:{}, photos:[]}], screen:'list'}));
+          this.showToast('만들었어요 — 이 폰에만 저장돼요');
+        } else this.setState({pendingName:name, loginNext:'code', screen:'login'});
+      },
+      goList:()=>this.setState({screen:'list', menuOpen:false, regionSel:null}),
+      // login
+      loginFromCreate:s.loginNext==='code',
+      loginBack:()=>this.setState({screen: s.loginNext==='code'?'create':'list'}),
+      loginDo:()=>{
+        if (s.loginNext==='code') {
+          const id='t'+Date.now();
+          this.setState(st=>({jjs:[...st.jjs, {id, name:st.pendingName, type:'together', members:['나'], covers:{}, dayCovers:{}, photos:[]}], jjId:id, screen:'code'}));
+        } else if (s.loginNext==='join') { this.openJj('j1'); this.showToast("'우리 여름'에 들어왔어요"); }
+        else if (s.loginNext==='convert') { this.upd(x=>({...x, type:'together'})); this.setState({screen:'code', menuOpen:false}); }
+      },
+      loginSolo:()=>{
+        const id='s'+Date.now();
+        this.setState(st=>({jjs:[...st.jjs, {id, name:st.pendingName, type:'solo', members:['나'], covers:{}, dayCovers:{}, photos:[]}], screen:'list'}));
+        this.showToast('만들었어요 — 이 폰에만 저장돼요');
+      },
+      // code
+      codeHeadline: s.loginNext==='convert' ? '이제 같이 쓸 수 있어요' : ('‘'+(codeJj?codeJj.name:s.pendingName)+'’ 짜국을 만들었어요'),
+      copyCode:()=>this.showToast('코드를 복사했어요'),
+      shareCode:()=>this.showToast('공유 시트가 열려요 (프로토타입)'),
+      codeOpen:()=>this.openJj(s.jjId||'j1'),
+      // space chrome
+      jjName:j?j.name:'', curSolo:j?j.type==='solo':false, curTogether:j?j.type==='together':false,
+      menuOpen:s.menuOpen, menuToggle:()=>this.setState({menuOpen:!s.menuOpen}), closeMenu:()=>this.setState({menuOpen:false}),
+      memberRows,
+      convert:()=>this.setState({menuOpen:false, loginNext:'convert', screen:'login'}),
+      tabMap:()=>this.setState({tab:'map'}), tabCal:()=>this.setState({tab:'cal'}),
+      mapTabBg:isMap?'#201e1d':'#fff', mapTabFg:isMap?'#f3f2f2':'#201e1d',
+      calTabBg:isCal?'#201e1d':'#fff', calTabFg:isCal?'#f3f2f2':'#201e1d',
+      // map
+      mapRegions, mapBadges, mapTransform,
+      showOverlaySearch: isMap && !docked,
+      showDockedSearch: isMap && docked,
+      searchVal:s.search,
+      setSearch:(e)=>this.setState({search:e.target.value, searchOpen:true}),
+      openSearch:(e)=>{ this.setState({searchOpen:true}); },
+      closeSearch:()=>{ if(s.searchOpen) this.setState({searchOpen:false}); },
+      showSearchRows: s.searchOpen && isMap && searchRows.length>0, searchRows,
+      searchTop: docked?'6px':'60px',
+      showZoomStack: isMap && !docked && !sheetOpen,
+      showFab: (isMap||isCal) && !sheetOpen && !s.menuOpen,
+      fabAdd:()=>this.startUpload(null),
+      spaceEmptyMap: isMap && j && !j.photos.length && !sheetOpen,
+      // sheet
+      sheetTransform: sheetOpen?'translateY(0)':'translateY(108%)',
+      sheetName:shR||'', sheetSido:shR?this.sido(shR):'',
+      sheetCount: shPs.length?('사진 '+shPs.length+'장'):'',
+      sheetHasPhotos: sheetOpen && shPs.length>0,
+      sheetNoPhotos: sheetOpen && shPs.length===0,
+      sheetPhotos, closeSheet:()=>this.setState({regionSel:null}),
+      sheetSplitShow, sheetSplitLabel, sheetSplitGo,
+      addHere:()=>this.startUpload(shR),
+      // calendar
+      calTitle:'2026년 '+(m+1)+'월',
+      prevMonth:()=>this.setState({month:Math.max(0,m-1)}),
+      nextMonth:()=>this.setState({month:Math.min(11,m+1)}),
+      calExpanded:!s.calCollapsed,
+      toggleCal:()=>this.setState({calCollapsed:!s.calCollapsed}),
+      calToggleLabel: s.calCollapsed?'달력 펴기 ⌄':'달력 접기 ⌃',
+      calCells, dayGroups, hasDays:dayGroups.length>0, calEmpty:dayGroups.length===0, selEmptyNote,
+      // upload
+      upCountLabel, upItems, upGroups, upSummary, upFromNote, upCtaLabel:upCta,
+      isPerStyle:perStyle, isGroupStyle:!perStyle,
+      uploadErr:s.uploadErr,
+      upBack:()=>this.setState({screen:'space', upload:null, uploadErr:false, picker:null}),
+      doUpload:()=>{
+        if (P.simulateOffline && j && j.type==='together') { this.setState({uploadErr:true}); return; }
+        const add=up.items.map((it,i)=>({id:'n'+Date.now()+i, rn:it.rn, date:it.date, g:it.g}));
+        this.upd(x=>({...x, photos:[...x.photos, ...add]}));
+        this.setState({screen:'space', upload:null, picker:null});
+        this.showToast(add.length+'장 올렸어요');
+      },
+      pickerOpen:!!pk, pickerTitle, pickerRows,
+      closePicker:()=>this.setState({picker:null}),
+      toast:s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

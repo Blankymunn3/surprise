@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="stylesheet" href="_ds/modernist-7ddbdd22-d93b-42e6-b22b-8e71e5d87f80/styles.css">
+  <script src="_ds/modernist-7ddbdd22-d93b-42e6-b22b-8e71e5d87f80/_ds_bundle.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <script src="assets/korea-map.js"></script>
+  <script src="assets/world-map.js"></script>
+  <script src="assets/japan-adm1.js"></script>
+  <style>
+    body{margin:0;background:#f3f2f2}
+    a{color:#ec3013}a:hover{color:#ae1800}
+  </style>
+</helmet>
+<div style="min-height:100vh;background:var(--color-bg);font-family:'Archivo','Pretendard Variable',Pretendard,system-ui,sans-serif;color:var(--color-text);padding:44px 48px 90px">
+
+  <div style="max-width:1040px">
+    <div style="display:flex;align-items:baseline;gap:10px">
+      <div style="width:15px;height:15px;background:var(--color-accent)"></div>
+      <div style="font-size:32px;font-weight:800;letter-spacing:-0.02em">짜국 — 앱 디자인</div>
+      <div style="font-size:13px;color:var(--color-neutral-600)">모바일 세로 · iOS/Android 공통 · 한국어</div>
+    </div>
+    <div style="height:2px;background:var(--color-divider);margin:14px 0 16px"></div>
+    <div style="font-size:13.5px;line-height:1.7;color:var(--color-neutral-700);max-width:760px">사진이 주인공인 앱이라, UI는 <b>잉크 선과 흰 면</b>만으로 만들고 색은 사진이 냅니다. 레드는 ‘대표·추가·오늘’ 같은 한 줌의 강조에만 씁니다. 동작은 <a href="Jjaguk.dc.html">인터랙티브 프로토타입</a>에서 확인할 수 있어요 — 이 문서는 피그마로 옮길 기준 화면과 규칙이에요.</div>
+  </div>
+
+  <div style="margin-top:34px;max-width:1040px">
+    <div style="display:flex;align-items:baseline;gap:10px"><div style="font-size:20px;font-weight:800">0 · 규칙 — 브리프가 정해 달라던 것들</div></div>
+    <div style="height:2px;background:var(--color-divider);margin:10px 0 18px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 40px;max-width:1040px">
+      <sc-for list="{{ decisions }}" as="dc" hint-placeholder-count="8">
+        <div style="display:flex;gap:12px">
+          <div style="width:86px;flex:none;font-size:12.5px;font-weight:800;padding-top:1px">{{ dc.t }}</div>
+          <div style="flex:1;font-size:12.5px;line-height:1.65;color:var(--color-neutral-700)">{{ dc.d }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;gap:44px;margin-top:26px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.06em;color:var(--color-neutral-600);margin-bottom:10px">색 — UI는 이 여섯이 전부</div>
+        <div style="display:flex;gap:10px">
+          <sc-for list="{{ colorChips }}" as="ch" hint-placeholder-count="6">
+            <div style="width:86px">
+              <div style="height:56px;background:{{ ch.c }};border:1px solid rgba(32,30,29,0.25)"></div>
+              <div style="font-size:11.5px;font-weight:700;margin-top:5px">{{ ch.n }}</div>
+              <div style="font-size:10.5px;color:var(--color-neutral-600)">{{ ch.c }} · {{ ch.u }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:11.5px;color:var(--color-neutral-600);margin-top:10px;max-width:600px">사진은 컬러 그대로. 사진 위 글자는 흰색 + 해당 방향 그늘(위 22px 또는 아래 40%)로만 확보하고, 사진에 틴트를 얹지 않아요.</div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.06em;color:var(--color-neutral-600);margin-bottom:10px">글자 — Archivo(라틴·숫자) + Pretendard(한글)</div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <sc-for list="{{ typeRows }}" as="tr" hint-placeholder-count="6">
+            <div style="display:flex;align-items:baseline;gap:14px">
+              <div style="width:230px;font-size:{{ tr.px }}px;font-weight:{{ tr.w }};letter-spacing:-0.01em;white-space:nowrap">{{ tr.sample }}</div>
+              <div style="font-size:11px;color:var(--color-neutral-600);white-space:nowrap">{{ tr.px }}px / {{ tr.w }} — {{ tr.u }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.06em;color:var(--color-neutral-600);margin-bottom:10px">형태 — 부품 견본</div>
+        <div style="display:flex;flex-direction:column;gap:9px;width:250px">
+          <div style="background:var(--color-accent);color:#fff;padding:13px 15px;display:flex;align-items:center;font-weight:800;font-size:14px"><span style="flex:1;text-align:left">주 동작 — 왼끝 맞춤</span><span>→</span></div>
+          <div style="background:#fff;border:1px solid #201e1d;padding:12px 15px;font-weight:700;font-size:13.5px;text-align:left">보조 동작</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="background:#fff;border:1px solid #201e1d;font-size:10.5px;font-weight:700;padding:3px 8px">이 폰에만</div>
+            <div style="background:var(--color-accent);color:#fff;font-size:10px;font-weight:700;padding:2px 7px">대표</div>
+            <div style="background:var(--color-neutral-200);color:var(--color-neutral-700);font-size:10px;font-weight:700;padding:2px 6px">자동</div>
+            <div style="display:flex;margin-left:4px">
+              <div style="width:24px;height:24px;background:#fff;border:1px solid #201e1d;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">이</div>
+              <div style="width:24px;height:24px;background:#fff;border:1px solid #201e1d;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-left:-6px">소</div>
+              <div style="width:24px;height:24px;background:#201e1d;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;margin-left:-6px">+3</div>
+            </div>
+          </div>
+          <div style="height:2px;background:var(--color-divider)"></div>
+          <div style="font-size:11px;color:var(--color-neutral-600);line-height:1.6">모서리 0 · 테두리 1px 잉크 · 구획선 2px(잉크 40%) · 그림자 sm/md/lg 3단만 · 간격 4·8·12·16·20 배수</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="6">
+    <div style="margin-top:44px">
+      <div style="display:flex;align-items:baseline;gap:12px;max-width:1040px">
+        <div style="font-size:20px;font-weight:800;white-space:nowrap">{{ g.title }}</div>
+        <div style="font-size:12.5px;line-height:1.6;color:var(--color-neutral-700);padding-top:2px">{{ g.note }}</div>
+      </div>
+      <div style="height:2px;background:var(--color-divider);margin:10px 0 0;max-width:1040px"></div>
+    </div>
+    <div style="display:flex;gap:34px;align-items:flex-start;flex-wrap:wrap;margin-top:20px">
+      <sc-for list="{{ g.frames }}" as="f" hint-placeholder-count="2">
+        <div id="{{ f.id }}" style="display:flex;flex-direction:column;gap:8px;scroll-margin-top:16px">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <div style="font-size:10.5px;font-weight:800;font-family:'Archivo',monospace;background:#201e1d;color:#fff;padding:3px 7px">{{ f.id }}</div>
+            <div style="font-size:13px;font-weight:700">{{ f.name }}</div>
+            <div style="font-size:11.5px;color:var(--color-neutral-600)">{{ f.note }}</div>
+          </div>
+          <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="446px,918px">
+            <div style="height:100%;position:relative;display:flex;flex-direction:column;background:var(--color-bg);font-family:'Archivo','Pretendard Variable',Pretendard,system-ui,sans-serif;color:var(--color-text);overflow:hidden">
+
+              <sc-if value="{{ f.isList }}" hint-placeholder-val="{{ false }}">
+                <div style="height:100%;display:flex;flex-direction:column;overflow:hidden">
+                  <div style="padding:76px 20px 12px;display:flex;align-items:baseline;gap:9px">
+                    <div style="width:13px;height:13px;background:var(--color-accent)"></div>
+                    <div style="font-size:25px;font-weight:800;letter-spacing:-0.02em">짜국</div>
+                    <div style="flex:1"></div>
+                    <div style="font-size:11.5px;color:var(--color-neutral-600)">어디와 언제로 보는 사진첩</div>
+                  </div>
+                  <div style="height:2px;background:var(--color-divider);margin:0 20px"></div>
+                  <sc-if value="{{ f.empty }}" hint-placeholder-val="{{ false }}">
+                    <div style="flex:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 28px;gap:14px">
+                      <svg width="150" height="110" viewBox="0 0 150 110">
+                        <rect x="6" y="18" width="76" height="58" fill="none" stroke="#201e1d" stroke-width="2"></rect>
+                        <rect x="26" y="34" width="76" height="58" fill="#eae9e9" stroke="#201e1d" stroke-width="2"></rect>
+                        <rect x="46" y="50" width="76" height="58" fill="#fff" stroke="#201e1d" stroke-width="2"></rect>
+                        <rect x="98" y="10" width="22" height="22" fill="#ec3013"></rect>
+                        <path d="M60 79 L74 64 L86 74 L98 60" fill="none" stroke="#201e1d" stroke-width="2"></path>
+                      </svg>
+                      <div style="font-size:20px;font-weight:800;line-height:1.3">아직 짜국이 없어요</div>
+                      <div style="font-size:13px;line-height:1.65;color:var(--color-neutral-700)">짜국은 사진을 <b>지도</b>와 <b>달력</b>, 두 가지로 보는 사진첩이에요. 혼자 써도 되고, 가까운 사람들과 같이 채워도 돼요.</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ f.cards }}" hint-placeholder-val="{{ false }}">
+                    <div style="flex:1;overflow:hidden;padding:16px 20px 8px;display:flex;flex-direction:column;gap:14px">
+                      <sc-for list="{{ listCards }}" as="c" hint-placeholder-count="3">
+                        <div style="position:relative;height:150px;flex:none;background:{{ c.coverCss }};box-shadow:var(--shadow-sm)">
+                          <sc-if value="{{ c.scrim }}" hint-placeholder-val="{{ true }}">
+                            <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(32,30,29,0) 38%,rgba(32,30,29,0.78) 100%)"></div>
+                          </sc-if>
+                          <sc-if value="{{ c.isSolo }}" hint-placeholder-val="{{ false }}">
+                            <div style="position:absolute;top:12px;left:12px;background:#fff;border:1px solid #201e1d;color:#201e1d;font-size:10.5px;font-weight:700;padding:3px 8px">이 폰에만</div>
+                          </sc-if>
+                          <div style="position:absolute;left:14px;right:14px;bottom:12px;display:flex;align-items:flex-end;gap:10px">
+                            <div style="flex:1;min-width:0">
+                              <div style="font-size:17px;font-weight:800;color:{{ c.fg }}">{{ c.name }}</div>
+                              <div style="font-size:11.5px;font-weight:500;color:{{ c.metaColor }};margin-top:2px">{{ c.meta }}</div>
+                            </div>
+                            <div style="display:flex;flex:none">
+                              <sc-for list="{{ c.members }}" as="mi" hint-placeholder-count="2">
+                                <div style="width:24px;height:24px;background:#fff;border:1px solid #201e1d;color:#201e1d;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-left:-6px">{{ mi }}</div>
+                              </sc-for>
+                              <sc-if value="{{ c.plusN }}" hint-placeholder-val="{{ false }}">
+                                <div style="width:24px;height:24px;background:#201e1d;border:1px solid #201e1d;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;margin-left:-6px">{{ c.plusN }}</div>
+                              </sc-if>
+                            </div>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <div style="padding:12px 20px 48px;display:flex;flex-direction:column;gap:8px;border-top:2px solid var(--color-divider)">
+                    <div style="background:var(--color-accent);color:#fff;padding:14px 16px;display:flex;align-items:center;font-weight:800;font-size:15px"><span style="flex:1;text-align:left">새 짜국 만들기</span><span>→</span></div>
+                    <div style="background:#fff;border:1px solid #201e1d;padding:13px 16px;display:flex;align-items:center;font-weight:700;font-size:14px"><span style="flex:1;text-align:left">초대 코드로 참여</span></div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ f.isCreate }}" hint-placeholder-val="{{ false }}">
+                <div style="height:100%;display:flex;flex-direction:column;overflow:hidden">
+                  <div style="padding:66px 12px 8px 8px;display:flex;align-items:center;gap:2px">
+                    <div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center"><svg width="11" height="18" viewBox="0 0 11 18"><path d="M9.5 1.5 L2 9 L9.5 16.5" fill="none" stroke="#201e1d" stroke-width="2.2"></path></svg></div>
+                    <div style="font-size:17px;font-weight:800">새 짜국</div>
+                  </div>
+                  <div style="height:2px;background:var(--color-divider);margin:0 20px"></div>
+                  <div style="flex:1;padding:18px 20px">
+                    <div style="font-size:11px;font-weight:800;letter-spacing:0.06em;color:var(--color-neutral-600);margin-bottom:8px">어떻게 쓸까요</div>
+                    <div style="display:flex;flex-direction:column;gap:9px">
+                      <div style="background:#fff;border:2px solid #ec3013;padding:14px 15px;display:flex;gap:12px">
+                        <div style="width:16px;height:16px;border:1px solid #201e1d;flex:none;margin-top:2px;display:flex;align-items:center;justify-content:center"><div style="width:8px;height:8px;background:var(--color-accent)"></div></div>
+                        <div>
+                          <div style="font-size:15px;font-weight:800">혼자</div>
+                          <div style="font-size:12.5px;line-height:1.55;color:var(--color-neutral-700);margin-top:3px">사진이 이 폰에만 남아요 · 로그인 없이 바로 시작해요<br><span style="color:var(--color-neutral-600)">폰을 잃어버리면 사진도 함께 사라져요</span></div>
+                        </div>
+                      </div>
+                      <div style="background:#fff;border:1px solid rgba(32,30,29,0.4);padding:14px 15px;display:flex;gap:12px">
+                        <div style="width:16px;height:16px;border:1px solid #201e1d;flex:none;margin-top:2px"></div>
+                        <div>
+                          <div style="font-size:15px;font-weight:800">같이</div>
+                          <div style="font-size:12.5px;line-height:1.55;color:var(--color-neutral-700);margin-top:3px">초대한 사람들과 같이 채우고 같이 봐요 · 로그인이 필요해요<br><span style="color:var(--color-neutral-600)">만들면 초대 코드가 바로 나와요</span></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div style="font-size:11px;font-weight:800;letter-spacing:0.06em;color:var(--color-neutral-600);margin:20px 0 8px">이름</div>
+                    <div style="border:1px solid #201e1d;background:#fff;padding:13px 14px;font-size:15px;color:var(--color-neutral-500)">예) 우리 여름, 제주 한 달</div>
+                    <div style="font-size:11.5px;color:var(--color-neutral-600);margin-top:8px">나중에 혼자 → 같이로 바꿀 수 있어요. 반대로는 안 돼요.</div>
+                  </div>
+                  <div style="padding:12px 20px 48px;border-top:2px solid var(--color-divider)">
+                    <div style="background:var(--color-accent);color:#fff;padding:14px 16px;display:flex;align-items:center;font-weight:800;font-size:15px"><span style="flex:1;text-align:left">만들기</span><span>→</span></div>
+                    <div style="font-size:11.5px;color:var(--color-neutral-600);margin-top:8px">로그인 없이 바로 만들어져요.</div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ f.isLogin }}" hint-placeholder-val="{{ false }}">
+                <div style="height:100%;display:flex;flex-direction:column;overflow:hidden">
+                  <div style="padding:66px 12px 8px 8px"><div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center"><svg width="11" height="18" viewBox="0 0 11 18"><path d="M9.5 1.5 L2 9 L9.5 16.5" fill="none" stroke="#201e1d" stroke-width="2.2"></path></svg></div></div>
+                  <div style="flex:1;padding:8px 26px;display:flex;flex-direction:column">
+                    <div style="width:13px;height:13px;background:var(--color-accent);margin-bottom:14px"></div>
+                    <div style="font-size:23px;font-weight:800;line-height:1.3">같이 보려면<br>계정이 필요해요</div>
+                    <div style="font-size:13.5px;line-height:1.7;color:var(--color-neutral-700);margin-top:14px">로그인은 멤버가 아닌 사람이 우리 사진을 못 보게 막는 잠금장치예요. 계정 확인 말고 다른 데는 쓰지 않아요.</div>
+                    <div style="flex:1"></div>
+                    <div style="background:#fff;border:1px solid #201e1d;padding:14px 16px;display:flex;align-items:center;gap:11px;font-weight:700;font-size:15px">
+                      <div style="width:20px;height:20px;border:1.5px solid #201e1d;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">G</div>
+                      <span style="flex:1;text-align:left">Google로 계속하기</span>
+                    </div>
+                    <div style="margin-top:14px;font-size:13.5px;font-weight:700;text-decoration:underline;text-underline-offset:3px">그냥 혼자 쓸래요 — 이 폰에만 저장할게요</div>
+                    <div style="font-size:11.5px;color:var(--color-neutral-600);margin:16px 0 40px">지금은 Google 계정만 돼요.</div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ f.isCode }}" hint-placeholder-val="{{ false }}">
+                <div style="height:100%;display:flex;flex-direction:column;overflow:hidden">
+                  <div style="flex:1;padding:96px 26px 0">
+                    <div style="font-size:21px;font-weight:800;line-height:1.35">‘우리 여름’ 짜국을 만들었어요</div>
+                    <div style="font-size:13px;line-height:1.65;color:var(--color-neutral-700);margin-top:10px">이 코드를 받은 사람이 들어올 수 있어요. 지금 보내 두면 나중에 다시 찾지 않아도 돼요.</div>
+                    <div style="background:#fff;border:1px solid #201e1d;padding:22px 20px;margin-top:22px">
+                      <div style="font-size:38px;font-weight:800;letter-spacing:10px">K7QF2M</div>
+                      <div style="font-size:11px;color:var(--color-neutral-600);margin-top:6px">7일 동안 쓸 수 있어요</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+                      <div style="background:#fff;border:1px solid #201e1d;padding:11px 14px;font-weight:700;font-size:13.5px">코드 복사</div>
+                      <div style="background:#fff;border:1px solid #201e1d;padding:11px 14px;font-weight:700;font-size:13.5px">공유하기</div>
+                    </div>
+                    <div style="font-size:11.5px;color:var(--color-neutral-600);margin-top:12px">위쪽 ⋯ 메뉴에서 언제든 다시 볼 수 있어요.</div>
+                  </div>
+                  <div style="padding:12px 20px 48px">
+                    <div style="background:var(--color-accent);color:#fff;padding:14px 16px;display:flex;align-items:center;font-weight:800;font-size:15px"><span style="flex:1;text-align:left">짜국 열기</span><span>→</span></div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ f.isSpace }}" hint-placeholder-val="{{ false }}">
+                <div style="height:100%;display:flex;flex-direction:column;overflow:hidden">
+                  <div style="padding:64px 10px 6px 8px;display:flex;align-items:center;gap:2px">
+                    <div style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex:none"><svg width="11" height="18" viewBox="0 0 11 18"><path d="M9.5 1.5 L2 9 L9.5 16.5" fill="none" stroke="#201e1d" stroke-width="2.2"></path></svg></div>
+                    <div style="font-size:16px;font-weight:800;flex:1">{{ f.spaceName }}</div>
+                    <sc-if value="{{ f.soloTag }}" hint-placeholder-val="{{ false }}">
+                      <div style="background:#fff;border:1px solid #201e1d;font-size:10px;font-weight:700;padding:2px 7px;flex:none">이 폰에만</div>
+                    </sc-if>
+                    <div style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex:none;font-weight:800;font-size:18px">⋯</div>
+                  </div>
+                  <div style="display:flex;margin:2px 20px 10px;border:1px solid #201e1d;height:40px;flex:none">
+                    <div style="flex:1;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;background:{{ f.mapTabBg }};color:{{ f.mapTabFg }}">지도</div>
+                    <div style="flex:1;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;border-left:1px solid #201e1d;background:{{ f.calTabBg }};color:{{ f.calTabFg }}">달력</div>
+                  </div>
+                  <div style="flex:1;position:relative;overflow:hidden">
+
+                    <sc-if value="{{ f.isMapTab }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;inset:0;background:#e3e9ec">
+                        <svg viewBox="0 0 760 806" style="position:absolute;left:0;top:6px;width:100%;height:auto">
+                          <defs>
+                            <linearGradient id="{{ f.gp }}0" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#7fb4c9"></stop><stop offset="0.55" stopColor="#2e6f8e"></stop><stop offset="1" stopColor="#1b4965"></stop></linearGradient>
+                            <linearGradient id="{{ f.gp }}1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f2a65a"></stop><stop offset="0.55" stopColor="#d95d39"></stop><stop offset="1" stopColor="#6d3b47"></stop></linearGradient>
+                            <linearGradient id="{{ f.gp }}2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#9ab87a"></stop><stop offset="0.55" stopColor="#4f7942"></stop><stop offset="1" stopColor="#2c4a2e"></stop></linearGradient>
+                            <linearGradient id="{{ f.gp }}3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#d9c7b2"></stop><stop offset="0.55" stopColor="#a98f76"></stop><stop offset="1" stopColor="#5e4b3c"></stop></linearGradient>
+                            <linearGradient id="{{ f.gp }}4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#23395d"></stop><stop offset="0.55" stopColor="#406e8e"></stop><stop offset="1" stopColor="#8ea8c3"></stop></linearGradient>
+                            <linearGradient id="{{ f.gp }}5" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f4d35e"></stop><stop offset="0.55" stopColor="#ee964b"></stop><stop offset="1" stopColor="#f95738"></stop></linearGradient>
+                            <linearGradient id="{{ f.gp }}6" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#dbe9f4"></stop><stop offset="0.55" stopColor="#a3c1d4"></stop><stop offset="1" stopColor="#6e8ca0"></stop></linearGradient>
+                            <linearGradient id="{{ f.gp }}7" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#e56b6f"></stop><stop offset="0.55" stopColor="#b56576"></stop><stop offset="1" stopColor="#6d597a"></stop></linearGradient>
+                            <linearGradient id="{{ f.gp }}8" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#b08968"></stop><stop offset="0.55" stopColor="#7f5539"></stop><stop offset="1" stopColor="#3f2d23"></stop></linearGradient>
+                            <linearGradient id="{{ f.gp }}9" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#48cae4"></stop><stop offset="0.55" stopColor="#0096c7"></stop><stop offset="1" stopColor="#023e8a"></stop></linearGradient>
+                          </defs>
+                          <g style="transform:{{ f.mapTransform }}">
+                            <sc-for list="{{ f.mapRegions }}" as="r" hint-placeholder-count="0">
+                              <path d="{{ r.d }}" fill="{{ r.fill }}" stroke="{{ r.stroke }}" strokeWidth="{{ r.sw }}"></path>
+                            </sc-for>
+                          </g>
+                          <sc-for list="{{ f.mapBadges }}" as="b" hint-placeholder-count="0">
+                            <g style="pointer-events:none">
+                              <rect x="{{ b.rx }}" y="{{ b.ry }}" width="22" height="16" fill="#201e1d"></rect>
+                              <text x="{{ b.x }}" y="{{ b.ty }}" fill="#fff" style="font-size:10px;font-weight:700" textAnchor="middle">{{ b.n }}</text>
+                            </g>
+                          </sc-for>
+                        </svg>
+                        <div style="position:absolute;top:10px;left:14px;right:14px;display:flex;align-items:center;gap:8px;border:1px solid #201e1d;background:#fff;height:44px;padding:0 12px;box-shadow:var(--shadow-sm)">
+                          <svg width="15" height="15" viewBox="0 0 15 15"><circle cx="6.5" cy="6.5" r="5" fill="none" stroke="#201e1d" stroke-width="1.8"></circle><path d="M10.5 10.5 L14 14" stroke="#201e1d" stroke-width="1.8"></path></svg>
+                          <div style="flex:1;font-size:13.5px;color:{{ f.searchColor }}">{{ f.searchText }}</div>
+                        </div>
+                        <sc-if value="{{ f.searchRowsOn }}" hint-placeholder-val="{{ false }}">
+                          <div style="position:absolute;top:60px;left:14px;right:14px;background:#fff;border:1px solid #201e1d;box-shadow:var(--shadow-md)">
+                            <sc-for list="{{ searchRows }}" as="sr" hint-placeholder-count="3">
+                              <div style="padding:11px 13px;border-bottom:1px solid var(--color-neutral-200);display:flex;align-items:baseline;gap:8px">
+                                <span style="font-size:14px;font-weight:700">{{ sr.name }}</span>
+                                <span style="font-size:11.5px;color:var(--color-neutral-600);flex:1">{{ sr.sub }}</span>
+                                <span style="font-size:11.5px;font-weight:700;color:{{ sr.cntColor }}">{{ sr.cnt }}</span>
+                              </div>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ f.controlsOn }}" hint-placeholder-val="{{ false }}">
+                          <div style="position:absolute;left:14px;bottom:18px;display:flex;flex-direction:column;gap:6px">
+                            <div style="width:40px;height:40px;background:#fff;border:1px solid #201e1d;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px">+</div>
+                            <div style="width:40px;height:40px;background:#fff;border:1px solid #201e1d;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px">−</div>
+                            <div style="width:40px;height:40px;background:#fff;border:1px solid #201e1d;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5" fill="none" stroke="#201e1d" stroke-width="1.8"></circle><circle cx="8" cy="8" r="1.6" fill="#201e1d"></circle></svg></div>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ f.emptyMapCard }}" hint-placeholder-val="{{ false }}">
+                          <div style="position:absolute;left:34px;right:34px;top:34%;background:#fff;border:1px solid #201e1d;box-shadow:var(--shadow-md);padding:18px 20px">
+                            <svg width="96" height="62" viewBox="0 0 96 62" style="margin-bottom:10px">
+                              <path d="M6 44 C14 20 34 10 50 16 C66 22 82 14 90 30" fill="none" stroke="#201e1d" stroke-width="2" stroke-dasharray="5 4"></path>
+                              <rect x="42" y="26" width="16" height="16" fill="#ec3013"></rect>
+                            </svg>
+                            <div style="font-size:16px;font-weight:800">아직 찍힌 곳이 없어요</div>
+                            <div style="font-size:12.5px;line-height:1.6;color:var(--color-neutral-700);margin-top:5px">첫 사진을 넣으면 그 지역이 사진으로 칠해져요.</div>
+                            <div style="margin-top:12px;background:var(--color-accent);color:#fff;padding:11px 14px;font-weight:800;font-size:13.5px;display:inline-block">사진 넣기 →</div>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ f.sheetOn }}" hint-placeholder-val="{{ false }}">
+                          <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:2px solid #201e1d;padding:14px 18px 26px">
+                            <div style="display:flex;align-items:flex-start;gap:10px">
+                              <div style="flex:1">
+                                <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:18px;font-weight:800">{{ f.sheetName }}</span><span style="font-size:12px;color:var(--color-neutral-600)">{{ f.sheetSido }}</span></div>
+                                <div style="font-size:12.5px;color:var(--color-neutral-600);margin-top:2px">{{ f.sheetCount }}</div>
+                              </div>
+                              <div style="width:34px;height:34px;border:1px solid #201e1d;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800">×</div>
+                            </div>
+                            <div style="display:flex;gap:8px;overflow:hidden;margin:12px 0 6px">
+                              <sc-for list="{{ f.sheetPhotos }}" as="sp" hint-placeholder-count="3">
+                                <div style="width:92px;height:92px;flex:none;position:relative;background:{{ sp.css }};outline:{{ sp.outline }}">
+                                  <sc-if value="{{ sp.isCover }}" hint-placeholder-val="{{ false }}">
+                                    <div style="position:absolute;top:0;left:0;background:var(--color-accent);color:#fff;font-size:10px;font-weight:700;padding:2px 7px">대표</div>
+                                  </sc-if>
+                                </div>
+                              </sc-for>
+                            </div>
+                            <div style="font-size:11px;color:var(--color-neutral-600)">사진을 누르면 지도에 칠해지는 대표사진이 돼요</div>
+                            <div style="display:flex;gap:8px;margin-top:12px">
+                              <div style="flex:1;background:var(--color-accent);color:#fff;padding:13px 15px;display:flex;align-items:center;font-weight:800;font-size:14px"><span style="flex:1;text-align:left">이 지역에 사진 추가</span><span>+</span></div>
+                              <sc-if value="{{ f.sheetSplit }}" hint-placeholder-val="{{ false }}">
+                                <div style="flex:none;background:#fff;border:1px solid #201e1d;padding:13px 14px;display:flex;align-items:center;font-weight:700;font-size:13px">{{ f.sheetSplit }}</div>
+                              </sc-if>
+                            </div>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ f.fabOn }}" hint-placeholder-val="{{ false }}">
+                          <div style="position:absolute;right:14px;bottom:18px;width:54px;height:54px;background:var(--color-accent);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md)">
+                            <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2 V18 M2 10 H18" stroke="#fff" stroke-width="2.6"></path></svg>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{ f.isCalTab }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden">
+                        <div style="padding:8px 20px 10px;display:flex;align-items:center;gap:8px;flex:none">
+                          <div style="font-size:18px;font-weight:800;flex:1">2026년 7월</div>
+                          <div style="width:34px;height:34px;border:1px solid #201e1d;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:800">‹</div>
+                          <div style="width:34px;height:34px;border:1px solid #201e1d;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:800">›</div>
+                        </div>
+                        <sc-if value="{{ f.gridOn }}" hint-placeholder-val="{{ true }}">
+                          <div style="display:grid;grid-template-columns:repeat(7,1fr);margin:0 20px;font-size:10.5px;font-weight:700;color:var(--color-neutral-600);text-align:center;flex:none">
+                            <div style="color:var(--color-accent-700)">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+                          </div>
+                          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:6px 20px 0;flex:none">
+                            <sc-for list="{{ calCells }}" as="cc" hint-placeholder-count="35">
+                              <div style="aspect-ratio:1;position:relative;overflow:hidden;background:{{ cc.bg }}">
+                                <sc-if value="{{ cc.hasPhoto }}" hint-placeholder-val="{{ false }}">
+                                  <div style="position:absolute;top:0;left:0;right:0;height:22px;background:linear-gradient(180deg,rgba(32,30,29,0.45),rgba(32,30,29,0))"></div>
+                                </sc-if>
+                                <div style="position:absolute;top:3px;left:5px;font-size:11px;font-weight:700;color:{{ cc.numColor }}">{{ cc.day }}</div>
+                                <sc-if value="{{ cc.sel }}" hint-placeholder-val="{{ false }}">
+                                  <div style="position:absolute;inset:0;border:2px solid #201e1d;pointer-events:none"></div>
+                                </sc-if>
+                              </div>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+                        <div style="padding:7px 20px;font-size:11.5px;font-weight:700;color:var(--color-neutral-600);flex:none">{{ f.calToggle }}</div>
+                        <div style="height:2px;background:var(--color-divider);margin:0 20px;flex:none"></div>
+                        <div style="flex:1;overflow:hidden;padding:12px 20px 20px">
+                          <sc-for list="{{ dayGroups }}" as="dg" hint-placeholder-count="2">
+                            <div style="margin-bottom:16px;border-left:{{ dg.bl }};padding-left:10px">
+                              <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">
+                                <span style="font-size:14px;font-weight:800">{{ dg.label }}</span>
+                                <span style="font-size:11.5px;color:var(--color-neutral-600)">{{ dg.sub }}</span>
+                              </div>
+                              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                                <sc-for list="{{ dg.photos }}" as="dp" hint-placeholder-count="3">
+                                  <div style="width:76px;height:76px;position:relative;background:{{ dp.css }};outline:{{ dp.outline }}">
+                                    <sc-if value="{{ dp.isCover }}" hint-placeholder-val="{{ false }}">
+                                      <div style="position:absolute;top:0;left:0;background:var(--color-accent);color:#fff;font-size:9.5px;font-weight:700;padding:1px 6px">대표</div>
+                                    </sc-if>
+                                  </div>
+                                </sc-for>
+                              </div>
+                            </div>
+                          </sc-for>
+                        </div>
+                        <div style="position:absolute;right:14px;bottom:18px;width:54px;height:54px;background:var(--color-accent);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md)">
+                          <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2 V18 M2 10 H18" stroke="#fff" stroke-width="2.6"></path></svg>
+                        </div>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{ f.menuOn }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;inset:0;background:rgba(32,30,29,0.35)"></div>
+                      <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:2px solid #201e1d;padding:18px 20px 44px">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                          <span style="font-size:15px;font-weight:800;flex:1">우리 여름</span>
+                          <div style="width:30px;height:30px;border:1px solid #201e1d;display:flex;align-items:center;justify-content:center;font-weight:800">×</div>
+                        </div>
+                        <div style="font-size:11px;font-weight:800;letter-spacing:0.06em;color:var(--color-neutral-600);margin-bottom:4px">멤버</div>
+                        <sc-for list="{{ memberRows }}" as="mr" hint-placeholder-count="3">
+                          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--color-neutral-200)">
+                            <div style="width:28px;height:28px;background:#201e1d;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">{{ mr.init }}</div>
+                            <span style="font-size:14px;flex:1">{{ mr.name }}</span>
+                            <sc-if value="{{ mr.owner }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;border:1px solid #201e1d;padding:2px 6px">주인</span></sc-if>
+                          </div>
+                        </sc-for>
+                        <div style="font-size:11px;font-weight:800;letter-spacing:0.06em;color:var(--color-neutral-600);margin:14px 0 4px">초대 코드</div>
+                        <div style="display:flex;align-items:center;gap:10px">
+                          <span style="font-size:20px;font-weight:800;letter-spacing:4px;flex:1">K7QF2M</span>
+                          <div style="border:1px solid #201e1d;background:#fff;padding:7px 12px;font-size:12px;font-weight:700">복사</div>
+                        </div>
+                        <div style="display:flex;align-items:center;padding:12px 0 0;margin-top:12px;border-top:1px solid var(--color-neutral-200);font-size:13.5px;color:var(--color-neutral-700)"><span style="flex:1">이름 바꾸기</span><span>›</span></div>
+                      </div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ f.isUpload }}" hint-placeholder-val="{{ false }}">
+                <div style="height:100%;display:flex;flex-direction:column;overflow:hidden">
+                  <div style="padding:66px 16px 8px 8px;display:flex;align-items:center;gap:2px">
+                    <div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center"><svg width="11" height="18" viewBox="0 0 11 18"><path d="M9.5 1.5 L2 9 L9.5 16.5" fill="none" stroke="#201e1d" stroke-width="2.2"></path></svg></div>
+                    <div style="font-size:17px;font-weight:800;flex:1">사진 올리기</div>
+                    <div style="border:1px solid #201e1d;background:#fff;font-size:11.5px;font-weight:800;padding:3px 9px">5장</div>
+                  </div>
+                  <div style="height:2px;background:var(--color-divider);margin:0 20px"></div>
+                  <sc-if value="{{ f.offline }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin:12px 20px 0;border:1px solid var(--color-accent);background:var(--color-accent-100);padding:12px 14px">
+                      <div style="font-size:13px;font-weight:800;color:var(--color-accent-800)">인터넷이 안 돼요</div>
+                      <div style="font-size:12px;line-height:1.55;color:var(--color-accent-800);margin-top:3px">지금은 올릴 수 없어서 사진을 폰에 저장해 뒀어요. 연결되면 여기서 다시 시도해 주세요.</div>
+                      <div style="display:inline-block;margin-top:8px;border:1px solid var(--color-accent-700);color:var(--color-accent-700);font-size:12px;font-weight:800;padding:6px 11px;background:#fff">다시 시도</div>
+                    </div>
+                  </sc-if>
+                  <div style="display:flex;gap:6px;align-items:baseline;padding:12px 20px 4px">
+                    <span style="font-size:11.5px;color:var(--color-neutral-600)">ⓘ</span>
+                    <span style="font-size:11.5px;line-height:1.5;color:var(--color-neutral-600)">지역·날짜는 사진에서 자동으로 읽었어요. 눌러서 고치면 <b>자동</b> 표시가 사라져요.</span>
+                  </div>
+                  <div style="flex:1;overflow:hidden;padding:4px 20px 8px">
+                    <sc-for list="{{ upItems }}" as="it" hint-placeholder-count="4">
+                      <div style="display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--color-neutral-300)">
+                        <div style="width:62px;height:62px;flex:none;background:{{ it.css }}"></div>
+                        <div style="flex:1;display:flex;flex-direction:column;gap:6px;min-width:0">
+                          <div style="display:flex;align-items:center;gap:8px;border:1px solid #201e1d;background:#fff;padding:6px 10px">
+                            <span style="font-size:10.5px;font-weight:800;color:var(--color-neutral-600);width:26px;flex:none">어디</span>
+                            <span style="font-size:13.5px;font-weight:700;flex:1">{{ it.rn }}</span>
+                            <sc-if value="{{ it.autoR }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;background:var(--color-neutral-200);color:var(--color-neutral-700);padding:2px 6px">자동</span></sc-if>
+                            <span style="color:var(--color-neutral-500)">›</span>
+                          </div>
+                          <div style="display:flex;align-items:center;gap:8px;border:1px solid #201e1d;background:#fff;padding:6px 10px">
+                            <span style="font-size:10.5px;font-weight:800;color:var(--color-neutral-600);width:26px;flex:none">언제</span>
+                            <span style="font-size:13.5px;font-weight:700;flex:1">{{ it.dateLabel }}</span>
+                            <sc-if value="{{ it.autoD }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;background:var(--color-neutral-200);color:var(--color-neutral-700);padding:2px 6px">자동</span></sc-if>
+                            <span style="color:var(--color-neutral-500)">›</span>
+                          </div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="padding:12px 20px 48px;border-top:2px solid var(--color-divider)">
+                    <div style="font-size:11.5px;color:var(--color-neutral-600);margin-bottom:8px">지역 2곳 · 날짜 2일로 나눠 올라가요</div>
+                    <div style="background:var(--color-accent);color:#fff;padding:14px 16px;display:flex;align-items:center;font-weight:800;font-size:15px"><span style="flex:1;text-align:left">5장 올리기</span><span>↑</span></div>
+                  </div>
+                </div>
+              </sc-if>
+
+            </div>
+          </x-import>
+        </div>
+      </sc-for>
+    </div>
+  </sc-for>
+
+  <div style="margin-top:44px;max-width:1040px">
+    <div style="height:2px;background:var(--color-divider);margin-bottom:12px"></div>
+    <div style="font-size:12.5px;line-height:1.7;color:var(--color-neutral-600)">다음: 실제 사진으로 교체 → 피그마 이관(토큰은 0번 그대로) → 다크 모드 없음 확정이면 안드로이드 force-dark 끄기. 프레임 번호(<a href="#4b">4b</a> 식)로 피드백 주세요.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:1200}}">
+class Component extends DCLogic {
+  GRADS = [['#7fb4c9','#2e6f8e','#1b4965'],['#f2a65a','#d95d39','#6d3b47'],['#9ab87a','#4f7942','#2c4a2e'],['#d9c7b2','#a98f76','#5e4b3c'],['#23395d','#406e8e','#8ea8c3'],['#f4d35e','#ee964b','#f95738'],['#dbe9f4','#a3c1d4','#6e8ca0'],['#e56b6f','#b56576','#6d597a'],['#b08968','#7f5539','#3f2d23'],['#48cae4','#0096c7','#023e8a']];
+  SIDO = {'11':'서울','21':'부산','22':'대구','23':'인천','24':'광주','25':'대전','26':'울산','29':'세종','31':'경기','32':'강원','33':'충북','34':'충남','35':'전북','36':'전남','37':'경북','38':'경남','39':'제주'};
+  PHOTOS = [
+    {id:'p9', rn:'서귀포시', date:'2026-01-10', g:5},{id:'p10', rn:'서귀포시', date:'2026-01-10', g:7},
+    {id:'p13', rn:'베트남', date:'2026-02-14', g:2},
+    {id:'p8', rn:'여수시', date:'2026-03-01', g:4},
+    {id:'p6', rn:'경주시', date:'2026-05-16', g:8},{id:'p7', rn:'경주시', date:'2026-05-16', g:2},
+    {id:'p11', rn:'오사카부', date:'2026-06-12', g:4},{id:'p12', rn:'교토부', date:'2026-06-13', g:3},
+    {id:'p3', rn:'강릉시', date:'2026-07-25', g:3},{id:'p1', rn:'강릉시', date:'2026-07-26', g:0},{id:'p2', rn:'강릉시', date:'2026-07-26', g:9},
+    {id:'p4', rn:'속초시', date:'2026-07-27', g:1},{id:'p5', rn:'속초시', date:'2026-07-27', g:6}
+  ];
+  state = { mapReady:false };
+  componentDidMount(){
+    const wait=()=>{
+      if (window.KOREA_MAP && window.WORLD_MAP && window.JPN_ADM1) {
+        this.RN={};
+        this.ALL=[...window.WORLD_MAP.regions, ...window.KOREA_MAP.regions];
+        this.PARENT={};
+        for (const r of window.JPN_ADM1.regions) this.PARENT[r.name]='일본';
+        for (const r of [...this.ALL, ...window.JPN_ADM1.regions]) this.RN[r.name]=r;
+        this.setState({mapReady:true});
+      } else setTimeout(wait,120);
+    };
+    wait();
+  }
+  css(g){ const s=this.GRADS[g]; return 'linear-gradient(160deg,'+s[0]+' 0%,'+s[1]+' 55%,'+s[2]+' 100%)'; }
+  br(){ const m={}; for(const p of this.PHOTOS){ (m[p.rn]=m[p.rn]||[]).push(p); } return m; }
+  regionPhotos(name){ const b=this.br(); let ps=b[name]?[...b[name]]:[]; if(name==='일본') for(const c of window.JPN_ADM1.regions){ if(b[c.name]) ps=ps.concat(b[c.name]); } return ps; }
+  latest(ps){ return ps.length?[...ps].sort((a,b)=>a.date<b.date?-1:1)[ps.length-1]:null; }
+  fmt(d){ const a=d.split('-'); return (+a[1])+'월 '+(+a[2])+'일'; }
+  buildMap(o){
+    // o: {gp, sel, split, empty}
+    const regions=[], badges=[];
+    const pushR=(r)=>{
+      const ps=o.empty?[]:this.regionPhotos(r.name);
+      const cv=ps.length?this.latest(ps):null;
+      const sel=r.name===o.sel;
+      regions.push({key:o.gp+r.code, d:r.d,
+        fill: cv?('url(#'+o.gp+cv.g+')'):'#dcdad9',
+        stroke: sel?'#ec3013':(cv?'#201e1d':'#f3f2f2'),
+        sw: sel?1.8:(cv?0.9:0.5)});
+      if (ps.length>1&&!o.sel) badges.push({x:r.cx, rx:r.cx-11, ry:r.cy-9, ty:r.cy+3.5, n:ps.length});
+    };
+    for (const r of this.ALL) {
+      if (o.split&&r.name==='일본') { for (const c of window.JPN_ADM1.regions) pushR(c); }
+      else pushR(r);
+    }
+    let transform='none';
+    if (o.sel&&this.RN[o.sel]) {
+      const bb=this.RN[o.sel].bb;
+      const bw=Math.max(bb[2]-bb[0],4), bh=Math.max(bb[3]-bb[1],4);
+      let sc=Math.min(600/bw,420/bh); sc=Math.max(0.028,Math.min(sc,7));
+      const tx=380-sc*(bb[0]+bb[2])/2, ty=320-sc*(bb[1]+bb[3])/2;
+      transform='translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px) scale('+sc.toFixed(3)+')';
+    }
+    return {regions, badges, transform};
+  }
+  renderVals(){
+    const ready=this.state.mapReady;
+    const empt={regions:[],badges:[],transform:'none'};
+    const mapA=ready?this.buildMap({gp:'ga'}):empt;
+    const mapB=ready?this.buildMap({gp:'gb',sel:'강릉시'}):empt;
+    const mapC=ready?this.buildMap({gp:'gc'}):empt;
+    const mapD=ready?this.buildMap({gp:'gd',empty:true}):empt;
+    const mapE=ready?this.buildMap({gp:'ge',sel:'일본',split:true}):empt;
+    const b=this.br();
+    const gang=b['강릉시']||[];
+    const gangCover=this.latest(gang);
+    const sheetB=gang.map(p=>({id:p.id,css:this.css(p.g),isCover:gangCover&&p.id===gangCover.id,outline:(gangCover&&p.id===gangCover.id)?'2px solid #ec3013':'none'}));
+    const jpPs=ready?this.regionPhotos('일본'):[];
+    const jpCover=this.latest(jpPs);
+    const sheetE=jpPs.map(p=>({id:p.id,css:this.css(p.g),isCover:jpCover&&p.id===jpCover.id,outline:(jpCover&&p.id===jpCover.id)?'2px solid #ec3013':'none'}));
+    const searchRows=[
+      {name:'강릉시',sub:'강원',cnt:'사진 3장',cntColor:'#ae1800'},
+      {name:'강진군',sub:'전남',cnt:'아직 없음',cntColor:'#9b9797'},
+      {name:'강화군',sub:'인천',cnt:'아직 없음',cntColor:'#9b9797'},
+      {name:'강서구',sub:'서울',cnt:'아직 없음',cntColor:'#9b9797'}
+    ];
+    // calendar July 2026
+    const first=new Date(2026,6,1).getDay(), dim=31;
+    const calCells=[];
+    for(let i=0;i<first;i++) calCells.push({k:'b'+i,day:'',bg:'transparent',hasPhoto:false,numColor:'#201e1d',sel:false});
+    for(let d=1;d<=dim;d++){
+      const ds='2026-07-'+String(d).padStart(2,'0');
+      const ps=this.PHOTOS.filter(p=>p.date===ds);
+      const cv=this.latest(ps);
+      const dow=(first+d-1)%7;
+      calCells.push({k:ds,day:d,bg:cv?this.css(cv.g):'transparent',hasPhoto:!!cv,numColor:cv?'#fff':(dow===0?'#ae1800':'#201e1d'),sel:ds==='2026-07-26'});
+    }
+    const dates=[...new Set(this.PHOTOS.map(p=>p.date))].sort().reverse();
+    const dayGroups=dates.map(ds=>{
+      const ps=this.PHOTOS.filter(p=>p.date===ds);
+      const cv=this.latest(ps);
+      const rns=[...new Set(ps.map(p=>p.rn))].join(' · ');
+      return {key:ds,label:this.fmt(ds),sub:rns+' · '+ps.length+'장',bl:ds==='2026-07-26'?'3px solid #ec3013':'3px solid transparent',
+        photos:ps.map(p=>({id:p.id,css:this.css(p.g),isCover:cv&&p.id===cv.id,outline:(cv&&p.id===cv.id)?'2px solid #ec3013':'none'}))};
+    });
+    const upItems=[
+      {id:'u1',css:this.css(0),rn:'강릉시',dateLabel:'7월 26일',autoR:true,autoD:true},
+      {id:'u2',css:this.css(3),rn:'강릉시',dateLabel:'7월 26일',autoR:true,autoD:true},
+      {id:'u3',css:this.css(9),rn:'강릉시',dateLabel:'7월 26일',autoR:true,autoD:true},
+      {id:'u4',css:this.css(1),rn:'속초시',dateLabel:'7월 27일',autoR:true,autoD:true},
+      {id:'u5',css:this.css(6),rn:'속초시',dateLabel:'7월 27일',autoR:false,autoD:true}
+    ];
+    const listCards=[
+      {id:'j1',name:'우리 여름',isSolo:false,scrim:true,coverCss:this.css(6),fg:'#fff',metaColor:'rgba(255,255,255,0.82)',meta:'사진 13 · 지역 8 · 7월 27일',members:['이','소','하'],plusN:'+2'},
+      {id:'j2',name:'혼자 제주',isSolo:true,scrim:true,coverCss:this.css(9),fg:'#fff',metaColor:'rgba(255,255,255,0.82)',meta:'사진 5 · 지역 2 · 4월 6일',members:['나'],plusN:null},
+      {id:'j3',name:'우리 가족',isSolo:false,scrim:false,coverCss:'#e5e2e1',fg:'#201e1d',metaColor:'#7d7979',meta:'아직 사진이 없어요',members:['엄','아','민'],plusN:'+1'}
+    ];
+    const memberRows=[{init:'이',name:'이진',owner:true},{init:'소',name:'소라',owner:false},{init:'하',name:'하늘',owner:false},{init:'준',name:'준',owner:false},{init:'미',name:'미도',owner:false}];
+    const decisions=[
+      {t:'색',d:'바탕은 웜 그레이(#f3f2f2), UI는 잉크 선 + 흰 면. 레드(#ec3013)는 주 동작·대표·오늘·에러에만. 사진과 경쟁하는 유채색 UI를 두지 않아요.'},
+      {t:'서체',d:'Archivo(라틴·숫자 800) + Pretendard(한글). 크기 체계는 오른쪽 표 — 화면당 3단계 이상 섞지 않아요.'},
+      {t:'형태',d:'모서리 0. 카드·버튼·칩 전부 직각. 테두리 1px 잉크, 구획선 2px(잉크 40%), 그림자는 sm/md/lg 3단만.'},
+      {t:'그림·아이콘',d:'아이콘은 1.8px 선 기하(← ⋯ + × 🔍 정도)로 최소. 그림은 빈 화면 전용 — 잉크 선 + 레드 사각 콤포지션.'},
+      {t:'빈 화면',d:'지도 자체가 그림이에요. 회색 지역 위에 흰 안내 카드 하나 — 목록이 비면 사진 프레임 콤포지션(1b).'},
+      {t:'다크 모드',d:'만들지 않아요. 사진 대비가 바탕에 따라 출렁이는 걸 막고, 웹의 color-scheme:only light 규칙을 앱에도 그대로(안드로이드 force-dark 끔).'},
+      {t:'지도⇄달력',d:'상단 세그먼트(잉크 반전). 같은 사진의 두 얼굴이라 화면 바탕·FAB·시트 규칙을 두 탭이 공유해요.'},
+      {t:'시트 정책',d:'지역 정보 = 바텀 시트(지도 문맥 유지, 위 60%는 항상 지도). 사진 올리기 = 전체 화면(여러 장 편집 작업이라). 지도 위 상주물은 검색칸·FAB 둘뿐.'}
+    ];
+    const colorChips=[
+      {n:'바탕',c:'#f3f2f2',u:'화면'},
+      {n:'표면',c:'#eae9e9',u:'그룹 헤더'},
+      {n:'잉크',c:'#201e1d',u:'글·선·탭'},
+      {n:'레드',c:'#ec3013',u:'주 동작'},
+      {n:'딥레드',c:'#ae1800',u:'작은 강조 글'},
+      {n:'회색 글',c:'#7d7979',u:'메타'}
+    ];
+    const typeRows=[
+      {px:25,w:800,sample:'짜국',u:'화면 제목'},
+      {px:17,w:800,sample:'사진 올리기',u:'상단바'},
+      {px:15,w:800,sample:'새 짜국 만들기',u:'버튼·본문 강조'},
+      {px:13.5,w:700,sample:'Google로 계속하기',u:'보조 버튼·필드값'},
+      {px:12.5,w:400,sample:'사진이 이 폰에만 남아요',u:'설명'},
+      {px:11,w:700,sample:'이 폰에만 · 대표 · 자동',u:'딱지·캡션'}
+    ];
+    const F=(o)=>Object.assign({isList:false,isCreate:false,isLogin:false,isCode:false,isSpace:false,isUpload:false,empty:false,cards:false,
+      isMapTab:false,isCalTab:false,menuOn:false,gridOn:true,offline:false,spaceName:'우리 여름',soloTag:false,
+      mapTabBg:'#201e1d',mapTabFg:'#f3f2f2',calTabBg:'#fff',calTabFg:'#201e1d',
+      gp:'ga',mapRegions:[],mapBadges:[],mapTransform:'none',searchText:'지역 검색 — 강릉, 제주…',searchColor:'#9b9797',searchRowsOn:false,
+      controlsOn:false,emptyMapCard:false,sheetOn:false,sheetName:'',sheetSido:'',sheetCount:'',sheetPhotos:[],sheetSplit:'',fabOn:false,calToggle:'달력 접기 ⌃'},o);
+    const groups=[
+      {title:'1 · 짜국 목록', note:'들어오는 자리는 늘 여기. 사진이 카드 전체, 혼자는 ‘이 폰에만’ 딱지 하나로만 구분, 멤버는 이니셜 칩 3개 + 수.', frames:[
+        F({id:'1a',name:'목록',note:'기본 — 셋 다 다른 상태',isList:true,cards:true}),
+        F({id:'1b',name:'목록 · 빈',note:'첫 실행',isList:true,empty:true})
+      ]},
+      {title:'2 · 만들기와 초대', note:'혼자가 기본값(사진이 밖으로 안 나가는 쪽). 같이를 고르면 로그인 → 코드가 바로 나와요.', frames:[
+        F({id:'2a',name:'새 짜국',note:'혼자/같이 — 차이를 고르기 전에',isCreate:true}),
+        F({id:'2b',name:'초대 코드',note:'만든 직후 바로',isCode:true}),
+        F({id:'3a',name:'로그인',note:'같이·참여 때만 끼어듦',isLogin:true})
+      ]},
+      {title:'4 · 지도', note:'지도 위 상주물은 검색칸과 FAB 둘뿐. 지역을 고르면 시트가 올라오고, 지도는 시트·검색칸을 피해 그 지역이 다 보이게 맞춰져요.', frames:[
+        F({id:'4a',name:'지도',note:'다녀온 곳이 사진으로',isSpace:true,isMapTab:true,gp:'ga',mapRegions:mapA.regions,mapBadges:mapA.badges,controlsOn:true,fabOn:true}),
+        F({id:'4b',name:'지역 시트',note:'강릉시 — 시트 위로 맞춤',isSpace:true,isMapTab:true,gp:'gb',mapRegions:mapB.regions,mapTransform:mapB.transform,sheetOn:true,sheetName:'강릉시',sheetSido:'강원',sheetCount:'사진 3장',sheetPhotos:sheetB}),
+        F({id:'4c',name:'검색',note:'사진 있는 지역이 먼저',isSpace:true,isMapTab:true,gp:'gc',mapRegions:mapC.regions,mapBadges:mapC.badges,searchText:'강',searchColor:'#201e1d',searchRowsOn:true}),
+        F({id:'4d',name:'지도 · 빈',note:'첫인상 — 지도가 그림 역할',isSpace:true,isMapTab:true,gp:'gd',mapRegions:mapD.regions,emptyMapCard:true,spaceName:'우리 가족'}),
+        F({id:'4e',name:'해외 · 시도 나누기',note:'일본 47개 부·현으로',isSpace:true,isMapTab:true,gp:'ge',mapRegions:mapE.regions,mapTransform:mapE.transform,sheetOn:true,sheetName:'일본',sheetSido:'해외',sheetCount:'사진 2장',sheetPhotos:sheetE,sheetSplit:'나라로 합치기'})
+      ]},
+      {title:'5 · 달력', note:'사진 있는 날만 대표사진이 칸을 채우고(위쪽 그늘 + 흰 숫자), 빈 날은 아무것도 깔지 않아요. 오늘은 레드 테두리(8월에 보임).', frames:[
+        F({id:'5a',name:'달력',note:'7월 26일 선택',isSpace:true,isCalTab:true,mapTabBg:'#fff',mapTabFg:'#201e1d',calTabBg:'#201e1d',calTabFg:'#f3f2f2'}),
+        F({id:'5b',name:'달력 접힘',note:'목록만 넓게',isSpace:true,isCalTab:true,gridOn:false,calToggle:'달력 펴기 ⌄',mapTabBg:'#fff',mapTabFg:'#201e1d',calTabBg:'#201e1d',calTabFg:'#f3f2f2'})
+      ]},
+      {title:'6 · 사진 올리기', note:'가장 어려운 자리 — 사진마다 어디·언제를 따로 보여 주고 고치게. 자동 채움엔 ‘자동’ 딱지, 고치면 떨어져요. 섞이면 요약줄로 알림.', frames:[
+        F({id:'6a',name:'올리기',note:'강릉 3 + 속초 2 섞임',isUpload:true}),
+        F({id:'6b',name:'올리기 · 실패',note:'왜 안 됐는지 + 보관 안내',isUpload:true,offline:true})
+      ]},
+      {title:'7 · 관리', note:'⋯ 하나에 멤버·초대·이름. 멤버가 많아도 목록은 세로로 정직하게.', frames:[
+        F({id:'7a',name:'멤버·초대',note:'주인 딱지, 코드 재공유',isSpace:true,isMapTab:true,gp:'ga',mapRegions:mapA.regions,menuOn:true})
+      ]}
+    ];
+    return {decisions, colorChips, typeRows, groups, listCards, memberRows, searchRows, calCells, dayGroups, upItems};
+  }
+}
+</script>
+</body>
+</html>
