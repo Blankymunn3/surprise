@@ -33,8 +33,8 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
-import kr.surprise.memorymap.core.designsystem.component.GlassIconButton
-import kr.surprise.memorymap.core.designsystem.component.GlassSurface
+import kr.surprise.memorymap.core.designsystem.component.FloatingIconButton
+import kr.surprise.memorymap.core.designsystem.component.FloatingSurface
 import kr.surprise.memorymap.core.designsystem.component.MemoryFab
 import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
 import kr.surprise.memorymap.core.designsystem.component.PhotoThumb
@@ -126,13 +126,13 @@ fun MapScreen(
                 .padding(start = Gap.l, bottom = floatBottom),
             verticalArrangement = Arrangement.spacedBy(9.dp),
         ) {
-            GlassSurface(modifier = Modifier.size(width = 40.dp, height = 80.dp)) {
+            FloatingSurface(modifier = Modifier.size(width = 40.dp, height = 80.dp)) {
                 Column {
                     MapCtlButton(MemoryIcons.Plus, "확대") { }
                     MapCtlButton(MemoryIcons.Minus, "축소") { }
                 }
             }
-            GlassIconButton(
+            FloatingIconButton(
                 icon = MemoryIcons.MyLocation,
                 contentDescription = "내 위치",
                 onClick = { onIntent(MapIntent.MyLocationTapped) },
@@ -197,7 +197,7 @@ private fun SearchPill(
     onClear: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    GlassSurface(modifier = modifier.fillMaxWidth()) {
+    FloatingSurface(modifier = modifier.fillMaxWidth()) {
         Row(
             Modifier.padding(horizontal = Gap.l, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -235,7 +235,7 @@ private fun SearchResults(
     onPick: (kr.surprise.memorymap.core.model.Region) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    GlassSurface(modifier = modifier.fillMaxWidth().height(260.dp), shape = MemoryShapes.Card) {
+    FloatingSurface(modifier = modifier.fillMaxWidth().height(260.dp), shape = MemoryShapes.Card) {
         LazyColumn {
             items(state.results, key = { it.code.value }) { region ->
                 Row(
@@ -303,7 +303,7 @@ private fun RegionSheet(
                         .size(92.dp)
                         .then(
                             if (photo.id == sheet.selected) {
-                                Modifier.background(MemoryColors.AccentTint, MemoryShapes.Thumb)
+                                Modifier.background(MemoryColors.Fill, MemoryShapes.Thumb)
                             } else {
                                 Modifier
                             }

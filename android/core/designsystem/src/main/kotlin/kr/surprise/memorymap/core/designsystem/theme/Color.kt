@@ -5,52 +5,45 @@ import androidx.compose.ui.graphics.Color
 /**
  * 색은 `docs/app/design.html` 이 원본입니다. 여기 없는 색을 화면에서 만들어 쓰지 않습니다.
  *
- * 강조색은 **하나**입니다. 두 번째 강조색을 만들면 무엇이 중요한지 알 수 없게 됩니다.
+ * **UI 는 이 여섯이 전부입니다** — 바탕 · 표면 · 잉크 · 레드 · 딥레드 · 회색 글.
+ * 색은 사진이 냅니다. 사진과 경쟁하는 유채색 UI 를 두지 않습니다.
  */
 object MemoryColors {
-    /** 강조는 **좁게**. 오늘·대표사진·올리기처럼 딱 한 번 눌러야 하는 것에만. */
-    val Accent = Color(0xFFE0764F)   // 감빛 — 종이·초록과 같은 온도
-    val AccentTint = Color(0xFFFBE7DD)
+    /** 주 동작 · 대표 · 오늘 · 에러. **이 넷 말고는 안 씁니다.** */
+    val Accent = Color(0xFFEC3013)
+    /** 작은 강조 글씨. 레드는 작게 쓰면 눈에 튀어서 한 단계 어둡게 갑니다. */
+    val AccentDeep = Color(0xFFAE1800)
 
-    val Ink = Color(0xFF35302A)      // 검정이 아니라 따뜻한 먹색
-    val Ink2 = Color(0xFF6E675C)
-    val Ink3 = Color(0xFFA79E90)
+    val Ink = Color(0xFF201E1D)      // 글 · 선 · 탭
+    val Ink2 = Color(0xFF7D7979)     // 메타
+    val Ink3 = Color(0xFF9B9797)     // '아직 없음' 처럼 더 흐린 것
 
     /**
-     * 바탕에 **색을 넣지 않습니다.** 사진이 주인공이라, 바탕이 누러면 사진의 흰색까지
-     * 같이 누레 보입니다. 카드는 순백이고 바탕은 한 톤 낮아 층만 구분합니다 —
-     * 나머지는 그림자가 맡습니다.
-     */
-    /**
-     * ⚠️ 이 값의 **사본이 `app/src/main/res/values/colors.xml` 에 있습니다**
+     * ⚠️ [Paper] 의 **사본이 `app/src/main/res/values/colors.xml` 에 있습니다**
      * (`windowBackground`). XML 은 여기 상수를 못 읽습니다. 여기만 고치면 Compose 가
      * 그려지기 전에 깔리는 색이 옛 색으로 남아 앱이 통째로 그 색으로 보입니다.
      */
-    val Paper = Color(0xFFFAFAFA)    // 화면 바탕
-    val Surface = Color(0xFFFFFFFF)  // 떠 있는 면 — 순백
-    val Fill = Color(0xFFF0F0F0)     // 보조 버튼 · 입력칸
-    val Line = Color(0xFFE6E6E6)
-    val Line2 = Color(0xFFD8D8D8)
+    val Paper = Color(0xFFF3F2F2)    // 화면 바탕 — 웜 그레이
+    val Surface = Color(0xFFFFFFFF)  // 떠 있는 면 — 흰 면
+    val Fill = Color(0xFFEAE9E9)     // 그룹 헤더 · 눌린 자리
 
-    /** 지도에 넓게 깔리는 초록. 표지의 언덕과 같은 색입니다. */
-    val Moss = Color(0xFF7FA98C)
-    val MossSoft = Color(0xFFDCEBE0)
-    val MossDeep = Color(0xFF2C5240)
-
-    /** 그림 속 작은 것들. 강조색과 다투지 않게 아주 좁게 씁니다. */
-    val Honey = Color(0xFFF0C46A)
-
-    val MapSea = Color(0xFFDCEBE0)
-    val MapLand = Color(0xFFEFE3CB)
+    /** 테두리 1px 은 **잉크 그대로**입니다. 흐린 회색 선을 쓰지 않습니다. */
+    val Line = Ink
+    /** 구획선 2px — 잉크 40%. */
+    val Line2 = Color(0x66201E1D)
 
     val OnAccent = Color(0xFFFFFFFF)
-    /**
-     * 시트 뒤를 어둡게 (32%). **색을 넣지 않습니다** — 화면 절반을 덮는 자리라
-     * 조금만 물들여도 눈에 걸립니다. 먹색(따뜻한 회색) 그대로 씁니다.
-     */
-    val Scrim = Color(0x5235302A)
 
-    /** 콘텐츠 위에 떠 있는 것에만 쓰는 반투명 흰색. 카드·시트에는 쓰지 않습니다. */
-    val Glass = Color(0xD6FFFFFF)    // 84% 흰색
-    val GlassBorder = Color(0x1235302A)
+    /**
+     * 시트 뒤를 어둡게. 잉크를 그대로 묽혀 씁니다 — 화면 절반을 덮는 자리라
+     * 색을 조금만 넣어도 눈에 걸립니다.
+     */
+    val Scrim = Color(0x52201E1D)
+
+    /**
+     * 지도에서 아직 안 다녀온 지역. **사진이 있는 지역만 사진으로 칠해지고**
+     * 나머지는 이 회색입니다 — 지도 자체가 빈 화면의 그림 역할을 합니다.
+     */
+    val MapLand = Color(0xFFEAE9E9)
+    val MapSea = Color(0xFFF3F2F2)
 }

@@ -1,36 +1,39 @@
 import Foundation
 import SwiftUI
 
-/// 색·글씨·모서리는 `docs/app/design.html` 이 원본입니다.
+/// 색·글씨·모서리는 `untitled/project/짜국 디자인.dc.html` 이 원본입니다.
 /// 안드로이드 `MemoryColors` 와 **같은 값**이어야 두 앱이 같아 보입니다.
+///
+/// **UI 는 이 여섯이 전부입니다** — 바탕 · 표면 · 잉크 · 레드 · 딥레드 · 회색 글.
+/// 색은 사진이 냅니다. 사진과 경쟁하는 유채색 UI 를 두지 않습니다.
 public enum MemoryColor {
-    /// 강조는 **좁게**. 오늘·대표사진·올리기처럼 딱 한 번 눌러야 하는 것에만.
-    public static let accent = Color(hex: 0xE0764F)   // 감빛 — 종이·초록과 같은 온도
-    public static let accentTint = Color(hex: 0xFBE7DD)
+    /// 주 동작 · 대표 · 오늘 · 에러. **이 넷 말고는 안 씁니다.**
+    public static let accent = Color(hex: 0xEC3013)
+    /// 작은 강조 글씨. 레드는 작게 쓰면 눈에 튀어서 한 단계 어둡게 갑니다.
+    public static let accentDeep = Color(hex: 0xAE1800)
 
-    public static let ink = Color(hex: 0x35302A)      // 검정이 아니라 따뜻한 먹색
-    public static let ink2 = Color(hex: 0x6E675C)
-    public static let ink3 = Color(hex: 0xA79E90)
+    public static let ink = Color(hex: 0x201E1D)      // 글 · 선 · 탭
+    public static let ink2 = Color(hex: 0x7D7979)     // 메타
+    public static let ink3 = Color(hex: 0x9B9797)     // '아직 없음' 처럼 더 흐린 것
 
-    /// 바탕에 **색을 넣지 않습니다.** 사진이 주인공이라, 바탕이 누러면 사진의 흰색까지
-    /// 같이 누레 보입니다. 카드는 순백이고 바탕은 한 톤 낮아 층만 구분합니다 —
-    /// 나머지는 그림자가 맡습니다.
-    public static let paper = Color(hex: 0xFAFAFA)    // 화면 바탕
-    public static let surface = Color(hex: 0xFFFFFF)  // 떠 있는 면 — 순백
-    public static let fill = Color(hex: 0xF0F0F0)
-    public static let line = Color(hex: 0xE6E6E6)
-    public static let line2 = Color(hex: 0xD8D8D8)
+    public static let paper = Color(hex: 0xF3F2F2)    // 화면 바탕 — 웜 그레이
+    public static let surface = Color(hex: 0xFFFFFF)  // 떠 있는 면 — 흰 면
+    public static let fill = Color(hex: 0xEAE9E9)     // 그룹 헤더 · 눌린 자리
 
-    /// 지도에 넓게 깔리는 초록.
-    public static let moss = Color(hex: 0x7FA98C)
-    public static let mossSoft = Color(hex: 0xDCEBE0)
-    public static let mossDeep = Color(hex: 0x2C5240)
+    /// 테두리 1px 은 **잉크 그대로**입니다. 흐린 회색 선을 쓰지 않습니다.
+    public static let line = Color(hex: 0x201E1D)
+    /// 구획선 2px — 잉크 40%.
+    public static let line2 = Color(hex: 0x201E1D).opacity(0.4)
 
-    /// 그림 속 작은 것들. 강조색과 다투지 않게 아주 좁게 씁니다.
-    public static let honey = Color(hex: 0xF0C46A)
+    public static let onAccent = Color(hex: 0xFFFFFF)
 
-    public static let mapSea = Color(hex: 0xDCEBE0)
-    public static let mapLand = Color(hex: 0xEFE3CB)
+    /// 시트 뒤를 어둡게. 잉크를 그대로 묽혀 씁니다.
+    public static let scrim = Color(hex: 0x201E1D).opacity(0.32)
+
+    /// 지도에서 아직 안 다녀온 지역. **사진이 있는 지역만 사진으로 칠해지고**
+    /// 나머지는 이 회색입니다 — 지도 자체가 빈 화면의 그림 역할을 합니다.
+    public static let mapLand = Color(hex: 0xEAE9E9)
+    public static let mapSea = Color(hex: 0xF3F2F2)
 }
 
 extension Color {
@@ -47,6 +50,10 @@ extension Color {
 
 /// **Pretendard 한 벌.** 굵기와 자간만으로 위계를 만듭니다.
 ///
+/// 디자인 문서는 라틴·숫자에 Archivo 를 섞지만, 우리는 Pretendard 한 벌로 갑니다
+/// (2026-08-04 결정). 서체 파일이 한 벌로 끝나고, 한글·라틴의 굵기가 한 줄 안에서
+/// 어긋나지 않습니다.
+///
 /// 굵기를 **PostScript 이름으로 직접** 고릅니다. `.custom("Pretendard").weight(.semibold)`
 /// 로 하지 않는 이유: 이 폰트 파일들은 Medium·SemiBold 가 각자 다른 패밀리로 들어 있어
 /// (`Pretendard Medium`, `Pretendard SemiBold`) `Pretendard` 패밀리 안에서는 찾지 못하고
@@ -57,12 +64,13 @@ extension Color {
 public enum MemoryFont {
     static let family = "Pretendard"
 
-    public static let display = font(32, .bold)
-    public static let title = font(20, .bold)
-    public static let headline = font(17, .semibold)
-    public static let body = font(15, .regular)
-    public static let label = font(13, .medium)
-    public static let micro = font(11, .semibold)
+    /// 여섯 단만 씁니다 — **한 화면에 세 단 이상 섞지 않습니다.**
+    public static let display = font(25, .bold)     // 화면 제목
+    public static let title = font(17, .bold)       // 상단바
+    public static let headline = font(15, .bold)    // 버튼 · 본문 강조
+    public static let body = font(13.5, .semibold)  // 보조 버튼 · 필드값
+    public static let label = font(12.5, .regular)  // 설명
+    public static let micro = font(11, .semibold)   // 딱지 · 캡션
 
     /// 안드로이드 `res/font` 에 있는 것과 **같은 네 벌**입니다.
     static func faceName(_ weight: Font.Weight) -> String {
@@ -80,23 +88,39 @@ public enum MemoryFont {
 }
 
 /// 큰 글자일수록 자간을 좁힙니다 — 한글은 그대로 두면 헐거워 보입니다.
+/// 값은 안드로이드의 `em` 자간을 각 크기에 곱한 것입니다 (Display·Title −0.02em, 나머지 −0.01em).
 public extension View {
-    func memoryDisplay() -> some View { font(MemoryFont.display).tracking(-0.96) }
-    func memoryTitle() -> some View { font(MemoryFont.title).tracking(-0.4) }
-    func memoryHeadline() -> some View { font(MemoryFont.headline).tracking(-0.17) }
-    func memoryBody() -> some View { font(MemoryFont.body) }
+    func memoryDisplay() -> some View { font(MemoryFont.display).tracking(-0.5) }
+    func memoryTitle() -> some View { font(MemoryFont.title).tracking(-0.34) }
+    func memoryHeadline() -> some View { font(MemoryFont.headline).tracking(-0.15) }
+    func memoryBody() -> some View { font(MemoryFont.body).tracking(-0.135) }
     func memoryLabel() -> some View { font(MemoryFont.label) }
-    func memoryMicro() -> some View { font(MemoryFont.micro).tracking(0.44) }
+    func memoryMicro() -> some View { font(MemoryFont.micro) }
 }
 
+/// **모서리는 0 입니다.** 카드·버튼·칩·시트 전부 직각입니다.
+///
+/// 이름을 남겨 둔 이유는 자리마다 뜻이 다르기 때문입니다 — 나중에 한 자리만
+/// 둥글게 하고 싶어지면 여기서 그 자리만 바꾸면 됩니다. 지금은 전부 같은 값입니다.
 public enum MemoryRadius {
-    public static let dayCell: CGFloat = 14
-    public static let thumb: CGFloat = 18
-    public static let button: CGFloat = 20
-    public static let card: CGFloat = 26
-    public static let sheet: CGFloat = 30
+    public static let square: CGFloat = 0
+
+    public static let dayCell = square
+    public static let thumb = square
+    public static let button = square
+    public static let card = square
+    public static let sheet = square
+    /// 멤버 이니셜 칩도 네모입니다. 동그라미를 쓰지 않습니다.
+    public static let pill = square
 }
 
+/// 테두리 1px 잉크 · 구획선 2px. 두께도 디자인이 정한 값입니다.
+public enum MemoryStroke {
+    public static let border: CGFloat = 1
+    public static let divider: CGFloat = 2
+}
+
+/// 간격은 4·8·12·16·20 의 배수만 씁니다.
 public enum MemorySpace {
     public static let xs: CGFloat = 4
     public static let s: CGFloat = 8

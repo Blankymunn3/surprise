@@ -202,7 +202,7 @@ public struct CalendarView: View {
                         .memoryMicro()
                         .foregroundStyle(MemoryColor.accent)
                         .padding(.horizontal, 11).padding(.vertical, 4)
-                        .background(Capsule().fill(MemoryColor.accentTint))
+                        .background(Capsule().fill(MemoryColor.fill))
                 }
             }
 

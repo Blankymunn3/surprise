@@ -309,7 +309,7 @@ private struct RegionSheet: View {
                         .background {
                             if photo.id == sheet.selected {
                                 RoundedRectangle(cornerRadius: MemoryRadius.thumb, style: .continuous)
-                                    .fill(MemoryColor.accentTint)
+                                    .fill(MemoryColor.fill)
                             }
                         }
                         .onTapGesture { store.select(photo.id) }

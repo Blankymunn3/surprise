@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -37,16 +36,20 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import kr.surprise.memorymap.core.designsystem.component.HillScene
-import kr.surprise.memorymap.core.designsystem.component.SCENE_RATIO
-import kr.surprise.memorymap.core.designsystem.component.MemberAvatars
-import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
+import kr.surprise.memorymap.core.designsystem.component.FRAMES_RATIO
+import kr.surprise.memorymap.core.designsystem.component.PhotoFramesScene
 import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
+import kr.surprise.memorymap.core.designsystem.component.SoftButton
 import kr.surprise.memorymap.core.designsystem.component.SpaceCard
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
+import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 import kr.surprise.memorymap.core.model.Space
@@ -61,72 +64,66 @@ import kr.surprise.memorymap.core.model.SpaceKind
 @Composable
 fun SpaceListScreen(
     state: SpaceListState,
-    myInitial: String,
     onIntent: (SpaceListIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
+    Column(
         modifier
             .fillMaxSize()
             .background(MemoryColors.Paper)
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
-        LazyColumn(
-            contentPadding = PaddingValues(bottom = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(Gap.m),
-        ) {
-            item {
-                Row(
-                    Modifier.fillMaxWidth().padding(start = Gap.xl, end = Gap.xl, top = Gap.s),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("짜국", style = MemoryType.Display, modifier = Modifier.weight(1f))
-                    MemberAvatars(initials = listOf(myInitial))
-                }
-            }
+        Header()
+        Divider()
 
+        // 목록만 늘어납니다. 만들기·참여는 아래에 **붙박이로** 둡니다 —
+        // 짜국이 늘어나도 그 둘을 찾으러 스크롤하지 않게요.
+        Box(Modifier.weight(1f)) {
             when (val ui = state.spaces) {
-                is SpacesUi.Loading -> item { Hint("불러오는 중이에요") }
+                is SpacesUi.Loading -> Hint("불러오는 중이에요")
 
-                is SpacesUi.Failed -> item {
-                    Hint("목록을 불러오지 못했어요. 아래로 당겨 다시 시도해 주세요.")
-                }
+                is SpacesUi.Failed -> Hint("목록을 불러오지 못했어요. 아래로 당겨 다시 시도해 주세요.")
 
-                is SpacesUi.Ready -> {
+                is SpacesUi.Ready ->
                     if (ui.items.isEmpty()) {
-                        item { EmptyScene("아직 짜국이 없어요. 하나 만들어 볼까요?") }
+                        EmptyScene()
+                    } else {
+                        LazyColumn(
+                            contentPadding = PaddingValues(
+                                start = Gap.xl, end = Gap.xl, top = Gap.l, bottom = Gap.s,
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(14.dp),
+                        ) {
+                            items(ui.items, key = { it.id.value }) { space ->
+                                SpaceCard(
+                                    name = space.name,
+                                    meta = space.metaLine(),
+                                    coverUrl = space.coverPhotoUrl,
+                                    memberInitials = space.members.map { it.initial },
+                                    onClick = { onIntent(SpaceListIntent.SpaceTapped(space.id)) },
+                                    onlyOnThisPhone = space.kind == SpaceKind.Personal,
+                                )
+                            }
+                        }
                     }
-                    items(ui.items, key = { it.id.value }) { space ->
-                        SpaceCard(
-                            name = space.name,
-                            meta = space.metaLine(),
-                            coverUrl = space.coverPhotoUrl,
-                            memberInitials = space.members.map { it.initial },
-                            onClick = { onIntent(SpaceListIntent.SpaceTapped(space.id)) },
-                            modifier = Modifier.padding(horizontal = Gap.xl),
-                            onlyOnThisPhone = space.kind == SpaceKind.Personal,
-                        )
-                    }
-                }
             }
+        }
 
-            item { Spacer(Modifier.height(Gap.s)) }
-
-            item {
-                ActionRow(
-                    label = "새 짜국 만들기",
-                    tinted = true,
-                    onClick = { onIntent(SpaceListIntent.CreateTapped) },
-                )
-            }
-            item {
-                ActionRow(
-                    label = "초대 코드로 참여",
-                    tinted = false,
-                    icon = false,
-                    onClick = { onIntent(SpaceListIntent.JoinTapped) },
-                )
-            }
+        Divider(inset = false)
+        Column(
+            Modifier.padding(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = Gap.xxl),
+            verticalArrangement = Arrangement.spacedBy(Gap.s),
+        ) {
+            PrimaryButton(
+                text = "새 짜국 만들기",
+                onClick = { onIntent(SpaceListIntent.CreateTapped) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            SoftButton(
+                text = "초대 코드로 참여",
+                onClick = { onIntent(SpaceListIntent.JoinTapped) },
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 
@@ -135,26 +132,78 @@ fun SpaceListScreen(
     }
 }
 
-private fun Space.metaLine(): String = buildString {
-    append("사진 ").append(photoCount).append("장")
-    append(" · 지역 ").append(regionCount).append("곳")
-    lastPhotoOn?.let { append(" · ").append(it.monthValue).append("월 ").append(it.dayOfMonth).append("일") }
+/** 사진이 없으면 수를 세지 않고 그 사실만 말합니다. "사진 0 · 지역 0" 은 셈이 아니라 잡음입니다. */
+private fun Space.metaLine(): String {
+    if (photoCount == 0) return "아직 사진이 없어요"
+    return buildString {
+        append("사진 ").append(photoCount)
+        append(" · 지역 ").append(regionCount)
+        lastPhotoOn?.let { append(" · ").append(it.monthValue).append("월 ").append(it.dayOfMonth).append("일") }
+    }
 }
 
+/** 레드 사각 하나가 앱 이름 앞에 섭니다. 아이콘이 아니라 표식이라 뜻을 붙이지 않습니다. */
 @Composable
-private fun EmptyScene(text: String) {
-    Column(
-        Modifier.fillMaxWidth().padding(horizontal = Gap.xl, vertical = Gap.xxl),
-        horizontalAlignment = Alignment.CenterHorizontally,
+private fun Header() {
+    Row(
+        Modifier.fillMaxWidth().padding(start = Gap.xl, end = Gap.xl, top = Gap.s, bottom = Gap.m),
+        verticalAlignment = Alignment.Bottom,
     ) {
-        HillScene(
+        Box(
             Modifier
-                .fillMaxWidth(0.62f)
-                .aspectRatio(SCENE_RATIO)
-                .clip(MemoryShapes.Card),
+                .padding(bottom = 5.dp)
+                .size(13.dp)
+                .background(MemoryColors.Accent)
         )
-        Spacer(Modifier.height(Gap.l))
-        Text(text, style = MemoryType.Body, color = MemoryColors.Ink3, textAlign = TextAlign.Center)
+        Spacer(Modifier.width(9.dp))
+        Text("짜국", style = MemoryType.Display)
+        Spacer(Modifier.weight(1f))
+        Text(
+            text = "어디와 언제로 보는 사진첩",
+            style = MemoryType.Micro,
+            color = MemoryColors.Ink2,
+            modifier = Modifier.padding(bottom = 4.dp),
+        )
+    }
+}
+
+/** 구획선은 2px 입니다. 테두리(1px)보다 굵어야 '나누는 선' 으로 읽힙니다. */
+@Composable
+private fun Divider(inset: Boolean = true) {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = if (inset) Gap.xl else 0.dp)
+            .height(MemoryStroke.Divider)
+            .background(MemoryColors.Line2)
+    )
+}
+
+/**
+ * 첫 실행. **가운데 정렬하지 않습니다** — 글이 왼끝에 맞아야 다음에 올 목록과
+ * 같은 자리에서 시작하고, 짜국이 생겼을 때 화면이 통째로 움직인 것처럼 안 보입니다.
+ */
+@Composable
+private fun EmptyScene() {
+    Column(
+        Modifier.fillMaxSize().padding(horizontal = 28.dp),
+        verticalArrangement = Arrangement.Center,
+    ) {
+        PhotoFramesScene(Modifier.fillMaxWidth(0.42f).aspectRatio(FRAMES_RATIO))
+        Spacer(Modifier.height(14.dp))
+        Text("아직 짜국이 없어요", style = MemoryType.Title)
+        Spacer(Modifier.height(14.dp))
+        Text(
+            text = buildAnnotatedString {
+                append("짜국은 사진을 ")
+                withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = MemoryColors.Ink)) { append("지도") }
+                append("와 ")
+                withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = MemoryColors.Ink)) { append("달력") }
+                append(", 두 가지로 보는 사진첩이에요. 혼자 써도 되고, 가까운 사람들과 같이 채워도 돼요.")
+            },
+            style = MemoryType.Label,
+            color = MemoryColors.Ink2,
+        )
     }
 }
 
@@ -167,39 +216,6 @@ private fun Hint(text: String) {
         textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth().padding(horizontal = Gap.xl, vertical = Gap.xxxl),
     )
-}
-
-/**
- * 만들기·참여는 목록 아래 **평범한 줄**입니다. 점선 상자로 강조하면 매번 눈이
- * 거기로 끌리는데, 자주 하는 일이 아닙니다.
- */
-@Composable
-private fun ActionRow(label: String, tinted: Boolean, onClick: () -> Unit, icon: Boolean = true) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = Gap.xl, vertical = Gap.m),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Gap.l),
-    ) {
-        Box(
-            Modifier
-                .size(38.dp)
-                .clip(MemoryShapes.Thumb)
-                .background(if (tinted) MemoryColors.AccentTint else MemoryColors.Fill),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = if (icon) MemoryIcons.Plus else MemoryIcons.Members,
-                contentDescription = null,
-                tint = if (tinted) MemoryColors.Accent else MemoryColors.Ink2,
-                modifier = Modifier.size(20.dp),
-            )
-        }
-        Text(label, style = MemoryType.Body, modifier = Modifier.weight(1f))
-        Icon(MemoryIcons.ChevronRight, contentDescription = null, tint = MemoryColors.Ink3, modifier = Modifier.size(18.dp))
-    }
 }
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -306,7 +322,7 @@ private fun SpaceSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Uni
                         Modifier
                             .fillMaxWidth()
                             .clip(MemoryShapes.Button)
-                            .background(MemoryColors.AccentTint)
+                            .background(MemoryColors.Fill)
                             .padding(vertical = Gap.xl),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -414,7 +430,7 @@ private fun KindOption(title: String, detail: String, checked: Boolean, onClick:
         Modifier
             .fillMaxWidth()
             .clip(MemoryShapes.Button)
-            .background(if (checked) MemoryColors.AccentTint else MemoryColors.Fill)
+            .background(if (checked) MemoryColors.Fill else MemoryColors.Fill)
             // 테두리를 **안쪽에** 그립니다. 바깥에 두면 고를 때마다 칸이 커졌다 작아져
             // 두 줄이 흔들립니다.
             .then(

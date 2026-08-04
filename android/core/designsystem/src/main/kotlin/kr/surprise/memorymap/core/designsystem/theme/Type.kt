@@ -24,38 +24,49 @@ val Pretendard = FontFamily(
 )
 
 /**
- * 큰 글자일수록 자간을 좁힙니다. 한글은 자간을 그대로 두면 크게 키웠을 때 헐거워 보입니다.
+ * 여섯 단만 씁니다 — **한 화면에 세 단 이상 섞지 않습니다** (`docs/app/design.html`).
+ *
+ * 굵기가 800(ExtraBold)인 자리가 많은 것이 이 서체 체계의 특징입니다. 잉크 선과
+ * 흰 면만으로 만든 화면이라, 글자가 굵어야 위계가 섭니다.
+ *
+ * 디자인 문서는 라틴·숫자에 Archivo 를 섞지만, **우리는 Pretendard 한 벌로 갑니다**
+ * (2026-08-04 결정). 숫자와 영문의 인상이 시안과 조금 다른 대신, 서체 파일이
+ * 한 벌로 끝나고 한글·라틴의 굵기가 한 줄 안에서 어긋나지 않습니다.
  */
 object MemoryType {
+    /** 25 / 800 — 화면 제목 ("짜국") */
     val Display = TextStyle(
         fontFamily = Pretendard, fontWeight = FontWeight.Bold,
-        fontSize = 32.sp, lineHeight = 38.4.sp, letterSpacing = (-0.03).em,
+        fontSize = 25.sp, lineHeight = 30.sp, letterSpacing = (-0.02).em,
     )
+    /** 17 / 800 — 상단바 */
     val Title = TextStyle(
         fontFamily = Pretendard, fontWeight = FontWeight.Bold,
-        fontSize = 20.sp, lineHeight = 26.sp, letterSpacing = (-0.02).em,
+        fontSize = 17.sp, lineHeight = 22.sp, letterSpacing = (-0.02).em,
     )
+    /** 15 / 800 — 버튼 · 본문 강조 */
     val Headline = TextStyle(
-        fontFamily = Pretendard, fontWeight = FontWeight.SemiBold,
-        fontSize = 17.sp, lineHeight = 23.sp, letterSpacing = (-0.01).em,
-    )
-    val Body = TextStyle(
-        fontFamily = Pretendard, fontWeight = FontWeight.Normal,
-        fontSize = 15.sp, lineHeight = 23.sp,
-    )
-    val Label = TextStyle(
-        fontFamily = Pretendard, fontWeight = FontWeight.Medium,
-        fontSize = 13.sp, lineHeight = 19.sp,
-    )
-    val Micro = TextStyle(
-        fontFamily = Pretendard, fontWeight = FontWeight.SemiBold,
-        fontSize = 11.sp, lineHeight = 15.sp, letterSpacing = 0.04.em,
-    )
-    /** 세그먼트·버튼 라벨 */
-    val Button = TextStyle(
-        fontFamily = Pretendard, fontWeight = FontWeight.SemiBold,
+        fontFamily = Pretendard, fontWeight = FontWeight.Bold,
         fontSize = 15.sp, lineHeight = 20.sp, letterSpacing = (-0.01).em,
     )
+    /** 13.5 / 700 — 보조 버튼 · 필드값 */
+    val Body = TextStyle(
+        fontFamily = Pretendard, fontWeight = FontWeight.SemiBold,
+        fontSize = 13.5.sp, lineHeight = 19.sp, letterSpacing = (-0.01).em,
+    )
+    /** 12.5 / 400 — 설명 */
+    val Label = TextStyle(
+        fontFamily = Pretendard, fontWeight = FontWeight.Normal,
+        fontSize = 12.5.sp, lineHeight = 20.sp,
+    )
+    /** 11 / 700 — 딱지 · 캡션 */
+    val Micro = TextStyle(
+        fontFamily = Pretendard, fontWeight = FontWeight.SemiBold,
+        fontSize = 11.sp, lineHeight = 15.sp,
+    )
+
+    /** 버튼 라벨은 [Headline] 과 같은 단입니다. 따로 두지 않습니다. */
+    val Button = Headline
 }
 
 internal val MemoryTypography = Typography(

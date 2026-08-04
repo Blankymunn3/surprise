@@ -199,7 +199,7 @@ public struct UploadView: View {
                         .foregroundStyle(MemoryColor.accent)
                         .padding(.horizontal, 7)
                         .padding(.vertical, 2)
-                        .background(Capsule().fill(MemoryColor.accentTint))
+                        .background(Capsule().fill(MemoryColor.fill))
                 }
             }
             content()

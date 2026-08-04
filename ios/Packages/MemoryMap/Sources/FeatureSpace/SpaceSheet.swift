@@ -104,7 +104,7 @@ struct SpaceSheet: View {
         .padding(.vertical, MemorySpace.m)
         .background(
             RoundedRectangle(cornerRadius: MemoryRadius.button, style: .continuous)
-                .fill(MemoryColor.accentTint)
+                .fill(MemoryColor.fill)
         )
 
         PrimaryButton("닫기") {
@@ -208,7 +208,7 @@ struct SpaceSheet: View {
             .padding(.vertical, MemorySpace.m)
             .background(
                 RoundedRectangle(cornerRadius: MemoryRadius.button, style: .continuous)
-                    .fill(checked ? MemoryColor.accentTint : MemoryColor.fill)
+                    .fill(checked ? MemoryColor.fill : MemoryColor.surface)
             )
             // 테두리를 **안쪽에** 그립니다. 바깥에 두면 고를 때마다 칸이 커졌다 작아져
             // 두 줄이 흔들립니다.

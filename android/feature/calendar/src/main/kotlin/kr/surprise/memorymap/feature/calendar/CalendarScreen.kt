@@ -34,8 +34,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kr.surprise.memorymap.domain.CalendarMonth
 import kr.surprise.memorymap.core.designsystem.component.DayCell
-import kr.surprise.memorymap.core.designsystem.component.HillScene
-import kr.surprise.memorymap.core.designsystem.component.SCENE_RATIO
+import kr.surprise.memorymap.core.designsystem.component.FRAMES_RATIO
+import kr.surprise.memorymap.core.designsystem.component.PhotoFramesScene
 import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
 import kr.surprise.memorymap.core.designsystem.component.PhotoThumb
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
@@ -77,7 +77,7 @@ fun CalendarScreen(
                     Modifier.fillMaxWidth().padding(horizontal = 40.dp, vertical = 28.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    HillScene(Modifier.fillMaxWidth(0.66f).aspectRatio(SCENE_RATIO).clip(MemoryShapes.Card))
+                    PhotoFramesScene(Modifier.fillMaxWidth(0.5f).aspectRatio(FRAMES_RATIO))
                     Spacer(Modifier.height(Gap.l))
                     Text(
                         "이 달엔 아직 사진이 없어요",
@@ -268,7 +268,7 @@ private fun DaySection(group: DayGroup, onIntent: (CalendarIntent) -> Unit) {
                 Box(
                     Modifier
                         .clip(MemoryShapes.Pill)
-                        .background(MemoryColors.AccentTint)
+                        .background(MemoryColors.Fill)
                         .padding(horizontal = 11.dp, vertical = 4.dp)
                 ) {
                     Text(place, style = MemoryType.Micro, color = MemoryColors.Accent)

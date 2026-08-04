@@ -164,7 +164,7 @@ private fun FieldRow(
                 Box(
                     Modifier
                         .clip(MemoryShapes.Pill)
-                        .background(MemoryColors.AccentTint)
+                        .background(MemoryColors.Fill)
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text("자동", style = MemoryType.Micro, color = MemoryColors.Accent)

@@ -12,33 +12,35 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
+import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 
 /**
- * 콘텐츠 **위에 떠 있는** 조작 층. 유리는 여기에만 씁니다.
+ * 콘텐츠 **위에 떠 있는** 조작 층 — 지도 위 검색칸·버튼 같은 것.
  *
- * iOS 26 Liquid Glass 의 규칙이 "유리는 떠 있는 층에만, 콘텐츠 자체에는 쓰지 말 것" 입니다.
- * 시트·카드에 이걸 쓰면 안 됩니다 — 뒤가 비쳐 사진이 지저분해 보입니다.
+ * **유리가 아닙니다.** 예전에는 반투명 흰색으로 뒤가 비치게 했는데,
+ * 새 디자인은 유리를 아예 쓰지 않습니다 — 꽉 찬 흰 면과 1px 잉크 선으로만
+ * 떠 있음을 나타냅니다. 사진 위에 반투명을 얹으면 사진 색이 그대로 올라와
+ * 글자가 읽히는 정도가 사진마다 달라지기 때문입니다.
  *
- * 뒤 배경을 실제로 흐리는 것(backdrop blur)은 API 31 부터 가능합니다.
- * 지금은 반투명 흰색 + 실선 테두리로 같은 인상을 냅니다. 흐림은 나중에 얹습니다.
+ * 이름에 Glass 를 다시 붙이지 마세요. 반투명을 되살리는 첫걸음이 됩니다.
  */
 @Composable
-fun GlassSurface(
+fun FloatingSurface(
     modifier: Modifier = Modifier,
-    shape: Shape = MemoryShapes.Pill,
+    shape: Shape = MemoryShapes.Square,
     content: @Composable BoxScope.() -> Unit,
 ) {
     Box(
         modifier = modifier
-            .shadow(elevation = 10.dp, shape = shape, ambientColor = MemoryColors.Ink, spotColor = MemoryColors.Ink)
+            .shadow(elevation = 6.dp, shape = shape, ambientColor = MemoryColors.Ink, spotColor = MemoryColors.Ink)
             .clip(shape)
-            .background(MemoryColors.Glass)
-            .border(0.5.dp, MemoryColors.GlassBorder, shape),
+            .background(MemoryColors.Surface)
+            .border(MemoryStroke.Border, MemoryColors.Line, shape),
         content = content,
     )
 }
 
-/** 콘텐츠 층. **불투명**합니다. */
+/** 콘텐츠 층. 떠 있지 않아 그림자도 테두리도 없습니다. */
 @Composable
 fun ContentSurface(
     modifier: Modifier = Modifier,

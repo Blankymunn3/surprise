@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 private val LightScheme = lightColorScheme(
     primary = MemoryColors.Accent,
     onPrimary = MemoryColors.OnAccent,
-    primaryContainer = MemoryColors.AccentTint,
+    primaryContainer = MemoryColors.Fill,
     onPrimaryContainer = MemoryColors.Accent,
     background = MemoryColors.Paper,
     onBackground = MemoryColors.Ink,

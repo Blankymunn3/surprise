@@ -45,7 +45,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import kr.surprise.memorymap.core.designsystem.component.GlassIconButton
+import kr.surprise.memorymap.core.designsystem.component.FloatingIconButton
 import kr.surprise.memorymap.core.designsystem.component.MemoryFab
 import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
 import kr.surprise.memorymap.core.designsystem.component.PlainIconButton
@@ -143,7 +143,7 @@ fun MemoryMapNavHost(container: AppContainer) {
             }
 
             Box(Modifier.fillMaxSize()) {
-                SpaceListScreen(state = state, myInitial = "나", onIntent = vm::onIntent)
+                SpaceListScreen(state = state, onIntent = vm::onIntent)
                 SnackbarHost(
                     snackbar,
                     Modifier.align(Alignment.BottomCenter).systemBarsPadding().padding(bottom = 16.dp),
@@ -336,7 +336,7 @@ private fun TopBar(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         if (floating) {
-            GlassIconButton(MemoryIcons.Back, "뒤로", onBack)
+            FloatingIconButton(MemoryIcons.Back, "뒤로", onBack)
         } else {
             PlainIconButton(MemoryIcons.Back, "뒤로", onBack)
         }
@@ -349,7 +349,7 @@ private fun TopBar(
         )
 
         if (floating) {
-            GlassIconButton(MemoryIcons.More, "더 보기", { })
+            FloatingIconButton(MemoryIcons.More, "더 보기", { })
         } else {
             PlainIconButton(MemoryIcons.More, "더 보기", { })
         }

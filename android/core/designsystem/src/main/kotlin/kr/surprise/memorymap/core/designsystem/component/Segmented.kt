@@ -68,7 +68,7 @@ fun Segmented(
     }
 
     if (floating) {
-        GlassSurface(modifier = modifier) { content() }
+        FloatingSurface(modifier = modifier) { content() }
     } else {
         Box(
             modifier = modifier

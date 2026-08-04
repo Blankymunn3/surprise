@@ -87,6 +87,10 @@ public struct MemoryFab: View {
     }
 }
 
+/// 주 동작. **글자는 왼끝에 맞추고 화살표가 오른끝에 섭니다** — 가운데 정렬이 아닙니다.
+///
+/// 왼끝 맞춤인 이유: 이 버튼은 화면 가로를 꽉 채웁니다. 가운데에 두면 글자가
+/// 어디서 시작하는지 매번 달라져서, 위에 쌓인 글줄들과 왼쪽 선이 어긋납니다.
 public struct PrimaryButton: View {
     let title: String
     let enabled: Bool
@@ -100,18 +104,83 @@ public struct PrimaryButton: View {
 
     public var body: some View {
         Button(action: action) {
-            Text(title)
-                .memoryHeadline()
-                .foregroundStyle(enabled ? Color.white : MemoryColor.ink3)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(
-                    RoundedRectangle(cornerRadius: MemoryRadius.button, style: .continuous)
-                        .fill(enabled ? MemoryColor.accent : MemoryColor.fill)
-                )
+            HStack(spacing: MemorySpace.s) {
+                Text(title).memoryHeadline()
+                Spacer(minLength: 0)
+                Text("→").memoryHeadline()
+            }
+            .foregroundStyle(enabled ? MemoryColor.onAccent : MemoryColor.ink3)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity)
+            .background(enabled ? MemoryColor.accent : MemoryColor.fill)
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
+    }
+}
+
+/// 보조 동작. 흰 면에 1px 잉크 선. 여기도 왼끝 맞춤입니다.
+public struct SoftButton: View {
+    let title: String
+    let action: () -> Void
+
+    public init(_ title: String, action: @escaping () -> Void) {
+        self.title = title
+        self.action = action
+    }
+
+    public var body: some View {
+        Button(action: action) {
+            Text(title)
+                .memoryBody()
+                .foregroundStyle(MemoryColor.ink)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 13)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(MemoryColor.surface)
+                .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// 카드 위 멤버 칩은 셋까지, 넘으면 잉크 칸에 +N.
+public let avatarsShown = 3
+
+/// 이름 첫 글자 칩. **네모에 흰 면, 1px 잉크 선입니다.**
+///
+/// 사람마다 색을 주지 않는 이유: 카드 대부분이 사진이라 여기에 색을 더하면
+/// 사진과 색이 부딪힙니다. 사람을 구분하는 건 색이 아니라 글자입니다.
+/// 안드로이드 `MemberAvatars` 와 같은 규칙입니다.
+public struct MemberAvatars: View {
+    let initials: [String]
+    let max: Int
+
+    public init(initials: [String], max: Int = avatarsShown) {
+        self.initials = initials
+        self.max = max
+    }
+
+    public var body: some View {
+        let shown = Array(initials.prefix(max))
+        let rest = initials.count - shown.count
+
+        HStack(spacing: -6) {
+            ForEach(Array(shown.enumerated()), id: \.offset) { _, text in
+                chip(text, filled: false)
+            }
+            if rest > 0 { chip("+\(rest)", filled: true) }
+        }
+    }
+
+    private func chip(_ text: String, filled: Bool) -> some View {
+        Text(text)
+            .memoryMicro()
+            .foregroundStyle(filled ? MemoryColor.onAccent : MemoryColor.ink)
+            .frame(width: 24, height: 24)
+            .background(filled ? MemoryColor.ink : MemoryColor.surface)
+            .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
     }
 }
 

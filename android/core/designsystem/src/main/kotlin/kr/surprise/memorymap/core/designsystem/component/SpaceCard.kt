@@ -6,8 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,11 +24,18 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
+import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
+
+/** 카드 높이는 고정입니다. 사진 비율이 제각각이어도 목록의 리듬은 일정해야 합니다. */
+private val CardHeight = 150.dp
 
 /**
  * 공간 목록 카드. **사진이 카드 전체**입니다 —
  * 공간을 알아보는 건 이름이 아니라 사진이라서요.
+ *
+ * 사진이 없으면 그늘을 깔지 않고 글자를 잉크로 씁니다. 회색 면에 흰 글자를
+ * 얹으려고 그늘을 넣으면, 사진도 없는 카드가 괜히 어두워집니다.
  */
 @Composable
 fun SpaceCard(
@@ -41,11 +48,13 @@ fun SpaceCard(
     /** 혼자 쓰는 짜국이면 왼쪽 위에 '이 폰에만' 이 붙습니다. */
     onlyOnThisPhone: Boolean = false,
 ) {
+    val hasCover = coverUrl != null
+
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(16f / 9.6f)
-            .shadow(10.dp, MemoryShapes.Card, spotColor = MemoryColors.Ink)
+            .height(CardHeight)
+            .shadow(6.dp, MemoryShapes.Card, spotColor = MemoryColors.Ink)
             .clip(MemoryShapes.Card)
             .background(MemoryColors.Fill)
             .clickable(onClick = onClick)
@@ -57,97 +66,114 @@ fun SpaceCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.matchParentSize(),
             )
-        }
 
-        // 흰 글자가 밝은 사진 위에서도 읽히도록 아래쪽을 어둡게
-        Box(
-            Modifier
-                .matchParentSize()
-                .background(
-                    Brush.verticalGradient(
-                        0.34f to Color.Transparent,
-                        0.56f to Color(0x24140C10),
-                        1f to Color(0x9E140C10),
+            // 흰 글자가 밝은 사진 위에서도 읽히도록 아래쪽만 어둡게.
+            // 사진에 색을 입히는 틴트가 아니라, 글자 있는 쪽에만 두는 그늘입니다.
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.verticalGradient(
+                            0.38f to Color.Transparent,
+                            1f to MemoryColors.Ink.copy(alpha = 0.78f),
+                        )
                     )
-                )
-        )
+            )
+        }
 
         if (onlyOnThisPhone) {
-            OnlyOnThisPhone(Modifier.align(Alignment.TopStart).padding(14.dp))
+            OnlyOnThisPhone(Modifier.align(Alignment.TopStart).padding(12.dp))
         }
 
-        MemberAvatars(
-            initials = memberInitials,
-            modifier = Modifier.align(Alignment.TopEnd).padding(14.dp),
-        )
-
-        Column(Modifier.align(Alignment.BottomStart).padding(start = 18.dp, end = 18.dp, bottom = 15.dp)) {
-            Text(name, style = MemoryType.Title, color = Color.White)
-            Text(meta, style = MemoryType.Label, color = Color.White.copy(alpha = 0.88f))
+        Row(
+            Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .padding(start = 14.dp, end = 14.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = name,
+                    style = MemoryType.Title,
+                    color = if (hasCover) Color.White else MemoryColors.Ink,
+                )
+                Text(
+                    text = meta,
+                    style = MemoryType.Micro,
+                    color = if (hasCover) Color.White.copy(alpha = 0.82f) else MemoryColors.Ink2,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            }
+            MemberAvatars(initials = memberInitials, modifier = Modifier.padding(start = 10.dp))
         }
     }
 }
 
 /**
- * 사진이 이 기기 안에만 있다는 표시 (`docs/app/design.html` 의 '공간 목록').
+ * 사진이 이 기기 안에만 있다는 표시.
  *
  * **다는 쪽이 예외입니다** — 같이 쓰는 짜국에는 아무것도 달지 않습니다. 둘 다 달면
  * 목록이 딱지투성이가 되고 어느 쪽이 특별한지도 알 수 없습니다.
  *
- * 감빛을 쓰지 않는 이유: 누르는 것이 아니라 그냥 알려 주는 것이라서요.
- * 지도 위의 알약·버튼과 같은 유리를 씁니다.
+ * 레드를 쓰지 않는 이유: 누르는 것이 아니라 그냥 알려 주는 것이라서요.
+ * 레드는 주 동작·대표·오늘·에러에만 씁니다.
  */
 @Composable
 private fun OnlyOnThisPhone(modifier: Modifier = Modifier) {
     Text(
         text = "이 폰에만",
         style = MemoryType.Micro,
-        color = MemoryColors.Ink2,
+        color = MemoryColors.Ink,
         modifier = modifier
-            .clip(MemoryShapes.Pill)
-            .background(MemoryColors.Glass)
-            .padding(horizontal = 9.dp, vertical = 3.dp),
+            .background(MemoryColors.Surface)
+            .border(MemoryStroke.Border, MemoryColors.Line)
+            .padding(horizontal = 8.dp, vertical = 3.dp),
     )
 }
 
-/** 이름 첫 글자 원. 넷을 넘으면 마지막이 +N 이 됩니다. */
+/** 카드 위 멤버 칩은 셋까지, 넘으면 잉크 칸에 +N. */
+private const val AVATARS_SHOWN = 3
+
+/**
+ * 이름 첫 글자 칩. **네모에 흰 면, 1px 잉크 선입니다.**
+ *
+ * 사람마다 색을 주지 않는 이유: 카드 대부분이 사진이라 여기에 색을 더하면
+ * 사진과 색이 부딪힙니다. 사람을 구분하는 건 색이 아니라 글자입니다.
+ */
 @Composable
 fun MemberAvatars(
     initials: List<String>,
     modifier: Modifier = Modifier,
-    max: Int = 4,
+    max: Int = AVATARS_SHOWN,
 ) {
-    val shown = if (initials.size <= max) initials else initials.take(max - 1) + "+${initials.size - (max - 1)}"
+    val shown = initials.take(max)
+    val rest = initials.size - shown.size
 
     Row(modifier) {
         shown.forEachIndexed { index, text ->
-            Box(
-                Modifier
-                    .offset(x = (-7 * index).dp)
-                    .size(26.dp)
-                    .border(2.dp, Color.White.copy(alpha = 0.92f), MemoryShapes.Pill)
-                    .clip(MemoryShapes.Pill)
-                    .background(avatarColor(text)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(text, style = MemoryType.Micro, color = Color.White)
-            }
+            AvatarChip(text = text, index = index)
+        }
+        if (rest > 0) {
+            AvatarChip(text = "+$rest", index = shown.size, filled = true)
         }
     }
 }
 
-/**
- * 이름에서 색을 정합니다. 같은 사람은 늘 같은 색이어야 해서 난수를 쓰지 않습니다.
- * 강조색(로즈)은 첫 번째 자리에만 두고, 나머지는 사진과 부딪히지 않는 차분한 색으로.
- */
-private val AvatarPalette = listOf(
-    MemoryColors.Accent,
-    Color(0xFF9B8FC8),
-    Color(0xFF82B7B2),
-    Color(0xFFCDAA77),
-    Color(0xFF7FA6C4),
-    Color(0xFF88BE9C),
-)
-
-private fun avatarColor(text: String): Color =
-    AvatarPalette[(text.sumOf { it.code }.mod(AvatarPalette.size))]
+@Composable
+private fun AvatarChip(text: String, index: Int, filled: Boolean = false) {
+    Box(
+        Modifier
+            .offset(x = (-6 * index).dp)
+            .size(24.dp)
+            .background(if (filled) MemoryColors.Ink else MemoryColors.Surface)
+            .border(MemoryStroke.Border, MemoryColors.Line),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            style = MemoryType.Micro,
+            color = if (filled) MemoryColors.OnAccent else MemoryColors.Ink,
+        )
+    }
+}

@@ -1,8 +1,10 @@
 package kr.surprise.memorymap.core.designsystem.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -19,6 +21,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
+import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 
 /**
@@ -47,47 +50,52 @@ fun MemoryFab(
     }
 }
 
+/**
+ * 주 동작. **글자는 왼끝에 맞추고 화살표가 오른끝에 섭니다** — 가운데 정렬이 아닙니다.
+ *
+ * 왼끝 맞춤인 이유: 이 버튼은 화면 가로를 꽉 채웁니다. 가운데에 두면 글자가
+ * 어디서 시작하는지 매번 달라져서, 위에 쌓인 글줄들과 왼쪽 선이 어긋납니다.
+ */
 @Composable
 fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
-    Box(
+    Row(
         modifier = modifier
             .clip(MemoryShapes.Button)
             .background(if (enabled) MemoryColors.Accent else MemoryColors.Fill)
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(vertical = 16.dp),
-        contentAlignment = Alignment.Center,
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = text,
-            style = MemoryType.Button,
-            color = if (enabled) MemoryColors.OnAccent else MemoryColors.Ink3,
-        )
+        val fg = if (enabled) MemoryColors.OnAccent else MemoryColors.Ink3
+        Text(text = text, style = MemoryType.Headline, color = fg, modifier = Modifier.weight(1f))
+        Text(text = "→", style = MemoryType.Headline, color = fg)
     }
 }
 
+/** 보조 동작. 흰 면에 1px 잉크 선. 여기도 왼끝 맞춤입니다. */
 @Composable
 fun SoftButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .clip(MemoryShapes.Button)
-            .background(MemoryColors.Fill)
+            .background(MemoryColors.Surface)
+            .border(MemoryStroke.Border, MemoryColors.Line, MemoryShapes.Button)
             .clickable(onClick = onClick)
-            .padding(vertical = 14.dp),
-        contentAlignment = Alignment.Center,
+            .padding(horizontal = 16.dp, vertical = 13.dp),
     ) {
-        Text(text, style = MemoryType.Button, color = MemoryColors.Ink)
+        Text(text, style = MemoryType.Body, color = MemoryColors.Ink)
     }
 }
 
-/** 지도 위에 떠 있는 동그란 아이콘 버튼 */
+/** 지도처럼 콘텐츠 위에 떠 있는 아이콘 버튼 */
 @Composable
-fun GlassIconButton(
+fun FloatingIconButton(
     icon: ImageVector,
     contentDescription: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    GlassSurface(modifier = modifier.size(38.dp)) {
+    FloatingSurface(modifier = modifier.size(38.dp)) {
         Box(
             Modifier
                 .matchParentSize()
