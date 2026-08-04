@@ -199,56 +199,76 @@ public struct MemberAvatars: View {
     }
 }
 
+/// 숫자 위에 까는 그늘의 높이. 숫자 한 줄만 덮으면 됩니다.
+private let dayShadeHeight: CGFloat = 22
+
 public struct DayCell: View {
     let day: Int
     let photoURL: String?
     let isToday: Bool
     let isSunday: Bool
+    let isSelected: Bool
 
-    public init(day: Int, photoURL: String?, isToday: Bool, isSunday: Bool) {
+    public init(
+        day: Int, photoURL: String?, isToday: Bool, isSunday: Bool, isSelected: Bool = false
+    ) {
         self.day = day
         self.photoURL = photoURL
         self.isToday = isToday
         self.isSunday = isSunday
+        self.isSelected = isSelected
     }
 
-    /// 숫자는 **늘 왼쪽 위**, 배경은 **사진이 있을 때만**. 안드로이드 `DayCell` 과 같습니다.
-    /// 빈 날까지 회색을 깔면 달력이 격자무늬가 되어 정작 사진이 묻힙니다.
+    /**
+     숫자는 **늘 왼쪽 위**, 배경은 **사진이 있을 때만**. 안드로이드 `DayCell` 과 같습니다.
+     빈 날까지 회색을 깔면 달력이 격자무늬가 되어 정작 사진이 묻힙니다.
+
+     테두리는 두 가지입니다 — **고른 날은 잉크, 오늘은 레드.** 둘 다면 고른 쪽이
+     이깁니다. 지금 무엇을 보고 있는지가, 오늘이 언제인지보다 급합니다.
+     */
     public var body: some View {
         ZStack(alignment: .topLeading) {
             Color.clear
 
             if let photoURL, let url = URL(string: photoURL) {
                 RemotePhoto(url: url) { MemoryColor.fill }
-                .clipShape(RoundedRectangle(cornerRadius: MemoryRadius.dayCell, style: .continuous))
-                // 밝은 사진 위에서도 흰 숫자가 읽히도록 왼쪽 위만 어둡게
-                .overlay(alignment: .topLeading) {
-                    RadialGradient(
-                        colors: [MemoryColor.ink.opacity(0.62), .clear],
-                        center: .topLeading, startRadius: 0, endRadius: 46
+                // 밝은 사진 위에서도 흰 숫자가 읽히도록 **위쪽 한 줄만** 어둡게.
+                // 칸 전체를 덮으면 사진이 어두워지고, 사진을 보려고 만든 칸이 아니게 됩니다.
+                .overlay(alignment: .top) {
+                    LinearGradient(
+                        colors: [MemoryColor.ink.opacity(0.45), .clear],
+                        startPoint: .top, endPoint: .bottom
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: MemoryRadius.dayCell, style: .continuous))
+                    .frame(height: dayShadeHeight)
                 }
+                .clipped()
             }
 
             Text("\(day)")
-                .memoryLabel()
+                .memoryMicro()
                 .foregroundStyle(textColor)
-                .padding(.leading, 7)
-                .padding(.top, 5)
+                .padding(.leading, 5)
+                .padding(.top, 3)
         }
         .aspectRatio(1, contentMode: .fit)
         .overlay {
-            if isToday {
-                RoundedRectangle(cornerRadius: MemoryRadius.dayCell, style: .continuous)
-                    .strokeBorder(MemoryColor.accent, lineWidth: 2)
+            if let edge = edgeColor {
+                Rectangle().strokeBorder(edge, lineWidth: 2)
             }
         }
     }
 
+    private var edgeColor: Color? {
+        if isSelected { return MemoryColor.ink }
+        if isToday { return MemoryColor.accent }
+        return nil
+    }
+
     private var textColor: Color {
         if photoURL != nil { return .white }
-        return isSunday ? MemoryColor.accent : MemoryColor.ink2
+        // 일요일만 딥레드입니다. 레드는 주 동작에 쓰는 색이라, 눌러야 할 것이
+        // 아닌 자리에는 한 단계 어두운 쪽을 씁니다.
+        return isSunday ? MemoryColor.accentDeep : MemoryColor.ink
     }
 }
 

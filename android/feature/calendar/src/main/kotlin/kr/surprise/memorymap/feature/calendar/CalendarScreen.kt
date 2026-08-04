@@ -1,6 +1,8 @@
 package kr.surprise.memorymap.feature.calendar
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.aspectRatio
@@ -11,10 +13,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -39,7 +43,7 @@ import kr.surprise.memorymap.core.designsystem.component.PhotoFramesScene
 import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
 import kr.surprise.memorymap.core.designsystem.component.PhotoThumb
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
-import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
+import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 import java.time.YearMonth
@@ -57,57 +61,66 @@ fun CalendarScreen(
     onIntent: (CalendarIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize().background(MemoryColors.Paper),
-        contentPadding = PaddingValues(bottom = 110.dp),
-    ) {
-        item { MonthHeader(state, onIntent) }
+    // 격자와 '달력 접기' 는 **붙박이**고 아래 목록만 구릅니다. 목록을 내리는데
+    // 달력까지 같이 밀려 올라가면, 지금 무슨 달을 보고 있는지가 사라집니다.
+    Column(modifier.fillMaxSize().background(MemoryColors.Paper)) {
+        MonthHeader(state, onIntent)
 
         if (!state.collapsed) {
-            item { WeekdayRow() }
-            item { MonthGrid(state, onIntent) }
+            WeekdayRow()
+            MonthGrid(state, onIntent)
         }
 
-        item { CollapseBar(state.collapsed) { onIntent(CalendarIntent.CollapseToggled) } }
+        CollapseBar(state.collapsed) { onIntent(CalendarIntent.CollapseToggled) }
+        Divider()
 
         val groups = state.visibleDays()
         if (groups.isEmpty()) {
-            item {
-                Column(
-                    Modifier.fillMaxWidth().padding(horizontal = 40.dp, vertical = 28.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    PhotoFramesScene(Modifier.fillMaxWidth(0.5f).aspectRatio(FRAMES_RATIO))
-                    Spacer(Modifier.height(Gap.l))
-                    Text(
-                        "이 달엔 아직 사진이 없어요",
-                        style = MemoryType.Body,
-                        color = MemoryColors.Ink3,
-                        textAlign = TextAlign.Center,
-                    )
+            Column(
+                Modifier.fillMaxSize().padding(horizontal = 28.dp),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                PhotoFramesScene(Modifier.fillMaxWidth(0.42f).aspectRatio(FRAMES_RATIO))
+                Spacer(Modifier.height(14.dp))
+                Text("이 달엔 아직 사진이 없어요", style = MemoryType.Title)
+            }
+        } else {
+            LazyColumn(
+                Modifier.weight(1f),
+                contentPadding = PaddingValues(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = 90.dp),
+            ) {
+                items(groups.size, key = { groups[it].date.toString() }) { index ->
+                    DaySection(groups[index], state.selected == groups[index].date, onIntent)
                 }
             }
         }
-
-        items(groups.size, key = { groups[it].date.toString() }) { index ->
-            DaySection(groups[index], onIntent)
-        }
     }
+}
+
+/** 구획선은 2px 입니다. 테두리(1px)보다 굵어야 '나누는 선' 으로 읽힙니다. */
+@Composable
+private fun Divider() {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Gap.xl)
+            .height(MemoryStroke.Divider)
+            .background(MemoryColors.Line2)
+    )
 }
 
 @Composable
 private fun MonthHeader(state: CalendarState, onIntent: (CalendarIntent) -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(start = 22.dp, end = Gap.m, top = Gap.l, bottom = Gap.xs),
+        Modifier.fillMaxWidth().padding(start = Gap.xl, end = Gap.xl, top = Gap.s, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Gap.s),
     ) {
-        // "3월" 크게, "2026" 작게 — 대부분 올해를 보고 연도는 확인용입니다
-        Text("${state.month.monthValue}월", style = MemoryType.Display)
-        Spacer(Modifier.size(Gap.s))
+        // 연·월을 **한 덩어리**로 씁니다. 월만 크고 연도가 작으면 연도가 딸린
+        // 주석처럼 보이는데, 지난 해를 넘겨 볼 때는 연도가 더 중요합니다.
         Text(
-            state.month.year.toString(),
-            style = MemoryType.Body,
-            color = MemoryColors.Ink3,
+            "${state.month.year}년 ${state.month.monthValue}월",
+            style = MemoryType.Title,
             modifier = Modifier.weight(1f),
         )
         NavButton(MemoryIcons.ChevronLeft, "이전 달") { onIntent(CalendarIntent.PreviousMonth) }
@@ -118,24 +131,27 @@ private fun MonthHeader(state: CalendarState, onIntent: (CalendarIntent) -> Unit
 @Composable
 private fun NavButton(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit) {
     Box(
-        Modifier.size(32.dp).clip(MemoryShapes.Pill).clickable(onClick = onClick),
+        Modifier
+            .size(34.dp)
+            .background(MemoryColors.Surface)
+            .border(MemoryStroke.Border, MemoryColors.Line)
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, contentDescription = label, tint = MemoryColors.Ink2, modifier = Modifier.size(18.dp))
+        Icon(icon, contentDescription = label, tint = MemoryColors.Ink, modifier = Modifier.size(16.dp))
     }
 }
 
 @Composable
 private fun WeekdayRow() {
-    Row(
-        Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = Gap.s),
-        horizontalArrangement = Arrangement.spacedBy(Gap.xs),
-    ) {
+    Row(Modifier.fillMaxWidth().padding(horizontal = Gap.xl)) {
         WEEKDAYS.forEachIndexed { index, label ->
             Text(
                 text = label,
                 style = MemoryType.Micro,
-                color = if (index == 0) MemoryColors.Accent else MemoryColors.Ink3,
+                // 일요일만 딥레드입니다. 레드는 주 동작에 쓰는 색이라, 눌러야 할 것이
+                // 아닌 자리에는 한 단계 어두운 쪽을 씁니다.
+                color = if (index == 0) MemoryColors.AccentDeep else MemoryColors.Ink2,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f),
             )
@@ -175,10 +191,10 @@ private fun MonthGrid(state: CalendarState, onIntent: (CalendarIntent) -> Unit) 
         }
     }
 
-    BoxWithConstraints(Modifier.fillMaxWidth().padding(horizontal = 18.dp)) {
+    BoxWithConstraints(Modifier.fillMaxWidth().padding(horizontal = Gap.xl).padding(top = 6.dp)) {
         // 높이를 미리 정합니다. 달마다 줄 수가 달라 그때그때 재면 넘길 때 화면이 출렁입니다.
-        val cell = (maxWidth - Gap.xs * 6) / 7
-        val gridHeight = cell * WEEK_ROWS + Gap.xs * (WEEK_ROWS - 1)
+        val cell = (maxWidth - CELL_GAP * 6) / 7
+        val gridHeight = cell * WEEK_ROWS + CELL_GAP * (WEEK_ROWS - 1)
 
         HorizontalPager(state = pager, modifier = Modifier.height(gridHeight)) { page ->
             val month = monthAt(page)
@@ -188,9 +204,9 @@ private fun MonthGrid(state: CalendarState, onIntent: (CalendarIntent) -> Unit) 
                 CalendarMonth.grid(month).map { DayUi(it, null, isToday = false, isSunday = it != null && CalendarMonth.isSunday(it)) }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(Gap.xs)) {
+            Column(verticalArrangement = Arrangement.spacedBy(CELL_GAP)) {
                 cells.chunked(7).forEach { week ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(Gap.xs)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(CELL_GAP)) {
                         week.forEach { dayCell ->
                             Box(Modifier.weight(1f)) {
                                 val date = dayCell.date
@@ -202,6 +218,7 @@ private fun MonthGrid(state: CalendarState, onIntent: (CalendarIntent) -> Unit) 
                                         photoUrl = dayCell.coverUrl,
                                         isToday = dayCell.isToday,
                                         isSunday = dayCell.isSunday,
+                                        isSelected = state.selected == date,
                                         onClick = { onIntent(CalendarIntent.DayTapped(date)) },
                                     )
                                 }
@@ -217,6 +234,9 @@ private fun MonthGrid(state: CalendarState, onIntent: (CalendarIntent) -> Unit) 
 /** 6줄이면 어떤 달이든 들어갑니다. 늘 6줄로 그려야 넘길 때 높이가 안 바뀝니다. */
 private const val WEEK_ROWS = 6
 
+/** 칸 사이. 3dp 면 칸끼리 붙지 않으면서도 달력이 한 덩어리로 보입니다. */
+private val CELL_GAP = 3.dp
+
 /** ±100년. 넘기다 끝에 닿을 일은 없습니다. */
 private const val PAGE_COUNT = 2401
 private const val PAGE_CENTER = PAGE_COUNT / 2
@@ -229,71 +249,81 @@ private val YearMonthSaver = Saver<YearMonth, String>(
 
 @Composable
 private fun CollapseBar(collapsed: Boolean, onToggle: () -> Unit) {
+    // 가운데가 아니라 **왼끝**입니다. 위의 연·월, 아래 날짜 묶음과 왼쪽 선이 맞아야
+    // 세 덩어리가 한 화면으로 읽힙니다.
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 18.dp)
-            .padding(top = Gap.l)
             .clickable(onClick = onToggle)
-            .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.Center,
+            .padding(horizontal = Gap.xl, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Gap.xs),
     ) {
         Text(
-            if (collapsed) "달력 펼치기" else "달력 접기",
-            style = MemoryType.Label,
+            if (collapsed) "달력 펴기" else "달력 접기",
+            style = MemoryType.Micro,
             color = MemoryColors.Ink2,
         )
-        Spacer(Modifier.size(6.dp))
         Icon(
             if (collapsed) MemoryIcons.ChevronDown else MemoryIcons.ChevronUp,
             contentDescription = null,
             tint = MemoryColors.Ink2,
-            modifier = Modifier.size(15.dp),
+            modifier = Modifier.size(12.dp),
         )
     }
 }
 
+/**
+ * 날짜 하나와 그날 사진들.
+ *
+ * 고른 날은 **왼쪽에 레드 선**이 섭니다. 칸을 통째로 칠하거나 테두리를 두르면
+ * 사진들이 상자에 갇힌 것처럼 보이는데, 선 하나면 "여기" 만 짚어 줍니다.
+ */
 @Composable
-private fun DaySection(group: DayGroup, onIntent: (CalendarIntent) -> Unit) {
-    Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = Gap.s)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("${group.date.monthValue}월 ${group.date.dayOfMonth}일", style = MemoryType.Headline)
-            Spacer(Modifier.size(Gap.s))
-            Text(WEEKDAYS[group.date.dayOfWeek.value % 7], style = MemoryType.Label, color = MemoryColors.Ink3)
+private fun DaySection(group: DayGroup, isSelected: Boolean, onIntent: (CalendarIntent) -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(bottom = Gap.l)) {
+        Box(
+            Modifier
+                .width(3.dp)
+                .fillMaxHeight()
+                .background(if (isSelected) MemoryColors.Accent else MemoryColors.Paper)
+        )
 
-            // 달력은 "언제" 를 보는 화면이지만 그 사진이 어디였는지가 늘 따라옵니다
-            group.placeName?.let { place ->
-                Spacer(Modifier.weight(1f))
-                Box(
-                    Modifier
-                        .clip(MemoryShapes.Pill)
-                        .background(MemoryColors.Fill)
-                        .padding(horizontal = 11.dp, vertical = 4.dp)
-                ) {
-                    Text(place, style = MemoryType.Micro, color = MemoryColors.Accent)
-                }
-            }
-        }
-
-        Spacer(Modifier.height(9.dp))
-
-        // 한 줄에 3장. 4장을 넣으면 썸네일이 90dp 아래로 내려가 얼굴이 안 보입니다.
-        group.photos.chunked(3).forEach { row ->
+        Column(Modifier.padding(start = 10.dp)) {
             Row(
-                Modifier.fillMaxWidth().padding(bottom = Gap.xs),
-                horizontalArrangement = Arrangement.spacedBy(Gap.xs),
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(Gap.s),
             ) {
-                row.forEach { photo ->
+                Text(
+                    "${group.date.monthValue}월 ${group.date.dayOfMonth}일 " +
+                        WEEKDAYS[group.date.dayOfWeek.value % 7],
+                    style = MemoryType.Body,
+                )
+                // 달력은 "언제" 를 보는 화면이지만, 그 사진이 어디였는지가 늘 따라옵니다.
+                Text(
+                    text = listOfNotNull(group.placeName, "${group.photos.size}장").joinToString(" · "),
+                    style = MemoryType.Micro,
+                    color = MemoryColors.Ink2,
+                )
+            }
+
+            Spacer(Modifier.height(7.dp))
+
+            // 한 줄에 몇 장인지 정하지 않고 **칸 크기를 고정**해 흘려 담습니다.
+            // 셋으로 나누면 폰이 넓어질수록 사진만 커지는데, 크기가 같아야 눈이 훑기 쉽습니다.
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                group.photos.forEach { photo ->
                     PhotoThumb(
                         url = photo.downloadUrl,
                         isCover = photo.id == group.coverId,
                         contentDescription = "${group.date} 사진",
                         onClick = { onIntent(CalendarIntent.PhotoLongPressed(group.date, photo.id)) },
-                        modifier = Modifier.weight(1f).aspectRatio(1f),
+                        modifier = Modifier.size(76.dp),
                     )
                 }
-                repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
             }
         }
     }
