@@ -1,18 +1,18 @@
 package kr.surprise.memorymap.feature.space
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,14 +23,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.SolidColor
@@ -40,17 +39,20 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kr.surprise.memorymap.core.designsystem.component.FRAMES_RATIO
+import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
 import kr.surprise.memorymap.core.designsystem.component.PhotoFramesScene
 import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
 import kr.surprise.memorymap.core.designsystem.component.SoftButton
 import kr.surprise.memorymap.core.designsystem.component.SpaceCard
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
-import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
+import kr.surprise.memorymap.core.designsystem.theme.Pretendard
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 import kr.surprise.memorymap.core.model.Space
 import kr.surprise.memorymap.core.model.SpaceKind
@@ -58,6 +60,10 @@ import kr.surprise.memorymap.core.model.SpaceKind
 /**
  * 앱의 메인. **공간이 하나뿐이어도 여기서 시작합니다** —
  * 들어오는 자리가 늘 같아야 두 번째 공간이 생겨도 앱이 달라진 것처럼 느껴지지 않습니다.
+ *
+ * 만들기·참여·로그인·초대 코드는 **시트가 아니라 전체 화면**입니다. 종류를 고르고
+ * 이름을 짓는 일은 지도를 잠깐 가리고 하는 일이 아니라 그 자체가 한 화면의 일입니다.
+ * 상태 기계는 그대로 두고( [SpaceListSheet] ) 그리는 쪽만 갈아 끼웁니다.
  *
  * Composable 은 State 를 받고 Intent 를 올려보내기만 합니다. ViewModel 을 직접 받지 않습니다.
  */
@@ -67,12 +73,36 @@ fun SpaceListScreen(
     onIntent: (SpaceListIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    val sheet = state.sheet
+
+    // 전체 화면 갈래에서 하드웨어 뒤로가기 = 그 화면 닫기.
+    // 안 받으면 목록이 루트라 앱이 통째로 닫힙니다.
+    BackHandler(enabled = sheet != SpaceListSheet.None) {
+        onIntent(SpaceListIntent.SheetDismissed)
+    }
+
+    Box(
         modifier
             .fillMaxSize()
             .background(MemoryColors.Paper)
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
+        when (sheet) {
+            SpaceListSheet.None -> ListBody(state, onIntent)
+            SpaceListSheet.Create -> CreateScreen(state, onIntent)
+            SpaceListSheet.Join -> JoinScreen(state, onIntent)
+            is SpaceListSheet.SignIn -> SignInScreen(sheet, state.working, onIntent)
+            is SpaceListSheet.Invited -> InvitedScreen(sheet, onIntent)
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 목록
+
+@Composable
+private fun ListBody(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit) {
+    Column(Modifier.fillMaxSize()) {
         Header()
         Divider()
 
@@ -125,10 +155,6 @@ fun SpaceListScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-    }
-
-    if (state.sheet != SpaceListSheet.None) {
-        SpaceSheet(state = state, onIntent = onIntent)
     }
 }
 
@@ -218,148 +244,285 @@ private fun Hint(text: String) {
     )
 }
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+// ---------------------------------------------------------------------------
+// 공통 부품 — 전체 화면들
+
+/** 전체 화면의 머리말: 뒤로 + 제목, 아래 구획선. */
 @Composable
-private fun SpaceSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit) {
-    ModalBottomSheet(
-        onDismissRequest = { onIntent(SpaceListIntent.SheetDismissed) },
-        sheetState = rememberModalBottomSheetState(),
-        containerColor = MemoryColors.Surface,
-        shape = MemoryShapes.Sheet,
+private fun ScreenHeader(title: String, onBack: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().padding(start = 2.dp, end = Gap.l, top = 2.dp, bottom = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(Modifier.padding(start = Gap.xl, end = Gap.xl, bottom = Gap.xxxl)) {
-            when (val sheet = state.sheet) {
-                SpaceListSheet.None -> Unit
+        Box(
+            Modifier.size(40.dp).clickable(onClick = onBack),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                MemoryIcons.Back,
+                contentDescription = "뒤로",
+                tint = MemoryColors.Ink,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+        Text(title, style = MemoryType.Title)
+    }
+    Divider()
+}
 
-                SpaceListSheet.Create -> {
-                    Text("새 짜국 만들기", style = MemoryType.Title)
-                    Text(
-                        "사진을 어디에 둘지 먼저 고릅니다",
-                        style = MemoryType.Label,
-                        color = MemoryColors.Ink3,
-                        modifier = Modifier.padding(top = Gap.xs, bottom = Gap.l),
-                    )
-                    KindPicker(
-                        selected = state.pendingKind,
-                        onSelect = { onIntent(SpaceListIntent.KindSelected(it)) },
-                    )
-                    Spacer(Modifier.height(Gap.m))
-                    Field(
-                        value = state.pendingName,
-                        placeholder = "우리 추억 지도",
-                        onValueChange = { onIntent(SpaceListIntent.NameTyped(it)) },
-                    )
-                    Spacer(Modifier.height(Gap.xl))
-                    PrimaryButton(
-                        text = if (state.working) "만드는 중…" else "만들기",
-                        enabled = state.canCreate(),
-                        onClick = { onIntent(SpaceListIntent.CreateConfirmed) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
+/** "어떻게 쓸까요" 같은 구역 이름표. */
+@Composable
+private fun SectionLabel(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MemoryType.Micro,
+        color = MemoryColors.Ink2,
+        letterSpacing = 0.7.sp,
+        modifier = modifier,
+    )
+}
 
-                SpaceListSheet.Join -> {
-                    Text("초대 코드로 참여", style = MemoryType.Title)
-                    Text(
-                        "받은 여섯 글자를 넣어 주세요",
-                        style = MemoryType.Label,
-                        color = MemoryColors.Ink3,
-                        modifier = Modifier.padding(top = Gap.xs, bottom = Gap.xl),
-                    )
-                    Field(
-                        value = state.pendingCode,
-                        placeholder = "K7QF2M",
-                        onValueChange = { onIntent(SpaceListIntent.CodeTyped(it)) },
-                    )
-                    Spacer(Modifier.height(Gap.xl))
-                    PrimaryButton(
-                        text = if (state.working) "확인 중…" else "참여하기",
-                        enabled = state.canJoin(),
-                        onClick = { onIntent(SpaceListIntent.JoinConfirmed) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
+/** 글자칸. 흰 면에 1px 잉크 선 — 회색 면을 쓰지 않습니다. */
+@Composable
+private fun Field(value: String, placeholder: String, onValueChange: (String) -> Unit) {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .background(MemoryColors.Surface)
+            .border(MemoryStroke.Border, MemoryColors.Line)
+            .padding(horizontal = 14.dp, vertical = 13.dp),
+    ) {
+        if (value.isEmpty()) {
+            Text(placeholder, style = MemoryType.Body, color = MemoryColors.Ink3)
+        }
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            singleLine = true,
+            textStyle = MemoryType.Body.copy(color = MemoryColors.Ink),
+            cursorBrush = SolidColor(MemoryColors.Accent),
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
 
-                is SpaceListSheet.SignIn -> {
-                    Text("구글로 로그인", style = MemoryType.Title)
-                    Text(
-                        "같이 보려면 누가 이 짜국의 멤버인지 서버가 알아야 해요. " +
-                            "남이 사진을 못 보게 막는 것도 이걸로 합니다.",
-                        style = MemoryType.Label,
-                        color = MemoryColors.Ink2,
-                        modifier = Modifier.padding(top = Gap.xs, bottom = Gap.l),
-                    )
-                    GoogleButton(
-                        text = if (state.working) "로그인 중…" else "구글로 계속하기",
-                        enabled = !state.working,
-                        onClick = { onIntent(SpaceListIntent.SignInTapped) },
-                    )
-                    // 만들기에서 왔을 때만 빠져나갈 길을 둡니다. 참여로 왔으면 혼자로 갈
-                    // 곳이 없습니다 — 남의 짜국에 혼자 들어갈 수는 없으니까요.
-                    if (sheet.next == SpaceListSheet.Next.Create) {
-                        Text(
-                            "그냥 혼자 쓸래요",
-                            style = MemoryType.Label,
-                            color = MemoryColors.Ink2,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onIntent(SpaceListIntent.SignInGaveUp) }
-                                .padding(top = Gap.m, bottom = Gap.xs),
-                        )
-                    }
-                }
+// ---------------------------------------------------------------------------
+// 새 짜국 (시안 2a)
 
-                is SpaceListSheet.Invited -> {
-                    Text("${sheet.spaceName} 만들었어요", style = MemoryType.Title)
-                    Text(
-                        "이 코드를 보내면 같이 채울 수 있어요",
-                        style = MemoryType.Label,
-                        color = MemoryColors.Ink3,
-                        modifier = Modifier.padding(top = Gap.xs, bottom = Gap.xl),
-                    )
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .clip(MemoryShapes.Button)
-                            .background(MemoryColors.Fill)
-                            .padding(vertical = Gap.xl),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(sheet.code, style = MemoryType.Display, color = MemoryColors.Accent)
-                    }
-                    Spacer(Modifier.height(Gap.xl))
-                    PrimaryButton(
-                        text = "코드 보내기",
-                        onClick = { onIntent(SpaceListIntent.InviteCopied(sheet.code)) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
+@Composable
+private fun CreateScreen(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit) {
+    Column(Modifier.fillMaxSize()) {
+        ScreenHeader("새 짜국") { onIntent(SpaceListIntent.SheetDismissed) }
+
+        Column(Modifier.weight(1f).padding(horizontal = Gap.xl, vertical = 18.dp)) {
+            SectionLabel("어떻게 쓸까요", Modifier.padding(bottom = Gap.s))
+            KindOption(
+                title = "혼자",
+                detail = "사진이 이 폰에만 남아요 · 로그인 없이 바로 시작해요",
+                sub = "폰을 잃어버리면 사진도 함께 사라져요",
+                checked = state.pendingKind == SpaceKind.Personal,
+                onClick = { onIntent(SpaceListIntent.KindSelected(SpaceKind.Personal)) },
+            )
+            Spacer(Modifier.height(9.dp))
+            KindOption(
+                title = "같이",
+                detail = "초대한 사람들과 같이 채우고 같이 봐요 · 로그인이 필요해요",
+                sub = "만들면 초대 코드가 바로 나와요",
+                checked = state.pendingKind == SpaceKind.Shared,
+                onClick = { onIntent(SpaceListIntent.KindSelected(SpaceKind.Shared)) },
+            )
+
+            SectionLabel("이름", Modifier.padding(top = Gap.xl, bottom = Gap.s))
+            Field(
+                value = state.pendingName,
+                placeholder = "예) 우리 여름, 제주 한 달",
+                onValueChange = { onIntent(SpaceListIntent.NameTyped(it)) },
+            )
+        }
+
+        Divider(inset = false)
+        Column(Modifier.padding(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = Gap.xxl)) {
+            PrimaryButton(
+                text = if (state.working) "만드는 중…" else "만들기",
+                enabled = state.canCreate(),
+                onClick = { onIntent(SpaceListIntent.CreateConfirmed) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            if (state.pendingKind == SpaceKind.Personal) {
+                Text(
+                    text = "로그인 없이 바로 만들어져요.",
+                    style = MemoryType.Micro,
+                    color = MemoryColors.Ink2,
+                    modifier = Modifier.padding(top = Gap.s),
+                )
             }
         }
     }
 }
 
 /**
- * 구글 버튼만 **감빛이 아닙니다.** 우리 것이 아니라 남의 서비스로 넘어가는 문이라
- * 앱의 강조색을 입히면 우리가 하는 일처럼 보입니다. 흰 바탕에 가는 테두리 —
- * 구글이 권하는 모양이기도 합니다 (`docs/app/design.html` 의 '로그인').
+ * 혼자 / 같이 고르기.
+ *
+ * **세로로 쌓는 이유**: 줄마다 설명이 두 줄씩 붙습니다. `혼자|같이` 알약에는 설명이
+ * 안 들어가고, 설명 없이 두면 사진이 폰 밖으로 나가는지 모르고 고르게 됩니다.
+ *
+ * 고른 칸은 **2px 레드 테두리**, 아닌 칸은 1px 잉크 40%. 라디오도 원이 아니라
+ * **네모**입니다 — 이 디자인에 둥근 것은 없습니다.
+ */
+@Composable
+private fun KindOption(
+    title: String,
+    detail: String,
+    sub: String,
+    checked: Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .background(MemoryColors.Surface)
+            .then(
+                if (checked) Modifier.border(2.dp, MemoryColors.Accent)
+                else Modifier.border(MemoryStroke.Border, MemoryColors.Line2)
+            )
+            .selectable(selected = checked, role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = 15.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(Gap.m),
+    ) {
+        Box(
+            Modifier
+                .padding(top = 2.dp)
+                .size(16.dp)
+                .border(MemoryStroke.Border, MemoryColors.Line),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (checked) {
+                Box(Modifier.size(8.dp).background(MemoryColors.Accent))
+            }
+        }
+        Column {
+            Text(title, style = MemoryType.Headline)
+            Text(
+                detail,
+                style = MemoryType.Label,
+                color = MemoryColors.Ink2,
+                modifier = Modifier.padding(top = 3.dp),
+            )
+            Text(sub, style = MemoryType.Label, color = MemoryColors.Ink3)
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 초대 코드로 참여
+
+/** 시안에 따로 그려져 있지 않아 '새 짜국' 과 같은 뼈대로 갑니다. */
+@Composable
+private fun JoinScreen(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit) {
+    Column(Modifier.fillMaxSize()) {
+        ScreenHeader("초대 코드로 참여") { onIntent(SpaceListIntent.SheetDismissed) }
+
+        Column(Modifier.weight(1f).padding(horizontal = Gap.xl, vertical = 18.dp)) {
+            SectionLabel("받은 코드", Modifier.padding(bottom = Gap.s))
+            Field(
+                value = state.pendingCode,
+                placeholder = "예) K7QF2M",
+                onValueChange = { onIntent(SpaceListIntent.CodeTyped(it)) },
+            )
+            Text(
+                text = "코드를 보낸 사람의 짜국에 멤버로 들어가요.",
+                style = MemoryType.Micro,
+                color = MemoryColors.Ink2,
+                modifier = Modifier.padding(top = Gap.s),
+            )
+        }
+
+        Divider(inset = false)
+        Box(Modifier.padding(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = Gap.xxl)) {
+            PrimaryButton(
+                text = if (state.working) "확인 중…" else "참여하기",
+                enabled = state.canJoin(),
+                onClick = { onIntent(SpaceListIntent.JoinConfirmed) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 로그인 (시안 3a)
+
+/** 같이 쓰기·참여 때만 끼어드는 화면. 앱을 켤 때는 뜨지 않습니다. */
+@Composable
+private fun SignInScreen(
+    sheet: SpaceListSheet.SignIn,
+    working: Boolean,
+    onIntent: (SpaceListIntent) -> Unit,
+) {
+    Column(Modifier.fillMaxSize()) {
+        ScreenHeader("") { onIntent(SpaceListIntent.SheetDismissed) }
+
+        Column(Modifier.weight(1f).padding(horizontal = 26.dp, vertical = Gap.s)) {
+            Box(Modifier.size(13.dp).background(MemoryColors.Accent))
+            Spacer(Modifier.height(14.dp))
+            Text("같이 보려면\n계정이 필요해요", style = MemoryType.Display)
+            Spacer(Modifier.height(14.dp))
+            Text(
+                text = "로그인은 멤버가 아닌 사람이 우리 사진을 못 보게 막는 잠금장치예요. " +
+                    "계정 확인 말고 다른 데는 쓰지 않아요.",
+                style = MemoryType.Label,
+                color = MemoryColors.Ink2,
+            )
+
+            Spacer(Modifier.weight(1f))
+
+            GoogleButton(
+                text = if (working) "로그인 중…" else "Google로 계속하기",
+                enabled = !working,
+                onClick = { onIntent(SpaceListIntent.SignInTapped) },
+            )
+
+            // 만들기에서 왔을 때만 빠져나갈 길을 둡니다. 참여로 왔으면 혼자로 갈
+            // 곳이 없습니다 — 남의 짜국에 혼자 들어갈 수는 없으니까요.
+            if (sheet.next == SpaceListSheet.Next.Create) {
+                Text(
+                    text = "그냥 혼자 쓸래요 — 이 폰에만 저장할게요",
+                    style = MemoryType.Body,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier
+                        .clickable { onIntent(SpaceListIntent.SignInGaveUp) }
+                        .padding(top = 14.dp),
+                )
+            }
+
+            Text(
+                text = "지금은 Google 계정만 돼요.",
+                style = MemoryType.Micro,
+                color = MemoryColors.Ink2,
+                modifier = Modifier.padding(top = Gap.l, bottom = 40.dp),
+            )
+        }
+    }
+}
+
+/**
+ * 구글 버튼만 **레드가 아닙니다.** 우리 것이 아니라 남의 서비스로 넘어가는 문이라
+ * 앱의 강조색을 입히면 우리가 하는 일처럼 보입니다. 흰 바탕에 잉크 선 —
+ * 구글이 권하는 모양이기도 합니다.
  */
 @Composable
 private fun GoogleButton(text: String, enabled: Boolean, onClick: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(MemoryShapes.Button)
             .background(MemoryColors.Surface)
-            .border(1.5.dp, MemoryColors.Line, MemoryShapes.Button)
+            .border(MemoryStroke.Border, MemoryColors.Line)
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(vertical = Gap.l),
-        horizontalArrangement = Arrangement.Center,
+            .padding(horizontal = Gap.l, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(11.dp),
     ) {
-        GoogleMark(Modifier.size(18.dp))
-        Spacer(Modifier.width(Gap.s))
+        GoogleMark(Modifier.size(19.dp))
         Text(text, style = MemoryType.Headline, color = MemoryColors.Ink)
     }
 }
@@ -400,91 +563,68 @@ private fun GoogleMark(modifier: Modifier = Modifier) {
     }
 }
 
+// ---------------------------------------------------------------------------
+// 초대 코드 (시안 2b)
+
 /**
- * 혼자 / 같이 고르기 (`docs/app/design.html` 의 '짜국 만들기').
+ * 만든 직후. 뒤로 대신 아래 '짜국 열기' 로 나갑니다 — 하드웨어 뒤로가기는 목록으로.
  *
- * **세로로 쌓는 이유**: 줄마다 설명이 한 줄씩 붙습니다. `지도|달력` 같은 알약에는
- * 설명이 안 들어가고, 설명 없이 두면 사진이 폰 밖으로 나가는지 모르고 고르게 됩니다.
+ * 시안의 "7일 동안 쓸 수 있어요" 는 넣지 않았습니다. 코드에 만료가 **없어서**
+ * 사실이 아닙니다. 만료를 만들게 되면 그때 같이 넣습니다.
  */
 @Composable
-private fun KindPicker(selected: SpaceKind, onSelect: (SpaceKind) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(Gap.s)) {
-        KindOption(
-            title = "혼자 쓸래요",
-            detail = "사진이 이 폰에만 있어요 · 로그인 없이 바로",
-            checked = selected == SpaceKind.Personal,
-            onClick = { onSelect(SpaceKind.Personal) },
-        )
-        KindOption(
-            title = "같이 볼래요",
-            detail = "초대한 사람들과 같이 봐요 · 로그인이 필요해요",
-            checked = selected == SpaceKind.Shared,
-            onClick = { onSelect(SpaceKind.Shared) },
-        )
-    }
-}
-
-@Composable
-private fun KindOption(title: String, detail: String, checked: Boolean, onClick: () -> Unit) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .clip(MemoryShapes.Button)
-            .background(if (checked) MemoryColors.Fill else MemoryColors.Fill)
-            // 테두리를 **안쪽에** 그립니다. 바깥에 두면 고를 때마다 칸이 커졌다 작아져
-            // 두 줄이 흔들립니다.
-            .then(
-                if (checked) Modifier.border(1.5.dp, MemoryColors.Accent, MemoryShapes.Button)
-                else Modifier
-            )
-            .selectable(selected = checked, role = Role.RadioButton, onClick = onClick)
-            .padding(horizontal = Gap.l, vertical = Gap.m),
-        horizontalArrangement = Arrangement.spacedBy(Gap.m),
-    ) {
-        Box(
-            Modifier
-                .padding(top = 2.dp)
-                .size(16.dp)
-                .clip(MemoryShapes.Pill)
-                .background(MemoryColors.Surface)
-                .border(1.5.dp, if (checked) MemoryColors.Accent else MemoryColors.Line, MemoryShapes.Pill),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (checked) {
-                Box(Modifier.size(7.dp).clip(MemoryShapes.Pill).background(MemoryColors.Accent))
-            }
-        }
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MemoryType.Headline)
+private fun InvitedScreen(sheet: SpaceListSheet.Invited, onIntent: (SpaceListIntent) -> Unit) {
+    Column(Modifier.fillMaxSize()) {
+        Column(Modifier.weight(1f).padding(horizontal = 26.dp).padding(top = 72.dp)) {
+            Text("'${sheet.spaceName}' 짜국을 만들었어요", style = MemoryType.Title)
+            Spacer(Modifier.height(10.dp))
             Text(
-                detail,
+                text = "이 코드를 받은 사람이 들어올 수 있어요. 지금 보내 두면 나중에 다시 찾지 않아도 돼요.",
                 style = MemoryType.Label,
                 color = MemoryColors.Ink2,
-                modifier = Modifier.padding(top = 1.dp),
+            )
+
+            Spacer(Modifier.height(22.dp))
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .background(MemoryColors.Surface)
+                    .border(MemoryStroke.Border, MemoryColors.Line)
+                    .padding(horizontal = Gap.xl, vertical = 22.dp),
+            ) {
+                // 코드는 글자 단 밖입니다 — UI 글이 아니라 화면의 주인공(콘텐츠)이라서요.
+                // 자간을 넓게 벌려 한 글자씩 옮겨 적기 쉽게 합니다.
+                Text(
+                    text = sheet.code,
+                    fontFamily = Pretendard,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 38.sp,
+                    letterSpacing = 10.sp,
+                    color = MemoryColors.Ink,
+                )
+            }
+
+            Spacer(Modifier.height(10.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(Gap.s)) {
+                SoftButton(
+                    text = "코드 복사",
+                    onClick = { onIntent(SpaceListIntent.InviteCopied(sheet.code)) },
+                    modifier = Modifier.weight(1f),
+                )
+                SoftButton(
+                    text = "공유하기",
+                    onClick = { onIntent(SpaceListIntent.InviteShared(sheet.code)) },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+
+        Box(Modifier.padding(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = Gap.xxl)) {
+            PrimaryButton(
+                text = "짜국 열기",
+                onClick = { onIntent(SpaceListIntent.InviteOpenTapped) },
+                modifier = Modifier.fillMaxWidth(),
             )
         }
-    }
-}
-
-@Composable
-private fun Field(value: String, placeholder: String, onValueChange: (String) -> Unit) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .clip(MemoryShapes.Button)
-            .background(MemoryColors.Fill)
-            .padding(horizontal = Gap.l, vertical = Gap.l),
-    ) {
-        if (value.isEmpty()) {
-            Text(placeholder, style = MemoryType.Body, color = MemoryColors.Ink3)
-        }
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            singleLine = true,
-            textStyle = MemoryType.Body.copy(color = MemoryColors.Ink),
-            cursorBrush = SolidColor(MemoryColors.Accent),
-            modifier = Modifier.fillMaxWidth(),
-        )
     }
 }

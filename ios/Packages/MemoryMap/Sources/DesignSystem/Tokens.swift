@@ -82,7 +82,9 @@ public enum MemoryFont {
         }
     }
 
-    static func font(_ size: CGFloat, _ weight: Font.Weight) -> Font {
+    /// 여섯 단 밖의 크기가 필요한 자리를 위해 열어 둡니다 — 초대 코드처럼
+    /// **UI 글이 아니라 화면의 주인공**인 글자에만 씁니다. 보통 글에는 쓰지 마세요.
+    public static func font(_ size: CGFloat, _ weight: Font.Weight) -> Font {
         .custom(faceName(weight), size: size)
     }
 }

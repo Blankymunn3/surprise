@@ -84,7 +84,11 @@ internal object SpaceListReducer {
         state.copy(
             spaces = SpacesUi.Ready(state.currentItems().filterNot { it.id == space.id } + space),
             // 혼자 쓰는 짜국은 초대 코드가 없습니다. 보여 줄 것이 없으니 시트를 닫습니다.
-            sheet = if (code == null) SpaceListSheet.None else SpaceListSheet.Invited(space.name, code),
+            sheet = if (code == null) {
+                SpaceListSheet.None
+            } else {
+                SpaceListSheet.Invited(space.id, space.kind, space.name, code)
+            },
             pendingName = "",
             working = false,
         )

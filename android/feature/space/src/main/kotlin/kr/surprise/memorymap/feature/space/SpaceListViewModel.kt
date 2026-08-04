@@ -51,7 +51,15 @@ class SpaceListViewModel(
             is SpaceListIntent.CodeTyped -> setState { SpaceListReducer.codeTyped(this, intent.value) }
             SpaceListIntent.CreateConfirmed -> confirmCreate()
             SpaceListIntent.JoinConfirmed -> confirmJoin()
-            is SpaceListIntent.InviteCopied -> sendEffect(SpaceListEffect.ShareInvite(intent.code))
+            is SpaceListIntent.InviteCopied -> sendEffect(SpaceListEffect.CopyInvite(intent.code))
+            is SpaceListIntent.InviteShared -> sendEffect(SpaceListEffect.ShareInvite(intent.code))
+            SpaceListIntent.InviteOpenTapped -> {
+                val invited = currentState().sheet as? SpaceListSheet.Invited ?: return
+                setState { SpaceListReducer.sheetDismissed(this) }
+                sendEffect(
+                    SpaceListEffect.OpenSpace(invited.spaceId, invited.kind, invited.spaceName)
+                )
+            }
             SpaceListIntent.SignInTapped -> sendEffect(SpaceListEffect.StartGoogleSignIn)
             is SpaceListIntent.GoogleTokenReceived -> signIn(intent.idToken)
             SpaceListIntent.SignInGaveUp -> setState { SpaceListReducer.signInGaveUp(this) }

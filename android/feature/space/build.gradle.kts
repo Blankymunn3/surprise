@@ -31,6 +31,9 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))
 
+    // 전체 화면 갈래에서 하드웨어 뒤로가기를 받으려면 BackHandler 가 필요합니다.
+    implementation(libs.androidx.activity.compose)
+
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.foundation)

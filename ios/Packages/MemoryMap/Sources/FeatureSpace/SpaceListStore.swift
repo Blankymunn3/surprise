@@ -14,8 +14,9 @@ public enum SpaceListSheet: Equatable, Sendable {
     case none
     case create
     case join
-    /// 만들자마자 뜨는 초대 코드 — 다시 찾게 하지 않으려고
-    case invited(spaceName: String, code: String)
+    /// 만들자마자 뜨는 초대 코드 — 다시 찾게 하지 않으려고.
+    /// 짜국을 통째로 드는 이유: 이 화면의 '짜국 열기' 가 바로 들어가야 해서입니다.
+    case invited(space: Space, code: String)
 
     /// 로그인이 필요해 **잠깐 끼어든** 화면. 앱을 켤 때가 아니라 여기서만 뜹니다
     /// (`docs/app/design.html` 의 '로그인').
@@ -147,7 +148,7 @@ public enum SpaceListReducer {
         var next = state
         next.spaces = .ready(state.items.filter { $0.spaceId != space.spaceId } + [space])
         // 혼자 쓰는 짜국은 초대 코드가 없습니다. 보여 줄 것이 없으니 시트를 닫습니다.
-        next.sheet = code.map { SpaceListSheet.invited(spaceName: space.name, code: $0) } ?? SpaceListSheet.none
+        next.sheet = code.map { SpaceListSheet.invited(space: space, code: $0) } ?? SpaceListSheet.none
         next.pendingName = ""
         next.working = false
         return next

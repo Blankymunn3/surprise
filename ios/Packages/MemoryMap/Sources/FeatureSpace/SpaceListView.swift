@@ -7,9 +7,6 @@ import SwiftUI
 /// 카드는 사진이 전부입니다 — 공간을 알아보는 건 이름이 아니라 사진이라서요.
 public struct SpaceListView: View {
     @State private var store: SpaceListStore
-    /// 시트 높이는 **내용에 맞춥니다.** 만들기·참여·초대코드가 각각 길이가 달라서
-    /// 하나로 고정하면 어떤 것은 비고 어떤 것은 잘립니다.
-    @State private var sheetHeight: CGFloat = 260
     /// ID 만이 아니라 짜국을 통째로 넘깁니다 — 들어간 화면이 **종류**를 알아야
     /// 기기 안 사진을 볼지 서버 사진을 볼지 정할 수 있습니다.
     private let onOpen: (Space) -> Void
@@ -20,6 +17,19 @@ public struct SpaceListView: View {
     }
 
     public var body: some View {
+        // 만들기·참여·로그인·초대 코드는 **시트가 아니라 전체 화면**입니다.
+        // 상태 기계는 그대로 두고 그리는 쪽만 갈아 끼웁니다.
+        Group {
+            if store.state.sheet == .none {
+                list
+            } else {
+                SpaceSheet(store: store, onOpen: onOpen)
+            }
+        }
+        .task { await store.send(.appeared) }
+    }
+
+    private var list: some View {
         VStack(spacing: 0) {
             header
             divider(inset: true)
@@ -43,19 +53,6 @@ public struct SpaceListView: View {
             .padding(.bottom, MemorySpace.xxl)
         }
         .background(MemoryColor.paper)
-        .task { await store.send(.appeared) }
-        .sheet(isPresented: sheetShown) {
-            SpaceSheet(store: store)
-                .background(
-                    GeometryReader { proxy in
-                        Color.clear
-                            .onAppear { sheetHeight = proxy.size.height }
-                            .onChange(of: proxy.size.height) { _, value in sheetHeight = value }
-                    }
-                )
-                .presentationDetents([.height(sheetHeight)])
-                .presentationDragIndicator(.visible)
-        }
     }
 
     @ViewBuilder
@@ -144,16 +141,6 @@ public struct SpaceListView: View {
             .padding(.vertical, MemorySpace.xxxl)
     }
 
-    /// 시트는 상태가 정하고 화면은 따라가기만 합니다. 닫으면 상태도 같이 닫힙니다 —
-    /// 안 그러면 아래로 쓸어 내린 뒤 버튼을 눌러도 두 번째부터 안 열립니다.
-    private var sheetShown: Binding<Bool> {
-        Binding(
-            get: { store.state.sheet != .none },
-            set: { shown in
-                if !shown { Task { await store.send(.sheetDismissed) } }
-            }
-        )
-    }
 }
 
 /// 카드 높이는 고정입니다. 사진 비율이 제각각이어도 목록의 리듬은 일정해야 합니다.

@@ -1,6 +1,9 @@
 package kr.surprise.memorymap
 
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -134,8 +137,19 @@ fun MemoryMapNavHost(container: AppContainer) {
                             )
                         is SpaceListEffect.ShowMessage ->
                             snackbar.showSnackbar(effect.text)
-                        is SpaceListEffect.ShareInvite ->
-                            snackbar.showSnackbar("초대 코드: ${effect.code}")
+                        // 클립보드는 소리 없이 끝나서 "복사했어요" 를 우리가 말해 줍니다.
+                        is SpaceListEffect.CopyInvite -> {
+                            val board = context.getSystemService(ClipboardManager::class.java)
+                            board?.setPrimaryClip(ClipData.newPlainText("짜국 초대 코드", effect.code))
+                            snackbar.showSnackbar("코드를 복사했어요")
+                        }
+                        is SpaceListEffect.ShareInvite -> {
+                            val send = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_TEXT, "짜국 초대 코드: ${effect.code}")
+                            }
+                            context.startActivity(Intent.createChooser(send, "초대 코드 보내기"))
+                        }
                         // 계정 고르기 창은 Activity 가 있어야 떠서 여기서 띄웁니다.
                         // 사용자가 닫으면 아무 인텐트도 보내지 않습니다 — 스스로 그만둔 것을
                         // '실패했어요' 로 알리지 않으려는 것입니다.

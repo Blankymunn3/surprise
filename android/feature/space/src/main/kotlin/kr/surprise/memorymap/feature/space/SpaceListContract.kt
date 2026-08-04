@@ -35,8 +35,16 @@ sealed interface SpaceListSheet {
     data object None : SpaceListSheet
     data object Create : SpaceListSheet
     data object Join : SpaceListSheet
-    /** 만들자마자 뜨는 초대 코드 — 다시 찾게 하지 않으려고 */
-    data class Invited(val spaceName: String, val code: String) : SpaceListSheet
+    /**
+     * 만들자마자 뜨는 초대 코드 — 다시 찾게 하지 않으려고.
+     * id 와 종류를 같이 드는 이유: 이 화면의 '짜국 열기' 가 바로 들어가야 해서입니다.
+     */
+    data class Invited(
+        val spaceId: SpaceId,
+        val kind: SpaceKind,
+        val spaceName: String,
+        val code: String,
+    ) : SpaceListSheet
 
     /**
      * 로그인이 필요해 **잠깐 끼어든** 화면. 앱을 켤 때가 아니라 여기서만 뜹니다
@@ -65,6 +73,9 @@ sealed interface SpaceListIntent {
     data object CreateConfirmed : SpaceListIntent
     data object JoinConfirmed : SpaceListIntent
     data class InviteCopied(val code: String) : SpaceListIntent
+    data class InviteShared(val code: String) : SpaceListIntent
+    /** 초대 코드 화면의 '짜국 열기' — 방금 만든 짜국으로 바로 들어갑니다. */
+    data object InviteOpenTapped : SpaceListIntent
 
     /** '구글로 계속하기' */
     data object SignInTapped : SpaceListIntent
@@ -79,7 +90,10 @@ sealed interface SpaceListEffect {
     /** 종류를 같이 넘깁니다 — 들어간 화면이 기기 안 사진을 볼지 서버 사진을 볼지 정합니다. */
     data class OpenSpace(val id: SpaceId, val kind: SpaceKind, val name: String) : SpaceListEffect
     data class ShowMessage(val text: String) : SpaceListEffect
+    /** 시스템 공유 창으로 코드를 보냅니다. */
     data class ShareInvite(val code: String) : SpaceListEffect
+    /** 클립보드에 코드를 넣습니다. 공유와 다른 일이라 따로 둡니다. */
+    data class CopyInvite(val code: String) : SpaceListEffect
 
     /**
      * 구글 계정 고르기 창을 띄워 달라는 부탁. **화면이 아니라 앱 껍데기가** 합니다 —

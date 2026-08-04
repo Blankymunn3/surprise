@@ -44,9 +44,15 @@ class SpaceListReducerTest {
     fun `공간을 만들면 초대 코드 시트가 바로 뜬다`() {
         val state = SpaceListReducer.spacesLoaded(SpaceListState(), emptyList())
 
-        val after = SpaceListReducer.created(state, space("K7QF2M"), "K7QF2M")
+        // 코드가 있는 건 같이 쓰는 짜국뿐입니다.
+        val made = space("K7QF2M").copy(kind = SpaceKind.Shared)
+        val after = SpaceListReducer.created(state, made, "K7QF2M")
 
-        assertEquals(SpaceListSheet.Invited("우리 추억 지도", "K7QF2M"), after.sheet)
+        // id·종류까지 실려야 그 화면의 '짜국 열기' 가 바로 들어갈 수 있습니다.
+        assertEquals(
+            SpaceListSheet.Invited(SpaceId("K7QF2M"), SpaceKind.Shared, "우리 추억 지도", "K7QF2M"),
+            after.sheet,
+        )
         assertFalse(after.working)
     }
 

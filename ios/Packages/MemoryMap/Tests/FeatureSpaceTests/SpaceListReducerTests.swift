@@ -30,8 +30,10 @@ struct SpaceListReducerTests {
     @Test("공간을 만들면 초대 코드 시트가 바로 뜬다")
     func inviteSheetAppears() {
         let state = SpaceListReducer.loaded(SpaceListState(), [])
-        let after = SpaceListReducer.created(state, space("K7QF2M"), "K7QF2M")
-        #expect(after.sheet == .invited(spaceName: "우리 추억 지도", code: "K7QF2M"))
+        let made = space("K7QF2M")
+        let after = SpaceListReducer.created(state, made, "K7QF2M")
+        // 짜국을 통째로 실어야 그 화면의 '짜국 열기' 가 바로 들어갈 수 있습니다.
+        #expect(after.sheet == .invited(space: made, code: "K7QF2M"))
         #expect(!after.working)
     }
 
