@@ -1,6 +1,5 @@
 package kr.surprise.memorymap.feature.space
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -8,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,8 +25,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +53,7 @@ import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
 import kr.surprise.memorymap.core.designsystem.component.SoftButton
 import kr.surprise.memorymap.core.designsystem.component.SpaceCard
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
+import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 import kr.surprise.memorymap.core.designsystem.theme.Pretendard
@@ -61,40 +65,56 @@ import kr.surprise.memorymap.core.model.SpaceKind
  * 앱의 메인. **공간이 하나뿐이어도 여기서 시작합니다** —
  * 들어오는 자리가 늘 같아야 두 번째 공간이 생겨도 앱이 달라진 것처럼 느껴지지 않습니다.
  *
- * 만들기·참여·로그인·초대 코드는 **시트가 아니라 전체 화면**입니다. 종류를 고르고
- * 이름을 짓는 일은 지도를 잠깐 가리고 하는 일이 아니라 그 자체가 한 화면의 일입니다.
- * 상태 기계는 그대로 두고( [SpaceListSheet] ) 그리는 쪽만 갈아 끼웁니다.
+ * 만들기·참여·로그인·초대 코드는 **아래에서 올라오는 시트**입니다. 목록을 잠깐 가리고
+ * 끝내는 일이라, 화면을 통째로 갈아 끼우면 어디에서 하던 일인지 놓칩니다.
+ * 시트 안의 모양은 새 디자인 그대로입니다 — 담는 그릇만 시트입니다.
  *
  * Composable 은 State 를 받고 Intent 를 올려보내기만 합니다. ViewModel 을 직접 받지 않습니다.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpaceListScreen(
     state: SpaceListState,
     onIntent: (SpaceListIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val sheet = state.sheet
-
-    // 전체 화면 갈래에서 하드웨어 뒤로가기 = 그 화면 닫기.
-    // 안 받으면 목록이 루트라 앱이 통째로 닫힙니다.
-    BackHandler(enabled = sheet != SpaceListSheet.None) {
-        onIntent(SpaceListIntent.SheetDismissed)
-    }
-
     Box(
         modifier
             .fillMaxSize()
             .background(MemoryColors.Paper)
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
-        when (sheet) {
-            SpaceListSheet.None -> ListBody(state, onIntent)
-            SpaceListSheet.Create -> CreateScreen(state, onIntent)
-            SpaceListSheet.Join -> JoinScreen(state, onIntent)
-            is SpaceListSheet.SignIn -> SignInScreen(sheet, state.working, onIntent)
-            is SpaceListSheet.Invited -> InvitedScreen(sheet, onIntent)
+        ListBody(state, onIntent)
+    }
+
+    if (state.sheet != SpaceListSheet.None) {
+        ModalBottomSheet(
+            onDismissRequest = { onIntent(SpaceListIntent.SheetDismissed) },
+            sheetState = rememberModalBottomSheetState(),
+            containerColor = MemoryColors.Surface,
+            // 시트 위쪽에도 2px 잉크 선을 긋습니다 — 지역 시트와 같은 규칙입니다.
+            dragHandle = { SheetGrip() },
+            shape = MemoryShapes.Sheet,
+        ) {
+            when (val sheet = state.sheet) {
+                SpaceListSheet.None -> Unit
+                SpaceListSheet.Create -> CreateSheet(state, onIntent)
+                SpaceListSheet.Join -> JoinSheet(state, onIntent)
+                is SpaceListSheet.SignIn -> SignInSheet(sheet, state.working, onIntent)
+                is SpaceListSheet.Invited -> InvitedSheet(sheet, onIntent)
+            }
         }
     }
+}
+
+/**
+ * 시트 손잡이. 막대 하나가 아니라 **위쪽 2px 잉크 선**입니다 —
+ * 이 디자인에는 둥근 막대가 들어갈 자리가 없고, 지역 시트도 같은 선으로 시작합니다.
+ * 끌어 내려 닫는 것은 그대로 됩니다.
+ */
+@Composable
+private fun SheetGrip() {
+    Box(Modifier.fillMaxWidth().height(MemoryStroke.Divider).background(MemoryColors.Ink))
 }
 
 // ---------------------------------------------------------------------------
@@ -247,27 +267,13 @@ private fun Hint(text: String) {
 // ---------------------------------------------------------------------------
 // 공통 부품 — 전체 화면들
 
-/** 전체 화면의 머리말: 뒤로 + 제목, 아래 구획선. */
+/**
+ * 시트 제목. 뒤로 버튼을 두지 않습니다 — 시트는 끌어 내리거나 뒤를 눌러 닫습니다.
+ * 버튼을 또 두면 닫는 길이 셋이 됩니다.
+ */
 @Composable
-private fun ScreenHeader(title: String, onBack: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().padding(start = 2.dp, end = Gap.l, top = 2.dp, bottom = 2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            Modifier.size(40.dp).clickable(onClick = onBack),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                MemoryIcons.Back,
-                contentDescription = "뒤로",
-                tint = MemoryColors.Ink,
-                modifier = Modifier.size(18.dp),
-            )
-        }
-        Text(title, style = MemoryType.Title)
-    }
-    Divider()
+private fun SheetTitle(text: String) {
+    Text(text, style = MemoryType.Title, modifier = Modifier.padding(bottom = Gap.m))
 }
 
 /** "어떻게 쓸까요" 같은 구역 이름표. */
@@ -310,11 +316,11 @@ private fun Field(value: String, placeholder: String, onValueChange: (String) ->
 // 새 짜국 (시안 2a)
 
 @Composable
-private fun CreateScreen(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit) {
-    Column(Modifier.fillMaxSize()) {
-        ScreenHeader("새 짜국") { onIntent(SpaceListIntent.SheetDismissed) }
+private fun CreateSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit) {
+    SheetBody {
+        SheetTitle("새 짜국")
 
-        Column(Modifier.weight(1f).padding(horizontal = Gap.xl, vertical = 18.dp)) {
+        Column {
             SectionLabel("어떻게 쓸까요", Modifier.padding(bottom = Gap.s))
             KindOption(
                 title = "혼자",
@@ -340,24 +346,34 @@ private fun CreateScreen(state: SpaceListState, onIntent: (SpaceListIntent) -> U
             )
         }
 
-        Divider(inset = false)
-        Column(Modifier.padding(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = Gap.xxl)) {
-            PrimaryButton(
-                text = if (state.working) "만드는 중…" else "만들기",
-                enabled = state.canCreate(),
-                onClick = { onIntent(SpaceListIntent.CreateConfirmed) },
-                modifier = Modifier.fillMaxWidth(),
+        Spacer(Modifier.height(Gap.xl))
+        PrimaryButton(
+            text = if (state.working) "만드는 중…" else "만들기",
+            enabled = state.canCreate(),
+            onClick = { onIntent(SpaceListIntent.CreateConfirmed) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        if (state.pendingKind == SpaceKind.Personal) {
+            Text(
+                text = "로그인 없이 바로 만들어져요.",
+                style = MemoryType.Micro,
+                color = MemoryColors.Ink2,
+                modifier = Modifier.padding(top = Gap.s),
             )
-            if (state.pendingKind == SpaceKind.Personal) {
-                Text(
-                    text = "로그인 없이 바로 만들어져요.",
-                    style = MemoryType.Micro,
-                    color = MemoryColors.Ink2,
-                    modifier = Modifier.padding(top = Gap.s),
-                )
-            }
         }
     }
+}
+
+/**
+ * 시트 안쪽 여백. 아래쪽은 넉넉히 둡니다 — 홈 인디케이터 자리와
+ * 손가락이 시트를 잡는 자리를 버튼과 겹치지 않게 하려는 것입니다.
+ */
+@Composable
+private fun SheetBody(content: @Composable ColumnScope.() -> Unit) {
+    Column(
+        Modifier.padding(start = Gap.xl, end = Gap.xl, top = Gap.l, bottom = Gap.xxxl),
+        content = content,
+    )
 }
 
 /**
@@ -418,34 +434,30 @@ private fun KindOption(
 
 /** 시안에 따로 그려져 있지 않아 '새 짜국' 과 같은 뼈대로 갑니다. */
 @Composable
-private fun JoinScreen(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit) {
-    Column(Modifier.fillMaxSize()) {
-        ScreenHeader("초대 코드로 참여") { onIntent(SpaceListIntent.SheetDismissed) }
+private fun JoinSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit) {
+    SheetBody {
+        SheetTitle("초대 코드로 참여")
 
-        Column(Modifier.weight(1f).padding(horizontal = Gap.xl, vertical = 18.dp)) {
-            SectionLabel("받은 코드", Modifier.padding(bottom = Gap.s))
-            Field(
-                value = state.pendingCode,
-                placeholder = "예) K7QF2M",
-                onValueChange = { onIntent(SpaceListIntent.CodeTyped(it)) },
-            )
-            Text(
-                text = "코드를 보낸 사람의 짜국에 멤버로 들어가요.",
-                style = MemoryType.Micro,
-                color = MemoryColors.Ink2,
-                modifier = Modifier.padding(top = Gap.s),
-            )
-        }
+        SectionLabel("받은 코드", Modifier.padding(bottom = Gap.s))
+        Field(
+            value = state.pendingCode,
+            placeholder = "예) K7QF2M",
+            onValueChange = { onIntent(SpaceListIntent.CodeTyped(it)) },
+        )
+        Text(
+            text = "코드를 보낸 사람의 짜국에 멤버로 들어가요.",
+            style = MemoryType.Micro,
+            color = MemoryColors.Ink2,
+            modifier = Modifier.padding(top = Gap.s),
+        )
 
-        Divider(inset = false)
-        Box(Modifier.padding(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = Gap.xxl)) {
-            PrimaryButton(
-                text = if (state.working) "확인 중…" else "참여하기",
-                enabled = state.canJoin(),
-                onClick = { onIntent(SpaceListIntent.JoinConfirmed) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
+        Spacer(Modifier.height(Gap.xl))
+        PrimaryButton(
+            text = if (state.working) "확인 중…" else "참여하기",
+            enabled = state.canJoin(),
+            onClick = { onIntent(SpaceListIntent.JoinConfirmed) },
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -454,54 +466,51 @@ private fun JoinScreen(state: SpaceListState, onIntent: (SpaceListIntent) -> Uni
 
 /** 같이 쓰기·참여 때만 끼어드는 화면. 앱을 켤 때는 뜨지 않습니다. */
 @Composable
-private fun SignInScreen(
+private fun SignInSheet(
     sheet: SpaceListSheet.SignIn,
     working: Boolean,
     onIntent: (SpaceListIntent) -> Unit,
 ) {
-    Column(Modifier.fillMaxSize()) {
-        ScreenHeader("") { onIntent(SpaceListIntent.SheetDismissed) }
+    SheetBody {
+        Box(Modifier.size(13.dp).background(MemoryColors.Accent))
+        Spacer(Modifier.height(14.dp))
+        // 시트에서는 25단이 너무 큽니다 — 제목만으로 시트가 반을 먹습니다.
+        Text("같이 보려면 계정이 필요해요", style = MemoryType.Title)
+        Spacer(Modifier.height(Gap.s))
+        Text(
+            text = "로그인은 멤버가 아닌 사람이 우리 사진을 못 보게 막는 잠금장치예요. " +
+                "계정 확인 말고 다른 데는 쓰지 않아요.",
+            style = MemoryType.Label,
+            color = MemoryColors.Ink2,
+        )
 
-        Column(Modifier.weight(1f).padding(horizontal = 26.dp, vertical = Gap.s)) {
-            Box(Modifier.size(13.dp).background(MemoryColors.Accent))
-            Spacer(Modifier.height(14.dp))
-            Text("같이 보려면\n계정이 필요해요", style = MemoryType.Display)
-            Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(Gap.xl))
+
+        GoogleButton(
+            text = if (working) "로그인 중…" else "Google로 계속하기",
+            enabled = !working,
+            onClick = { onIntent(SpaceListIntent.SignInTapped) },
+        )
+
+        // 만들기에서 왔을 때만 빠져나갈 길을 둡니다. 참여로 왔으면 혼자로 갈
+        // 곳이 없습니다 — 남의 짜국에 혼자 들어갈 수는 없으니까요.
+        if (sheet.next == SpaceListSheet.Next.Create) {
             Text(
-                text = "로그인은 멤버가 아닌 사람이 우리 사진을 못 보게 막는 잠금장치예요. " +
-                    "계정 확인 말고 다른 데는 쓰지 않아요.",
-                style = MemoryType.Label,
-                color = MemoryColors.Ink2,
-            )
-
-            Spacer(Modifier.weight(1f))
-
-            GoogleButton(
-                text = if (working) "로그인 중…" else "Google로 계속하기",
-                enabled = !working,
-                onClick = { onIntent(SpaceListIntent.SignInTapped) },
-            )
-
-            // 만들기에서 왔을 때만 빠져나갈 길을 둡니다. 참여로 왔으면 혼자로 갈
-            // 곳이 없습니다 — 남의 짜국에 혼자 들어갈 수는 없으니까요.
-            if (sheet.next == SpaceListSheet.Next.Create) {
-                Text(
-                    text = "그냥 혼자 쓸래요 — 이 폰에만 저장할게요",
-                    style = MemoryType.Body,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier
-                        .clickable { onIntent(SpaceListIntent.SignInGaveUp) }
-                        .padding(top = 14.dp),
-                )
-            }
-
-            Text(
-                text = "지금은 Google 계정만 돼요.",
-                style = MemoryType.Micro,
-                color = MemoryColors.Ink2,
-                modifier = Modifier.padding(top = Gap.l, bottom = 40.dp),
+                text = "그냥 혼자 쓸래요 — 이 폰에만 저장할게요",
+                style = MemoryType.Body,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier
+                    .clickable { onIntent(SpaceListIntent.SignInGaveUp) }
+                    .padding(top = 14.dp),
             )
         }
+
+        Text(
+            text = "지금은 Google 계정만 돼요.",
+            style = MemoryType.Micro,
+            color = MemoryColors.Ink2,
+            modifier = Modifier.padding(top = Gap.l),
+        )
     }
 }
 
@@ -573,58 +582,55 @@ private fun GoogleMark(modifier: Modifier = Modifier) {
  * 사실이 아닙니다. 만료를 만들게 되면 그때 같이 넣습니다.
  */
 @Composable
-private fun InvitedScreen(sheet: SpaceListSheet.Invited, onIntent: (SpaceListIntent) -> Unit) {
-    Column(Modifier.fillMaxSize()) {
-        Column(Modifier.weight(1f).padding(horizontal = 26.dp).padding(top = 72.dp)) {
-            Text("'${sheet.spaceName}' 짜국을 만들었어요", style = MemoryType.Title)
-            Spacer(Modifier.height(10.dp))
+private fun InvitedSheet(sheet: SpaceListSheet.Invited, onIntent: (SpaceListIntent) -> Unit) {
+    SheetBody {
+        Text("'${sheet.spaceName}' 짜국을 만들었어요", style = MemoryType.Title)
+        Spacer(Modifier.height(10.dp))
+        Text(
+            text = "이 코드를 받은 사람이 들어올 수 있어요. 지금 보내 두면 나중에 다시 찾지 않아도 돼요.",
+            style = MemoryType.Label,
+            color = MemoryColors.Ink2,
+        )
+
+        Spacer(Modifier.height(18.dp))
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .background(MemoryColors.Surface)
+                .border(MemoryStroke.Border, MemoryColors.Line)
+                .padding(horizontal = Gap.xl, vertical = 18.dp),
+        ) {
+            // 코드는 글자 단 밖입니다 — UI 글이 아니라 화면의 주인공(콘텐츠)이라서요.
+            // 자간을 넓게 벌려 한 글자씩 옮겨 적기 쉽게 합니다.
             Text(
-                text = "이 코드를 받은 사람이 들어올 수 있어요. 지금 보내 두면 나중에 다시 찾지 않아도 돼요.",
-                style = MemoryType.Label,
-                color = MemoryColors.Ink2,
-            )
-
-            Spacer(Modifier.height(22.dp))
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .background(MemoryColors.Surface)
-                    .border(MemoryStroke.Border, MemoryColors.Line)
-                    .padding(horizontal = Gap.xl, vertical = 22.dp),
-            ) {
-                // 코드는 글자 단 밖입니다 — UI 글이 아니라 화면의 주인공(콘텐츠)이라서요.
-                // 자간을 넓게 벌려 한 글자씩 옮겨 적기 쉽게 합니다.
-                Text(
-                    text = sheet.code,
-                    fontFamily = Pretendard,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 38.sp,
-                    letterSpacing = 10.sp,
-                    color = MemoryColors.Ink,
-                )
-            }
-
-            Spacer(Modifier.height(10.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(Gap.s)) {
-                SoftButton(
-                    text = "코드 복사",
-                    onClick = { onIntent(SpaceListIntent.InviteCopied(sheet.code)) },
-                    modifier = Modifier.weight(1f),
-                )
-                SoftButton(
-                    text = "공유하기",
-                    onClick = { onIntent(SpaceListIntent.InviteShared(sheet.code)) },
-                    modifier = Modifier.weight(1f),
-                )
-            }
-        }
-
-        Box(Modifier.padding(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = Gap.xxl)) {
-            PrimaryButton(
-                text = "짜국 열기",
-                onClick = { onIntent(SpaceListIntent.InviteOpenTapped) },
-                modifier = Modifier.fillMaxWidth(),
+                text = sheet.code,
+                fontFamily = Pretendard,
+                fontWeight = FontWeight.Bold,
+                fontSize = 32.sp,
+                letterSpacing = 8.sp,
+                color = MemoryColors.Ink,
             )
         }
+
+        Spacer(Modifier.height(10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(Gap.s)) {
+            SoftButton(
+                text = "코드 복사",
+                onClick = { onIntent(SpaceListIntent.InviteCopied(sheet.code)) },
+                modifier = Modifier.weight(1f),
+            )
+            SoftButton(
+                text = "공유하기",
+                onClick = { onIntent(SpaceListIntent.InviteShared(sheet.code)) },
+                modifier = Modifier.weight(1f),
+            )
+        }
+
+        Spacer(Modifier.height(Gap.l))
+        PrimaryButton(
+            text = "짜국 열기",
+            onClick = { onIntent(SpaceListIntent.InviteOpenTapped) },
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }

@@ -62,10 +62,12 @@ struct SpaceDetailView: View {
         .background(MemoryColor.paper)
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
-        // 올리기는 **전체 화면**입니다. 사진마다 어디·언제를 훑어 내리는 일이라
-        // 지도를 가린 시트 안에서 할 일이 아닙니다.
-        .fullScreenCover(isPresented: $uploading) {
+        // 아래에서 올라오는 시트입니다. **크게** 뜹니다 — 사진이 여러 장이면
+        // 훑어 내려야 해서, 반만 올라오면 두 장밖에 안 보입니다.
+        .sheet(isPresented: $uploading) {
             UploadView(store: uploadStore()) { uploading = false }
+                .presentationDetents([.large])
+                .presentationDragIndicator(.hidden)
         }
         .overlay {
             if menuOpen {

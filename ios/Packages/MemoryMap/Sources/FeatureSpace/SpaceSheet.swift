@@ -6,8 +6,8 @@ import SwiftUI
 /**
  새 짜국 · 초대 코드로 참여 · 로그인 · 만든 뒤 초대 코드.
 
- 넷 다 **전체 화면**입니다. 종류를 고르고 이름을 짓는 일은 목록을 잠깐 가리고
- 하는 일이 아니라 그 자체가 한 화면의 일입니다. 어느 것을 띄울지는 **상태가 정하고**
+ 넷 다 **아래에서 올라오는 시트**입니다. 목록을 잠깐 가리고 끝내는 일이라
+ 화면을 통째로 갈아 끼우지 않습니다. 어느 것을 띄울지는 **상태가 정하고**
  (`SpaceListSheet`) 화면은 그대로 따라갑니다. 안드로이드 `SpaceListScreen` 과 같습니다.
  */
 struct SpaceSheet: View {
@@ -25,40 +25,25 @@ struct SpaceSheet: View {
             case .none: EmptyView()
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(MemoryColor.paper)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .padding(.horizontal, MemorySpace.xl)
+        .padding(.top, MemorySpace.l)
+        // 아래쪽은 넉넉히 — 홈 인디케이터 자리와 손가락이 시트를 잡는 자리를
+        // 버튼과 겹치지 않게 하려는 것입니다.
+        .padding(.bottom, MemorySpace.xxxl)
+        .background(MemoryColor.surface)
+        // 시트 위쪽 2px 잉크 선. 지역 시트도 같은 선으로 시작합니다 —
+        // 이 디자인에는 둥근 손잡이 막대가 들어갈 자리가 없습니다.
+        .overlay(alignment: .top) {
+            MemoryColor.ink.frame(height: MemoryStroke.divider)
+        }
     }
 
     // MARK: - 공통 부품
 
-    /// 전체 화면의 머리말: 뒤로 + 제목, 아래 구획선.
-    private func screenHeader(_ title: String) -> some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                Button { Task { await store.send(.sheetDismissed) } } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(MemoryColor.ink)
-                        .frame(width: 40, height: 40)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("뒤로")
-
-                Text(title).memoryTitle()
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal, 2)
-            .padding(.vertical, 2)
-
-            divider
-        }
-    }
-
-    private var divider: some View {
-        MemoryColor.line2
-            .frame(height: MemoryStroke.divider)
-            .padding(.horizontal, MemorySpace.xl)
+    /// 시트 제목. 뒤로 버튼을 두지 않습니다 — 시트는 끌어 내려 닫습니다.
+    private func sheetTitle(_ title: String) -> some View {
+        Text(title).memoryTitle().padding(.bottom, MemorySpace.m)
     }
 
     /// "어떻게 쓸까요" 같은 구역 이름표.
@@ -73,7 +58,7 @@ struct SpaceSheet: View {
 
     private var create: some View {
         VStack(alignment: .leading, spacing: 0) {
-            screenHeader("새 짜국")
+            sheetTitle("새 짜국")
 
             VStack(alignment: .leading, spacing: 0) {
                 sectionLabel("어떻게 쓸까요").padding(.bottom, MemorySpace.s)
@@ -104,29 +89,22 @@ struct SpaceSheet: View {
                         set: { value in Task { await store.send(.nameTyped(value)) } }
                     )
                 )
-                Spacer(minLength: 0)
             }
-            .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.horizontal, MemorySpace.xl)
-            .padding(.vertical, 18)
 
-            MemoryColor.line2.frame(height: MemoryStroke.divider)
-            VStack(alignment: .leading, spacing: MemorySpace.s) {
-                PrimaryButton(
-                    store.state.working ? "만드는 중…" : "만들기",
-                    enabled: store.state.canCreate
-                ) {
-                    Task { await store.send(.createConfirmed) }
-                }
-                if store.state.pendingKind == .personal {
-                    Text("로그인 없이 바로 만들어져요.")
-                        .memoryMicro()
-                        .foregroundStyle(MemoryColor.ink2)
-                }
+            PrimaryButton(
+                store.state.working ? "만드는 중…" : "만들기",
+                enabled: store.state.canCreate
+            ) {
+                Task { await store.send(.createConfirmed) }
             }
-            .padding(.horizontal, MemorySpace.xl)
-            .padding(.top, MemorySpace.m)
-            .padding(.bottom, MemorySpace.xxl)
+            .padding(.top, MemorySpace.xl)
+
+            if store.state.pendingKind == .personal {
+                Text("로그인 없이 바로 만들어져요.")
+                    .memoryMicro()
+                    .foregroundStyle(MemoryColor.ink2)
+                    .padding(.top, MemorySpace.s)
+            }
         }
     }
 
@@ -135,7 +113,7 @@ struct SpaceSheet: View {
     /// 시안에 따로 그려져 있지 않아 '새 짜국' 과 같은 뼈대로 갑니다.
     private var join: some View {
         VStack(alignment: .leading, spacing: 0) {
-            screenHeader("초대 코드로 참여")
+            sheetTitle("초대 코드로 참여")
 
             VStack(alignment: .leading, spacing: MemorySpace.s) {
                 sectionLabel("받은 코드")
@@ -151,22 +129,15 @@ struct SpaceSheet: View {
                 Text("코드를 보낸 사람의 짜국에 멤버로 들어가요.")
                     .memoryMicro()
                     .foregroundStyle(MemoryColor.ink2)
-                Spacer(minLength: 0)
             }
-            .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.horizontal, MemorySpace.xl)
-            .padding(.vertical, 18)
 
-            MemoryColor.line2.frame(height: MemoryStroke.divider)
             PrimaryButton(
                 store.state.working ? "찾는 중…" : "참여하기",
                 enabled: store.state.canJoin
             ) {
                 Task { await store.send(.joinConfirmed) }
             }
-            .padding(.horizontal, MemorySpace.xl)
-            .padding(.top, MemorySpace.m)
-            .padding(.bottom, MemorySpace.xxl)
+            .padding(.top, MemorySpace.xl)
         }
     }
 
@@ -174,68 +145,60 @@ struct SpaceSheet: View {
 
     private func signIn(next: SignInNext) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            screenHeader("")
+            Rectangle().fill(MemoryColor.accent).frame(width: 13, height: 13)
+                .padding(.bottom, 14)
 
-            VStack(alignment: .leading, spacing: 0) {
-                Rectangle().fill(MemoryColor.accent).frame(width: 13, height: 13)
-                    .padding(.bottom, 14)
+            // 시트에서는 25단이 너무 큽니다 — 제목만으로 시트가 반을 먹습니다.
+            Text("같이 보려면 계정이 필요해요").memoryTitle()
 
-                Text("같이 보려면\n계정이 필요해요").memoryDisplay()
+            Text("로그인은 멤버가 아닌 사람이 우리 사진을 못 보게 막는 잠금장치예요. 계정 확인 말고 다른 데는 쓰지 않아요.")
+                .memoryLabel()
+                .foregroundStyle(MemoryColor.ink2)
+                .lineSpacing(4)
+                .padding(.top, MemorySpace.s)
+                .padding(.bottom, MemorySpace.xl)
 
-                Text("로그인은 멤버가 아닌 사람이 우리 사진을 못 보게 막는 잠금장치예요. 계정 확인 말고 다른 데는 쓰지 않아요.")
-                    .memoryLabel()
-                    .foregroundStyle(MemoryColor.ink2)
-                    .lineSpacing(4)
-                    .padding(.top, 14)
+            // 구글 버튼만 **레드가 아닙니다.** 남의 서비스로 넘어가는 문이라 앱의
+            // 강조색을 입히면 우리가 하는 일처럼 보입니다. 구글이 권하는 모양이기도 합니다.
+            Button {
+                Task { await store.send(.signInTapped) }
+            } label: {
+                HStack(spacing: 11) {
+                    GoogleMark().frame(width: 19, height: 19)
+                    Text(store.state.working ? "로그인 중…" : "Google로 계속하기")
+                        .memoryHeadline()
+                        .foregroundStyle(MemoryColor.ink)
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, MemorySpace.l)
+                .padding(.vertical, 14)
+                .background(MemoryColor.surface)
+                .overlay(
+                    Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border)
+                )
+            }
+            .buttonStyle(.plain)
+            .disabled(store.state.working)
 
-                Spacer(minLength: MemorySpace.xxl)
-
-                // 구글 버튼만 **레드가 아닙니다.** 남의 서비스로 넘어가는 문이라 앱의
-                // 강조색을 입히면 우리가 하는 일처럼 보입니다. 구글이 권하는 모양이기도 합니다.
+            // 만들기에서 왔을 때만 빠져나갈 길을 둡니다. 참여로 왔으면 혼자로 갈 곳이
+            // 없습니다 — 남의 짜국에 혼자 들어갈 수는 없으니까요.
+            if next == .create {
                 Button {
-                    Task { await store.send(.signInTapped) }
+                    Task { await store.send(.signInGaveUp) }
                 } label: {
-                    HStack(spacing: 11) {
-                        GoogleMark().frame(width: 19, height: 19)
-                        Text(store.state.working ? "로그인 중…" : "Google로 계속하기")
-                            .memoryHeadline()
-                            .foregroundStyle(MemoryColor.ink)
-                        Spacer(minLength: 0)
-                    }
-                    .padding(.horizontal, MemorySpace.l)
-                    .padding(.vertical, 14)
-                    .background(MemoryColor.surface)
-                    .overlay(
-                        Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border)
-                    )
+                    Text("그냥 혼자 쓸래요 — 이 폰에만 저장할게요")
+                        .memoryBody()
+                        .foregroundStyle(MemoryColor.ink)
+                        .underline()
                 }
                 .buttonStyle(.plain)
-                .disabled(store.state.working)
-
-                // 만들기에서 왔을 때만 빠져나갈 길을 둡니다. 참여로 왔으면 혼자로 갈 곳이
-                // 없습니다 — 남의 짜국에 혼자 들어갈 수는 없으니까요.
-                if next == .create {
-                    Button {
-                        Task { await store.send(.signInGaveUp) }
-                    } label: {
-                        Text("그냥 혼자 쓸래요 — 이 폰에만 저장할게요")
-                            .memoryBody()
-                            .foregroundStyle(MemoryColor.ink)
-                            .underline()
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.top, 14)
-                }
-
-                Text("지금은 Google 계정만 돼요.")
-                    .memoryMicro()
-                    .foregroundStyle(MemoryColor.ink2)
-                    .padding(.top, MemorySpace.l)
-                    .padding(.bottom, 40)
+                .padding(.top, 14)
             }
-            .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.horizontal, 26)
-            .padding(.top, MemorySpace.s)
+
+            Text("지금은 Google 계정만 돼요.")
+                .memoryMicro()
+                .foregroundStyle(MemoryColor.ink2)
+                .padding(.top, MemorySpace.l)
         }
     }
 
@@ -249,70 +212,61 @@ struct SpaceSheet: View {
      */
     private func invited(space: Space, code: String) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 0) {
-                Text("'\(space.name)' 짜국을 만들었어요").memoryTitle()
+            Text("'\(space.name)' 짜국을 만들었어요").memoryTitle()
 
-                Text("이 코드를 받은 사람이 들어올 수 있어요. 지금 보내 두면 나중에 다시 찾지 않아도 돼요.")
-                    .memoryLabel()
-                    .foregroundStyle(MemoryColor.ink2)
-                    .lineSpacing(3)
-                    .padding(.top, 10)
-
-                // 코드는 글자 단 밖입니다 — UI 글이 아니라 화면의 주인공(콘텐츠)이라서요.
-                // 자간을 넓게 벌려 한 글자씩 옮겨 적기 쉽게 합니다.
-                Text(code)
-                    .font(MemoryFont.font(38, .bold))
-                    .tracking(10)
-                    .foregroundStyle(MemoryColor.ink)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, MemorySpace.xl)
-                    .padding(.vertical, 22)
-                    .background(MemoryColor.surface)
-                    .overlay(
-                        Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border)
-                    )
-                    .padding(.top, 22)
-
-                HStack(spacing: MemorySpace.s) {
-                    SoftButton("코드 복사") {
-                        #if os(iOS)
-                        UIPasteboard.general.string = code
-                        #endif
-                    }
-                    ShareLink(item: code) {
-                        Text("공유하기")
-                            .memoryBody()
-                            .foregroundStyle(MemoryColor.ink)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 13)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(MemoryColor.surface)
-                            .overlay(
-                                Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                }
+            Text("이 코드를 받은 사람이 들어올 수 있어요. 지금 보내 두면 나중에 다시 찾지 않아도 돼요.")
+                .memoryLabel()
+                .foregroundStyle(MemoryColor.ink2)
+                .lineSpacing(3)
                 .padding(.top, 10)
 
-                Text("위쪽 ⋯ 메뉴에서 언제든 다시 볼 수 있어요.")
-                    .memoryMicro()
-                    .foregroundStyle(MemoryColor.ink2)
-                    .padding(.top, MemorySpace.m)
+            // 코드는 글자 단 밖입니다 — UI 글이 아니라 화면의 주인공(콘텐츠)이라서요.
+            // 자간을 넓게 벌려 한 글자씩 옮겨 적기 쉽게 합니다.
+            Text(code)
+                .font(MemoryFont.font(32, .bold))
+                .tracking(8)
+                .foregroundStyle(MemoryColor.ink)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, MemorySpace.xl)
+                .padding(.vertical, 18)
+                .background(MemoryColor.surface)
+                .overlay(
+                    Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border)
+                )
+                .padding(.top, 18)
 
-                Spacer(minLength: 0)
+            HStack(spacing: MemorySpace.s) {
+                SoftButton("코드 복사") {
+                    #if os(iOS)
+                    UIPasteboard.general.string = code
+                    #endif
+                }
+                ShareLink(item: code) {
+                    Text("공유하기")
+                        .memoryBody()
+                        .foregroundStyle(MemoryColor.ink)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 13)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(MemoryColor.surface)
+                        .overlay(
+                            Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border)
+                        )
+                }
+                .buttonStyle(.plain)
             }
-            .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.horizontal, 26)
-            .padding(.top, 72)
+            .padding(.top, 10)
+
+            Text("위쪽 ⋯ 메뉴에서 언제든 다시 볼 수 있어요.")
+                .memoryMicro()
+                .foregroundStyle(MemoryColor.ink2)
+                .padding(.top, MemorySpace.m)
 
             PrimaryButton("짜국 열기") {
                 Task { await store.send(.sheetDismissed) }
                 onOpen(space)
             }
-            .padding(.horizontal, MemorySpace.xl)
-            .padding(.top, MemorySpace.m)
-            .padding(.bottom, MemorySpace.xxl)
+            .padding(.top, MemorySpace.l)
         }
     }
 

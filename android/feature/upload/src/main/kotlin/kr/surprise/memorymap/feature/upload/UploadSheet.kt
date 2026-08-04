@@ -35,12 +35,10 @@ import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 
 /**
- * 사진 올리기. 두 탭에서 같은 화면을 엽니다.
+ * 사진 올리기. 두 탭에서 같은 시트를 엽니다.
  *
- * **전체 화면입니다.** 사진마다 어디·언제를 보고 고치는 일이라, 지도를 가린 채
- * 시트 안에서 할 일이 아닙니다 — 여러 장을 훑어 내려야 합니다.
- *
- * 이름이 `UploadSheet` 로 남아 있는 것은 부르는 쪽을 덜 흔들려는 것뿐입니다.
+ * 사진마다 어디·언제를 보고 고치는 일이라 **거의 다 펴진 시트**로 뜹니다.
+ * 높이는 부르는 쪽이 정합니다 — 시트 안에서는 스스로 화면을 다 쓸 수 없습니다.
  */
 @Composable
 fun UploadSheet(
@@ -49,13 +47,13 @@ fun UploadSheet(
     onPickPhotos: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier.fillMaxSize().background(MemoryColors.Paper)) {
+    Column(modifier.fillMaxWidth().background(MemoryColors.Paper)) {
         if (state.editingRegionOf != null) {
             RegionPicker(state, onIntent)
             return@Column
         }
 
-        Header(count = state.items.size, onBack = { onIntent(UploadIntent.Dismissed) })
+        Header(count = state.items.size)
         Divider()
 
         val failure = state.step as? UploadStep.Failed
@@ -101,15 +99,13 @@ fun UploadSheet(
     }
 }
 
+/** 시트라 닫기 버튼을 두지 않습니다 — 끌어 내리거나 뒤를 눌러 닫습니다. */
 @Composable
-private fun Header(count: Int, onBack: () -> Unit) {
+private fun Header(count: Int) {
     Row(
-        Modifier.fillMaxWidth().padding(start = 2.dp, end = Gap.l, top = 2.dp, bottom = 2.dp),
+        Modifier.fillMaxWidth().padding(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = Gap.s),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(40.dp).clickable(onClick = onBack), contentAlignment = Alignment.Center) {
-            Icon(MemoryIcons.Back, contentDescription = "닫기", tint = MemoryColors.Ink, modifier = Modifier.size(18.dp))
-        }
         Text("사진 올리기", style = MemoryType.Title, modifier = Modifier.weight(1f))
         if (count > 0) {
             Text(
@@ -194,8 +190,7 @@ private fun FailureCard(savedLocally: Boolean, onRetry: () -> Unit) {
 @Composable
 private fun EmptyPick(onPickPhotos: () -> Unit) {
     Column(
-        Modifier.fillMaxSize().padding(horizontal = 28.dp),
-        verticalArrangement = Arrangement.Center,
+        Modifier.fillMaxWidth().padding(horizontal = 28.dp, vertical = Gap.xxxl),
     ) {
         Text("올릴 사진을 골라 주세요", style = MemoryType.Title)
         Spacer(Modifier.height(14.dp))
@@ -285,7 +280,7 @@ private fun FieldRow(
 
 @Composable
 private fun RegionPicker(state: UploadState, onIntent: (UploadIntent) -> Unit) {
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxWidth()) {
         Row(
             Modifier.fillMaxWidth().padding(start = 2.dp, end = Gap.l, top = 2.dp, bottom = 2.dp),
             verticalAlignment = Alignment.CenterVertically,

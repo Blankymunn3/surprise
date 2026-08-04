@@ -16,8 +16,8 @@ import UniformTypeIdentifiers
 /**
  사진 올리기.
 
- **전체 화면입니다.** 사진마다 어디·언제를 보고 고치는 일이라, 지도를 가린 채
- 시트 안에서 할 일이 아닙니다 — 여러 장을 훑어 내려야 합니다.
+ 사진마다 어디·언제를 보고 고치는 일이라 **크게 뜨는 시트**입니다 —
+ 여러 장을 훑어 내려야 해서 반만 올라오면 두 장밖에 안 보입니다.
  EXIF 에서 읽어낸 값은 미리 채워 두고 "자동" 딱지를 붙입니다. 맞으면 그냥 올리면 되고,
  틀리면 눌러서 고칩니다. 안드로이드 `UploadSheet` 와 같은 흐름입니다.
  */
@@ -103,17 +103,8 @@ public struct UploadView: View {
     }
 
     private var header: some View {
+        // 시트라 닫기 버튼을 두지 않습니다 — 끌어 내려 닫습니다.
         HStack(spacing: 0) {
-            Button(action: onClose) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(MemoryColor.ink)
-                    .frame(width: 40, height: 40)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("닫기")
-
             Text("사진 올리기").memoryTitle()
             Spacer(minLength: 0)
 
@@ -127,8 +118,9 @@ public struct UploadView: View {
                     .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
             }
         }
-        .padding(.horizontal, 2)
-        .padding(.vertical, 2)
+        .padding(.horizontal, MemorySpace.xl)
+        .padding(.top, MemorySpace.m)
+        .padding(.bottom, MemorySpace.s)
     }
 
     private var divider: some View {

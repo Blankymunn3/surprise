@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,6 +37,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,6 +67,7 @@ import kr.surprise.memorymap.core.designsystem.component.PlainIconButton
 import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
 import kr.surprise.memorymap.core.designsystem.component.Segmented
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
+import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 import kr.surprise.memorymap.core.model.Region
@@ -382,9 +386,17 @@ private fun SpaceTabs(
             }
         }
 
-        // 올리기는 **전체 화면**입니다. 사진마다 어디·언제를 훑어 내리는 일이라
-        // 지도를 가린 시트 안에서 할 일이 아닙니다.
-        Box(Modifier.fillMaxSize().background(MemoryColors.Paper).systemBarsPadding()) {
+        // 아래에서 올라오는 시트입니다. **거의 다 펴진 채로** 뜹니다 —
+        // 사진이 여러 장이면 훑어 내려야 해서, 반만 올라오면 두 장밖에 안 보입니다.
+        ModalBottomSheet(
+            onDismissRequest = { uploading = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = MemoryColors.Surface,
+            shape = MemoryShapes.Sheet,
+            dragHandle = {
+                Box(Modifier.fillMaxWidth().height(MemoryStroke.Divider).background(MemoryColors.Ink))
+            },
+        ) {
             UploadSheet(
                 state = uploadState,
                 onIntent = uploadVm::onIntent,
@@ -393,10 +405,11 @@ private fun SpaceTabs(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )
                 },
+                // 시트 안이라 높이를 정해 줘야 합니다. 안 주면 목록이 끝없이 늘어나
+                // 아래 '올리기' 버튼이 화면 밖으로 밀립니다.
+                modifier = Modifier.fillMaxHeight(0.92f),
             )
         }
-
-        BackHandler { uploadVm.onIntent(UploadIntent.Dismissed) }
 
         pickingDateOf?.let { (uri, current) ->
             DateSheet(
