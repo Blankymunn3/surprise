@@ -1,6 +1,9 @@
 package kr.surprise.memorymap
 
 import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -48,6 +51,7 @@ import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
 import kr.surprise.memorymap.core.designsystem.component.PlainIconButton
 import kr.surprise.memorymap.core.designsystem.component.Segmented
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
+import kr.surprise.memorymap.core.model.Region
 import kr.surprise.memorymap.core.model.SpaceId
 import kr.surprise.memorymap.core.model.SpaceKind
 import kr.surprise.memorymap.feature.calendar.CalendarEffect
@@ -62,6 +66,7 @@ import kr.surprise.memorymap.feature.space.SpaceListEffect
 import kr.surprise.memorymap.feature.space.SpaceListIntent
 import kr.surprise.memorymap.feature.space.SpaceListScreen
 import kr.surprise.memorymap.feature.space.SpaceListViewModel
+import kr.surprise.memorymap.feature.upload.PickedPhoto
 import kr.surprise.memorymap.feature.upload.UploadIntent
 import kr.surprise.memorymap.feature.upload.UploadSheet
 import kr.surprise.memorymap.feature.upload.UploadViewModel
@@ -181,6 +186,9 @@ private fun SpaceTabs(
 ) {
     var tab by remember { mutableStateOf(0) }
     var uploading by remember { mutableStateOf(false) }
+    // 지역 시트에서 열었으면 그 지역을 들고 갑니다. 이미 고른 곳을 아는데 올리기 화면에서
+    // 다시 고르게 하면 안 됩니다. 아래쪽 ＋ 로 열었으면 null 이고, 그때는 사진의 EXIF 가 정합니다.
+    var uploadRegion by remember { mutableStateOf<Region?>(null) }
     val snackbar = remember { SnackbarHostState() }
 
     val mapVm: MapViewModel =
@@ -196,7 +204,10 @@ private fun SpaceTabs(
     LaunchedEffect(mapVm) {
         mapVm.effect.collect { effect ->
             when (effect) {
-                MapEffect.OpenUpload -> uploading = true
+                is MapEffect.OpenUpload -> {
+                    uploadRegion = effect.region
+                    uploading = true
+                }
                 is MapEffect.ShowMessage -> snackbar.showSnackbar(effect.text)
                 MapEffect.AskMyLocation -> snackbar.showSnackbar("내 위치는 다음 단계에서 붙일게요.")
             }
@@ -205,7 +216,11 @@ private fun SpaceTabs(
     LaunchedEffect(calendarVm) {
         calendarVm.effect.collect { effect ->
             when (effect) {
-                CalendarEffect.OpenUpload -> uploading = true
+                // 달력에서 열 때는 지역을 알 수 없습니다 — 날짜만 아는 자리라서요.
+                CalendarEffect.OpenUpload -> {
+                    uploadRegion = null
+                    uploading = true
+                }
                 is CalendarEffect.ShowMessage -> snackbar.showSnackbar(effect.text)
             }
         }
@@ -258,6 +273,24 @@ private fun SpaceTabs(
             viewModel(key = "up-${spaceId.value}", factory = container.uploadFactory(spaceId, kind))
         val uploadState by uploadVm.state.collectAsStateWithLifecycle()
 
+        /**
+         * 사진 고르기. **안드로이드 사진 선택기**라 저장소 권한을 안 물어봅니다 —
+         * 사용자가 고른 사진만 넘어오고, 앨범 전체를 열어 주지 않습니다.
+         */
+        val pickPhotos = rememberLauncherForActivityResult(
+            ActivityResultContracts.PickMultipleVisualMedia(MAX_PICK)
+        ) { uris ->
+            // 아무것도 안 고르고 닫으면 빈 목록이 옵니다. 그건 취소지 실패가 아닙니다.
+            if (uris.isNotEmpty()) {
+                uploadVm.onIntent(UploadIntent.PhotosPicked(uris.map { PickedPhoto(it.toString()) }))
+            }
+        }
+
+        // 지역 시트에서 열었으면 그 지역을 미리 넣어 둡니다. 시트가 뜰 때 한 번만 합니다.
+        LaunchedEffect(uploadVm, uploadRegion) {
+            uploadRegion?.let { uploadVm.onIntent(UploadIntent.RegionChosen(it)) }
+        }
+
         ModalBottomSheet(
             onDismissRequest = { uploading = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -270,11 +303,21 @@ private fun SpaceTabs(
                     if (intent is UploadIntent.Dismissed) uploading = false
                     uploadVm.onIntent(intent)
                 },
-                onPickPhotos = { },
+                onPickPhotos = {
+                    pickPhotos.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                },
             )
         }
     }
 }
+
+/**
+ * 한 번에 고를 수 있는 사진 수. 선택기 자체가 요구하는 값이라 정해 둡니다 —
+ * 너무 크게 두면 줄이고 올리는 데 한참 걸려 멈춘 것처럼 보입니다.
+ */
+private const val MAX_PICK = 20
 
 @Composable
 private fun TopBar(

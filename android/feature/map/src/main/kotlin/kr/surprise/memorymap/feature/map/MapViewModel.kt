@@ -85,7 +85,8 @@ class MapViewModel(
                 }
             }
 
-            MapIntent.AddPhotoTapped -> sendEffect(MapEffect.OpenUpload)
+            MapIntent.AddPhotoTapped ->
+                sendEffect(MapEffect.OpenUpload(currentState().sheet?.region))
             MapIntent.SheetDismissed -> setState { MapReducer.sheetDismissed(this) }
             MapIntent.MyLocationTapped -> sendEffect(MapEffect.AskMyLocation)
         }

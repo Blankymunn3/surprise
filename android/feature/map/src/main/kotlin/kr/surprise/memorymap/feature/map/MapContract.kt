@@ -80,7 +80,14 @@ sealed interface MapIntent {
 }
 
 sealed interface MapEffect {
-    data object OpenUpload : MapEffect
+    /**
+     * 사진 올리기를 엽니다.
+     *
+     * [region] 은 **지역 시트에서 눌렀을 때** 그 지역입니다. 이미 고른 곳을 알고 있는데
+     * 올리기 화면에서 다시 고르게 하면 안 됩니다. 아래쪽 ＋ 로 열었으면 `null` 이고,
+     * 그때는 사진의 EXIF 가 지역을 정합니다.
+     */
+    data class OpenUpload(val region: Region?) : MapEffect
     data class ShowMessage(val text: String) : MapEffect
     data object AskMyLocation : MapEffect
 }
