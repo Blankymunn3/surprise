@@ -240,8 +240,9 @@ struct SpaceCardView: View {
     /// "사진 0 · 지역 0" 은 셈이 아니라 잡음입니다.
     private var meta: String {
         guard space.photoCount > 0 else { return localized("card_meta_empty") }
-        var parts = ["사진 \(space.photoCount)", "지역 \(space.regionCount)"]
-        if let last = space.lastPhotoOn { parts.append("\(last.month)월 \(last.day)일") }
-        return parts.joined(separator: " · ")
+        guard let last = space.lastPhotoOn else {
+            return localized("card_meta", space.photoCount, space.regionCount)
+        }
+        return localized("card_meta_dated", space.photoCount, space.regionCount, last.month, last.day)
     }
 }

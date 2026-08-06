@@ -1,0 +1,33 @@
+/*
+  달력 화면의 글.
+  키 이름은 **안드로이드와 같습니다** —
+  `android/feature/calendar/src/main/res/values/strings.xml`.
+*/
+
+/*
+  요일. 안드로이드는 string-array 로 두지만 iOS 에는 배열이 없어 낱개로 둡니다.
+  **코드가 요일 번호로 꺼내 쓰므로 순서가 뜻을 갖습니다** — 일요일부터입니다.
+*/
+"calendar_weekday_0" = "일";
+"calendar_weekday_1" = "월";
+"calendar_weekday_2" = "화";
+"calendar_weekday_3" = "수";
+"calendar_weekday_4" = "목";
+"calendar_weekday_5" = "금";
+"calendar_weekday_6" = "토";
+
+/* 머리말 */
+"calendar_month" = "%1$d년 %2$d월";
+"calendar_previous_month" = "이전 달";
+"calendar_next_month" = "다음 달";
+
+/* 접기 */
+"calendar_collapse" = "달력 접기";
+"calendar_expand" = "달력 펴기";
+
+/* 날짜 묶음 */
+"calendar_day_header" = "%1$d월 %2$d일";
+"calendar_photo_count" = "%1$d장";
+
+/* 빈 달 */
+"calendar_empty" = "이 달엔 아직 사진이 없어요";

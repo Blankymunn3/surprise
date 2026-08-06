@@ -1,0 +1,18 @@
+/*
+  지도 화면의 글.
+  키 이름은 **안드로이드와 같습니다** —
+  `android/feature/map/src/main/res/values/strings.xml`.
+*/
+
+/* 지도 위 조작 */
+"map_zoom_in" = "확대";
+"map_zoom_out" = "축소";
+
+/* 검색 */
+"map_search_placeholder" = "지역 검색 — 강릉, 제주…";
+
+/* 지역 시트 */
+"map_sheet_close" = "닫기";
+"map_sheet_count" = "사진 %1$d장";
+"map_sheet_cover_hint" = "사진을 누르면 지도에 칠해지는 대표사진이 돼요";
+"map_sheet_add" = "이 지역에 사진 추가";

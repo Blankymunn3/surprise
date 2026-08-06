@@ -81,15 +81,16 @@ struct UploadReducerTests {
         #expect(!after.items[1].dateAuto)
     }
 
-    @Test("여러 곳 여러 날에 걸치면 나눠 올라간다고 알려 준다")
-    func splitNotice() {
+    /// Store 는 **수만** 셉니다. 문구는 화면이 짓습니다 — 그래야 문구를 고쳐도 안 깨집니다.
+    @Test("여러 곳 여러 날에 걸치면 몇 곳 며칠인지 센다")
+    func splitCounts() {
         let s = state(item(0), item(1, region: busan, day: nextDay))
-        #expect(s.splitNotice == "지역 2곳 · 날짜 2일로 나눠 올라가요")
+        #expect(s.splitCounts == SplitCounts(places: 2, days: 2))
     }
 
     @Test("한 곳 한 날이면 알릴 것이 없다")
-    func noSplitNotice() {
-        #expect(state(item(0), item(1)).splitNotice == nil)
+    func noSplitCounts() {
+        #expect(state(item(0), item(1)).splitCounts == nil)
     }
 
     @Test("올리기가 실패하면 기기에 저장했다는 상태로 간다")

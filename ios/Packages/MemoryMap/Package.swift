@@ -42,9 +42,9 @@ let package = Package(
         .target(name: "DataSpace", dependencies: ["CoreModel", "CoreCommon", "Domain", "CoreNetwork"]),
         .target(name: "DataRegion", dependencies: ["CoreModel", "Domain"], resources: [.process("Resources")]),
         .target(name: "FeatureSpace", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"], resources: [.process("Resources")]),
-        .target(name: "FeatureMap", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"]),
-        .target(name: "FeatureCalendar", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"]),
-        .target(name: "FeatureUpload", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"]),
+        .target(name: "FeatureMap", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"], resources: [.process("Resources")]),
+        .target(name: "FeatureCalendar", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"], resources: [.process("Resources")]),
+        .target(name: "FeatureUpload", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"], resources: [.process("Resources")]),
 
         .testTarget(name: "CoreNetworkTests", dependencies: ["CoreNetwork"]),
         .testTarget(name: "DomainTests", dependencies: ["Domain", "CoreModel", "CoreCommon"]),

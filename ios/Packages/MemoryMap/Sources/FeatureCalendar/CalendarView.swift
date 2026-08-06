@@ -4,7 +4,8 @@ import Domain
 import Foundation
 import SwiftUI
 
-private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
+/// 요일 이름. **순서가 뜻을 가집니다** — 코드가 요일 번호로 꺼내 씁니다. 일요일부터.
+private var weekdays: [String] { (0..<7).map { localized("calendar_weekday_\($0)") } }
 
 /// 격자 칸 사이. 3 이면 칸끼리 붙지 않으면서도 달력이 한 덩어리로 보입니다.
 private let cellGap: CGFloat = 3
@@ -67,11 +68,11 @@ public struct CalendarView: View {
         HStack(spacing: MemorySpace.s) {
             // 연·월을 **한 덩어리**로 씁니다. 월만 크고 연도가 작으면 연도가 딸린
             // 주석처럼 보이는데, 지난 해를 넘겨 볼 때는 연도가 더 중요합니다.
-            Text("\(String(store.state.year))년 \(store.state.month)월")
+            Text(localized("calendar_month", store.state.year, store.state.month))
                 .memoryTitle()
             Spacer()
-            navButton("chevron.left", "이전 달") { store.move(by: -1) }
-            navButton("chevron.right", "다음 달") { store.move(by: 1) }
+            navButton("chevron.left", localized("calendar_previous_month")) { store.move(by: -1) }
+            navButton("chevron.right", localized("calendar_next_month")) { store.move(by: 1) }
         }
         .padding(.horizontal, MemorySpace.xl)
         .padding(.top, MemorySpace.s)
@@ -98,7 +99,7 @@ public struct CalendarView: View {
             PhotoFramesScene()
                 .aspectRatio(PhotoFramesScene.ratio, contentMode: .fit)
                 .frame(maxWidth: 150)
-            Text("이 달엔 아직 사진이 없어요").memoryTitle()
+            Text(localized("calendar_empty")).memoryTitle()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding(.horizontal, 28)
@@ -221,7 +222,7 @@ public struct CalendarView: View {
         // 세 덩어리가 한 화면으로 읽힙니다.
         Button { store.toggleCollapse() } label: {
             HStack(spacing: MemorySpace.xs) {
-                Text(store.state.collapsed ? "달력 펴기" : "달력 접기")
+                Text(localized(store.state.collapsed ? "calendar_expand" : "calendar_collapse"))
                     .memoryMicro().foregroundStyle(MemoryColor.ink2)
                 Image(systemName: store.state.collapsed ? "chevron.down" : "chevron.up")
                     .font(.system(size: 10, weight: .bold))
@@ -249,9 +250,9 @@ public struct CalendarView: View {
 
             VStack(alignment: .leading, spacing: 7) {
                 HStack(alignment: .lastTextBaseline, spacing: MemorySpace.s) {
-                    Text("\(group.date.month)월 \(group.date.day)일").memoryBody()
+                    Text(localized("calendar_day_header", group.date.month, group.date.day)).memoryBody()
                     // 달력은 "언제" 를 보는 화면이지만, 그 사진이 어디였는지가 늘 따라옵니다.
-                    Text([group.placeName, "\(group.photos.count)장"]
+                    Text([group.placeName, localized("calendar_photo_count", group.photos.count)]
                         .compactMap { $0 }.joined(separator: " · "))
                         .memoryMicro()
                         .foregroundStyle(MemoryColor.ink2)

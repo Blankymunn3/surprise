@@ -24,7 +24,7 @@
 /* 짜국 카드의 한 줄 요약 */
 "card_meta_empty" = "아직 사진이 없어요";
 "card_meta" = "사진 %1$d · 지역 %2$d";
-"card_meta_dated" = "사진 %1$d · 지역 %2$d · %3$d.%4$d";
+"card_meta_dated" = "사진 %1$d · 지역 %2$d · %3$d월 %4$d일";
 
 /* 새 짜국 */
 "create_title" = "새 짜국";
