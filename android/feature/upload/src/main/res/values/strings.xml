@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  사진 올리기 화면의 글.
+
+  ⚠️ iOS 에는 같은 글이 Swift 코드에 그대로 박혀 있습니다
+  (`ios/Packages/MemoryMap/Sources/FeatureUpload/`). 여기 문구를 고치면 그쪽도 같이.
+-->
+<resources>
+
+    <!-- 머리말 -->
+    <string name="upload_title">사진 올리기</string>
+    <string name="upload_count">%1$d장</string>
+
+    <!-- 올리기 버튼 -->
+    <string name="upload_confirm">%1$d장 올리기</string>
+    <string name="upload_uploading">올리는 중…</string>
+    <string name="upload_reading">사진 읽는 중…</string>
+
+    <!-- 자동 채움 안내 -->
+    <string name="upload_auto_notice">지역·날짜는 사진에서 자동으로 읽었어요. 눌러서 고치면 \'자동\' 표시가 사라져요.</string>
+    <string name="upload_auto_badge">자동</string>
+
+    <!-- 여러 곳·여러 날에 걸쳤을 때. 수는 화면이 끼워 넣습니다 — 리듀서는 세기만 합니다. -->
+    <string name="upload_split_notice">지역 %1$d곳 · 날짜 %2$d일로 나눠 올라가요</string>
+
+    <!-- 사진 한 장의 어디·언제 -->
+    <string name="upload_field_where">어디</string>
+    <string name="upload_field_when">언제</string>
+    <string name="upload_field_pick">고르기</string>
+    <string name="upload_date">%1$d월 %2$d일</string>
+
+    <!-- 사진을 고르기 전 -->
+    <string name="upload_empty_title">올릴 사진을 골라 주세요</string>
+    <string name="upload_empty_pick">사진 고르기</string>
+
+    <!-- 못 올렸을 때 -->
+    <string name="upload_failed_title">지금은 올릴 수 없어요</string>
+    <string name="upload_failed_kept">사진은 폰에 저장해 뒀어요. 연결되면 여기서 다시 시도해 주세요.</string>
+    <string name="upload_failed_plain">잠시 뒤에 다시 시도해 주세요.</string>
+    <string name="upload_retry">다시 시도</string>
+
+    <!-- 지역 고르기 -->
+    <string name="upload_region_back">뒤로</string>
+    <string name="upload_region_title">어디에서 찍었나요</string>
+    <string name="upload_region_placeholder">지역 검색 — 강릉, 제주…</string>
+
+</resources>

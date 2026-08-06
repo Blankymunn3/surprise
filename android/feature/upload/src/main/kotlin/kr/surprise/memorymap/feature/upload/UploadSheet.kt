@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -76,9 +77,9 @@ fun UploadSheet(
 
             Divider(inset = false)
             Column(Modifier.padding(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = Gap.xxl)) {
-                state.splitNotice()?.let {
+                state.splitCounts()?.let { split ->
                     Text(
-                        it,
+                        stringResource(R.string.upload_split_notice, split.places, split.days),
                         style = MemoryType.Micro,
                         color = MemoryColors.Ink2,
                         modifier = Modifier.padding(bottom = Gap.s),
@@ -86,9 +87,9 @@ fun UploadSheet(
                 }
                 PrimaryButton(
                     text = when (state.step) {
-                        UploadStep.Uploading -> "올리는 중…"
-                        UploadStep.Reading -> "사진 읽는 중…"
-                        else -> "${state.items.size}장 올리기"
+                        UploadStep.Uploading -> stringResource(R.string.upload_uploading)
+                        UploadStep.Reading -> stringResource(R.string.upload_reading)
+                        else -> stringResource(R.string.upload_confirm, state.items.size)
                     },
                     enabled = state.canUpload(),
                     onClick = { onIntent(UploadIntent.Confirmed) },
@@ -106,10 +107,10 @@ private fun Header(count: Int) {
         Modifier.fillMaxWidth().padding(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = Gap.s),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("사진 올리기", style = MemoryType.Title, modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.upload_title), style = MemoryType.Title, modifier = Modifier.weight(1f))
         if (count > 0) {
             Text(
-                text = "${count}장",
+                text = stringResource(R.string.upload_count, count),
                 style = MemoryType.Micro,
                 color = MemoryColors.Ink,
                 modifier = Modifier
@@ -141,7 +142,7 @@ private fun AutoNotice() {
     ) {
         Text("ⓘ", style = MemoryType.Micro, color = MemoryColors.Ink2)
         Text(
-            "지역·날짜는 사진에서 자동으로 읽었어요. 눌러서 고치면 '자동' 표시가 사라져요.",
+            stringResource(R.string.upload_auto_notice),
             style = MemoryType.Micro,
             color = MemoryColors.Ink2,
         )
@@ -162,19 +163,19 @@ private fun FailureCard(savedLocally: Boolean, onRetry: () -> Unit) {
             .border(MemoryStroke.Border, MemoryColors.Accent)
             .padding(horizontal = 14.dp, vertical = Gap.m),
     ) {
-        Text("지금은 올릴 수 없어요", style = MemoryType.Body, color = MemoryColors.AccentDeep)
+        Text(stringResource(R.string.upload_failed_title), style = MemoryType.Body, color = MemoryColors.AccentDeep)
         Text(
             text = if (savedLocally) {
-                "사진은 폰에 저장해 뒀어요. 연결되면 여기서 다시 시도해 주세요."
+                stringResource(R.string.upload_failed_kept)
             } else {
-                "잠시 뒤에 다시 시도해 주세요."
+                stringResource(R.string.upload_failed_plain)
             },
             style = MemoryType.Label,
             color = MemoryColors.AccentDeep,
             modifier = Modifier.padding(top = 3.dp),
         )
         Text(
-            text = "다시 시도",
+            text = stringResource(R.string.upload_retry),
             style = MemoryType.Micro,
             color = MemoryColors.AccentDeep,
             modifier = Modifier
@@ -192,9 +193,13 @@ private fun EmptyPick(onPickPhotos: () -> Unit) {
     Column(
         Modifier.fillMaxWidth().padding(horizontal = 28.dp, vertical = Gap.xxxl),
     ) {
-        Text("올릴 사진을 골라 주세요", style = MemoryType.Title)
+        Text(stringResource(R.string.upload_empty_title), style = MemoryType.Title)
         Spacer(Modifier.height(14.dp))
-        PrimaryButton(text = "사진 고르기", onClick = onPickPhotos, modifier = Modifier.fillMaxWidth())
+        PrimaryButton(
+            text = stringResource(R.string.upload_empty_pick),
+            onClick = onPickPhotos,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -210,15 +215,15 @@ private fun ItemRow(item: UploadItem, onIntent: (UploadIntent) -> Unit) {
 
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 FieldRow(
-                    label = "어디",
-                    value = item.region?.displayName ?: "고르기",
+                    label = stringResource(R.string.upload_field_where),
+                    value = item.region?.displayName ?: stringResource(R.string.upload_field_pick),
                     dimmed = item.region == null,
                     auto = item.regionAuto,
                     onClick = { onIntent(UploadIntent.RegionFieldTapped(item.uri)) },
                 )
                 FieldRow(
-                    label = "언제",
-                    value = "${item.takenOn.monthValue}월 ${item.takenOn.dayOfMonth}일",
+                    label = stringResource(R.string.upload_field_when),
+                    value = stringResource(R.string.upload_date, item.takenOn.monthValue, item.takenOn.dayOfMonth),
                     dimmed = false,
                     auto = item.dateAuto,
                     onClick = { onIntent(UploadIntent.DateFieldTapped(item.uri)) },
@@ -263,7 +268,7 @@ private fun FieldRow(
         )
         if (auto) {
             Text(
-                "자동",
+                stringResource(R.string.upload_auto_badge),
                 style = MemoryType.Micro,
                 color = MemoryColors.Ink2,
                 modifier = Modifier.background(MemoryColors.Fill).padding(horizontal = 6.dp, vertical = 2.dp),
@@ -289,9 +294,9 @@ private fun RegionPicker(state: UploadState, onIntent: (UploadIntent) -> Unit) {
                 Modifier.size(40.dp).clickable { onIntent(UploadIntent.Dismissed) },
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(MemoryIcons.Back, contentDescription = "뒤로", tint = MemoryColors.Ink, modifier = Modifier.size(18.dp))
+                Icon(MemoryIcons.Back, contentDescription = stringResource(R.string.upload_region_back), tint = MemoryColors.Ink, modifier = Modifier.size(18.dp))
             }
-            Text("어디에서 찍었나요", style = MemoryType.Title)
+            Text(stringResource(R.string.upload_region_title), style = MemoryType.Title)
         }
         Divider()
 
@@ -304,7 +309,7 @@ private fun RegionPicker(state: UploadState, onIntent: (UploadIntent) -> Unit) {
                 .padding(horizontal = 14.dp, vertical = 13.dp),
         ) {
             if (state.regionQuery.isEmpty()) {
-                Text("지역 검색 — 강릉, 제주…", style = MemoryType.Body, color = MemoryColors.Ink3)
+                Text(stringResource(R.string.upload_region_placeholder), style = MemoryType.Body, color = MemoryColors.Ink3)
             }
             BasicTextField(
                 value = state.regionQuery,
