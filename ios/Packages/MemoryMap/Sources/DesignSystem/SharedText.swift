@@ -16,4 +16,22 @@ public enum SharedText {
     public static var onlyOnThisPhone: String {
         String(localized: "component_only_on_this_phone", bundle: .module)
     }
+
+    /// 짜국 머리말의 뒤로 버튼을 읽어 주는 이름.
+    public static var back: String {
+        String(localized: "space_back", bundle: .module)
+    }
+
+    /// 짜국 머리말의 ⋯ 버튼을 읽어 주는 이름.
+    public static var more: String {
+        String(localized: "space_more", bundle: .module)
+    }
+
+    /// 지도 | 달력 탭. **순서가 뜻을 가집니다** — 0 이 지도입니다.
+    public static var spaceTabs: [String] {
+        [
+            String(localized: "space_tab_map", bundle: .module),
+            String(localized: "space_tab_calendar", bundle: .module),
+        ]
+    }
 }

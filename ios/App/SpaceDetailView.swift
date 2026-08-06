@@ -38,7 +38,7 @@ struct SpaceDetailView: View {
         // 시작하니, 러시아처럼 위로 긴 나라가 검색칸 뒤로 숨을 자리 자체가 없습니다.
         VStack(spacing: 0) {
             topBar
-            Segmented(options: ["지도", "달력"], selection: $tab)
+            Segmented(options: SharedText.spaceTabs, selection: $tab)
                 .padding(.horizontal, MemorySpace.xl)
                 .padding(.top, 2)
                 .padding(.bottom, 10)
@@ -117,7 +117,7 @@ struct SpaceDetailView: View {
      */
     private var topBar: some View {
         HStack(spacing: 2) {
-            barButton("chevron.left", label: "뒤로") { dismiss() }
+            barButton("chevron.left", label: SharedText.back) { dismiss() }
 
             Text(name)
                 .memoryTitle()
@@ -126,7 +126,7 @@ struct SpaceDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             if kind == .personal {
-                Text("이 폰에만")
+                Text(SharedText.onlyOnThisPhone)
                     .memoryMicro()
                     .foregroundStyle(MemoryColor.ink)
                     .padding(.horizontal, 7)
@@ -135,7 +135,7 @@ struct SpaceDetailView: View {
                     .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
             }
 
-            barButton("ellipsis", label: "더 보기") { menuOpen = true }
+            barButton("ellipsis", label: SharedText.more) { menuOpen = true }
         }
         .padding(.horizontal, MemorySpace.s)
         .padding(.vertical, 6)

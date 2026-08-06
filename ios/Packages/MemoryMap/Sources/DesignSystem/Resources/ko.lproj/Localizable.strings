@@ -13,3 +13,20 @@
 /* 짜국 카드 · 사진 썸네일 */
 "component_only_on_this_phone" = "이 폰에만";
 "component_cover_photo" = "대표사진";
+
+/*
+  앱 껍데기(`ios/App/`)가 쓰는 공통 낱말.
+
+  **왜 여기 있나:** App 은 Swift 패키지가 아니라 Xcode 타깃이라, 번역 파일을 두려면
+  `project.pbxproj` 에 PBXVariantGroup 까지 손으로 등록해야 합니다. 낱말 셋 때문에
+  프로젝트 파일을 건드리는 것보다, 이미 번역 파일이 있는 이 모듈에 얹고
+  `SharedText` 로 건네주는 편이 안전합니다.
+
+  안드로이드는 같은 말이 `app/src/main/res/values/strings.xml` 에 있습니다
+  (`space_back` · `space_more` · `space_tabs`).
+*/
+"space_back" = "뒤로";
+"space_more" = "더 보기";
+/* 지도 | 달력. **순서가 뜻을 가집니다** — 0 이 지도입니다. */
+"space_tab_map" = "지도";
+"space_tab_calendar" = "달력";
