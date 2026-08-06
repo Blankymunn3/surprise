@@ -63,7 +63,7 @@ class MapViewModel(
             is MapIntent.MapTapped -> viewModelScope.launch {
                 val region = regions.regionAt(intent.latitude, intent.longitude)
                 if (region == null) {
-                    sendEffect(MapEffect.ShowMessage("여기는 아직 지역을 알 수 없어요."))
+                    sendEffect(MapEffect.ShowMessage(MapMessage.RegionUnknown))
                 } else {
                     open(region)
                 }
@@ -79,7 +79,7 @@ class MapViewModel(
                     val result = setCover(state.spaceId, CoverKey.ForRegion(sheet.region.code), intent.id)
                     when (result) {
                         is Outcome.Ok -> setState { MapReducer.coverChanged(this, intent.id) }
-                        is Outcome.Fail -> sendEffect(MapEffect.ShowMessage("대표사진을 바꾸지 못했어요."))
+                        is Outcome.Fail -> sendEffect(MapEffect.ShowMessage(MapMessage.CoverFailed))
                     }
                 }
             }

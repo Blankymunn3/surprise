@@ -111,7 +111,7 @@ class SpaceListViewModel(
                 }
                 is Outcome.Fail -> {
                     setState { SpaceListReducer.failedAction(this) }
-                    sendEffect(SpaceListEffect.ShowMessage("로그인하지 못했어요. 다시 해 주세요."))
+                    sendEffect(SpaceListEffect.ShowMessage(SpaceListMessage.SignInFailed))
                 }
             }
         }
@@ -140,7 +140,7 @@ class SpaceListViewModel(
                 }
                 is Outcome.Fail -> {
                     setState { SpaceListReducer.failedAction(this) }
-                    sendEffect(SpaceListEffect.ShowMessage(reasonText(result.reason)))
+                    sendEffect(SpaceListEffect.ShowMessage(SpaceListMessage.Failed(result.reason)))
                 }
             }
         }
@@ -156,26 +156,14 @@ class SpaceListViewModel(
                 is Outcome.Ok -> setState { SpaceListReducer.joined(this, result.value) }
                 is Outcome.Fail -> {
                     setState { SpaceListReducer.failedAction(this) }
+                    // 코드를 못 찾은 것은 흔한 일이라 따로 말합니다 —
+                    // "찾을 수 없어요" 만 뜨면 무엇을 못 찾았다는 건지 알 수 없습니다.
                     sendEffect(SpaceListEffect.ShowMessage(
-                        if (result.reason == Failure.NotFound) "그런 초대 코드를 못 찾았어요."
-                        else reasonText(result.reason)
+                        if (result.reason == Failure.NotFound) SpaceListMessage.InviteNotFound
+                        else SpaceListMessage.Failed(result.reason)
                     ))
                 }
             }
         }
-    }
-
-    /**
-     * 왜 실패했는지 사람 말로. **원인마다 다르게 적는 이유**: "다시 해 주세요" 만
-     * 띄우면 몇 번을 다시 해도 안 되는 경우(권한)를 알 길이 없습니다.
-     */
-    private fun reasonText(reason: Failure): String = when (reason) {
-        Failure.Denied ->
-            "저장소에 쓸 권한이 없어요. Firebase 콘솔에서 storage.rules 를 게시했는지 확인해 주세요."
-        Failure.Network -> "인터넷이 안 되는 것 같아요."
-        Failure.Timeout -> "응답이 너무 느려요. 잠시 뒤 다시 해 주세요."
-        Failure.TooLarge -> "파일이 너무 커요."
-        Failure.NotFound -> "찾을 수 없어요."
-        Failure.Unknown -> "알 수 없는 문제가 생겼어요."
     }
 }

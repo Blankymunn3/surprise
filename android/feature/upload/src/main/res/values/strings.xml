@@ -44,4 +44,8 @@
     <string name="upload_region_title">어디에서 찍었나요</string>
     <string name="upload_region_placeholder">지역 검색 — 강릉, 제주…</string>
 
+    <!-- 뷰모델이 알려 오는 일 (UploadMessage). 말은 화면이 고릅니다. -->
+    <string name="upload_msg_unreadable_kept">사진을 읽지 못해 기기에 남겨 뒀어요.</string>
+    <string name="upload_msg_failed_kept">지금은 못 올려서 기기에 저장했어요. 나중에 다시 올릴게요.</string>
+
 </resources>

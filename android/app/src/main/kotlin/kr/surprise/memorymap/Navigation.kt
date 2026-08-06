@@ -77,23 +77,28 @@ import kr.surprise.memorymap.core.model.Region
 import kr.surprise.memorymap.core.model.SpaceId
 import kr.surprise.memorymap.core.model.SpaceKind
 import kr.surprise.memorymap.feature.calendar.CalendarEffect
+import kr.surprise.memorymap.feature.calendar.say
 import kr.surprise.memorymap.feature.calendar.CalendarIntent
 import kr.surprise.memorymap.feature.calendar.CalendarScreen
 import kr.surprise.memorymap.feature.calendar.CalendarViewModel
 import kr.surprise.memorymap.feature.map.MapEffect
+import kr.surprise.memorymap.feature.map.say
 import kr.surprise.memorymap.feature.map.MapIntent
 import kr.surprise.memorymap.feature.map.MapScreen
 import kr.surprise.memorymap.feature.map.MapViewModel
 import kr.surprise.memorymap.feature.space.SpaceListEffect
+import kr.surprise.memorymap.feature.space.say
 import kr.surprise.memorymap.feature.space.SpaceListIntent
 import kr.surprise.memorymap.feature.space.SpaceListScreen
 import kr.surprise.memorymap.feature.space.SpaceListViewModel
+import kr.surprise.memorymap.feature.space.R as SpaceR
 import kr.surprise.memorymap.feature.space.SpaceMenu
 import kr.surprise.memorymap.feature.space.SpaceMenuEffect
 import kr.surprise.memorymap.feature.space.SpaceMenuIntent
 import kr.surprise.memorymap.feature.space.SpaceMenuViewModel
 import kr.surprise.memorymap.feature.upload.PickedPhoto
 import kr.surprise.memorymap.feature.upload.UploadEffect
+import kr.surprise.memorymap.feature.upload.say
 import kr.surprise.memorymap.feature.upload.UploadIntent
 import kr.surprise.memorymap.feature.upload.UploadSheet
 import kr.surprise.memorymap.feature.upload.UploadViewModel
@@ -162,7 +167,7 @@ fun MemoryMapNavHost(container: AppContainer) {
                                     "?name=${Uri.encode(effect.name)}"
                             )
                         is SpaceListEffect.ShowMessage ->
-                            snackbar.showSnackbar(effect.text)
+                            snackbar.showSnackbar(effect.message.say(context))
                         // 클립보드는 소리 없이 끝나서 "복사했어요" 를 우리가 말해 줍니다.
                         is SpaceListEffect.CopyInvite -> {
                             val board = context.getSystemService(ClipboardManager::class.java)
@@ -266,7 +271,7 @@ private fun SpaceTabs(
                     uploadRegion = effect.region
                     uploading = true
                 }
-                is MapEffect.ShowMessage -> snackbar.showSnackbar(effect.text)
+                is MapEffect.ShowMessage -> snackbar.showSnackbar(effect.message.say(context))
                 MapEffect.AskMyLocation -> snackbar.showSnackbar(locationNotYet)
             }
         }
@@ -279,7 +284,7 @@ private fun SpaceTabs(
                     uploadRegion = null
                     uploading = true
                 }
-                is CalendarEffect.ShowMessage -> snackbar.showSnackbar(effect.text)
+                is CalendarEffect.ShowMessage -> snackbar.showSnackbar(effect.message.say(context))
             }
         }
     }
@@ -339,12 +344,13 @@ private fun SpaceTabs(
                 viewModel(key = "menu-${spaceId.value}", factory = container.spaceMenuFactory(spaceId))
             val menuState by menuVm.state.collectAsStateWithLifecycle()
 
+            val renameFailed = stringResource(SpaceR.string.msg_rename_failed)
             LaunchedEffect(menuVm) {
                 menuVm.onIntent(SpaceMenuIntent.Appeared)
                 menuVm.effect.collect { effect ->
                     when (effect) {
                         SpaceMenuEffect.Close -> menuOpen = false
-                        is SpaceMenuEffect.ShowMessage -> snackbar.showSnackbar(effect.text)
+                        SpaceMenuEffect.RenameFailed -> snackbar.showSnackbar(renameFailed)
                         is SpaceMenuEffect.CopyCode -> {
                             val board = context.getSystemService(ClipboardManager::class.java)
                             board?.setPrimaryClip(ClipData.newPlainText(clipLabel, effect.code))
@@ -393,7 +399,7 @@ private fun SpaceTabs(
             uploadVm.effect.collect { effect ->
                 when (effect) {
                     UploadEffect.Close -> uploading = false
-                    is UploadEffect.ShowMessage -> snackbar.showSnackbar(effect.text)
+                    is UploadEffect.ShowMessage -> snackbar.showSnackbar(effect.message.say(context))
                     is UploadEffect.OpenDatePicker -> pickingDateOf = effect.uri to effect.current
                 }
             }

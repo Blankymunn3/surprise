@@ -1,5 +1,7 @@
 package kr.surprise.memorymap.feature.calendar
 
+import android.content.Context
+
 import kr.surprise.memorymap.core.model.Photo
 import kr.surprise.memorymap.core.model.PhotoId
 import kr.surprise.memorymap.core.model.SpaceId
@@ -43,7 +45,23 @@ sealed interface CalendarIntent {
     data object AddTapped : CalendarIntent
 }
 
+/**
+ * 화면에 알릴 일. **문구가 아니라 "무슨 일이 있었는지"** 를 나릅니다 —
+ * 말은 화면이 고릅니다. [kr.surprise.memorymap.feature.map.MapMessage] 와 같은 규칙입니다.
+ */
+enum class CalendarMessage {
+    /** 대표사진을 바꾸지 못함 */
+    CoverFailed,
+}
+
 sealed interface CalendarEffect {
     data object OpenUpload : CalendarEffect
-    data class ShowMessage(val text: String) : CalendarEffect
+    data class ShowMessage(val message: CalendarMessage) : CalendarEffect
 }
+
+/** [CalendarMessage] 를 사람이 읽을 말로. 화면 쪽에서 고릅니다. */
+fun CalendarMessage.say(context: Context): String = context.getString(
+    when (this) {
+        CalendarMessage.CoverFailed -> R.string.calendar_msg_cover_failed
+    }
+)
