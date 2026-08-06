@@ -56,7 +56,7 @@ class CalendarViewModel(
             is CalendarIntent.PhotoLongPressed -> viewModelScope.launch {
                 val result = setCover(currentState().spaceId, CoverKey.ForDay(intent.date), intent.id)
                 if (result is Outcome.Fail) {
-                    sendEffect(CalendarEffect.ShowMessage("대표사진을 바꾸지 못했어요."))
+                    sendEffect(CalendarEffect.ShowMessage(CalendarMessage.CoverFailed))
                 }
             }
         }

@@ -1,5 +1,7 @@
 package kr.surprise.memorymap.feature.upload
 
+import android.content.Context
+
 import kr.surprise.memorymap.core.model.Region
 import kr.surprise.memorymap.core.model.SpaceId
 import java.time.LocalDate
@@ -63,9 +65,28 @@ sealed interface UploadIntent {
     data object RetryTapped : UploadIntent
 }
 
+/**
+ * 화면에 알릴 일. **문구가 아니라 "무슨 일이 있었는지"** 를 나릅니다 —
+ * 말은 화면이 고릅니다. [kr.surprise.memorymap.feature.map.MapMessage] 와 같은 규칙입니다.
+ */
+enum class UploadMessage {
+    /** 사진을 못 읽어 기기에 남겨 둠 */
+    UnreadableKept,
+    /** 못 올려서 기기에 저장함 */
+    UploadFailedKept,
+}
+
 sealed interface UploadEffect {
     data object Close : UploadEffect
-    data class ShowMessage(val text: String) : UploadEffect
+    data class ShowMessage(val message: UploadMessage) : UploadEffect
     /** 그 사진의 날짜를 고르는 창 */
     data class OpenDatePicker(val uri: String, val current: LocalDate) : UploadEffect
 }
+
+/** [UploadMessage] 를 사람이 읽을 말로. 화면 쪽에서 고릅니다. */
+fun UploadMessage.say(context: Context): String = context.getString(
+    when (this) {
+        UploadMessage.UnreadableKept -> R.string.upload_msg_unreadable_kept
+        UploadMessage.UploadFailedKept -> R.string.upload_msg_failed_kept
+    }
+)

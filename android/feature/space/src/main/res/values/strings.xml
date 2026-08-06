@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  짜국 목록·만들기·참여·로그인·관리 화면의 글.
+
+  **이름은 `화면_쓰임` 순으로 짓습니다** — 알파벳순으로 늘어놓으면 같은 화면 것이
+  모여서, 문구를 고칠 때 그 화면 것만 보면 됩니다.
+
+  ⚠️ iOS 에는 같은 글이 Swift 코드에 그대로 박혀 있습니다. 여기 문구를 고치면
+  `ios/Packages/MemoryMap/Sources/FeatureSpace/` 쪽도 같이 고쳐야 두 앱이 같은 말을 합니다.
+-->
+<resources>
+
+    <!-- 목록 -->
+    <string name="list_title">짜국</string>
+    <string name="list_tagline">어디와 언제로 보는 사진첩</string>
+    <string name="list_loading">불러오는 중이에요</string>
+    <string name="list_failed">목록을 불러오지 못했어요. 아래로 당겨 다시 시도해 주세요.</string>
+    <string name="list_create">새 짜국 만들기</string>
+    <string name="list_join">초대 코드로 참여</string>
+
+    <!-- 목록 · 빈 화면 -->
+    <string name="list_empty_title">아직 짜국이 없어요</string>
+    <string name="list_empty_blurb">짜국은 사진을 지도와 달력, 두 가지로 보는 사진첩이에요. 혼자 써도 되고, 가까운 사람들과 같이 채워도 돼요.</string>
+    <!--
+      위 문장에서 이 두 낱말만 굵게 그립니다. 문장을 조각으로 쪼개지 않고 낱말을
+      **찾아서** 굵게 하는 이유: 쪼개 놓으면 문장을 고칠 때 조각 순서까지 맞춰야 하고,
+      옮길 때도 무슨 말인지 알 수 없습니다. iOS 도 같은 방식입니다.
+    -->
+    <string name="list_empty_bold_map">지도</string>
+    <string name="list_empty_bold_calendar">달력</string>
+
+    <!-- 짜국 카드의 한 줄 요약 -->
+    <string name="card_meta_empty">아직 사진이 없어요</string>
+    <string name="card_meta">사진 %1$d · 지역 %2$d</string>
+    <string name="card_meta_dated">사진 %1$d · 지역 %2$d · %3$d월 %4$d일</string>
+
+    <!-- 새 짜국 -->
+    <string name="create_title">새 짜국</string>
+    <string name="create_kind_label">어떻게 쓸까요</string>
+    <string name="create_kind_solo">혼자</string>
+    <string name="create_kind_solo_detail">사진이 이 폰에만 남아요 · 로그인 없이 바로 시작해요</string>
+    <string name="create_kind_solo_sub">폰을 잃어버리면 사진도 함께 사라져요</string>
+    <string name="create_kind_shared">같이</string>
+    <string name="create_kind_shared_detail">초대한 사람들과 같이 채우고 같이 봐요 · 로그인이 필요해요</string>
+    <string name="create_kind_shared_sub">만들면 초대 코드가 바로 나와요</string>
+    <string name="create_name_label">이름</string>
+    <string name="create_name_placeholder">예) 우리 여름, 제주 한 달</string>
+    <string name="create_confirm">만들기</string>
+    <string name="create_working">만드는 중…</string>
+    <string name="create_solo_note">로그인 없이 바로 만들어져요.</string>
+
+    <!-- 초대 코드로 참여 -->
+    <string name="join_title">초대 코드로 참여</string>
+    <string name="join_code_label">받은 코드</string>
+    <string name="join_code_placeholder">예) K7QF2M</string>
+    <string name="join_note">코드를 보낸 사람의 짜국에 멤버로 들어가요.</string>
+    <string name="join_confirm">참여하기</string>
+    <string name="join_working">확인 중…</string>
+
+    <!-- 로그인 -->
+    <string name="signin_title">같이 보려면 계정이 필요해요</string>
+    <string name="signin_why">로그인은 멤버가 아닌 사람이 우리 사진을 못 보게 막는 잠금장치예요. 계정 확인 말고 다른 데는 쓰지 않아요.</string>
+    <string name="signin_google">Google로 계속하기</string>
+    <string name="signin_working">로그인 중…</string>
+    <string name="signin_give_up">그냥 혼자 쓸래요 — 이 폰에만 저장할게요</string>
+    <string name="signin_only_google">지금은 Google 계정만 돼요.</string>
+
+    <!-- 만든 직후 · 초대 코드 -->
+    <string name="invited_title">\'%1$s\' 짜국을 만들었어요</string>
+    <string name="invited_note">이 코드를 받은 사람이 들어올 수 있어요. 지금 보내 두면 나중에 다시 찾지 않아도 돼요.</string>
+    <string name="invited_copy">코드 복사</string>
+    <string name="invited_share">공유하기</string>
+    <string name="invited_open">짜국 열기</string>
+
+    <!-- 관리 메뉴 (⋯) -->
+    <string name="menu_close">닫기</string>
+    <string name="menu_members">멤버</string>
+    <string name="menu_owner">주인</string>
+    <string name="menu_invite_code">초대 코드</string>
+    <string name="menu_invite_code_making">만드는 중…</string>
+    <string name="menu_copy">복사</string>
+    <string name="menu_rename">이름 바꾸기</string>
+    <string name="menu_rename_placeholder">예) 우리 여름</string>
+    <string name="menu_rename_confirm">바꾸기</string>
+    <string name="menu_rename_working">바꾸는 중…</string>
+
+    <!--
+      뷰모델이 알려 오는 일. 뷰모델은 Composable 이 아니라 stringResource 를 못 써서,
+      **무슨 일이 있었는지만** 나르고 말은 여기서 고릅니다 (SpaceListMessage).
+
+      원인마다 다르게 적는 이유: "다시 해 주세요" 만 띄우면 몇 번을 다시 해도
+      안 되는 경우(권한)를 알 길이 없습니다.
+    -->
+    <string name="msg_sign_in_failed">로그인하지 못했어요. 다시 해 주세요.</string>
+    <string name="msg_invite_not_found">그런 초대 코드를 못 찾았어요.</string>
+    <string name="msg_rename_failed">이름을 바꾸지 못했어요.</string>
+    <string name="msg_denied">저장소에 쓸 권한이 없어요. Firebase 콘솔에서 storage.rules 를 게시했는지 확인해 주세요.</string>
+    <string name="msg_network">인터넷이 안 되는 것 같아요.</string>
+    <string name="msg_timeout">응답이 너무 느려요. 잠시 뒤 다시 해 주세요.</string>
+    <string name="msg_too_large">파일이 너무 커요.</string>
+    <string name="msg_not_found">찾을 수 없어요.</string>
+    <string name="msg_unknown">알 수 없는 문제가 생겼어요.</string>
+
+</resources>

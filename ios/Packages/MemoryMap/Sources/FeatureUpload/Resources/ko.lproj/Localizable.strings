@@ -1,0 +1,42 @@
+/*
+  사진 올리기 화면의 글.
+  키 이름은 **안드로이드와 같습니다** —
+  `android/feature/upload/src/main/res/values/strings.xml`.
+*/
+
+/* 머리말 */
+"upload_title" = "사진 올리기";
+"upload_count" = "%1$d장";
+
+/* 올리기 버튼 */
+"upload_confirm" = "%1$d장 올리기";
+"upload_uploading" = "올리는 중…";
+"upload_reading" = "사진 읽는 중…";
+
+/* 자동 채움 안내 */
+"upload_auto_notice" = "지역·날짜는 사진에서 자동으로 읽었어요. 눌러서 고치면 '자동' 표시가 사라져요.";
+"upload_auto_badge" = "자동";
+
+/* 여러 곳·여러 날에 걸쳤을 때. 수는 화면이 끼워 넣습니다 — Store 는 세기만 합니다. */
+"upload_split_notice" = "지역 %1$d곳 · 날짜 %2$d일로 나눠 올라가요";
+
+/* 사진 한 장의 어디·언제 */
+"upload_field_where" = "어디";
+"upload_field_when" = "언제";
+"upload_field_pick" = "고르기";
+"upload_date" = "%1$d월 %2$d일";
+
+/* 사진을 고르기 전 */
+"upload_empty_title" = "올릴 사진을 골라 주세요";
+"upload_empty_pick" = "고르기";
+
+/* 못 올렸을 때 */
+"upload_failed_title" = "지금은 올릴 수 없어요";
+"upload_failed_kept" = "사진은 폰에 저장해 뒀어요. 연결되면 여기서 다시 시도해 주세요.";
+"upload_failed_plain" = "잠시 뒤에 다시 시도해 주세요.";
+"upload_retry" = "다시 시도";
+
+/* 지역 고르기 */
+"upload_region_back" = "뒤로";
+"upload_region_title" = "어디에서 찍었나요";
+"upload_region_placeholder" = "지역 검색 — 강릉, 제주…";

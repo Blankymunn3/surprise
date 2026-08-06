@@ -195,7 +195,7 @@ public struct MapView: View {
                 .font(.system(size: 15))
                 .foregroundStyle(MemoryColor.ink)
 
-            TextField("지역 검색 — 강릉, 제주…", text: Binding(
+            TextField(localized("map_search_placeholder"), text: Binding(
                 get: { store.state.query },
                 set: { value in Task { await store.search(value) } }
             ))
@@ -263,8 +263,8 @@ public struct MapView: View {
     /// 눌러도 아무 일 없는 칸을 두는 것보다 없는 편이 낫습니다.
     private var controls: some View {
         VStack(spacing: 6) {
-            ctlButton("plus", "확대") { nudgeZoom(by: 0.5) }
-            ctlButton("minus", "축소") { nudgeZoom(by: 2) }
+            ctlButton("plus", localized("map_zoom_in")) { nudgeZoom(by: 0.5) }
+            ctlButton("minus", localized("map_zoom_out")) { nudgeZoom(by: 2) }
         }
     }
 
@@ -344,7 +344,7 @@ private struct RegionSheet: View {
                                 Text(parent).memoryMicro().foregroundStyle(MemoryColor.ink2)
                             }
                         }
-                        Text("사진 \(sheet.photos.count)장")
+                        Text(localized("map_sheet_count", sheet.photos.count))
                             .memoryLabel()
                             .foregroundStyle(MemoryColor.ink2)
                     }
@@ -359,7 +359,7 @@ private struct RegionSheet: View {
                             )
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("닫기")
+                    .accessibilityLabel(localized("map_sheet_close"))
                 }
 
                 Spacer().frame(height: MemorySpace.m)
@@ -380,7 +380,7 @@ private struct RegionSheet: View {
 
                 // 누르면 바로 대표가 되므로, 그렇다고 **말해 줘야** 합니다. 버튼이 없으니
                 // 알려 주지 않으면 누를 수 있다는 것 자체를 모릅니다.
-                Text("사진을 누르면 지도에 칠해지는 대표사진이 돼요")
+                Text(localized("map_sheet_cover_hint"))
                     .memoryMicro()
                     .foregroundStyle(MemoryColor.ink2)
                     .padding(.top, 6)
@@ -388,7 +388,7 @@ private struct RegionSheet: View {
                 Spacer().frame(height: MemorySpace.m)
 
                 // 이 시트가 아는 지역을 그대로 들려 보냅니다.
-                PrimaryButton("이 지역에 사진 추가") { onAddPhoto(sheet.region) }
+                PrimaryButton(localized("map_sheet_add")) { onAddPhoto(sheet.region) }
             }
             .padding(.horizontal, 18)
             .padding(.top, 14)

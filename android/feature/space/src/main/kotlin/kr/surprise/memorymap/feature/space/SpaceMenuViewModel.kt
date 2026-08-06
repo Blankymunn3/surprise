@@ -36,7 +36,7 @@ sealed interface SpaceMenuIntent {
 sealed interface SpaceMenuEffect {
     data object Close : SpaceMenuEffect
     data class CopyCode(val code: String) : SpaceMenuEffect
-    data class ShowMessage(val text: String) : SpaceMenuEffect
+    data object RenameFailed : SpaceMenuEffect
 }
 
 /**
@@ -99,7 +99,7 @@ class SpaceMenuViewModel(
                 is Outcome.Ok -> setState { copy(renaming = false, working = false) }
                 is Outcome.Fail -> {
                     setState { copy(working = false) }
-                    sendEffect(SpaceMenuEffect.ShowMessage("이름을 바꾸지 못했어요."))
+                    sendEffect(SpaceMenuEffect.RenameFailed)
                 }
             }
         }

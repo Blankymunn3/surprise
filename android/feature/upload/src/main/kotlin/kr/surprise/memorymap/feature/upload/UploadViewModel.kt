@@ -113,7 +113,7 @@ class UploadViewModel(
 
             if (drafts.isEmpty()) {
                 setState { UploadReducer.failed(this, savedLocally = true) }
-                sendEffect(UploadEffect.ShowMessage("사진을 읽지 못해 기기에 남겨 뒀어요."))
+                sendEffect(UploadEffect.ShowMessage(UploadMessage.UnreadableKept))
                 return@launch
             }
 
@@ -126,7 +126,7 @@ class UploadViewModel(
                     // 사진을 잃지 않는 것이 먼저입니다
                     state.items.forEach { keepLocally(it.uri) }
                     setState { UploadReducer.failed(this, savedLocally = true) }
-                    sendEffect(UploadEffect.ShowMessage("지금은 못 올려서 기기에 저장했어요. 나중에 다시 올릴게요."))
+                    sendEffect(UploadEffect.ShowMessage(UploadMessage.UploadFailedKept))
                 }
             }
         }

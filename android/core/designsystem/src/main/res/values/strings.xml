@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  여러 화면이 함께 쓰는 부품의 글. **화면 고유의 말은 여기 두지 않습니다** —
+  그 화면 모듈의 strings.xml 에 둡니다.
+
+  ⚠️ iOS 에는 같은 글이 Swift 코드에 그대로 박혀 있습니다
+  (`ios/Packages/MemoryMap/Sources/DesignSystem/`). 여기 문구를 고치면 그쪽도 같이.
+-->
+<resources>
+
+    <!-- 짜국 카드 · 사진 썸네일 -->
+    <string name="component_only_on_this_phone">이 폰에만</string>
+    <string name="component_cover_photo">대표사진</string>
+
+</resources>

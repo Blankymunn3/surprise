@@ -31,6 +31,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -49,7 +51,12 @@ import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 
-private val WEEKDAYS = listOf("일", "월", "화", "수", "목", "금", "토")
+/**
+ * 요일 이름. 리소스 배열에서 읽습니다 — **순서가 뜻을 가지므로** 배열이어야 합니다
+ * (요일 번호로 꺼내 씁니다). 일요일부터입니다.
+ */
+@Composable
+private fun weekdays(): List<String> = stringArrayResource(R.array.calendar_weekdays).toList()
 
 /**
  * 달력 탭. 지도 탭과 **같은 밝은 바탕**입니다 —
@@ -82,7 +89,7 @@ fun CalendarScreen(
             ) {
                 PhotoFramesScene(Modifier.fillMaxWidth(0.42f).aspectRatio(FRAMES_RATIO))
                 Spacer(Modifier.height(14.dp))
-                Text("이 달엔 아직 사진이 없어요", style = MemoryType.Title)
+                Text(stringResource(R.string.calendar_empty), style = MemoryType.Title)
             }
         } else {
             LazyColumn(
@@ -119,12 +126,12 @@ private fun MonthHeader(state: CalendarState, onIntent: (CalendarIntent) -> Unit
         // 연·월을 **한 덩어리**로 씁니다. 월만 크고 연도가 작으면 연도가 딸린
         // 주석처럼 보이는데, 지난 해를 넘겨 볼 때는 연도가 더 중요합니다.
         Text(
-            "${state.month.year}년 ${state.month.monthValue}월",
+            stringResource(R.string.calendar_month, state.month.year, state.month.monthValue),
             style = MemoryType.Title,
             modifier = Modifier.weight(1f),
         )
-        NavButton(MemoryIcons.ChevronLeft, "이전 달") { onIntent(CalendarIntent.PreviousMonth) }
-        NavButton(MemoryIcons.ChevronRight, "다음 달") { onIntent(CalendarIntent.NextMonth) }
+        NavButton(MemoryIcons.ChevronLeft, stringResource(R.string.calendar_previous_month)) { onIntent(CalendarIntent.PreviousMonth) }
+        NavButton(MemoryIcons.ChevronRight, stringResource(R.string.calendar_next_month)) { onIntent(CalendarIntent.NextMonth) }
     }
 }
 
@@ -145,7 +152,7 @@ private fun NavButton(icon: androidx.compose.ui.graphics.vector.ImageVector, lab
 @Composable
 private fun WeekdayRow() {
     Row(Modifier.fillMaxWidth().padding(horizontal = Gap.xl)) {
-        WEEKDAYS.forEachIndexed { index, label ->
+        weekdays().forEachIndexed { index, label ->
             Text(
                 text = label,
                 style = MemoryType.Micro,
@@ -260,7 +267,7 @@ private fun CollapseBar(collapsed: Boolean, onToggle: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(Gap.xs),
     ) {
         Text(
-            if (collapsed) "달력 펴기" else "달력 접기",
+            stringResource(if (collapsed) R.string.calendar_expand else R.string.calendar_collapse),
             style = MemoryType.Micro,
             color = MemoryColors.Ink2,
         )
@@ -295,13 +302,20 @@ private fun DaySection(group: DayGroup, isSelected: Boolean, onIntent: (Calendar
                 horizontalArrangement = Arrangement.spacedBy(Gap.s),
             ) {
                 Text(
-                    "${group.date.monthValue}월 ${group.date.dayOfMonth}일 " +
-                        WEEKDAYS[group.date.dayOfWeek.value % 7],
+                    stringResource(
+                        R.string.calendar_day_header,
+                        group.date.monthValue,
+                        group.date.dayOfMonth,
+                        weekdays()[group.date.dayOfWeek.value % 7],
+                    ),
                     style = MemoryType.Body,
                 )
                 // 달력은 "언제" 를 보는 화면이지만, 그 사진이 어디였는지가 늘 따라옵니다.
                 Text(
-                    text = listOfNotNull(group.placeName, "${group.photos.size}장").joinToString(" · "),
+                    text = listOfNotNull(
+                        group.placeName,
+                        stringResource(R.string.calendar_photo_count, group.photos.size),
+                    ).joinToString(" · "),
                     style = MemoryType.Micro,
                     color = MemoryColors.Ink2,
                 )
@@ -319,7 +333,7 @@ private fun DaySection(group: DayGroup, isSelected: Boolean, onIntent: (Calendar
                     PhotoThumb(
                         url = photo.downloadUrl,
                         isCover = photo.id == group.coverId,
-                        contentDescription = "${group.date} 사진",
+                        contentDescription = stringResource(R.string.calendar_photo_description, group.date.toString()),
                         onClick = { onIntent(CalendarIntent.PhotoLongPressed(group.date, photo.id)) },
                         modifier = Modifier.size(76.dp),
                     )

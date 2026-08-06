@@ -78,9 +78,9 @@ public struct UploadView: View {
 
                 MemoryColor.line2.frame(height: MemoryStroke.divider)
                 VStack(alignment: .leading, spacing: MemorySpace.s) {
-                    if let notice = store.state.splitNotice {
+                    if let split = store.state.splitCounts {
                         // 나눠 올린다고 알려 주기만 합니다. 막지는 않습니다 — 일부러 그럴 수도 있어서요.
-                        Text(notice).memoryMicro().foregroundStyle(MemoryColor.ink2)
+                        Text(localized("upload_split_notice", split.places, split.days)).memoryMicro().foregroundStyle(MemoryColor.ink2)
                     }
                     PrimaryButton(buttonTitle, enabled: store.state.canUpload) {
                         Task { await store.confirm() }
@@ -105,11 +105,11 @@ public struct UploadView: View {
     private var header: some View {
         // 시트라 닫기 버튼을 두지 않습니다 — 끌어 내려 닫습니다.
         HStack(spacing: 0) {
-            Text("사진 올리기").memoryTitle()
+            Text(localized("upload_title")).memoryTitle()
             Spacer(minLength: 0)
 
             if !store.state.items.isEmpty {
-                Text("\(store.state.items.count)장")
+                Text(localized("upload_count", store.state.items.count))
                     .memoryMicro()
                     .foregroundStyle(MemoryColor.ink)
                     .padding(.horizontal, 9)
@@ -133,7 +133,7 @@ public struct UploadView: View {
     private var autoNotice: some View {
         HStack(alignment: .top, spacing: 6) {
             Text("ⓘ").memoryMicro().foregroundStyle(MemoryColor.ink2)
-            Text("지역·날짜는 사진에서 자동으로 읽었어요. 눌러서 고치면 '자동' 표시가 사라져요.")
+            Text(localized("upload_auto_notice"))
                 .memoryMicro()
                 .foregroundStyle(MemoryColor.ink2)
         }
@@ -148,16 +148,16 @@ public struct UploadView: View {
      */
     private func failureCard(savedLocally: Bool) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("지금은 올릴 수 없어요").memoryBody().foregroundStyle(MemoryColor.accentDeep)
+            Text(localized("upload_failed_title")).memoryBody().foregroundStyle(MemoryColor.accentDeep)
             Text(savedLocally
-                ? "사진은 폰에 저장해 뒀어요. 연결되면 여기서 다시 시도해 주세요."
-                : "잠시 뒤에 다시 시도해 주세요.")
+                ? localized("upload_failed_kept")
+                : localized("upload_failed_plain"))
                 .memoryLabel()
                 .foregroundStyle(MemoryColor.accentDeep)
                 .padding(.top, 3)
 
             Button { store.retry() } label: {
-                Text("다시 시도")
+                Text(localized("upload_retry"))
                     .memoryMicro()
                     .foregroundStyle(MemoryColor.accentDeep)
                     .padding(.horizontal, 11)
@@ -181,7 +181,7 @@ public struct UploadView: View {
 
     private var emptyPick: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("올릴 사진을 골라 주세요").memoryTitle()
+            Text(localized("upload_empty_title")).memoryTitle()
             PhotosPicker(selection: $picked, matching: .images, photoLibrary: .shared()) {
                 PickerTile()
             }
@@ -192,9 +192,9 @@ public struct UploadView: View {
 
     private var buttonTitle: String {
         switch store.state.step {
-        case .reading: "사진 읽는 중…"
-        case .uploading: "올리는 중…"
-        default: "\(store.state.items.count)장 올리기"
+        case .reading: localized("upload_reading")
+        case .uploading: localized("upload_uploading")
+        default: localized("upload_confirm", store.state.items.count)
         }
     }
 
@@ -206,15 +206,15 @@ public struct UploadView: View {
 
                 VStack(spacing: 6) {
                     fieldRow(
-                        label: "어디",
-                        value: item.region?.displayName ?? "고르기",
+                        label: localized("upload_field_where"),
+                        value: item.region?.displayName ?? localized("upload_field_pick"),
                         dimmed: item.region == nil,
                         auto: item.regionAuto
                     ) { store.startPickingRegion(item.uri) }
 
                     fieldRow(
-                        label: "언제",
-                        value: "\(item.takenOn.month)월 \(item.takenOn.day)일",
+                        label: localized("upload_field_when"),
+                        value: localized("upload_date", item.takenOn.month, item.takenOn.day),
                         dimmed: false,
                         auto: item.dateAuto
                     ) { pickingDateOf = item.uri }
@@ -246,7 +246,7 @@ public struct UploadView: View {
                     .lineLimit(1)
                 Spacer(minLength: 0)
                 if auto {
-                    Text("자동")
+                    Text(localized("upload_auto_badge"))
                         .memoryMicro()
                         .foregroundStyle(MemoryColor.ink2)
                         .padding(.horizontal, 6)
@@ -310,9 +310,9 @@ public struct UploadView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("뒤로")
+                .accessibilityLabel(localized("upload_region_back"))
 
-                Text("어디에서 찍었나요").memoryTitle()
+                Text(localized("upload_region_title")).memoryTitle()
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 2)
@@ -320,7 +320,7 @@ public struct UploadView: View {
 
             divider
 
-            TextField("지역 검색 — 강릉, 제주…", text: Binding(
+            TextField(localized("upload_region_placeholder"), text: Binding(
                 get: { store.state.regionQuery },
                 set: { value in Task { await store.search(value) } }
             ))
@@ -376,7 +376,7 @@ private struct PickerTile: View {
         VStack(spacing: 4) {
             Image(systemName: "plus")
                 .font(.system(size: 18, weight: .medium))
-            Text("고르기").memoryMicro()
+            Text(localized("upload_empty_pick")).memoryMicro()
         }
         .foregroundStyle(MemoryColor.ink2)
         .frame(width: 92, height: 92)
