@@ -1,4 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  앱 껍데기의 글 — 화면과 화면을 잇는 자리(스낵바·공유·머리말)에서 씁니다.
+  화면 안쪽의 말은 그 화면 모듈의 strings.xml 에 있습니다.
+-->
 <resources>
     <string name="app_name">짜국</string>
+
+    <!-- 짜국 안쪽 머리말 -->
+    <string name="space_back">뒤로</string>
+    <string name="space_more">더 보기</string>
+    <string name="space_add_photo">사진 올리기</string>
+
+    <!-- 지도 | 달력. **순서가 뜻을 가지므로** 배열입니다 (0 이 지도). -->
+    <string-array name="space_tabs">
+        <item>지도</item>
+        <item>달력</item>
+    </string-array>
+
+    <!-- 초대 코드 나눠 주기 -->
+    <string name="invite_clip_label">짜국 초대 코드</string>
+    <string name="invite_copied">코드를 복사했어요</string>
+    <string name="invite_share_text">짜국 초대 코드: %1$s</string>
+    <string name="invite_share_chooser">초대 코드 보내기</string>
+
+    <!-- 알림 -->
+    <string name="google_sign_in_failed">구글 계정을 가져오지 못했어요.</string>
+    <string name="my_location_not_yet">내 위치는 다음 단계에서 붙일게요.</string>
+
+    <!-- 날짜 고르기 -->
+    <string name="date_picker_confirm">이 날로</string>
 </resources>

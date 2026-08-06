@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -137,14 +138,14 @@ fun MapScreen(
                 .blockMapTouches(),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            MapCtlButton(MemoryIcons.Plus, "확대") { zoom = ZoomNudge(zoom.serial + 1, ZOOM_STEP) }
-            MapCtlButton(MemoryIcons.Minus, "축소") { zoom = ZoomNudge(zoom.serial + 1, -ZOOM_STEP) }
-            MapCtlButton(MemoryIcons.MyLocation, "내 위치") { onIntent(MapIntent.MyLocationTapped) }
+            MapCtlButton(MemoryIcons.Plus, stringResource(R.string.map_zoom_in)) { zoom = ZoomNudge(zoom.serial + 1, ZOOM_STEP) }
+            MapCtlButton(MemoryIcons.Minus, stringResource(R.string.map_zoom_out)) { zoom = ZoomNudge(zoom.serial + 1, -ZOOM_STEP) }
+            MapCtlButton(MemoryIcons.MyLocation, stringResource(R.string.map_my_location)) { onIntent(MapIntent.MyLocationTapped) }
         }
 
         MemoryFab(
             onClick = { onIntent(MapIntent.AddPhotoTapped) },
-            contentDescription = "사진 올리기",
+            contentDescription = stringResource(R.string.map_add_photo),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = Edge, bottom = floatBottom)
@@ -223,7 +224,7 @@ private fun SearchField(
             )
             Box(Modifier.weight(1f)) {
                 if (query.isEmpty()) {
-                    Text("지역 검색 — 강릉, 제주…", style = MemoryType.Body, color = MemoryColors.Ink3)
+                    Text(stringResource(R.string.map_search_placeholder), style = MemoryType.Body, color = MemoryColors.Ink3)
                 }
                 BasicTextField(
                     value = query,
@@ -237,7 +238,7 @@ private fun SearchField(
             if (query.isNotEmpty()) {
                 Icon(
                     MemoryIcons.Close,
-                    contentDescription = "지우기",
+                    contentDescription = stringResource(R.string.map_search_clear),
                     tint = MemoryColors.Ink,
                     modifier = Modifier.size(15.dp).clickable(onClick = onClear),
                 )
@@ -319,7 +320,7 @@ private fun RegionSheet(
                         }
                     }
                     Text(
-                        text = "사진 ${sheet.photos.size}장",
+                        text = stringResource(R.string.map_sheet_count, sheet.photos.size),
                         style = MemoryType.Label,
                         color = MemoryColors.Ink2,
                         modifier = Modifier.padding(top = 2.dp),
@@ -334,7 +335,7 @@ private fun RegionSheet(
                 ) {
                     Icon(
                         MemoryIcons.Close,
-                        contentDescription = "닫기",
+                        contentDescription = stringResource(R.string.map_sheet_close),
                         tint = MemoryColors.Ink,
                         modifier = Modifier.size(15.dp),
                     )
@@ -349,7 +350,7 @@ private fun RegionSheet(
                         url = photo.downloadUrl,
                         isCover = photo.id == sheet.coverId,
                         dateLabel = "${photo.takenOn.monthValue}.${photo.takenOn.dayOfMonth}",
-                        contentDescription = "${sheet.region.displayName} 사진",
+                        contentDescription = stringResource(R.string.map_sheet_photo_description, sheet.region.displayName),
                         onClick = { onIntent(MapIntent.PhotoTapped(photo.id)) },
                         modifier = Modifier.size(92.dp),
                     )
@@ -359,7 +360,7 @@ private fun RegionSheet(
             // 누르면 바로 대표가 되므로, 그렇다고 **말해 줘야** 합니다. 버튼이 없으니
             // 알려 주지 않으면 누를 수 있다는 것 자체를 모릅니다.
             Text(
-                text = "사진을 누르면 지도에 칠해지는 대표사진이 돼요",
+                text = stringResource(R.string.map_sheet_cover_hint),
                 style = MemoryType.Micro,
                 color = MemoryColors.Ink2,
                 modifier = Modifier.padding(top = 6.dp),
@@ -368,7 +369,7 @@ private fun RegionSheet(
             Spacer(Modifier.height(Gap.m))
 
             PrimaryButton(
-                text = "이 지역에 사진 추가",
+                text = stringResource(R.string.map_sheet_add),
                 onClick = { onIntent(MapIntent.AddPhotoTapped) },
                 modifier = Modifier.fillMaxWidth(),
             )

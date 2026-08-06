@@ -47,6 +47,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -60,6 +62,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import kr.surprise.memorymap.core.designsystem.R as DesignR
 import kr.surprise.memorymap.core.designsystem.component.FloatingIconButton
 import kr.surprise.memorymap.core.designsystem.component.MemoryFab
 import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
@@ -138,6 +141,14 @@ fun MemoryMapNavHost(container: AppContainer) {
                 vm.onIntent(SpaceListIntent.Appeared)
             }
 
+            // 스낵바 문구는 **여기서 미리 읽어 둡니다.** LaunchedEffect 안은 Composable 이
+            // 아니라 stringResource 를 부를 수 없습니다.
+            val clipLabel = stringResource(R.string.invite_clip_label)
+            val copiedMessage = stringResource(R.string.invite_copied)
+            val shareText = stringResource(R.string.invite_share_text)
+            val shareChooser = stringResource(R.string.invite_share_chooser)
+            val signInFailed = stringResource(R.string.google_sign_in_failed)
+
             // 실패를 조용히 삼키면 사용자에게는 "눌러도 아무 일이 없다" 로 보입니다.
             // Effect 를 하나도 빠뜨리지 않도록 when 으로 받습니다.
             LaunchedEffect(vm) {
@@ -155,15 +166,15 @@ fun MemoryMapNavHost(container: AppContainer) {
                         // 클립보드는 소리 없이 끝나서 "복사했어요" 를 우리가 말해 줍니다.
                         is SpaceListEffect.CopyInvite -> {
                             val board = context.getSystemService(ClipboardManager::class.java)
-                            board?.setPrimaryClip(ClipData.newPlainText("짜국 초대 코드", effect.code))
-                            snackbar.showSnackbar("코드를 복사했어요")
+                            board?.setPrimaryClip(ClipData.newPlainText(clipLabel, effect.code))
+                            snackbar.showSnackbar(copiedMessage)
                         }
                         is SpaceListEffect.ShareInvite -> {
                             val send = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, "짜국 초대 코드: ${effect.code}")
+                                putExtra(Intent.EXTRA_TEXT, shareText.format(effect.code))
                             }
-                            context.startActivity(Intent.createChooser(send, "초대 코드 보내기"))
+                            context.startActivity(Intent.createChooser(send, shareChooser))
                         }
                         // 계정 고르기 창은 Activity 가 있어야 떠서 여기서 띄웁니다.
                         // 사용자가 닫으면 아무 인텐트도 보내지 않습니다 — 스스로 그만둔 것을
@@ -174,7 +185,7 @@ fun MemoryMapNavHost(container: AppContainer) {
                                 is GoogleSignIn.Result.Token ->
                                     vm.onIntent(SpaceListIntent.GoogleTokenReceived(result.value))
                                 is GoogleSignIn.Result.Failed ->
-                                    snackbar.showSnackbar("구글 계정을 가져오지 못했어요.")
+                                    snackbar.showSnackbar(signInFailed)
                                 GoogleSignIn.Result.Cancelled, null -> Unit
                             }
                         }
@@ -246,6 +257,8 @@ private fun SpaceTabs(
 
     LaunchedEffect(spaceId) { container.refreshPhotos(kind, spaceId) }
 
+    // 스낵바 문구는 미리 읽어 둡니다 — LaunchedEffect 안은 Composable 이 아닙니다.
+    val locationNotYet = stringResource(R.string.my_location_not_yet)
     LaunchedEffect(mapVm) {
         mapVm.effect.collect { effect ->
             when (effect) {
@@ -254,7 +267,7 @@ private fun SpaceTabs(
                     uploading = true
                 }
                 is MapEffect.ShowMessage -> snackbar.showSnackbar(effect.text)
-                MapEffect.AskMyLocation -> snackbar.showSnackbar("내 위치는 다음 단계에서 붙일게요.")
+                MapEffect.AskMyLocation -> snackbar.showSnackbar(locationNotYet)
             }
         }
     }
@@ -282,7 +295,7 @@ private fun SpaceTabs(
                 onMore = { menuOpen = true },
             )
             Segmented(
-                options = listOf("지도", "달력"),
+                options = stringArrayResource(R.array.space_tabs).toList(),
                 selectedIndex = tab,
                 onSelect = { tab = it },
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 2.dp, bottom = 10.dp),
@@ -311,7 +324,7 @@ private fun SpaceTabs(
         if (tab == 1) {
             MemoryFab(
                 onClick = { uploading = true },
-                contentDescription = "사진 올리기",
+                contentDescription = stringResource(R.string.space_add_photo),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .systemBarsPadding()
@@ -334,8 +347,8 @@ private fun SpaceTabs(
                         is SpaceMenuEffect.ShowMessage -> snackbar.showSnackbar(effect.text)
                         is SpaceMenuEffect.CopyCode -> {
                             val board = context.getSystemService(ClipboardManager::class.java)
-                            board?.setPrimaryClip(ClipData.newPlainText("짜국 초대 코드", effect.code))
-                            snackbar.showSnackbar("코드를 복사했어요")
+                            board?.setPrimaryClip(ClipData.newPlainText(clipLabel, effect.code))
+                            snackbar.showSnackbar(copiedMessage)
                         }
                     }
                 }
@@ -450,7 +463,7 @@ private fun TopBar(
             .padding(start = 8.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        PlainIconButton(MemoryIcons.Back, "뒤로", onBack)
+        PlainIconButton(MemoryIcons.Back, stringResource(R.string.space_back), onBack)
 
         Text(
             text = spaceName,
@@ -462,7 +475,7 @@ private fun TopBar(
 
         if (onlyOnThisPhone) {
             Text(
-                text = "이 폰에만",
+                text = stringResource(DesignR.string.component_only_on_this_phone),
                 style = MemoryType.Micro,
                 color = MemoryColors.Ink,
                 modifier = Modifier
@@ -472,7 +485,7 @@ private fun TopBar(
             )
         }
 
-        PlainIconButton(MemoryIcons.More, "더 보기", onMore)
+        PlainIconButton(MemoryIcons.More, stringResource(R.string.space_more), onMore)
     }
 }
 
@@ -495,7 +508,7 @@ private fun DateSheet(current: LocalDate, onDismiss: () -> Unit, onPick: (LocalD
     ) {
         DatePicker(state = picker)
         PrimaryButton(
-            text = "이 날로",
+            text = stringResource(R.string.date_picker_confirm),
             onClick = {
                 val millis = picker.selectedDateMillis ?: return@PrimaryButton onDismiss()
                 onPick(Instant.ofEpochMilli(millis).atZone(zone).toLocalDate())

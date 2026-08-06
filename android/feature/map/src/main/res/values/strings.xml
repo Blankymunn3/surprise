@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  지도 화면의 글.
+
+  ⚠️ iOS 에는 같은 글이 Swift 코드에 그대로 박혀 있습니다
+  (`ios/Packages/MemoryMap/Sources/FeatureMap/`). 여기 문구를 고치면 그쪽도 같이.
+-->
+<resources>
+
+    <!-- 지도 위 조작 -->
+    <string name="map_zoom_in">확대</string>
+    <string name="map_zoom_out">축소</string>
+    <string name="map_my_location">내 위치</string>
+    <string name="map_add_photo">사진 올리기</string>
+
+    <!-- 검색 -->
+    <string name="map_search_placeholder">지역 검색 — 강릉, 제주…</string>
+    <string name="map_search_clear">지우기</string>
+
+    <!-- 지역 시트 -->
+    <string name="map_sheet_close">닫기</string>
+    <string name="map_sheet_count">사진 %1$d장</string>
+    <string name="map_sheet_photo_description">%1$s 사진</string>
+    <string name="map_sheet_cover_hint">사진을 누르면 지도에 칠해지는 대표사진이 돼요</string>
+    <string name="map_sheet_add">이 지역에 사진 추가</string>
+
+</resources>
