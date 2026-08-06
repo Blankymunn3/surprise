@@ -56,6 +56,7 @@ import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
+import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 import kr.surprise.memorymap.core.designsystem.theme.Pretendard
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 import kr.surprise.memorymap.core.model.Space
@@ -71,15 +72,6 @@ import kr.surprise.memorymap.core.model.SpaceKind
  *
  * Composable 은 State 를 받고 Intent 를 올려보내기만 합니다. ViewModel 을 직접 받지 않습니다.
  */
-/**
- * **시험 스위치 — 패미컴 컨트롤러 스타일.**
- *
- * `true` 면 목록을 [PlasticListBody] 로 그립니다. 상태·시트·Intent 는 그대로라
- * 되돌리려면 이 값만 `false` 로 바꾸면 됩니다 (파일을 지우려면
- * `SpaceListPlastic.kt` 와 `PlasticTokens.kt` 둘).
- */
-private const val PLASTIC_TRIAL = true
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpaceListScreen(

@@ -52,6 +52,7 @@ internal fun MapCanvas(
     onTap: (latitude: Double, longitude: Double) -> Unit,
     modifier: Modifier = Modifier,
     zoom: ZoomNudge = ZoomNudge(),
+    pan: PanNudge = PanNudge(),
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -135,6 +136,7 @@ internal fun MapCanvas(
     // 확대·축소도 **몇 번째 눌렀는지**로 셉니다. 방향만 보면 ＋ 를 연달아 눌러도
     // 값이 그대로라 두 번째부터 아무 일이 없습니다.
     var appliedZoom by remember { mutableStateOf(0) }
+    var appliedPan by remember { mutableStateOf(0) }
 
     AndroidView(
         factory = { mapView },
@@ -175,6 +177,15 @@ internal fun MapCanvas(
                     appliedZoom = zoom.serial
                     map.animateCamera(CameraUpdateFactory.zoomBy(zoom.delta))
                 }
+
+                if (pan.serial != appliedPan) {
+                    appliedPan = pan.serial
+                    // 화면 폭·높이에 견줘 밉니다. 고정 픽셀로 밀면 태블릿에서는
+                    // 찔끔 움직이고 작은 폰에서는 화면이 통째로 넘어갑니다.
+                    map.animateCamera(
+                        CameraUpdateFactory.scrollBy(pan.dx * width, pan.dy * height)
+                    )
+                }
             }
         },
     )
@@ -196,6 +207,19 @@ private data class Focused(val count: Int, val width: Int, val height: Int)
  * `focusCount` 를 두는 것과 같은 이유입니다.
  */
 internal data class ZoomNudge(val serial: Int = 0, val delta: Double = 0.0)
+
+/**
+ * 지도 밀기 요청. [ZoomNudge] 와 같은 방식으로, [serial] 이 늘 때만 움직입니다.
+ *
+ * **십자키(패미컴 스타일) 때문에 생긴 것입니다.** 십자키는 팔이 넷인데 확대·축소만
+ * 있으면 좌·우가 눌러도 아무 일이 없는 죽은 팔이 됩니다. 지도에서 십자키 좌·우가
+ * 할 일은 미는 것 말고 없으니 그렇게 했습니다.
+ *
+ * [dx]·[dy] 는 **지도 크기에 대한 비율**입니다 (0.35 면 화면의 35%). 위도·경도로 밀면
+ * 확대했을 때는 화면 밖으로 날아가고 축소했을 때는 꿈쩍도 안 합니다. 고정 픽셀로 밀면
+ * 태블릿에서만 찔끔 움직입니다. 비율이라야 어느 배율·어느 기기에서든 같게 느껴집니다.
+ */
+internal data class PanNudge(val serial: Int = 0, val dx: Float = 0f, val dy: Float = 0f)
 
 /**
  * 고른 지역에 화면을 맞춥니다. 지도는 이미 가려지는 만큼 줄여 놓았으므로

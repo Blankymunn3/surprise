@@ -42,6 +42,7 @@ import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
+import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 
 /** 지도 위 물건들의 가장자리 여백. 시안이 정한 값입니다. */
@@ -64,6 +65,13 @@ fun MapScreen(
     onIntent: (MapIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // 패미컴 스타일 시험 중에는 짜임새가 통째로 다릅니다 — 조작하는 것이
+    // 지도 위가 아니라 몸통 위(화면 밖)에 섭니다. 스위치는 designsystem 에 하나뿐입니다.
+    if (PLASTIC_TRIAL) {
+        Box(modifier.fillMaxSize()) { PlasticMapBody(state, onIntent) }
+        return
+    }
+
     // 시트 높이는 **재서** 씁니다. 사진이 있느냐에 따라 시트가 훌쩍 달라지는데,
     // 고정값으로 두면 시트가 짧을 때 버튼만 허공에 뜹니다.
     var sheetHeight by remember { mutableStateOf(0.dp) }
