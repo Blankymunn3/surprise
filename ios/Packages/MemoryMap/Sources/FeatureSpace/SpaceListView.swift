@@ -22,7 +22,7 @@ public struct SpaceListView: View {
         // 만들기·참여·로그인·초대 코드는 **아래에서 올라오는 시트**입니다.
         // 목록을 잠깐 가리고 끝내는 일이라, 화면을 통째로 갈아 끼우면
         // 어디에서 하던 일인지 놓칩니다. 시트 안의 모양은 새 디자인 그대로입니다.
-        list
+        (plasticTrial ? AnyView(PlasticListBody(store: store, onOpen: onOpen)) : AnyView(list))
             .task { await store.send(.appeared) }
             .sheet(isPresented: sheetShown) {
                 SpaceSheet(store: store, onOpen: onOpen)
@@ -164,6 +164,15 @@ public struct SpaceListView: View {
     }
 
 }
+
+/**
+ **시험 스위치 — 패미컴 컨트롤러 스타일.**
+
+ `true` 면 목록을 `PlasticListBody` 로 그립니다. 상태·시트·Store 는 그대로라
+ 되돌리려면 이 값만 `false` 로 바꾸면 됩니다 (파일을 지우려면
+ `SpaceListPlastic.swift` 와 `PlasticTokens.swift` 둘).
+ */
+private let plasticTrial = true
 
 /// 카드 높이는 고정입니다. 사진 비율이 제각각이어도 목록의 리듬은 일정해야 합니다.
 private let cardHeight: CGFloat = 150

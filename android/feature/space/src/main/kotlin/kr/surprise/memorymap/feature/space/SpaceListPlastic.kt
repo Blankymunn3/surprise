@@ -25,14 +25,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import kr.surprise.memorymap.core.designsystem.component.FRAMES_RATIO
 import kr.surprise.memorymap.core.designsystem.component.PhotoFramesScene
 import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
 import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
+import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
 import kr.surprise.memorymap.core.designsystem.theme.Pretendard
+import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 import kr.surprise.memorymap.core.designsystem.theme.raisedPlastic
 import kr.surprise.memorymap.core.designsystem.theme.sunken
 import kr.surprise.memorymap.core.model.Space
@@ -49,7 +50,11 @@ import kr.surprise.memorymap.core.model.SpaceKind
  * - 화면 바탕 = 회색 플라스틱 몸통
  * - 사진이 놓이는 판 = 검정 페이스플레이트
  * - 짜국 카드 = 버튼 하우징에 **움푹 끼운** 사진. 사진은 손대지 않습니다
- * - 주 동작 = 빨간 A 버튼, 보조 = SELECT 고무 알약
+ * - 주 동작 = 빨간 A 버튼, 보조 = 검은 고무 알약
+ *
+ * 글자 크기는 [kr.surprise.memorymap.core.designsystem.theme.MemoryType] 의 단
+ * (25/17/15/13.5/12.5/11) 을 그대로 씁니다. 시안의 px 값을 sp 로 옮기면 안 됩니다 —
+ * 시안은 300px 폭이라 실제 폰보다 좁아서, 그대로 옮기면 글씨가 작아집니다.
  */
 @Composable
 internal fun PlasticListBody(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit) {
@@ -57,7 +62,7 @@ internal fun PlasticListBody(state: SpaceListState, onIntent: (SpaceListIntent) 
         Modifier
             .fillMaxSize()
             .background(PlasticColors.Body)
-            .padding(horizontal = 8.dp)
+            .padding(horizontal = Gap.s)
     ) {
         Brand()
         Stripes()
@@ -77,8 +82,8 @@ internal fun PlasticListBody(state: SpaceListState, onIntent: (SpaceListIntent) 
                         PlateEmpty()
                     } else {
                         LazyColumn(
-                            contentPadding = PaddingValues(10.dp),
-                            verticalArrangement = Arrangement.spacedBy(11.dp),
+                            contentPadding = PaddingValues(Gap.m),
+                            verticalArrangement = Arrangement.spacedBy(Gap.m),
                         ) {
                             items(ui.items, key = { it.id.value }) { space ->
                                 PlasticCard(space) { onIntent(SpaceListIntent.SpaceTapped(space.id)) }
@@ -99,14 +104,14 @@ internal fun PlasticListBody(state: SpaceListState, onIntent: (SpaceListIntent) 
 @Composable
 private fun Brand() {
     Row(
-        Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp, top = 6.dp, bottom = 8.dp),
+        Modifier.fillMaxWidth().padding(horizontal = Gap.xs, top = Gap.xs, bottom = Gap.s),
         verticalAlignment = Alignment.Bottom,
     ) {
         Text(
             text = "짜국",
             fontFamily = Pretendard,
             fontWeight = FontWeight.Bold,
-            fontSize = 22.sp,
+            fontSize = 25.sp,
             letterSpacing = (-0.5).sp,
             color = PlasticColors.Red,
         )
@@ -115,10 +120,10 @@ private fun Brand() {
             text = "MAP & CALENDAR",
             fontFamily = Pretendard,
             fontWeight = FontWeight.Bold,
-            fontSize = 8.sp,
-            letterSpacing = 1.4.sp,
+            fontSize = 11.sp,
+            letterSpacing = 1.2.sp,
             color = PlasticColors.TrimLo,
-            modifier = Modifier.padding(bottom = 3.dp),
+            modifier = Modifier.padding(bottom = Gap.xs),
         )
     }
 }
@@ -127,14 +132,14 @@ private fun Brand() {
 @Composable
 private fun Stripes() {
     Column(
-        Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp, bottom = 9.dp),
-        verticalArrangement = Arrangement.spacedBy(3.dp),
+        Modifier.fillMaxWidth().padding(horizontal = Gap.xs, bottom = Gap.s),
+        verticalArrangement = Arrangement.spacedBy(Gap.xs),
     ) {
         repeat(3) {
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .height(5.dp)
+                    .height(PlasticSize.Stripe)
                     .clip(PlasticShapes.Pill)
                     .background(PlasticColors.Trim)
             )
@@ -142,19 +147,16 @@ private fun Stripes() {
     }
 }
 
-/** 카드 사진의 높이. 시안의 92/300 비를 폰 너비에 맞춰 키운 값입니다. */
-private val PhotoHeight = 108.dp
-
 @Composable
 private fun PlasticCard(space: Space, onClick: () -> Unit) {
     Column(Modifier.clickable(onClick = onClick)) {
         // 하우징 — 볼록한 플라스틱. 그 안에 사진을 움푹 끼웁니다.
-        Box(Modifier.fillMaxWidth().raisedPlastic(PlasticShapes.Housing).padding(5.dp)) {
+        Box(Modifier.fillMaxWidth().raisedPlastic(PlasticShapes.Housing).padding(PlasticSize.HousingInset)) {
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .height(PhotoHeight)
-                    .sunken(PlasticShapes.Chip, face = PlasticColors.PlateLo, rim = 2.dp)
+                    .height(PlasticSize.Photo)
+                    .sunken(PlasticShapes.Chip, face = PlasticColors.PlateLo)
             ) {
                 space.coverPhotoUrl?.let { url ->
                     AsyncImage(
@@ -166,15 +168,15 @@ private fun PlasticCard(space: Space, onClick: () -> Unit) {
                 }
             }
             if (space.kind == SpaceKind.Personal) {
-                OnlyHere(Modifier.align(Alignment.TopStart).padding(10.dp))
+                OnlyHere(Modifier.align(Alignment.TopStart).padding(Gap.s))
             }
         }
 
-        Spacer(Modifier.height(7.dp))
+        Spacer(Modifier.height(Gap.s))
 
         // 이름줄은 검정 판 위에 그대로 놓입니다 — 여기에도 베벨을 주면 자글자글해집니다.
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 2.dp),
+            Modifier.fillMaxWidth().padding(horizontal = Gap.xs),
             verticalAlignment = Alignment.Bottom,
         ) {
             Column(Modifier.weight(1f)) {
@@ -182,7 +184,7 @@ private fun PlasticCard(space: Space, onClick: () -> Unit) {
                     text = space.name,
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
+                    fontSize = 17.sp,
                     color = PlasticColors.OnPlate,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -191,7 +193,7 @@ private fun PlasticCard(space: Space, onClick: () -> Unit) {
                     text = space.metaShort(),
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 9.sp,
+                    fontSize = 12.5.sp,
                     color = PlasticColors.OnPlateDim,
                 )
             }
@@ -215,13 +217,13 @@ private fun OnlyHere(modifier: Modifier = Modifier) {
         text = "이 폰에만",
         fontFamily = Pretendard,
         fontWeight = FontWeight.Bold,
-        fontSize = 8.sp,
-        letterSpacing = 0.6.sp,
+        fontSize = 11.sp,
+        letterSpacing = 0.4.sp,
         color = PlasticColors.Plate,
         modifier = modifier
             .clip(PlasticShapes.Pill)
             .background(PlasticColors.Body)
-            .padding(horizontal = 7.dp, vertical = 3.dp),
+            .padding(horizontal = Gap.s, vertical = Gap.xs),
     )
 }
 
@@ -241,8 +243,8 @@ private fun Crew(initials: List<String>) {
 private fun CrewChip(text: String, index: Int, filled: Boolean) {
     Box(
         Modifier
-            .offset(x = (-2 * index).dp)
-            .size(17.dp)
+            .offset(x = -(PlasticSize.ChipOverlap * index))
+            .size(PlasticSize.Chip)
             .clip(PlasticShapes.Chip)
             .background(if (filled) PlasticColors.TrimLo else PlasticColors.Body),
         contentAlignment = Alignment.Center,
@@ -251,30 +253,38 @@ private fun CrewChip(text: String, index: Int, filled: Boolean) {
             text = text,
             fontFamily = Pretendard,
             fontWeight = FontWeight.Bold,
-            fontSize = 8.sp,
+            fontSize = 11.sp,
             color = if (filled) PlasticColors.Body else PlasticColors.Plate,
         )
     }
 }
 
 /**
- * 아래 조작부 — SELECT 알약과 빨간 A 버튼.
+ * 아래 조작부 — 고무 알약과 빨간 A 버튼.
  *
- * 라벨(SELECT·START)을 버튼 **밖 몸통에** 찍습니다. 실제 컨트롤러가 그렇고,
- * 그래야 버튼 안에는 우리 말만 남습니다.
+ * **SELECT · START 라벨은 뺐습니다.** 컨트롤러에는 그 글자가 찍혀 있지만, 사진첩
+ * 앱에서는 무엇을 하는 버튼인지 알려 주지 않는 장식일 뿐이라 뜬금없어 보입니다.
+ * 형태(고무 알약 · 빨간 원 · 플라스틱 하우징)만으로 이미 컨트롤러로 읽힙니다.
+ *
+ * 둘 다 같은 플라스틱 하우징에 앉혀 높이를 맞춥니다.
  */
 @Composable
 private fun Controls(onCreate: () -> Unit, onJoin: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp, top = 12.dp, bottom = 10.dp),
+        Modifier.fillMaxWidth().padding(horizontal = Gap.xs, vertical = Gap.m),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(Gap.m),
     ) {
-        Column(Modifier.weight(1f)) {
+        Box(
+            Modifier
+                .weight(1f)
+                .raisedPlastic(PlasticShapes.Housing)
+                .padding(PlasticSize.ButtonInset)
+        ) {
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .height(34.dp)
+                    .height(PlasticSize.Button)
                     .clip(PlasticShapes.Pill)
                     .background(PlasticColors.Rubber)
                     .clickable(onClick = onJoin),
@@ -284,53 +294,33 @@ private fun Controls(onCreate: () -> Unit, onJoin: () -> Unit) {
                     text = "초대 코드로 참여",
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 11.sp,
+                    fontSize = 15.sp,
                     color = PlasticColors.OnRubber,
                 )
             }
-            Text(
-                text = "SELECT",
-                fontFamily = Pretendard,
-                fontWeight = FontWeight.Bold,
-                fontSize = 7.sp,
-                letterSpacing = 1.6.sp,
-                color = PlasticColors.Red,
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 3.dp),
-            )
         }
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            Modifier
+                .raisedPlastic(PlasticShapes.Housing)
+                .padding(PlasticSize.ButtonInset)
+        ) {
             Box(
                 Modifier
-                    .raisedPlastic(PlasticShapes.Housing)
-                    .padding(7.dp)
+                    .size(PlasticSize.Button)
+                    .clip(PlasticShapes.Pill)
+                    .background(PlasticColors.Red)
+                    .clickable(onClick = onCreate),
+                contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    Modifier
-                        .size(46.dp)
-                        .clip(PlasticShapes.Pill)
-                        .background(PlasticColors.Red)
-                        .clickable(onClick = onCreate),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = "＋",
-                        fontFamily = Pretendard,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = PlasticColors.OnRed,
-                    )
-                }
+                Text(
+                    text = "＋",
+                    fontFamily = Pretendard,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    color = PlasticColors.OnRed,
+                )
             }
-            Text(
-                text = "START",
-                fontFamily = Pretendard,
-                fontWeight = FontWeight.Bold,
-                fontSize = 7.sp,
-                letterSpacing = 1.4.sp,
-                color = PlasticColors.Red,
-                modifier = Modifier.padding(top = 3.dp),
-            )
         }
     }
 }
@@ -342,7 +332,7 @@ private fun PlateHint(text: String) {
             text = text,
             fontFamily = Pretendard,
             fontWeight = FontWeight.SemiBold,
-            fontSize = 12.sp,
+            fontSize = 13.5.sp,
             color = PlasticColors.OnPlateDim,
         )
     }
@@ -351,24 +341,24 @@ private fun PlateHint(text: String) {
 @Composable
 private fun PlateEmpty() {
     Column(
-        Modifier.fillMaxSize().padding(horizontal = 26.dp),
+        Modifier.fillMaxSize().padding(horizontal = Gap.xxl),
         verticalArrangement = Arrangement.Center,
     ) {
         PhotoFramesScene(Modifier.fillMaxWidth(0.42f).aspectRatio(FRAMES_RATIO))
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(Gap.l))
         Text(
             text = "아직 짜국이 없어요",
             fontFamily = Pretendard,
             fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
+            fontSize = 17.sp,
             color = PlasticColors.OnPlate,
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(Gap.s))
         Text(
             text = "아래 빨간 버튼으로 하나 만들어 보세요.",
             fontFamily = Pretendard,
             fontWeight = FontWeight.Normal,
-            fontSize = 11.sp,
+            fontSize = 12.5.sp,
             color = PlasticColors.OnPlateDim,
         )
     }

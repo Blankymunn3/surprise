@@ -69,6 +69,30 @@ object PlasticShapes {
     val Chip = RoundedCornerShape(3.dp)
 }
 
+/**
+ * **이 스타일에만 있는 치수.**
+ *
+ * 나머지 여백은 앱의 [Space] 단(4·8·12·16·20·24·32)을 그대로 씁니다 —
+ * 화면 하나 때문에 여백 체계를 새로 만들지 않습니다. 여기 있는 것은 그 단으로는
+ * 표현되지 않는, **형태가 뜻을 갖는** 값들뿐입니다.
+ */
+object PlasticSize {
+    /** 하우징이 사진을 감싸는 두께. 이게 곧 액자 테의 굵기입니다. */
+    val HousingInset = 5.dp
+    /** 하우징이 버튼을 감싸는 두께 */
+    val ButtonInset = 7.dp
+    /** 고무 알약과 A 버튼의 높이. **둘이 같아야** 나란히 섰을 때 어긋나지 않습니다. */
+    val Button = 46.dp
+    /** 카드 사진 높이 */
+    val Photo = 108.dp
+    /** 멤버 이니셜 칩 */
+    val Chip = 22.dp
+    /** 칩끼리 겹치는 폭 */
+    val ChipOverlap = 2.dp
+    /** 몸통에 새긴 줄무늬 한 줄의 두께 */
+    val Stripe = 5.dp
+}
+
 /** 베벨 두께. 위·왼쪽보다 아래·오른쪽을 한 겹 두껍게 해야 두께가 느껴집니다. */
 private val BevelLight = 2.dp
 private val BevelDark = 3.dp
