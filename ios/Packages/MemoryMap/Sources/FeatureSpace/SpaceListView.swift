@@ -165,15 +165,6 @@ public struct SpaceListView: View {
 
 }
 
-/**
- **시험 스위치 — 패미컴 컨트롤러 스타일.**
-
- `true` 면 목록을 `PlasticListBody` 로 그립니다. 상태·시트·Store 는 그대로라
- 되돌리려면 이 값만 `false` 로 바꾸면 됩니다 (파일을 지우려면
- `SpaceListPlastic.swift` 와 `PlasticTokens.swift` 둘).
- */
-private let plasticTrial = true
-
 /// 카드 높이는 고정입니다. 사진 비율이 제각각이어도 목록의 리듬은 일정해야 합니다.
 private let cardHeight: CGFloat = 150
 

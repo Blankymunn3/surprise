@@ -5,6 +5,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -18,11 +20,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
+import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
+import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
+import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
+import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
+import kr.surprise.memorymap.core.designsystem.theme.Pretendard
+import kr.surprise.memorymap.core.designsystem.theme.raisedPlastic
 
 /**
  * 사진 올리기 버튼. **네모, 54, 단색 레드.**
@@ -59,6 +69,35 @@ fun MemoryFab(
  */
 @Composable
 fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    // 패미컴 스타일에서는 하우징에 앉힌 **빨간 A 버튼**입니다. 화면 넷(만들기·참여·
+    // 초대 코드·올리기)이 모두 이 부품으로 만들어져 있어서, 여기 한 곳만 바꾸면
+    // 넷이 같이 따라옵니다. 화살표는 뺍니다 — 알약 안에서는 글자만으로 충분하고,
+    // 넣으면 A 버튼이 아니라 목록의 한 줄처럼 보입니다.
+    if (PLASTIC_TRIAL) {
+        Box(modifier.raisedPlastic(PlasticShapes.Housing).padding(PlasticSize.ButtonInset)) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(PlasticSize.Button)
+                    .clip(PlasticShapes.Pill)
+                    // 못 누르는 상태는 색을 죽입니다. 이 스타일에는 흐리게 하는 장치가
+                    // 없어서(고무는 원래 검정), 빨강을 어두운 쪽으로 내립니다.
+                    .background(if (enabled) PlasticColors.Red else PlasticColors.RedLo)
+                    .clickable(enabled = enabled, onClick = onClick),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = text,
+                    fontFamily = Pretendard,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = if (enabled) PlasticColors.OnRed else PlasticColors.OnPlateDim,
+                )
+            }
+        }
+        return
+    }
+
     Row(
         modifier = modifier
             .clip(MemoryShapes.Button)
@@ -76,6 +115,30 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
 /** 보조 동작. 흰 면에 1px 잉크 선. 여기도 왼끝 맞춤입니다. */
 @Composable
 fun SoftButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    // 패미컴 스타일에서는 하우징에 앉힌 **검은 고무 알약**입니다.
+    if (PLASTIC_TRIAL) {
+        Box(modifier.raisedPlastic(PlasticShapes.Housing).padding(PlasticSize.ButtonInset)) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(PlasticSize.Button)
+                    .clip(PlasticShapes.Pill)
+                    .background(PlasticColors.Rubber)
+                    .clickable(onClick = onClick),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = text,
+                    fontFamily = Pretendard,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = PlasticColors.OnRubber,
+                )
+            }
+        }
+        return
+    }
+
     Box(
         modifier = modifier
             .clip(MemoryShapes.Button)

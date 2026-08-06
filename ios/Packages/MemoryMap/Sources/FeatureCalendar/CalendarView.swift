@@ -4,7 +4,9 @@ import Domain
 import Foundation
 import SwiftUI
 
-private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
+/// 패미컴 스타일 달력(`CalendarPlastic.swift`)도 같은 요일 이름을 씁니다.
+/// 스위프트의 `private` 은 **파일 안까지**라, 같은 모듈의 다른 파일에서 보려면 열어야 합니다.
+let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
 
 /// 격자 칸 사이. 3 이면 칸끼리 붙지 않으면서도 달력이 한 덩어리로 보입니다.
 private let cellGap: CGFloat = 3

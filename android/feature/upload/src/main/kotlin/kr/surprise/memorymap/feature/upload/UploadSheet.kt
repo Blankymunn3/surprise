@@ -32,6 +32,7 @@ import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
+import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 
 /**
@@ -47,6 +48,13 @@ fun UploadSheet(
     onPickPhotos: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // 패미컴 스타일 시험 중에는 몸통 위에 화면을 끼우고 조작을 화면 밖으로 냅니다.
+    // 스위치는 designsystem 에 하나뿐입니다.
+    if (PLASTIC_TRIAL) {
+        Box(modifier.fillMaxWidth()) { PlasticUploadBody(state, onIntent, onPickPhotos) }
+        return
+    }
+
     Column(modifier.fillMaxWidth().background(MemoryColors.Paper)) {
         if (state.editingRegionOf != null) {
             RegionPicker(state, onIntent)

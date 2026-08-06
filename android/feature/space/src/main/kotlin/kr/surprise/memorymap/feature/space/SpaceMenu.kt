@@ -33,6 +33,7 @@ import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 import kr.surprise.memorymap.core.model.MemberRole
 import kr.surprise.memorymap.core.model.SpaceKind
 import androidx.compose.ui.text.font.FontWeight
+import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 
 /**
  * ⋯ 하나에 **멤버 · 초대 코드 · 이름**을 다 넣습니다.
@@ -55,6 +56,13 @@ fun SpaceMenu(
             .background(MemoryColors.Scrim)
             .clickable { onIntent(SpaceMenuIntent.Dismissed) }
     ) {
+        // 패미컴 스타일에서는 몸통이 통째로 올라오고 내용은 끼운 검정 화면에 놓입니다.
+        // 스위치는 designsystem 에 하나뿐입니다.
+        if (PLASTIC_TRIAL) {
+            PlasticSpaceMenu(state, onIntent, Modifier.align(Alignment.BottomCenter))
+            return@Box
+        }
+
         Column(
             Modifier
                 .align(Alignment.BottomCenter)

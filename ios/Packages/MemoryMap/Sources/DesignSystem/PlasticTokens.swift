@@ -4,8 +4,8 @@ import SwiftUI
  **시험용 토큰 — 패미컴 컨트롤러 스타일.**
 
  지금 앱의 기준은 `MemoryColor` (웜 그레이 + 잉크 + 레드, 모서리 0) 입니다.
- 이 파일은 그것과 **나란히** 두는 다른 한 벌이고, 짜국 목록 한 화면에서만 씁니다
- (`SpaceListView` 의 `plasticTrial`). 채택되지 않으면 이 파일과 그 화면만 지우면 됩니다.
+ 이 파일은 그것과 **나란히** 두는 다른 한 벌입니다. 채택되지 않으면 이 파일과
+ `*Plastic.swift` 들을 지우면 됩니다.
 
  색은 NES 컨트롤러 실물에서 땄습니다 — 회색 플라스틱 몸통, 검정 페이스플레이트,
  빨간 A·B 버튼, 검은 십자키. 안드로이드 `PlasticColors` 와 **같은 값**입니다.
@@ -108,6 +108,15 @@ public enum PlasticSize {
     public static let monthNav: CGFloat = 34
     /// 달력 아래 목록의 사진
     public static let calendarPhoto: CGFloat = 68
+
+    /// 올리기 목록의 사진. 옆에 슬롯 두 줄이 서므로 그 두 줄 높이와 맞춥니다.
+    public static let uploadThumb: CGFloat = 58
+
+    /**
+     시트 손잡이 홈의 길이. 몸통이 통째로 올라오는 시트에서 잉크 선 대신 씁니다 —
+     두께는 `stripe` 와 같아서 목록 화면 위쪽 줄무늬와 한 벌로 읽힙니다.
+     */
+    public static let grip: CGFloat = 44
 }
 
 /// 베벨 두께. 위·왼쪽보다 아래·오른쪽을 한 겹 두껍게 해야 두께가 느껴집니다.

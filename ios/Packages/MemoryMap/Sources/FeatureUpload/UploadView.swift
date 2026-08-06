@@ -35,14 +35,36 @@ public struct UploadView: View {
 
     public var body: some View {
         Group {
-            if store.state.editingRegionOf != nil {
+            // 패미컴 스타일 시험 중에는 몸통 위에 화면을 끼우고 조작을 화면 밖으로 냅니다.
+            // 스위치는 DesignSystem 에 하나뿐입니다.
+            if plasticTrial {
+                if store.state.editingRegionOf != nil {
+                    PlasticRegionPicker(store: store)
+                } else {
+                    PlasticUploadBody(
+                        store: store,
+                        onClose: onClose,
+                        onPickDate: { pickingDateOf = $0 },
+                        picked: $picked
+                    )
+                    .sheet(item: Binding(
+                        get: { pickingDateOf.map(DateEdit.init(uri:)) },
+                        set: { pickingDateOf = $0?.uri }
+                    )) { edit in
+                        dateSheet(for: edit.uri)
+                    }
+                    .onChange(of: picked) { _, items in
+                        Task { await load(items) }
+                    }
+                }
+            } else if store.state.editingRegionOf != nil {
                 regionPicker
             } else {
                 main
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(MemoryColor.paper)
+        .background(plasticTrial ? PlasticColor.body : MemoryColor.paper)
         .onChange(of: store.state.step) { _, step in
             // 다 올라가면 화면이 스스로 닫힙니다. "완료" 를 또 누르게 하지 않습니다.
             if step == .done { onClose() }

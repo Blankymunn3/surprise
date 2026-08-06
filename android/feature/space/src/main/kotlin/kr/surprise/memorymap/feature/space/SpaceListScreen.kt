@@ -33,6 +33,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.SolidColor
@@ -57,8 +58,13 @@ import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
+import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
+import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
+import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
 import kr.surprise.memorymap.core.designsystem.theme.Pretendard
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
+import kr.surprise.memorymap.core.designsystem.theme.raisedPlastic
+import kr.surprise.memorymap.core.designsystem.theme.sunken
 import kr.surprise.memorymap.core.model.Space
 import kr.surprise.memorymap.core.model.SpaceKind
 
@@ -92,10 +98,10 @@ fun SpaceListScreen(
         ModalBottomSheet(
             onDismissRequest = { onIntent(SpaceListIntent.SheetDismissed) },
             sheetState = rememberModalBottomSheetState(),
-            containerColor = MemoryColors.Surface,
+            containerColor = if (PLASTIC_TRIAL) PlasticColors.Body else MemoryColors.Surface,
             // 시트 위쪽에도 2px 잉크 선을 긋습니다 — 지역 시트와 같은 규칙입니다.
             dragHandle = { SheetGrip() },
-            shape = MemoryShapes.Sheet,
+            shape = if (PLASTIC_TRIAL) PlasticShapes.Device else MemoryShapes.Sheet,
         ) {
             when (val sheet = state.sheet) {
                 SpaceListSheet.None -> Unit
@@ -115,6 +121,22 @@ fun SpaceListScreen(
  */
 @Composable
 private fun SheetGrip() {
+    // 패미컴 스타일에서는 **몸통이 통째로 올라옵니다.** 화면(검정 판)만 올라오면
+    // 기기에서 화면이 떨어져 나온 것처럼 보입니다. 그래서 손잡이도 잉크 선이 아니라
+    // 몸통에 새긴 회색 홈 — 목록 화면 위쪽의 줄무늬와 같은 것입니다.
+    if (PLASTIC_TRIAL) {
+        Box(Modifier.fillMaxWidth().padding(vertical = Gap.s), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .width(PlasticSize.Grip)
+                    .height(PlasticSize.Stripe)
+                    .clip(PlasticShapes.Pill)
+                    .background(PlasticColors.Trim)
+            )
+        }
+        return
+    }
+
     Box(Modifier.fillMaxWidth().height(MemoryStroke.Divider).background(MemoryColors.Ink))
 }
 
@@ -269,12 +291,32 @@ private fun Hint(text: String) {
 // 공통 부품 — 전체 화면들
 
 /**
+ * 시트 **몸통 위** 글자색.
+ *
+ * 시트는 패미컴 스타일에서 회색 플라스틱이 통째로 올라오는 것이라, 그 위의 글자는
+ * 잉크가 아니라 플라스틱에 새긴 검정입니다. 자리마다 조건문을 쓰면 시트 넷이
+ * 지저분해져서 여기 두 개로 모읍니다.
+ */
+private val bodyInk: Color
+    @Composable get() = if (PLASTIC_TRIAL) PlasticColors.Ink else MemoryColors.Ink
+
+/** 몸통 위의 흐린 글자 (설명·각주) */
+private val bodyDim: Color
+    @Composable get() = if (PLASTIC_TRIAL) PlasticColors.TrimLo else MemoryColors.Ink2
+
+/**
  * 시트 제목. 뒤로 버튼을 두지 않습니다 — 시트는 끌어 내리거나 뒤를 눌러 닫습니다.
  * 버튼을 또 두면 닫는 길이 셋이 됩니다.
  */
 @Composable
 private fun SheetTitle(text: String) {
-    Text(text, style = MemoryType.Title, modifier = Modifier.padding(bottom = Gap.m))
+    // 몸통 위의 글자는 잉크가 아니라 플라스틱에 새긴 검정입니다.
+    Text(
+        text = text,
+        style = MemoryType.Title,
+        color = if (PLASTIC_TRIAL) PlasticColors.Ink else MemoryColors.Ink,
+        modifier = Modifier.padding(bottom = Gap.m),
+    )
 }
 
 /** "어떻게 쓸까요" 같은 구역 이름표. */
@@ -283,15 +325,52 @@ private fun SectionLabel(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         style = MemoryType.Micro,
-        color = MemoryColors.Ink2,
+        color = if (PLASTIC_TRIAL) PlasticColors.TrimLo else MemoryColors.Ink2,
         letterSpacing = 0.7.sp,
         modifier = modifier,
     )
 }
 
-/** 글자칸. 흰 면에 1px 잉크 선 — 회색 면을 쓰지 않습니다. */
+/**
+ * 글자칸. 흰 면에 1px 잉크 선 — 회색 면을 쓰지 않습니다.
+ *
+ * 패미컴 스타일에서는 **카트리지 슬롯**입니다. 지도 검색칸·올리기의 어디·언제와
+ * 같은 모양인데, 셋 다 "값을 꽂아 넣는 자리" 라서 같아야 합니다.
+ */
 @Composable
 private fun Field(value: String, placeholder: String, onValueChange: (String) -> Unit) {
+    if (PLASTIC_TRIAL) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .sunken(PlasticShapes.Chip, face = PlasticColors.PlateLo)
+                .padding(horizontal = Gap.m, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Gap.s),
+        ) {
+            Box(
+                Modifier
+                    .size(width = 3.dp, height = 14.dp)
+                    .clip(PlasticShapes.Chip)
+                    .background(PlasticColors.Ink)
+            )
+            Box(Modifier.weight(1f)) {
+                if (value.isEmpty()) {
+                    Text(placeholder, style = MemoryType.Body, color = PlasticColors.OnPlateDim)
+                }
+                BasicTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    singleLine = true,
+                    textStyle = MemoryType.Body.copy(color = PlasticColors.OnPlate),
+                    cursorBrush = SolidColor(PlasticColors.Red),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+        return
+    }
+
     Box(
         Modifier
             .fillMaxWidth()
@@ -394,6 +473,40 @@ private fun KindOption(
     checked: Boolean,
     onClick: () -> Unit,
 ) {
+    // 패미컴 스타일에서는 **화면 안에 끼운 칸**입니다. 고른 칸만 왼쪽에 빨간 막대가
+    // 서고 바닥이 밝아집니다 — 달력의 '고른 날' 과 같은 규칙입니다. 라디오 네모는
+    // 뺐습니다: 빨간 막대와 밝아진 바닥이 이미 고른 것을 말하는데, 표식이 셋이 되면
+    // 무엇을 봐야 할지 흐려집니다.
+    if (PLASTIC_TRIAL) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clip(PlasticShapes.Chip)
+                .background(if (checked) PlasticColors.PlateHi else PlasticColors.Plate)
+                .selectable(selected = checked, role = Role.RadioButton, onClick = onClick)
+                .padding(end = 15.dp, top = 13.dp, bottom = 13.dp),
+            horizontalArrangement = Arrangement.spacedBy(Gap.m),
+        ) {
+            Box(
+                Modifier
+                    .width(3.dp)
+                    .height(PlasticSize.KindBar)
+                    .background(if (checked) PlasticColors.Red else PlasticColors.Plate)
+            )
+            Column {
+                Text(title, style = MemoryType.Headline, color = PlasticColors.OnPlate)
+                Text(
+                    text = detail,
+                    style = MemoryType.Label,
+                    color = PlasticColors.OnPlateDim,
+                    modifier = Modifier.padding(top = 3.dp),
+                )
+                Text(sub, style = MemoryType.Label, color = PlasticColors.OnPlateDim)
+            }
+        }
+        return
+    }
+
     Row(
         Modifier
             .fillMaxWidth()
@@ -448,7 +561,7 @@ private fun JoinSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit
         Text(
             text = "코드를 보낸 사람의 짜국에 멤버로 들어가요.",
             style = MemoryType.Micro,
-            color = MemoryColors.Ink2,
+            color = bodyDim,
             modifier = Modifier.padding(top = Gap.s),
         )
 
@@ -473,16 +586,21 @@ private fun SignInSheet(
     onIntent: (SpaceListIntent) -> Unit,
 ) {
     SheetBody {
-        Box(Modifier.size(13.dp).background(MemoryColors.Accent))
+        Box(
+            Modifier
+                .size(13.dp)
+                .then(if (PLASTIC_TRIAL) Modifier.clip(PlasticShapes.Chip) else Modifier)
+                .background(if (PLASTIC_TRIAL) PlasticColors.Red else MemoryColors.Accent)
+        )
         Spacer(Modifier.height(14.dp))
         // 시트에서는 25단이 너무 큽니다 — 제목만으로 시트가 반을 먹습니다.
-        Text("같이 보려면 계정이 필요해요", style = MemoryType.Title)
+        Text("같이 보려면 계정이 필요해요", style = MemoryType.Title, color = bodyInk)
         Spacer(Modifier.height(Gap.s))
         Text(
             text = "로그인은 멤버가 아닌 사람이 우리 사진을 못 보게 막는 잠금장치예요. " +
                 "계정 확인 말고 다른 데는 쓰지 않아요.",
             style = MemoryType.Label,
-            color = MemoryColors.Ink2,
+            color = bodyDim,
         )
 
         Spacer(Modifier.height(Gap.xl))
@@ -499,6 +617,7 @@ private fun SignInSheet(
             Text(
                 text = "그냥 혼자 쓸래요 — 이 폰에만 저장할게요",
                 style = MemoryType.Body,
+                color = bodyInk,
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier
                     .clickable { onIntent(SpaceListIntent.SignInGaveUp) }
@@ -509,7 +628,7 @@ private fun SignInSheet(
         Text(
             text = "지금은 Google 계정만 돼요.",
             style = MemoryType.Micro,
-            color = MemoryColors.Ink2,
+            color = bodyDim,
             modifier = Modifier.padding(top = Gap.l),
         )
     }
@@ -519,9 +638,37 @@ private fun SignInSheet(
  * 구글 버튼만 **레드가 아닙니다.** 우리 것이 아니라 남의 서비스로 넘어가는 문이라
  * 앱의 강조색을 입히면 우리가 하는 일처럼 보입니다. 흰 바탕에 잉크 선 —
  * 구글이 권하는 모양이기도 합니다.
+ *
+ * 패미컴 스타일에서도 **흰 면 그대로 둡니다.** 다른 버튼은 다 고무·플라스틱이 됐지만,
+ * 이 버튼만은 구글이 정한 모양을 지켜야 합니다. 하우징에 앉혀 기기에 달린 것처럼
+ * 보이게 하되, 버튼 얼굴 자체는 손대지 않습니다.
  */
 @Composable
 private fun GoogleButton(text: String, enabled: Boolean, onClick: () -> Unit) {
+    if (PLASTIC_TRIAL) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .raisedPlastic(PlasticShapes.Housing)
+                .padding(PlasticSize.ButtonInset)
+        ) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(PlasticShapes.Pill)
+                    .background(MemoryColors.Surface)
+                    .clickable(enabled = enabled, onClick = onClick)
+                    .padding(horizontal = Gap.l, vertical = 13.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(11.dp),
+            ) {
+                GoogleMark(Modifier.size(19.dp))
+                Text(text, style = MemoryType.Headline, color = MemoryColors.Ink)
+            }
+        }
+        return
+    }
+
     Row(
         Modifier
             .fillMaxWidth()
@@ -585,20 +732,27 @@ private fun GoogleMark(modifier: Modifier = Modifier) {
 @Composable
 private fun InvitedSheet(sheet: SpaceListSheet.Invited, onIntent: (SpaceListIntent) -> Unit) {
     SheetBody {
-        Text("'${sheet.spaceName}' 짜국을 만들었어요", style = MemoryType.Title)
+        Text("'${sheet.spaceName}' 짜국을 만들었어요", style = MemoryType.Title, color = bodyInk)
         Spacer(Modifier.height(10.dp))
         Text(
             text = "이 코드를 받은 사람이 들어올 수 있어요. 지금 보내 두면 나중에 다시 찾지 않아도 돼요.",
             style = MemoryType.Label,
-            color = MemoryColors.Ink2,
+            color = bodyDim,
         )
 
         Spacer(Modifier.height(18.dp))
+        // 코드는 **화면에 띄웁니다.** 패미컴 스타일에서 검정 판은 "기기가 보여 주는 것"
+        // 이고, 이 코드야말로 기기가 방금 만들어 낸 값입니다.
         Box(
             Modifier
                 .fillMaxWidth()
-                .background(MemoryColors.Surface)
-                .border(MemoryStroke.Border, MemoryColors.Line)
+                .then(
+                    if (PLASTIC_TRIAL) {
+                        Modifier.sunken(PlasticShapes.Screen)
+                    } else {
+                        Modifier.background(MemoryColors.Surface).border(MemoryStroke.Border, MemoryColors.Line)
+                    }
+                )
                 .padding(horizontal = Gap.xl, vertical = 18.dp),
         ) {
             // 코드는 글자 단 밖입니다 — UI 글이 아니라 화면의 주인공(콘텐츠)이라서요.
@@ -609,7 +763,7 @@ private fun InvitedSheet(sheet: SpaceListSheet.Invited, onIntent: (SpaceListInte
                 fontWeight = FontWeight.Bold,
                 fontSize = 32.sp,
                 letterSpacing = 8.sp,
-                color = MemoryColors.Ink,
+                color = if (PLASTIC_TRIAL) PlasticColors.OnPlate else MemoryColors.Ink,
             )
         }
 
