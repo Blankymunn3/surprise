@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,16 +32,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
 import kr.surprise.memorymap.core.designsystem.component.PhotoThumb
 import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
 import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
@@ -240,12 +242,23 @@ private fun SlotResults(
 }
 
 /**
- * 아래 조작부 — 왼쪽 십자키, 오른쪽 빨간 A 버튼.
+ * 아래 조작부 — **실물 컨트롤러의 배치 그대로**입니다.
  *
- * **십자키의 네 팔이 다 살아 있습니다:** 위·아래는 확대·축소, 좌·우는 지도를 밉니다.
- * 좌·우를 비워 두면 눌러도 아무 일이 없는 죽은 버튼이 되는데, 십자키에서 그건
- * 고장 난 것으로 읽힙니다. 가운데는 내 위치입니다 — 컨트롤러의 십자키 가운데는
- * 원래 아무것도 아니지만, 손가락이 자연스럽게 놓이는 자리라 제일 자주 쓰는 것을 뒀습니다.
+ * ```
+ *  ┌─ 검정 페이스플레이트 ──────────────────────┐
+ *  │   ✛ 십자키        ▭ ▭          ● ●        │
+ *  │   지도 이동      축소 확대     B    A       │
+ *  │                              내위치 올리기  │
+ *  └────────────────────────────────────────────┘
+ * ```
+ *
+ * 지금 화면 그대로 **회색 몸통 위**에 놓습니다. 실물은 버튼이 검정 페이스플레이트
+ * 위에 있지만, 그 판을 여기 깔면 위의 지도 화면과 같은 검정이 두 덩어리가 되어
+ * 어느 쪽이 화면인지 흐려집니다. 여기서는 배치와 아이콘만 실물에서 가져옵니다.
+ *
+ * **A·B 글자는 붙이지 않습니다.** 실물에는 버튼 아래에 빨간 A·B 가 찍혀 있지만,
+ * 사진첩 앱에서는 그 글자가 무엇을 하는 버튼인지 알려 주지 않습니다 — 목록 화면에서
+ * SELECT·START 를 뺀 것과 같은 이유입니다. 대신 하는 일을 아이콘으로 그립니다.
  */
 @Composable
 private fun Pad(
@@ -260,41 +273,73 @@ private fun Pad(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         DPad(
-            onUp = onZoomIn,
-            onDown = onZoomOut,
+            onUp = { onPan(0f, -PAN_STEP) },
+            onDown = { onPan(0f, PAN_STEP) },
             onLeft = { onPan(-PAN_STEP, 0f) },
             onRight = { onPan(PAN_STEP, 0f) },
-            onCenter = onMyLocation,
         )
 
         Spacer(Modifier.weight(1f))
 
+        // 가운데 고무 알약 둘 — 실물의 SELECT · START 자리입니다. 그 글자는 안 씁니다.
         Box(Modifier.raisedPlastic(PlasticShapes.Housing).padding(PlasticSize.ButtonInset)) {
-            Box(
-                Modifier
-                    .size(PlasticSize.Button)
-                    .clip(PlasticShapes.Pill)
-                    .background(PlasticColors.Red)
-                    .clickable(onClick = onAdd),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "＋",
-                    fontFamily = Pretendard,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = PlasticColors.OnRed,
-                )
+            Row(horizontalArrangement = Arrangement.spacedBy(Gap.xs)) {
+                Pill(MemoryIcons.Minus, "축소", onZoomOut)
+                Pill(MemoryIcons.Plus, "확대", onZoomIn)
+            }
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        // B · A — 실물처럼 B 가 왼쪽입니다. 자주 쓰는 쪽(올리기)이 A 인 것도 실물과 같습니다:
+        // 오른쪽 끝 버튼이 엄지가 가장 편히 닿는 자리입니다.
+        Box(Modifier.raisedPlastic(PlasticShapes.Housing).padding(PlasticSize.ButtonInset)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Gap.s)) {
+                RedButton(MemoryIcons.MyLocation, "내 위치", onMyLocation)
+                RedButton(MemoryIcons.Plus, "사진 올리기", onAdd)
             }
         }
     }
 }
 
+/** 고무 알약. 실물에서 SELECT·START 가 있던 자리이고, 여기서는 확대·축소입니다. */
+@Composable
+private fun Pill(icon: ImageVector, label: String, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .size(width = PlasticSize.PillWidth, height = PlasticSize.PillHeight)
+            .clip(PlasticShapes.Pill)
+            .background(PlasticColors.Rubber)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(icon, contentDescription = label, tint = PlasticColors.OnRubber, modifier = Modifier.size(14.dp))
+    }
+}
+
+/** 빨간 A·B 버튼. */
+@Composable
+private fun RedButton(icon: ImageVector, label: String, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .size(PlasticSize.RedButton)
+            .clip(PlasticShapes.Pill)
+            .background(PlasticColors.Red)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(icon, contentDescription = label, tint = PlasticColors.OnRed, modifier = Modifier.size(18.dp))
+    }
+}
+
 /**
- * 십자키. 한 덩어리 고무 위에 눌리는 자리 다섯을 얹습니다.
+ * 십자키. 한 덩어리 고무 위에 눌리는 자리 넷을 얹습니다. **네 팔이 다 지도를 밉니다.**
  *
  * 실물처럼 **십자 모양 하나**로 만들려면 가운데 세로 기둥과 가로 들보를 겹쳐 놓고
- * 그 위에 누를 자리를 배치해야 합니다. 모서리 네 곳은 몸통이 비쳐 보이는 빈칸입니다.
+ * 그 위에 누를 자리를 배치해야 합니다. 모서리 네 곳은 판이 비쳐 보이는 빈칸입니다.
+ *
+ * 가운데는 **누르는 자리가 아닙니다.** 실물에서도 십자키 한가운데는 그냥 플라스틱이라
+ * 눌러도 아무 일이 없고, 여기서도 화살표 넷이 이미 할 일을 다 나눠 가졌습니다.
  */
 @Composable
 private fun DPad(
@@ -302,53 +347,61 @@ private fun DPad(
     onDown: () -> Unit,
     onLeft: () -> Unit,
     onRight: () -> Unit,
-    onCenter: () -> Unit,
 ) {
     Box(Modifier.raisedPlastic(PlasticShapes.Housing).padding(PlasticSize.ButtonInset)) {
-        BoxWithConstraints(Modifier.size(PlasticSize.Cross)) {
-            val arm = maxWidth / 3
+        DPadFace(onUp, onDown, onLeft, onRight)
+    }
+}
 
-            // 고무 십자 — 세로 기둥과 가로 들보를 겹칩니다.
+@Composable
+private fun DPadFace(
+    onUp: () -> Unit,
+    onDown: () -> Unit,
+    onLeft: () -> Unit,
+    onRight: () -> Unit,
+) {
+    BoxWithConstraints(Modifier.size(PlasticSize.Cross)) {
+        val arm = maxWidth / 3
+
+        // 고무 십자 — 세로 기둥과 가로 들보를 겹칩니다.
+        Box(
+            Modifier
+                .width(arm)
+                .fillMaxHeight()
+                .align(Alignment.Center)
+                .clip(PlasticShapes.Knob)
+                .background(PlasticColors.Rubber)
+        )
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(arm)
+                .align(Alignment.Center)
+                .clip(PlasticShapes.Knob)
+                .background(PlasticColors.Rubber)
+        )
+
+        // 누르는 자리. 십자 밖(모서리)에는 아무것도 두지 않습니다.
+        Arm(Alignment.TopCenter, arm, MemoryIcons.ChevronUp, "위로", onUp)
+        Arm(Alignment.BottomCenter, arm, MemoryIcons.ChevronDown, "아래로", onDown)
+        Arm(Alignment.CenterStart, arm, MemoryIcons.ChevronLeft, "왼쪽으로", onLeft)
+        Arm(Alignment.CenterEnd, arm, MemoryIcons.ChevronRight, "오른쪽으로", onRight)
+
+        // 가운데의 오목한 원. 실물의 그 원이고, 누르는 곳은 아닙니다.
+        Box(
+            Modifier
+                .size(arm)
+                .align(Alignment.Center)
+                .clip(PlasticShapes.Pill)
+                .background(PlasticColors.Ink),
+            contentAlignment = Alignment.Center,
+        ) {
             Box(
                 Modifier
-                    .width(arm)
-                    .fillMaxHeight()
-                    .align(Alignment.Center)
-                    .clip(PlasticShapes.Knob)
-                    .background(PlasticColors.Rubber)
-            )
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(arm)
-                    .align(Alignment.Center)
-                    .clip(PlasticShapes.Knob)
-                    .background(PlasticColors.Rubber)
-            )
-
-            // 누르는 자리. 십자 밖(모서리)에는 아무것도 두지 않습니다.
-            Arm(Alignment.TopCenter, arm, "＋", onUp)
-            Arm(Alignment.BottomCenter, arm, "－", onDown)
-            Arm(Alignment.CenterStart, arm, "‹", onLeft)
-            Arm(Alignment.CenterEnd, arm, "›", onRight)
-
-            // 가운데. 실물 십자키의 가운데 원은 오목합니다.
-            Box(
-                Modifier
-                    .size(arm)
-                    .align(Alignment.Center)
+                    .size(PlasticSize.DotCore)
                     .clip(PlasticShapes.Pill)
-                    .background(PlasticColors.Ink)
-                    .clickable(onClick = onCenter),
-                contentAlignment = Alignment.Center,
-            ) {
-                Box(
-                    Modifier
-                        .size(PlasticSize.DotCore)
-                        .clip(PlasticShapes.Pill)
-                        .background(PlasticColors.OnRubber)
-                )
-            }
+                    .background(PlasticColors.RubberHi)
+            )
         }
     }
 }
@@ -357,21 +410,15 @@ private fun DPad(
 private fun BoxScope.Arm(
     at: Alignment,
     arm: Dp,
-    glyph: String,
+    icon: ImageVector,
+    label: String,
     onClick: () -> Unit,
 ) {
     Box(
         Modifier.size(arm).align(at).clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = glyph,
-            fontFamily = Pretendard,
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
-            color = PlasticColors.OnRubber,
-            textAlign = TextAlign.Center,
-        )
+        Icon(icon, contentDescription = label, tint = PlasticColors.OnRubber, modifier = Modifier.size(12.dp))
     }
 }
 

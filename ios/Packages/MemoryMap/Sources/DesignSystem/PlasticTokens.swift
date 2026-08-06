@@ -48,6 +48,8 @@ public enum PlasticColor {
 
     /// 고무 버튼
     public static let rubber = Color(hex: 0x3A3A3A)
+    /// 십자키 가운데 원 안의 작은 점
+    public static let rubberHi = Color(hex: 0x4C4C4C)
     public static let onRubber = Color(hex: 0xC8C5C0)
 
     /// 검정 판 위의 글자
@@ -92,8 +94,19 @@ public enum PlasticSize {
     /// 몸통에 새긴 줄무늬 한 줄의 두께
     public static let stripe: CGFloat = 5
 
-    /// 십자키 한 변. 팔 하나는 이것의 1/3 이므로 **3의 배수**여야 팔이 딱 나뉩니다.
-    public static let cross: CGFloat = 96
+    /**
+     십자키 한 변. 팔 하나는 이것의 1/3 이므로 **3의 배수**여야 팔이 딱 나뉩니다.
+
+     지도 조작부는 십자키 · 알약 둘 · 빨간 버튼 둘이 **한 줄에** 서므로 폭이 빠듯합니다.
+     이 값을 키우면 좁은 폰에서 오른쪽 버튼이 밀려납니다.
+     */
+    public static let cross: CGFloat = 90
+
+    /// 가운데 고무 알약 (실물의 SELECT · START 자리, 여기서는 확대·축소)
+    public static let pillWidth: CGFloat = 42
+    public static let pillHeight: CGFloat = 20
+    /// 빨간 A · B 버튼
+    public static let redButton: CGFloat = 44
     /// 십자키 가운데의 작은 점
     public static let dotCore: CGFloat = 8
 

@@ -189,28 +189,46 @@ struct PlasticMapBody: View {
     // MARK: 조작부
 
     /**
-     아래 조작부 — 왼쪽 십자키, 오른쪽 빨간 A 버튼.
+     아래 조작부 — **실물 컨트롤러의 배치 그대로**입니다.
 
-     **십자키의 네 팔이 다 살아 있습니다:** 위·아래는 확대·축소, 좌·우는 지도를 밉니다.
-     좌·우를 비워 두면 눌러도 아무 일이 없는 죽은 버튼이 되는데, 십자키에서 그건
-     고장 난 것으로 읽힙니다. 가운데는 지금 보는 곳을 한국으로 되돌립니다 —
-     안드로이드는 여기가 '내 위치' 인데, iOS 쪽은 그 기능을 아직 만들지 않아
-     같은 자리에 **있는 기능** 중 가장 가까운 것을 뒀습니다.
+     ```
+       ✛ 십자키        ▭ ▭          ● ●
+       지도 이동      축소 확대     B    A
+     ```
+
+     지금 화면 그대로 **회색 몸통 위**에 놓습니다. 실물은 버튼이 검정 페이스플레이트
+     위에 있지만, 그 판을 여기 깔면 위의 지도 화면과 같은 검정이 두 덩어리가 되어
+     어느 쪽이 화면인지 흐려집니다. 배치와 아이콘만 실물에서 가져옵니다.
+
+     **A·B 글자는 붙이지 않습니다.** 무엇을 하는 버튼인지 알려 주지 않는 글자라,
+     목록 화면에서 SELECT·START 를 뺀 것과 같은 이유입니다.
+
+     ⚠️ **B 는 안드로이드에서 '내 위치' 인데 여기서는 '처음 자리로' 입니다.**
+     iOS 쪽에 내 위치 기능을 아직 만들지 않아서(위치 권한이 필요합니다), 같은 자리에
+     있는 기능 중 가장 가까운 것을 뒀습니다. 아이콘도 그에 맞춰 집 모양입니다 —
+     위치 아이콘을 달면 하지 않는 일을 하는 척하게 됩니다.
      */
     private var pad: some View {
         HStack {
             dpad
             Spacer(minLength: 0)
 
-            Button { onAddPhoto(nil) } label: {
-                Text("＋")
-                    .font(MemoryFont.font(24, .bold))
-                    .foregroundStyle(PlasticColor.onRed)
-                    .frame(width: PlasticSize.button, height: PlasticSize.button)
-                    .background(Circle().fill(PlasticColor.red))
+            // 가운데 고무 알약 둘 — 실물의 SELECT · START 자리입니다. 그 글자는 안 씁니다.
+            HStack(spacing: MemorySpace.xs) {
+                pill("minus", "축소") { nudgeZoom(by: 2) }
+                pill("plus", "확대") { nudgeZoom(by: 0.5) }
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("사진 올리기")
+            .padding(PlasticSize.buttonInset)
+            .raisedPlastic()
+
+            Spacer(minLength: 0)
+
+            // B · A — 실물처럼 B 가 왼쪽입니다. 자주 쓰는 쪽(올리기)이 A 인 것도 실물과
+            // 같습니다: 오른쪽 끝 버튼이 엄지가 가장 편히 닿는 자리입니다.
+            HStack(spacing: MemorySpace.s) {
+                redButton("house", "처음 자리로", action: reset)
+                redButton("plus", "사진 올리기") { onAddPhoto(nil) }
+            }
             .padding(PlasticSize.buttonInset)
             .raisedPlastic()
         }
@@ -218,11 +236,42 @@ struct PlasticMapBody: View {
         .padding(.vertical, MemorySpace.m)
     }
 
+    /// 고무 알약. 실물에서 SELECT·START 가 있던 자리이고, 여기서는 확대·축소입니다.
+    private func pill(_ symbol: String, _ label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(PlasticColor.onRubber)
+                .frame(width: PlasticSize.pillWidth, height: PlasticSize.pillHeight)
+                .background(Capsule().fill(PlasticColor.rubber))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+    }
+
+    /// 빨간 A·B 버튼.
+    private func redButton(
+        _ symbol: String, _ label: String, action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(PlasticColor.onRed)
+                .frame(width: PlasticSize.redButton, height: PlasticSize.redButton)
+                .background(Circle().fill(PlasticColor.red))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+    }
+
     /**
-     십자키. 한 덩어리 고무 위에 눌리는 자리 다섯을 얹습니다.
+     십자키. 한 덩어리 고무 위에 눌리는 자리 넷을 얹습니다. **네 팔이 다 지도를 밉니다.**
 
      실물처럼 **십자 모양 하나**로 만들려면 세로 기둥과 가로 들보를 겹쳐 놓고
      그 위에 누를 자리를 배치해야 합니다. 모서리 네 곳은 비어 있습니다.
+
+     가운데는 **누르는 자리가 아닙니다.** 실물에서도 십자키 한가운데는 그냥 플라스틱이라
+     눌러도 아무 일이 없고, 여기서도 화살표 넷이 이미 할 일을 다 나눠 가졌습니다.
      */
     private var dpad: some View {
         let arm = PlasticSize.cross / 3
@@ -235,20 +284,17 @@ struct PlasticMapBody: View {
                 .fill(PlasticColor.rubber)
                 .frame(width: PlasticSize.cross, height: arm)
 
-            arrow("＋", "확대", dx: 0, dy: -arm) { nudgeZoom(by: 0.5) }
-            arrow("－", "축소", dx: 0, dy: arm) { nudgeZoom(by: 2) }
-            arrow("‹", "왼쪽으로", dx: -arm, dy: 0) { pan(dx: -panStep, dy: 0) }
-            arrow("›", "오른쪽으로", dx: arm, dy: 0) { pan(dx: panStep, dy: 0) }
+            arrow("chevron.up", "위로", dx: 0, dy: -arm) { pan(dx: 0, dy: -panStep) }
+            arrow("chevron.down", "아래로", dx: 0, dy: arm) { pan(dx: 0, dy: panStep) }
+            arrow("chevron.left", "왼쪽으로", dx: -arm, dy: 0) { pan(dx: -panStep, dy: 0) }
+            arrow("chevron.right", "오른쪽으로", dx: arm, dy: 0) { pan(dx: panStep, dy: 0) }
 
-            // 가운데. 실물 십자키의 가운데 원은 오목합니다.
-            Button(action: reset) {
-                Circle()
-                    .fill(PlasticColor.ink)
-                    .frame(width: arm, height: arm)
-                    .overlay(Circle().fill(PlasticColor.onRubber).frame(width: PlasticSize.dotCore))
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("처음 자리로")
+            // 가운데의 오목한 원. 실물의 그 원이고, 누르는 곳은 아닙니다.
+            Circle()
+                .fill(PlasticColor.ink)
+                .frame(width: arm, height: arm)
+                .overlay(Circle().fill(PlasticColor.rubberHi).frame(width: PlasticSize.dotCore))
+                .allowsHitTesting(false)
         }
         .frame(width: PlasticSize.cross, height: PlasticSize.cross)
         .padding(PlasticSize.buttonInset)
@@ -256,7 +302,7 @@ struct PlasticMapBody: View {
     }
 
     private func arrow(
-        _ glyph: String,
+        _ symbol: String,
         _ label: String,
         dx: CGFloat,
         dy: CGFloat,
@@ -264,8 +310,8 @@ struct PlasticMapBody: View {
     ) -> some View {
         let arm = PlasticSize.cross / 3
         return Button(action: action) {
-            Text(glyph)
-                .font(MemoryFont.font(15, .bold))
+            Image(systemName: symbol)
+                .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(PlasticColor.onRubber)
                 .frame(width: arm, height: arm)
         }
