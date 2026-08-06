@@ -28,6 +28,13 @@ struct PlasticMapBody: View {
     @Binding var covers: [String: Image]
     @FocusState.Binding var searching: Bool
 
+    /// 못 찾았을 때 알릴 말. 화면 아래에 잠깐 뜹니다.
+    @State private var notice: String?
+
+    /// 위치를 찾는 사람. 화면이 살아 있는 동안 하나만 둡니다 —
+    /// 누를 때마다 새로 만들면 권한 창의 답을 받을 자리가 사라집니다.
+    @State private var finder = MyLocationFinder()
+
     var body: some View {
         VStack(spacing: 0) {
             cartridgeSlot
@@ -56,6 +63,19 @@ struct PlasticMapBody: View {
             .overlay(alignment: .bottom) {
                 if let sheet = store.state.sheet {
                     PlasticRegionSheet(sheet: sheet, store: store, onAddPhoto: onAddPhoto)
+                } else if let notice {
+                    // 시트가 떠 있으면 알림을 띄우지 않습니다 — 같은 자리라 겹칩니다.
+                    Text(notice)
+                        .font(MemoryFont.font(12.5, .semibold))
+                        .foregroundStyle(PlasticColor.onPlate)
+                        .padding(.horizontal, MemorySpace.m)
+                        .padding(.vertical, MemorySpace.s)
+                        .background(
+                            RoundedRectangle(cornerRadius: PlasticRadius.chip, style: .continuous)
+                                .fill(PlasticColor.plate)
+                        )
+                        .padding(MemorySpace.m)
+                        .transition(.opacity)
                 }
             }
     }
@@ -203,10 +223,6 @@ struct PlasticMapBody: View {
      **A·B 글자는 붙이지 않습니다.** 무엇을 하는 버튼인지 알려 주지 않는 글자라,
      목록 화면에서 SELECT·START 를 뺀 것과 같은 이유입니다.
 
-     ⚠️ **B 는 안드로이드에서 '내 위치' 인데 여기서는 '처음 자리로' 입니다.**
-     iOS 쪽에 내 위치 기능을 아직 만들지 않아서(위치 권한이 필요합니다), 같은 자리에
-     있는 기능 중 가장 가까운 것을 뒀습니다. 아이콘도 그에 맞춰 집 모양입니다 —
-     위치 아이콘을 달면 하지 않는 일을 하는 척하게 됩니다.
      */
     private var pad: some View {
         HStack {
@@ -226,7 +242,7 @@ struct PlasticMapBody: View {
             // B · A — 실물처럼 B 가 왼쪽입니다. 자주 쓰는 쪽(올리기)이 A 인 것도 실물과
             // 같습니다: 오른쪽 끝 버튼이 엄지가 가장 편히 닿는 자리입니다.
             HStack(spacing: MemorySpace.s) {
-                redButton("house", "처음 자리로", action: reset)
+                redButton("location", "내 위치") { Task { await goToMyLocation() } }
                 redButton("plus", "사진 올리기") { onAddPhoto(nil) }
             }
             .padding(PlasticSize.buttonInset)
@@ -351,10 +367,45 @@ struct PlasticMapBody: View {
         }
     }
 
-    private func reset() {
-        withAnimation(.easeInOut(duration: 0.4)) { position = .region(.korea) }
+    /**
+     지금 자리로 지도를 옮깁니다.
+
+     못 찾으면 **왜 못 찾았는지**를 말합니다 — 눌렀는데 아무 일이 없으면 고장 난
+     것으로 보입니다. 안드로이드는 스낵바로 같은 말을 합니다.
+
+     **지역 시트는 건드리지 않습니다.** 지역을 보다가 "여기가 어디쯤이지" 하고 누르는
+     일이라, 보던 시트가 닫히면 하던 일이 끊깁니다.
+     */
+    private func goToMyLocation() async {
+        switch await finder.find() {
+        case let .found(latitude, longitude):
+            withAnimation(.easeInOut(duration: 0.4)) {
+                position = .region(MKCoordinateRegion(
+                    center: .init(latitude: latitude, longitude: longitude),
+                    span: MKCoordinateSpan(latitudeDelta: spotSpan, longitudeDelta: spotSpan)
+                ))
+            }
+        case .denied:
+            await say("설정에서 위치를 켜 주면 지금 자리로 옮겨 드려요.")
+        case .off:
+            await say("위치 기능이 꺼져 있어요.")
+        case .notFound:
+            await say("지금 자리를 찾지 못했어요. 잠시 뒤에 다시 눌러 주세요.")
+        }
+    }
+
+    /// 잠깐 띄웠다 지웁니다. 닫기 버튼을 두지 않습니다 — 알리기만 하는 말이라
+    /// 치우는 일까지 시킬 까닭이 없습니다.
+    private func say(_ text: String) async {
+        withAnimation { notice = text }
+        try? await Task.sleep(for: .seconds(3))
+        withAnimation { notice = nil }
     }
 }
+
+/// 내 위치로 옮길 때의 배율. `MapFocus.spot` 과 같은 값이라 지역을 골랐을 때와
+/// 같은 만큼 확대됩니다.
+private let spotSpan = 1.2
 
 /// 십자키 좌·우 한 번에 미는 폭. 보이는 넓이의 1/3 이면 밀린 것이 보이면서도 길을 잃지 않습니다.
 private let panStep: Double = 0.33

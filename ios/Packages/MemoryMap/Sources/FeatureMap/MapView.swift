@@ -25,6 +25,11 @@ public struct MapView: View {
     /// 지금 지도가 보여 주고 있는 범위. 확대·축소를 여기서부터 계산합니다 —
     /// `MapCameraPosition` 은 우리가 넣은 값만 알려 주고, 손으로 옮긴 것은 모릅니다.
     @State private var visibleRegion: MKCoordinateRegion?
+    /// 위치를 찾는 사람. 화면이 살아 있는 동안 하나만 둡니다 —
+    /// 누를 때마다 새로 만들면 권한 창의 답을 받을 자리가 사라집니다.
+    @State private var finder = MyLocationFinder()
+    /// 위치를 못 찾았을 때 알릴 말. 지도 아래에 잠깐 뜹니다.
+    @State private var notice: String?
     /// 사진 올리기를 엽니다. **지역 시트에서 눌렀으면 그 지역**이 넘어갑니다 —
     /// 이미 아는 곳을 올리기 화면에서 다시 고르게 하면 안 됩니다.
     /// 아래 ＋ 로 눌렀으면 `nil` 이고, 그때는 사진의 정보가 지역을 정합니다.
@@ -88,6 +93,20 @@ public struct MapView: View {
             MemoryFab { onAddPhoto(nil) }
                 .padding(.trailing, edge)
                 .padding(.bottom, floatBottom)
+        }
+        .overlay(alignment: .bottom) {
+            // 시트가 떠 있으면 알림을 띄우지 않습니다 — 같은 자리라 겹칩니다.
+            if store.state.sheet == nil, let notice {
+                Text(notice)
+                    .memoryLabel()
+                    .foregroundStyle(MemoryColor.ink)
+                    .padding(.horizontal, MemorySpace.m)
+                    .padding(.vertical, MemorySpace.s)
+                    .background(MemoryColor.surface)
+                    .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
+                    .padding(.bottom, 90)
+                    .transition(.opacity)
+            }
         }
         .overlay(alignment: .bottom) {
             if let sheet = store.state.sheet {
@@ -282,13 +301,40 @@ public struct MapView: View {
      세 칸이 **따로 떨어져** 섭니다 — 붙여 놓으면 가운데 선이 두 겹이 되고,
      무엇이 한 벌인지도 흐려집니다.
      */
-    /// 시안에는 '내 위치' 도 있지만 아직 어느 쪽에도 만들지 않은 기능이라 빼 뒀습니다.
-    /// 눌러도 아무 일 없는 칸을 두는 것보다 없는 편이 낫습니다.
     private var controls: some View {
         VStack(spacing: 6) {
             ctlButton("plus", "확대") { nudgeZoom(by: 0.5) }
             ctlButton("minus", "축소") { nudgeZoom(by: 2) }
+            ctlButton("location", "내 위치") { Task { await goToMyLocation() } }
         }
+    }
+
+    /**
+     지금 자리로 지도를 옮깁니다. 패미컴 화면(`PlasticMapBody.goToMyLocation`)과
+     같은 일을 하고, 못 찾았을 때 알리는 방식만 이 화면의 것입니다.
+     */
+    private func goToMyLocation() async {
+        switch await finder.find() {
+        case let .found(latitude, longitude):
+            withAnimation(.easeInOut(duration: 0.4)) {
+                position = .region(MKCoordinateRegion(
+                    center: .init(latitude: latitude, longitude: longitude),
+                    span: MKCoordinateSpan(latitudeDelta: 1.2, longitudeDelta: 1.2)
+                ))
+            }
+        case .denied:
+            await say("설정에서 위치를 켜 주면 지금 자리로 옮겨 드려요.")
+        case .off:
+            await say("위치 기능이 꺼져 있어요.")
+        case .notFound:
+            await say("지금 자리를 찾지 못했어요. 잠시 뒤에 다시 눌러 주세요.")
+        }
+    }
+
+    private func say(_ text: String) async {
+        withAnimation { notice = text }
+        try? await Task.sleep(for: .seconds(3))
+        withAnimation { notice = nil }
     }
 
     private func ctlButton(_ symbol: String, _ label: String, action: @escaping () -> Void) -> some View {

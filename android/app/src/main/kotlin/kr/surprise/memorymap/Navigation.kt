@@ -1,5 +1,6 @@
 package kr.surprise.memorymap
 
+import android.Manifest
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -45,6 +46,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -105,6 +107,7 @@ import kr.surprise.memorymap.feature.upload.UploadEffect
 import kr.surprise.memorymap.feature.upload.UploadIntent
 import kr.surprise.memorymap.feature.upload.UploadSheet
 import kr.surprise.memorymap.feature.upload.UploadViewModel
+import kotlinx.coroutines.launch
 
 private const val ROUTE_SPACES = "spaces"
 
@@ -257,6 +260,34 @@ private fun SpaceTabs(
 
     LaunchedEffect(spaceId) { container.refreshPhotos(kind, spaceId) }
 
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    /**
+     * 자리를 찾아 지도에 넘깁니다. 못 찾으면 **왜 못 찾았는지**를 말합니다 —
+     * 눌렀는데 아무 일이 없으면 고장 난 것으로 보입니다.
+     *
+     * 권한이 없을 때는 여기서 알리지 않습니다. 부르는 쪽이 곧바로 권한 창을 띄우니까요.
+     */
+    suspend fun goToMyLocation() {
+        when (val here = findMyLocation(context)) {
+            is MyLocation.Found -> mapVm.onIntent(MapIntent.MyLocationFound(here.latitude, here.longitude))
+            MyLocation.NoPermission -> Unit
+            MyLocation.Off -> snackbar.showSnackbar("위치 기능이 꺼져 있어요.")
+            MyLocation.NotFound -> snackbar.showSnackbar("지금 자리를 찾지 못했어요. 잠시 뒤에 다시 눌러 주세요.")
+        }
+    }
+
+    // 권한을 물은 결과. **허락받은 그 자리에서 바로** 다시 찾습니다 —
+    // 허락하고 나서 버튼을 또 누르게 하면 두 번 일 시키는 것입니다.
+    val askLocation = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        scope.launch {
+            if (granted) goToMyLocation() else snackbar.showSnackbar("위치를 알려 주면 지금 자리로 옮겨 드려요.")
+        }
+    }
+
     LaunchedEffect(mapVm) {
         mapVm.effect.collect { effect ->
             when (effect) {
@@ -265,7 +296,14 @@ private fun SpaceTabs(
                     uploading = true
                 }
                 is MapEffect.ShowMessage -> snackbar.showSnackbar(effect.text)
-                MapEffect.AskMyLocation -> snackbar.showSnackbar("내 위치는 다음 단계에서 붙일게요.")
+
+                // 이미 허락받았으면 창을 다시 띄우지 않고 바로 찾습니다.
+                MapEffect.AskMyLocation ->
+                    if (hasLocationPermission(context)) {
+                        goToMyLocation()
+                    } else {
+                        askLocation.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+                    }
             }
         }
     }

@@ -49,4 +49,19 @@ internal object MapReducer {
 
     fun sheetDismissed(state: MapState): MapState =
         state.copy(sheet = null, query = "", results = emptyList())
+
+    /**
+     * 지금 자리로 지도를 옮깁니다.
+     *
+     * **시트는 건드리지 않습니다.** 지역을 보다가 "여기가 어디쯤이지" 하고 누르는
+     * 일이라, 보던 시트가 닫히면 하던 일이 끊깁니다. 지역 테두리도 그대로 둡니다.
+     *
+     * [MapState.focusCount] 를 올려야 지도가 실제로 움직입니다 — 같은 자리에서 두 번
+     * 눌러도 좌표가 같아서, 횟수를 세지 않으면 두 번째부터 꿈쩍도 안 합니다.
+     */
+    fun movedToMyLocation(state: MapState, latitude: Double, longitude: Double): MapState =
+        state.copy(
+            focus = MapFocus.Spot(latitude, longitude),
+            focusCount = state.focusCount + 1,
+        )
 }

@@ -81,6 +81,13 @@ sealed interface MapIntent {
     data object AddPhotoTapped : MapIntent
     data object SheetDismissed : MapIntent
     data object MyLocationTapped : MapIntent
+
+    /**
+     * 기기가 알려 준 지금 자리. 위치를 **찾는 일은 앱 껍데기**가 합니다 —
+     * 권한을 묻고 안드로이드 위치 서비스를 부르는 일이라 도메인이 알 필요가 없습니다.
+     * 여기서는 좌표만 받아 지도를 옮깁니다.
+     */
+    data class MyLocationFound(val latitude: Double, val longitude: Double) : MapIntent
 }
 
 sealed interface MapEffect {
