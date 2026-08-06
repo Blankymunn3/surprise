@@ -124,6 +124,8 @@ object PlasticSize {
     val DayCell = 38.dp
     /** 달 넘김 버튼 (‹ ›) */
     val MonthNav = 34.dp
+    /** 달력 아래 목록의 사진. 격자와 목록이 한 화면에 같이 있어 [SheetPhoto] 보다 작습니다. */
+    val CalendarPhoto = 68.dp
 }
 
 /** 베벨 두께. 위·왼쪽보다 아래·오른쪽을 한 겹 두껍게 해야 두께가 느껴집니다. */
