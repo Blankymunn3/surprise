@@ -34,6 +34,7 @@ import org.maplibre.android.style.layers.FillLayer
 import org.maplibre.android.style.layers.LineLayer
 import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.sources.GeoJsonSource
+import kotlin.math.pow
 
 /**
  * 실제 지도. MapLibre 를 쓰는 이유는 **API 키도 결제 계정도 필요 없고**,
@@ -180,11 +181,26 @@ internal fun MapCanvas(
 
                 if (pan.serial != appliedPan) {
                     appliedPan = pan.serial
-                    // 화면 폭·높이에 견줘 밉니다. 고정 픽셀로 밀면 태블릿에서는
-                    // 찔끔 움직이고 작은 폰에서는 화면이 통째로 넘어갑니다.
-                    map.animateCamera(
-                        CameraUpdateFactory.scrollBy(pan.dx * width, pan.dy * height)
-                    )
+                    // **가운데를 옮겨서** 밉니다. `CameraUpdateFactory.scrollBy` 는
+                    // 이 MapLibre 판에 없습니다.
+                    //
+                    // 한 화면이 덮는 경도는 배율이 1 오를 때마다 절반이 되므로
+                    // `360 / 2^배율` 입니다. 그 비율만큼 옮기면 어느 배율에서든
+                    // "화면의 1/3" 이 똑같이 느껴집니다.
+                    val here = map.cameraPosition
+                    here.target?.let { target ->
+                        val perScreen = 360.0 / 2.0.pow(here.zoom)
+                        map.animateCamera(
+                            CameraUpdateFactory.newLatLngZoom(
+                                LatLng(
+                                    // 위도는 ±85 를 넘으면 지도가 뒤집힙니다.
+                                    (target.latitude - perScreen * pan.dy).coerceIn(-85.0, 85.0),
+                                    target.longitude + perScreen * pan.dx,
+                                ),
+                                here.zoom,
+                            )
+                        )
+                    }
                 }
             }
         },
@@ -215,9 +231,8 @@ internal data class ZoomNudge(val serial: Int = 0, val delta: Double = 0.0)
  * 있으면 좌·우가 눌러도 아무 일이 없는 죽은 팔이 됩니다. 지도에서 십자키 좌·우가
  * 할 일은 미는 것 말고 없으니 그렇게 했습니다.
  *
- * [dx]·[dy] 는 **지도 크기에 대한 비율**입니다 (0.35 면 화면의 35%). 위도·경도로 밀면
- * 확대했을 때는 화면 밖으로 날아가고 축소했을 때는 꿈쩍도 안 합니다. 고정 픽셀로 밀면
- * 태블릿에서만 찔끔 움직입니다. 비율이라야 어느 배율·어느 기기에서든 같게 느껴집니다.
+ * [dx]·[dy] 는 **지금 보이는 넓이에 대한 비율**입니다 (0.33 이면 화면의 1/3).
+ * 고정 도수로 밀면 확대했을 때는 화면 밖으로 날아가고 축소했을 때는 꿈쩍도 안 합니다.
  */
 internal data class PanNudge(val serial: Int = 0, val dx: Float = 0f, val dy: Float = 0f)
 

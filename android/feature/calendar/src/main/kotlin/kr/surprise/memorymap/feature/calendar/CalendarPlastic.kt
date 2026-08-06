@@ -98,7 +98,9 @@ internal fun PlasticCalendarBody(state: CalendarState, onIntent: (CalendarIntent
 
             val groups = state.visibleDays()
             if (groups.isEmpty()) {
-                EmptyPlate()
+                // 남는 세로를 **weight 로** 받습니다. 위에 격자가 이미 자리를 먹은
+                // Column 안이라, fillMaxSize 로 두면 부모보다 커져 아래가 잘립니다.
+                Box(Modifier.weight(1f)) { EmptyPlate() }
             } else {
                 LazyColumn(
                     Modifier.weight(1f),
@@ -133,7 +135,7 @@ internal fun PlasticCalendarBody(state: CalendarState, onIntent: (CalendarIntent
 @Composable
 private fun MonthBar(state: CalendarState, onIntent: (CalendarIntent) -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(horizontal = Gap.xs, top = Gap.s, bottom = Gap.s),
+        Modifier.fillMaxWidth().padding(horizontal = Gap.xs, vertical = Gap.s),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Gap.s),
     ) {

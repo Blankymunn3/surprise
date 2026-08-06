@@ -256,7 +256,7 @@ private fun Pad(
     onAdd: () -> Unit,
 ) {
     Row(
-        Modifier.fillMaxWidth().padding(horizontal = Gap.xs, top = Gap.m, bottom = Gap.m),
+        Modifier.fillMaxWidth().padding(horizontal = Gap.xs, vertical = Gap.m),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         DPad(

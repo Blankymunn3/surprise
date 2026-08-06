@@ -48,8 +48,12 @@ import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 /** 지도 위 물건들의 가장자리 여백. 시안이 정한 값입니다. */
 private val Edge = 14.dp
 
-/** 한 번 누를 때 옮기는 배율. 1단계면 넓이가 절반이 됩니다 — 두 손가락으로 벌리는 것과 비슷한 폭입니다. */
-private const val ZOOM_STEP = 1.0
+/**
+ * 한 번 누를 때 옮기는 배율. 1단계면 넓이가 절반이 됩니다 — 두 손가락으로 벌리는 것과
+ * 비슷한 폭입니다. 패미컴 스타일 지도(`MapPlastic.kt`)도 같은 값을 씁니다 —
+ * 코틀린에서 최상위 `private` 은 파일 안까지라 `internal` 이어야 보입니다.
+ */
+internal const val ZOOM_STEP = 1.0
 
 /**
  * 지도 탭. 지도가 이 칸을 **꽉 채우고**, 조작하는 것만 그 위에 떠 있습니다.

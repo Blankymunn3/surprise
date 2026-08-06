@@ -104,7 +104,7 @@ internal fun PlasticListBody(state: SpaceListState, onIntent: (SpaceListIntent) 
 @Composable
 private fun Brand() {
     Row(
-        Modifier.fillMaxWidth().padding(horizontal = Gap.xs, top = Gap.xs, bottom = Gap.s),
+        Modifier.fillMaxWidth().padding(horizontal = Gap.xs).padding(top = Gap.xs, bottom = Gap.s),
         verticalAlignment = Alignment.Bottom,
     ) {
         Text(
@@ -132,7 +132,7 @@ private fun Brand() {
 @Composable
 private fun Stripes() {
     Column(
-        Modifier.fillMaxWidth().padding(horizontal = Gap.xs, bottom = Gap.s),
+        Modifier.fillMaxWidth().padding(horizontal = Gap.xs).padding(bottom = Gap.s),
         verticalArrangement = Arrangement.spacedBy(Gap.xs),
     ) {
         repeat(3) {
