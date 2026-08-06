@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  짜국 목록·만들기·참여·로그인·관리 화면의 글.
+
+  **이름은 `화면_쓰임` 순으로 짓습니다** — 알파벳순으로 늘어놓으면 같은 화면 것이
+  모여서, 문구를 고칠 때 그 화면 것만 보면 됩니다.
+
+  ⚠️ iOS 에는 같은 글이 Swift 코드에 그대로 박혀 있습니다. 여기 문구를 고치면
+  `ios/Packages/MemoryMap/Sources/FeatureSpace/` 쪽도 같이 고쳐야 두 앱이 같은 말을 합니다.
+-->
+<resources>
+
+    <!-- 관리 메뉴 (⋯) -->
+    <string name="menu_close">닫기</string>
+    <string name="menu_members">멤버</string>
+    <string name="menu_owner">주인</string>
+    <string name="menu_invite_code">초대 코드</string>
+    <string name="menu_invite_code_making">만드는 중…</string>
+    <string name="menu_copy">복사</string>
+    <string name="menu_rename">이름 바꾸기</string>
+    <string name="menu_rename_placeholder">예) 우리 여름</string>
+    <string name="menu_rename_confirm">바꾸기</string>
+    <string name="menu_rename_working">바꾸는 중…</string>
+
+</resources>
