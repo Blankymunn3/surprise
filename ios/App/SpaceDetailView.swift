@@ -67,11 +67,17 @@ struct SpaceDetailView: View {
         .background(plasticTrial ? PlasticColor.body : MemoryColor.paper)
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
-        // 아래에서 올라오는 시트입니다. **크게** 뜹니다 — 사진이 여러 장이면
-        // 훑어 내려야 해서, 반만 올라오면 두 장밖에 안 보입니다.
+        // 아래에서 올라오는 시트입니다. 다른 시트들처럼 **화면을 덮지 않는 판**으로
+        // 뜹니다 — 사진 목록은 판 안에서 구릅니다. 안드로이드 `UPLOAD_SHEET_HEIGHT` 와
+        // 같은 값입니다.
+        //
+        // 예전에는 `.large` 였습니다("여러 장이면 훑어 내려야 한다"). 그런데 그러면
+        // 시트가 아니라 전체 화면으로 보입니다 — 만들기·참여·로그인은 다 화면 일부만
+        // 덮는데 이것만 혼자 화면을 삼켜서 같은 종류의 동작으로 안 읽혔습니다.
+        // 머리말과 아래 버튼이 붙박이라 몇 장을 골랐든 '올리기' 는 늘 같은 자리입니다.
         .sheet(isPresented: $uploading) {
             UploadView(store: uploadStore()) { uploading = false }
-                .presentationDetents([.large])
+                .presentationDetents([.fraction(uploadSheetHeight)])
                 .presentationDragIndicator(.hidden)
         }
         .overlay {
@@ -167,18 +173,36 @@ struct SpaceDetailView: View {
 
             Text(name)
                 .memoryTitle()
+                // 몸통 위의 글자는 잉크가 아니라 플라스틱에 새긴 검정입니다.
+                .foregroundStyle(plasticTrial ? PlasticColor.ink : MemoryColor.ink)
                 .lineLimit(1)
                 .truncationMode(.tail)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             if kind == .personal {
-                Text("이 폰에만")
-                    .memoryMicro()
-                    .foregroundStyle(MemoryColor.ink)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 2)
-                    .background(MemoryColor.surface)
-                    .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
+                // 이 딱지는 몸통 위에서 **파인 자리**로 그립니다. 흰 면에 잉크 선은
+                // 플라스틱 위에서 종이를 붙인 것처럼 떠 보입니다.
+                if plasticTrial {
+                    Text("이 폰에만")
+                        .font(MemoryFont.font(11, .bold))
+                        .foregroundStyle(PlasticColor.onPlateDim)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(
+                            RoundedRectangle(cornerRadius: PlasticRadius.chip, style: .continuous)
+                                .fill(PlasticColor.plate)
+                        )
+                } else {
+                    Text("이 폰에만")
+                        .memoryMicro()
+                        .foregroundStyle(MemoryColor.ink)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 2)
+                        .background(MemoryColor.surface)
+                        .overlay(
+                            Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border)
+                        )
+                }
             }
 
             barButton("ellipsis", label: "더 보기") { menuOpen = true }
@@ -201,3 +225,6 @@ struct SpaceDetailView: View {
         .accessibilityLabel(label)
     }
 }
+
+/// 올리기 시트가 화면에서 차지하는 높이. 안드로이드 `UPLOAD_SHEET_HEIGHT` 와 같은 값입니다.
+private let uploadSheetHeight: CGFloat = 0.62
