@@ -24,11 +24,42 @@ public struct CalendarView: View {
     /// 6줄이면 어떤 달이든 들어갑니다. 늘 6줄로 그려야 넘길 때 높이가 안 바뀝니다.
     private static let weekRows = 6
 
-    public init(store: CalendarStore) {
+    /// 사진 올리기를 엽니다.
+    ///
+    /// 기준 화면에서는 이 버튼이 화면 **밖**(`SpaceDetailView` 의 떠 있는 ＋)에 있어서
+    /// 달력이 알 필요가 없었습니다. 패미컴 스타일에서는 조작이 전부 몸통 위에 모이므로
+    /// 달력이 그 버튼을 직접 그려야 하고, 그래서 받습니다.
+    private let onAddPhoto: () -> Void
+
+    public init(store: CalendarStore, onAddPhoto: @escaping () -> Void = {}) {
         self._store = State(initialValue: store)
+        self.onAddPhoto = onAddPhoto
     }
 
     public var body: some View {
+        // 패미컴 스타일 시험 중에는 격자가 몸통에 끼운 화면 안으로 들어가고
+        // 조작은 화면 밖에 섭니다. 스위치는 DesignSystem 에 하나뿐입니다.
+        //
+        // 넘김 상태(기준 달·페이지·격자 폭)는 **여기 그대로 둡니다.** 시험 화면으로
+        // 옮기면 스위치를 껐다 켤 때 보던 달을 잃고, 두 벌을 따로 관리하게 됩니다.
+        if plasticTrial {
+            PlasticCalendarBody(
+                store: store,
+                onAddPhoto: onAddPhoto,
+                anchor: $anchor,
+                page: $page,
+                gridWidth: $gridWidth,
+                pageCount: Self.pageCount,
+                pageCenter: Self.pageCenter,
+                weekRows: Self.weekRows
+            )
+            .task { await store.refresh() }
+        } else {
+            standard
+        }
+    }
+
+    private var standard: some View {
         // 격자와 '달력 접기' 는 **붙박이**고 아래 목록만 구릅니다. 목록을 내리는데
         // 달력까지 같이 밀려 올라가면, 지금 무슨 달을 보고 있는지가 사라집니다.
         VStack(alignment: .leading, spacing: 0) {

@@ -20,6 +20,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,10 +47,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -70,6 +75,10 @@ import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
+import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
+import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
+import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
+import kr.surprise.memorymap.core.designsystem.theme.Pretendard
 import kr.surprise.memorymap.core.model.Region
 import kr.surprise.memorymap.core.model.SpaceId
 import kr.surprise.memorymap.core.model.SpaceKind
@@ -271,7 +280,11 @@ private fun SpaceTabs(
         }
     }
 
-    Box(Modifier.fillMaxSize().background(MemoryColors.Paper)) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(if (PLASTIC_TRIAL) PlasticColors.Body else MemoryColors.Paper)
+    ) {
         // 머리말과 탭은 **지도 위에 떠 있지 않고 자리를 차지합니다.** 지도가 그 아래에서
         // 시작하니, 러시아처럼 위로 긴 나라가 검색칸 뒤로 숨을 자리 자체가 없습니다.
         Column(Modifier.fillMaxSize().systemBarsPadding()) {
@@ -281,12 +294,17 @@ private fun SpaceTabs(
                 onBack = onBack,
                 onMore = { menuOpen = true },
             )
-            Segmented(
-                options = listOf("지도", "달력"),
-                selectedIndex = tab,
-                onSelect = { tab = it },
-                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 2.dp, bottom = 10.dp),
-            )
+            // 패미컴 스타일에서는 탭도 몸통 위의 고무 스위치입니다.
+            if (PLASTIC_TRIAL) {
+                PlasticTabs(selectedIndex = tab, onSelect = { tab = it })
+            } else {
+                Segmented(
+                    options = listOf("지도", "달력"),
+                    selectedIndex = tab,
+                    onSelect = { tab = it },
+                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 2.dp, bottom = 10.dp),
+                )
+            }
 
             // 탭도 옆으로 밀립니다. 누른 쪽으로 미끄러져야 어느 쪽으로 옮겼는지 보입니다.
             AnimatedContent(
@@ -308,7 +326,10 @@ private fun SpaceTabs(
             }
         }
 
-        if (tab == 1) {
+        // 패미컴 스타일에서는 ＋ 가 떠 있지 않고 **달력 안쪽 조작부**에 앉습니다
+        // (`CalendarPlastic` 의 빨간 A 버튼). 몸통 위에 버튼이 다 모여 있는데
+        // 하나만 화면 위에 떠 있으면 어긋납니다.
+        if (tab == 1 && !PLASTIC_TRIAL) {
             MemoryFab(
                 onClick = { uploading = true },
                 contentDescription = "사진 올리기",
@@ -455,24 +476,82 @@ private fun TopBar(
         Text(
             text = spaceName,
             style = MemoryType.Title,
+            // 몸통 위의 글자는 잉크가 아니라 플라스틱에 새긴 검정입니다.
+            color = if (PLASTIC_TRIAL) PlasticColors.Ink else MemoryColors.Ink,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f).padding(horizontal = 2.dp),
         )
 
         if (onlyOnThisPhone) {
-            Text(
-                text = "이 폰에만",
-                style = MemoryType.Micro,
-                color = MemoryColors.Ink,
-                modifier = Modifier
-                    .background(MemoryColors.Surface)
-                    .border(MemoryStroke.Border, MemoryColors.Line)
-                    .padding(horizontal = 7.dp, vertical = 2.dp),
-            )
+            // 이 딱지는 몸통 위에서 **파인 자리**로 그립니다. 흰 면에 잉크 선은
+            // 플라스틱 위에서 종이를 붙인 것처럼 떠 보입니다.
+            if (PLASTIC_TRIAL) {
+                Text(
+                    text = "이 폰에만",
+                    fontFamily = Pretendard,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 11.sp,
+                    color = PlasticColors.OnPlateDim,
+                    modifier = Modifier
+                        .clip(PlasticShapes.Chip)
+                        .background(PlasticColors.Plate)
+                        .padding(horizontal = 7.dp, vertical = 3.dp),
+                )
+            } else {
+                Text(
+                    text = "이 폰에만",
+                    style = MemoryType.Micro,
+                    color = MemoryColors.Ink,
+                    modifier = Modifier
+                        .background(MemoryColors.Surface)
+                        .border(MemoryStroke.Border, MemoryColors.Line)
+                        .padding(horizontal = 7.dp, vertical = 2.dp),
+                )
+            }
         }
 
         PlainIconButton(MemoryIcons.More, "더 보기", onMore)
+    }
+}
+
+/**
+ * 탭 두 칸 — 몸통 위의 고무 스위치.
+ *
+ * 고른 쪽만 빨갛습니다. 컨트롤러에서 빨강은 "지금 누른 것" 이고,
+ * 여기서 지금 누른 것은 보고 있는 탭입니다.
+ */
+@Composable
+private fun PlasticTabs(selectedIndex: Int, onSelect: (Int) -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp)
+            .padding(bottom = 8.dp)
+            .clip(PlasticShapes.Housing)
+            .background(PlasticColors.Rubber)
+            .padding(3.dp),
+    ) {
+        listOf("지도", "달력").forEachIndexed { index, label ->
+            val chosen = index == selectedIndex
+            Box(
+                Modifier
+                    .weight(1f)
+                    .height(34.dp)
+                    .clip(PlasticShapes.Knob)
+                    .background(if (chosen) PlasticColors.Red else Color.Transparent)
+                    .clickable { onSelect(index) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = label,
+                    fontFamily = Pretendard,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = if (chosen) PlasticColors.OnRed else PlasticColors.OnRubber,
+                )
+            }
+        }
     }
 }
 

@@ -36,6 +36,29 @@ public struct MapView: View {
     }
 
     public var body: some View {
+        // 패미컴 스타일 시험 중에는 짜임새가 통째로 다릅니다 — 조작하는 것이
+        // 지도 위가 아니라 몸통 위(화면 밖)에 섭니다. 스위치는 DesignSystem 에 하나뿐입니다.
+        //
+        // 지도의 상태(카메라·보이는 범위·대표사진)는 **여기 그대로 둡니다.** 시험 화면에
+        // 옮겨 두면 스위치를 껐다 켤 때 보던 자리를 잃고, 두 벌을 따로 관리하게 됩니다.
+        if plasticTrial {
+            PlasticMapBody(
+                store: store,
+                onAddPhoto: onAddPhoto,
+                position: $position,
+                visibleRegion: $visibleRegion,
+                covers: $covers,
+                searching: $searching
+            )
+            .task { await store.refresh() }
+            .task(id: store.state.fills) { await loadCovers() }
+            .onChange(of: store.state.focusCount) { _, _ in fitToFocus() }
+        } else {
+            standard
+        }
+    }
+
+    private var standard: some View {
         ZStack(alignment: .top) {
             // **지도를 가려지는 만큼 줄여 놓습니다.** 카메라에 여백을 주는 것으로는
             // 러시아처럼 위아래로 긴 나라의 윗부분이 검색칸 뒤로 계속 숨었습니다.

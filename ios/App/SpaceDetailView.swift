@@ -38,10 +38,15 @@ struct SpaceDetailView: View {
         // 시작하니, 러시아처럼 위로 긴 나라가 검색칸 뒤로 숨을 자리 자체가 없습니다.
         VStack(spacing: 0) {
             topBar
-            Segmented(options: ["지도", "달력"], selection: $tab)
-                .padding(.horizontal, MemorySpace.xl)
-                .padding(.top, 2)
-                .padding(.bottom, 10)
+            // 패미컴 스타일에서는 탭도 몸통 위의 고무 스위치입니다.
+            if plasticTrial {
+                plasticTabs
+            } else {
+                Segmented(options: ["지도", "달력"], selection: $tab)
+                    .padding(.horizontal, MemorySpace.xl)
+                    .padding(.top, 2)
+                    .padding(.bottom, 10)
+            }
 
             // 탭도 옆으로 밀립니다. 누른 쪽으로 미끄러져야 어느 쪽으로 옮겼는지 보입니다.
             Group {
@@ -59,7 +64,7 @@ struct SpaceDetailView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .animation(.easeInOut(duration: 0.3), value: tab)
         }
-        .background(MemoryColor.paper)
+        .background(plasticTrial ? PlasticColor.body : MemoryColor.paper)
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
         // 아래에서 올라오는 시트입니다. **크게** 뜹니다 — 사진이 여러 장이면
@@ -95,18 +100,59 @@ struct SpaceDetailView: View {
         return store
     }
 
+    /// 달력에서는 지역을 알 수 없습니다 — 날짜만 아는 자리라서요.
+    /// 지난번에 지역 시트에서 열어 둔 값이 남지 않게 비웁니다.
+    private func openUpload() {
+        uploadRegion = nil
+        uploading = true
+    }
+
+    @ViewBuilder
     private var calendarTab: some View {
-        CalendarView(store: calendar)
-            .overlay(alignment: .bottomTrailing) {
-                // 달력에서는 지역을 알 수 없습니다 — 날짜만 아는 자리라서요.
-                // 지난번에 지역 시트에서 열어 둔 값이 남지 않게 비웁니다.
-                MemoryFab {
-                    uploadRegion = nil
-                    uploading = true
+        // 패미컴 스타일에서는 ＋ 가 떠 있지 않고 **달력 안쪽 조작부**에 앉습니다.
+        // 몸통 위에 버튼이 다 모여 있는데 하나만 화면 위에 떠 있으면 어긋납니다.
+        if plasticTrial {
+            CalendarView(store: calendar, onAddPhoto: openUpload)
+        } else {
+            CalendarView(store: calendar)
+                .overlay(alignment: .bottomTrailing) {
+                    MemoryFab(action: openUpload)
+                        .padding(.trailing, 14)
+                        .padding(.bottom, 18)
                 }
-                    .padding(.trailing, 14)
-                    .padding(.bottom, 18)
+        }
+    }
+
+    /**
+     탭 두 칸 — 몸통 위의 고무 스위치.
+
+     고른 쪽만 빨갛습니다. 컨트롤러에서 빨강은 "지금 누른 것" 이고,
+     여기서 지금 누른 것은 보고 있는 탭입니다.
+     */
+    private var plasticTabs: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(["지도", "달력"].enumerated()), id: \.offset) { index, label in
+                Button { tab = index } label: {
+                    Text(label)
+                        .font(MemoryFont.font(15, .bold))
+                        .foregroundStyle(tab == index ? PlasticColor.onRed : PlasticColor.onRubber)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 34)
+                        .background(
+                            RoundedRectangle(cornerRadius: PlasticRadius.knob, style: .continuous)
+                                .fill(tab == index ? PlasticColor.red : Color.clear)
+                        )
+                }
+                .buttonStyle(.plain)
             }
+        }
+        .padding(3)
+        .background(
+            RoundedRectangle(cornerRadius: PlasticRadius.housing, style: .continuous)
+                .fill(PlasticColor.rubber)
+        )
+        .padding(.horizontal, MemorySpace.m)
+        .padding(.bottom, MemorySpace.s)
     }
 
     /**

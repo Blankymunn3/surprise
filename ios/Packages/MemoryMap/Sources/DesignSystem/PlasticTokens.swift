@@ -10,6 +10,17 @@ import SwiftUI
  색은 NES 컨트롤러 실물에서 땄습니다 — 회색 플라스틱 몸통, 검정 페이스플레이트,
  빨간 A·B 버튼, 검은 십자키. 안드로이드 `PlasticColors` 와 **같은 값**입니다.
  */
+/**
+ **시험 스위치 하나로 모든 화면을 켜고 끕니다.**
+
+ 처음엔 화면마다 `plasticTrial` 을 뒀는데, 화면이 늘자 켜 보려면 여러 파일을
+ 고쳐야 했습니다. 검수는 앱 전체를 한 벌로 보는 일이라 스위치도 하나여야 합니다.
+ 안드로이드 `PLASTIC_TRIAL` 과 늘 같은 값이어야 합니다.
+
+ `false` 로 두면 앱은 기준 디자인(`MemoryColor`) 그대로 돌아갑니다.
+ */
+public let plasticTrial = true
+
 public enum PlasticColor {
     /// 몸통 플라스틱. 화면 바탕입니다.
     public static let body = Color(hex: 0xDCD9D3)
@@ -20,6 +31,7 @@ public enum PlasticColor {
 
     /// 검정 페이스플레이트. 사진이 놓이는 판입니다.
     public static let plate = Color(hex: 0x3B3B3B)
+    public static let plateHi = Color(hex: 0x4A4A4A)
     public static let plateLo = Color(hex: 0x262626)
 
     /// 몸통에 새긴 회색 줄무늬
@@ -28,6 +40,11 @@ public enum PlasticColor {
 
     /// A·B 버튼의 빨강. 주 동작에만 씁니다.
     public static let red = Color(hex: 0xD8342A)
+    public static let redHi = Color(hex: 0xE85A4C)
+    public static let redLo = Color(hex: 0x9E1F17)
+
+    /// 십자키의 검정
+    public static let ink = Color(hex: 0x1B1B1B)
 
     /// 고무 버튼
     public static let rubber = Color(hex: 0x3A3A3A)
@@ -47,6 +64,8 @@ public enum PlasticRadius {
     /// 몸통에 끼운 화면
     public static let screen: CGFloat = 4
     public static let chip: CGFloat = 3
+    /// 십자키의 팔·달 넘김 버튼처럼 살짝만 둥근 것
+    public static let knob: CGFloat = 4
 }
 
 /**
@@ -72,6 +91,23 @@ public enum PlasticSize {
     public static let chipOverlap: CGFloat = 2
     /// 몸통에 새긴 줄무늬 한 줄의 두께
     public static let stripe: CGFloat = 5
+
+    /// 십자키 한 변. 팔 하나는 이것의 1/3 이므로 **3의 배수**여야 팔이 딱 나뉩니다.
+    public static let cross: CGFloat = 96
+    /// 십자키 가운데의 작은 점
+    public static let dotCore: CGFloat = 8
+
+    /// 지역 시트의 닫기 버튼
+    public static let sheetClose: CGFloat = 32
+    /// 지역 시트 안의 사진. 화면에 끼워 넣느라 좁아진 만큼 `photo` 보다 작습니다.
+    public static let sheetPhoto: CGFloat = 84
+
+    /// 달력 한 칸의 **최소** 높이. 실제 높이는 폭을 7로 나눠 정해집니다.
+    public static let dayCell: CGFloat = 38
+    /// 달 넘김 버튼 (‹ ›)
+    public static let monthNav: CGFloat = 34
+    /// 달력 아래 목록의 사진
+    public static let calendarPhoto: CGFloat = 68
 }
 
 /// 베벨 두께. 위·왼쪽보다 아래·오른쪽을 한 겹 두껍게 해야 두께가 느껴집니다.
