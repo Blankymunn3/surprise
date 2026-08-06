@@ -1,0 +1,78 @@
+/*
+  짜국 목록·만들기·참여·로그인·관리 화면의 글.
+
+  키 이름은 **안드로이드 strings.xml 과 같습니다** —
+  `android/feature/space/src/main/res/values/strings.xml`.
+  같은 키로 양쪽을 찾을 수 있어야 두 앱이 다른 말을 하지 않습니다.
+*/
+
+/* 목록 */
+"list_title" = "짜국";
+"list_tagline" = "어디와 언제로 보는 사진첩";
+"list_loading" = "불러오는 중이에요";
+"list_failed" = "목록을 불러오지 못했어요";
+"list_create" = "새 짜국 만들기";
+"list_join" = "초대 코드로 참여";
+
+/* 목록 · 빈 화면 */
+"list_empty_title" = "아직 짜국이 없어요";
+"list_empty_blurb" = "짜국은 사진을 지도와 달력, 두 가지로 보는 사진첩이에요. 혼자 써도 되고, 가까운 사람들과 같이 채워도 돼요.";
+/* 위 문장에서 이 두 낱말만 굵게 그립니다. 문장은 쪼개지 않고 낱말을 찾습니다. */
+"list_empty_bold_map" = "지도";
+"list_empty_bold_calendar" = "달력";
+
+/* 짜국 카드의 한 줄 요약 */
+"card_meta_empty" = "아직 사진이 없어요";
+"card_meta" = "사진 %1$d · 지역 %2$d";
+"card_meta_dated" = "사진 %1$d · 지역 %2$d · %3$d.%4$d";
+
+/* 새 짜국 */
+"create_title" = "새 짜국";
+"create_kind_label" = "어떻게 쓸까요";
+"create_kind_solo" = "혼자";
+"create_kind_solo_detail" = "사진이 이 폰에만 남아요 · 로그인 없이 바로 시작해요";
+"create_kind_solo_sub" = "폰을 잃어버리면 사진도 함께 사라져요";
+"create_kind_shared" = "같이";
+"create_kind_shared_detail" = "초대한 사람들과 같이 채우고 같이 봐요 · 로그인이 필요해요";
+"create_kind_shared_sub" = "만들면 초대 코드가 바로 나와요";
+"create_name_label" = "이름";
+"create_name_placeholder" = "예) 우리 여름, 제주 한 달";
+"create_confirm" = "만들기";
+"create_working" = "만드는 중…";
+"create_solo_note" = "로그인 없이 바로 만들어져요.";
+
+/* 초대 코드로 참여 */
+"join_title" = "초대 코드로 참여";
+"join_code_label" = "받은 코드";
+"join_code_placeholder" = "예) K7QF2M";
+"join_note" = "코드를 보낸 사람의 짜국에 멤버로 들어가요.";
+"join_confirm" = "참여하기";
+"join_working" = "찾는 중…";
+
+/* 로그인 */
+"signin_title" = "같이 보려면 계정이 필요해요";
+"signin_why" = "로그인은 멤버가 아닌 사람이 우리 사진을 못 보게 막는 잠금장치예요. 계정 확인 말고 다른 데는 쓰지 않아요.";
+"signin_google" = "Google로 계속하기";
+"signin_working" = "로그인 중…";
+"signin_give_up" = "그냥 혼자 쓸래요 — 이 폰에만 저장할게요";
+"signin_only_google" = "지금은 Google 계정만 돼요.";
+
+/* 만든 직후 · 초대 코드 */
+"invited_title" = "'%1$@' 짜국을 만들었어요";
+"invited_note" = "이 코드를 받은 사람이 들어올 수 있어요. 지금 보내 두면 나중에 다시 찾지 않아도 돼요.";
+"invited_copy" = "코드 복사";
+"invited_share" = "공유하기";
+"invited_open" = "짜국 열기";
+"invited_menu_hint" = "위쪽 ⋯ 메뉴에서 언제든 다시 볼 수 있어요.";
+
+/* 관리 메뉴 (⋯) */
+"menu_close" = "닫기";
+"menu_members" = "멤버";
+"menu_owner" = "주인";
+"menu_invite_code" = "초대 코드";
+"menu_invite_code_making" = "만드는 중…";
+"menu_copy" = "복사";
+"menu_rename" = "이름 바꾸기";
+"menu_rename_placeholder" = "예) 우리 여름";
+"menu_rename_confirm" = "바꾸기";
+"menu_rename_working" = "바꾸는 중…";

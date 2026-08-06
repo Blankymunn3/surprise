@@ -41,7 +41,7 @@ let package = Package(
         .target(name: "DataPhoto", dependencies: ["CoreModel", "CoreCommon", "Domain", "CoreNetwork"]),
         .target(name: "DataSpace", dependencies: ["CoreModel", "CoreCommon", "Domain", "CoreNetwork"]),
         .target(name: "DataRegion", dependencies: ["CoreModel", "Domain"], resources: [.process("Resources")]),
-        .target(name: "FeatureSpace", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"]),
+        .target(name: "FeatureSpace", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"], resources: [.process("Resources")]),
         .target(name: "FeatureMap", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"]),
         .target(name: "FeatureCalendar", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"]),
         .target(name: "FeatureUpload", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"]),

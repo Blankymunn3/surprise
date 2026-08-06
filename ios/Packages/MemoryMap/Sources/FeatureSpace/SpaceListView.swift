@@ -63,10 +63,10 @@ public struct SpaceListView: View {
 
             divider(inset: false)
             VStack(spacing: MemorySpace.s) {
-                PrimaryButton("새 짜국 만들기") {
+                PrimaryButton(localized("list_create")) {
                     Task { await store.send(.createTapped) }
                 }
-                SoftButton("초대 코드로 참여") {
+                SoftButton(localized("list_join")) {
                     Task { await store.send(.joinTapped) }
                 }
             }
@@ -81,9 +81,9 @@ public struct SpaceListView: View {
     private func body(for spaces: SpacesUi) -> some View {
         switch spaces {
         case .loading:
-            hint("불러오는 중이에요")
+            hint(localized("list_loading"))
         case .failed:
-            hint("목록을 불러오지 못했어요")
+            hint(localized("list_failed"))
         case .ready(let items):
             if items.isEmpty {
                 emptyScene
@@ -109,9 +109,9 @@ public struct SpaceListView: View {
                 .fill(MemoryColor.accent)
                 .frame(width: 13, height: 13)
                 .alignmentGuide(.lastTextBaseline) { $0[.bottom] }
-            Text("짜국").memoryDisplay()
+            Text(localized("list_title")).memoryDisplay()
             Spacer()
-            Text("어디와 언제로 보는 사진첩")
+            Text(localized("list_tagline"))
                 .memoryMicro()
                 .foregroundStyle(MemoryColor.ink2)
         }
@@ -134,7 +134,7 @@ public struct SpaceListView: View {
             PhotoFramesScene()
                 .aspectRatio(PhotoFramesScene.ratio, contentMode: .fit)
                 .frame(maxWidth: 150)
-            Text("아직 짜국이 없어요").memoryTitle()
+            Text(localized("list_empty_title")).memoryTitle()
             Text(emptyBlurb)
                 .memoryLabel()
                 .foregroundStyle(MemoryColor.ink2)
@@ -146,8 +146,9 @@ public struct SpaceListView: View {
 
     /// **지도**와 **달력** 만 굵게. 이 앱이 무엇인지가 그 두 낱말에 들어 있습니다.
     private var emptyBlurb: AttributedString {
-        var text = AttributedString("짜국은 사진을 지도와 달력, 두 가지로 보는 사진첩이에요. 혼자 써도 되고, 가까운 사람들과 같이 채워도 돼요.")
-        for word in ["지도", "달력"] where text.range(of: word) != nil {
+        var text = AttributedString(localized("list_empty_blurb"))
+        for word in [localized("list_empty_bold_map"), localized("list_empty_bold_calendar")]
+        where text.range(of: word) != nil {
             let range = text.range(of: word)!
             text[range].font = MemoryFont.headline
             text[range].foregroundColor = MemoryColor.ink
@@ -225,7 +226,7 @@ struct SpaceCardView: View {
     ///
     /// 레드를 쓰지 않는 이유: 누르는 것이 아니라 그냥 알려 주는 것이라서요.
     private var onlyOnThisPhone: some View {
-        Text("이 폰에만")
+        Text(SharedText.onlyOnThisPhone)
             .memoryMicro()
             .foregroundStyle(MemoryColor.ink)
             .padding(.horizontal, 8)
@@ -238,7 +239,7 @@ struct SpaceCardView: View {
     /// 사진이 없으면 수를 세지 않고 그 사실만 말합니다.
     /// "사진 0 · 지역 0" 은 셈이 아니라 잡음입니다.
     private var meta: String {
-        guard space.photoCount > 0 else { return "아직 사진이 없어요" }
+        guard space.photoCount > 0 else { return localized("card_meta_empty") }
         var parts = ["사진 \(space.photoCount)", "지역 \(space.regionCount)"]
         if let last = space.lastPhotoOn { parts.append("\(last.month)월 \(last.day)일") }
         return parts.joined(separator: " · ")
