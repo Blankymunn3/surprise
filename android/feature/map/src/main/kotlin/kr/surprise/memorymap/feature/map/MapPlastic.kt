@@ -110,7 +110,6 @@ internal fun PlasticMapBody(state: MapState, onIntent: (MapIntent) -> Unit) {
                 .sunken(PlasticShapes.Screen)
         ) {
             MapCanvas(
-                pins = state.pins,
                 focus = state.focus,
                 focusCount = state.focusCount,
                 outline = state.outline,

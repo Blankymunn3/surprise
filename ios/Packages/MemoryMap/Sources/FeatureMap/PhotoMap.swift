@@ -26,7 +26,6 @@ struct PhotoMap: UIViewRepresentable {
     let fills: [RegionFill]
     let covers: [String: CGImage]
     let outline: [[GeoPoint]]
-    let pins: [RegionPin]
     let me: CLLocationCoordinate2D?
     let onTap: (Double, Double) -> Void
 
@@ -77,15 +76,13 @@ struct PhotoMap: UIViewRepresentable {
             }
         }
 
-        // 딱지와 내 자리. 이것도 서명으로 비교합니다.
-        let marks = pins.map { "\($0.id):\($0.photoCount)" }.joined(separator: "|")
-            + "/me:\(me.map { "\($0.latitude),\($0.longitude)" } ?? "-")"
+        // 내 자리. **사진 수 딱지는 없습니다** — 지역이 이미 그 사진으로 칠해져 있고,
+        // 몇 장인지는 지역 시트가 말합니다. 딱지까지 찍으면 같은 말을 두 번 하는 셈이고
+        // 정작 사진을 가립니다. 웹과 같은 그림입니다.
+        let marks = "me:\(me.map { "\($0.latitude),\($0.longitude)" } ?? "-")"
         if coordinator.marked != marks {
             coordinator.marked = marks
             map.removeAnnotations(map.annotations)
-            for pin in pins {
-                map.addAnnotation(PinMark(pin: pin))
-            }
             if let me {
                 map.addAnnotation(MeMark(coordinate: me))
             }
@@ -139,20 +136,11 @@ struct PhotoMap: UIViewRepresentable {
         }
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-            if let pin = annotation as? PinMark {
-                let view = mapView.dequeueReusableAnnotationView(withIdentifier: "pin")
-                    ?? MKAnnotationView(annotation: pin, reuseIdentifier: "pin")
-                view.annotation = pin
-                // **누를 수 없습니다.** 지역을 고르는 일은 지도를 누르면 되고,
-                // 딱지를 꺼 둬야 그 자리를 눌러도 밑의 지도가 받습니다.
-                view.isEnabled = false
-                pinBadge(into: view, count: pin.pin.photoCount, name: pin.pin.region.displayName)
-                return view
-            }
             if annotation is MeMark {
                 let view = mapView.dequeueReusableAnnotationView(withIdentifier: "me")
                     ?? MKAnnotationView(annotation: annotation, reuseIdentifier: "me")
                 view.annotation = annotation
+                // 눌러도 밑의 지도가 받게 꺼 둡니다 — 표시일 뿐 버튼이 아닙니다.
                 view.isEnabled = false
                 meDot(into: view)
                 return view
@@ -164,38 +152,6 @@ struct PhotoMap: UIViewRepresentable {
             guard let map = gesture.view as? MKMapView else { return }
             let coordinate = map.convert(gesture.location(in: map), toCoordinateFrom: map)
             parent.onTap(coordinate.latitude, coordinate.longitude)
-        }
-
-        /// 지도 위의 표시 — 사진 수 딱지와 지역 이름. 어두운 지도 위라 **밝은 칩**입니다.
-        private func pinBadge(into view: MKAnnotationView, count: Int, name: String) {
-            view.subviews.forEach { $0.removeFromSuperview() }
-
-            let chip = UILabel()
-            chip.text = "\(count)"
-            chip.font = .boldSystemFont(ofSize: 11)
-            chip.textColor = UIColor(PlasticColor.plate)
-            chip.textAlignment = .center
-            chip.backgroundColor = UIColor(PlasticColor.body)
-            chip.layer.cornerRadius = 3
-            chip.clipsToBounds = true
-            chip.frame = CGRect(x: 0, y: 0, width: max(22, 10 + 8 * CGFloat("\(count)".count)), height: 16)
-
-            let label = UILabel()
-            label.text = name
-            label.font = .boldSystemFont(ofSize: 11)
-            label.textColor = UIColor(PlasticColor.body)
-            label.layer.shadowColor = UIColor.black.cgColor
-            label.layer.shadowOpacity = 0.8
-            label.layer.shadowRadius = 2
-            label.layer.shadowOffset = .zero
-            label.sizeToFit()
-
-            let width = max(chip.frame.width, label.frame.width)
-            view.frame = CGRect(x: 0, y: 0, width: width, height: 34)
-            chip.frame.origin.x = (width - chip.frame.width) / 2
-            label.frame.origin = CGPoint(x: (width - label.frame.width) / 2, y: 19)
-            view.addSubview(chip)
-            view.addSubview(label)
         }
 
         /// 내가 지금 있는 자리. 지역 딱지(네모)와 다르게 생겨야 해서 원이고,
@@ -299,15 +255,6 @@ final class PhotoFillRenderer: MKOverlayRenderer {
         context.draw(fill.image, in: drawRect)
         context.restoreGState()
     }
-}
-
-/// 사진 수 딱지가 붙는 자리.
-final class PinMark: NSObject, MKAnnotation {
-    let pin: RegionPin
-    var coordinate: CLLocationCoordinate2D {
-        CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
-    }
-    init(pin: RegionPin) { self.pin = pin }
 }
 
 /// 내가 지금 있는 자리.

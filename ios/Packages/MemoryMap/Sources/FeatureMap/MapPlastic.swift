@@ -173,7 +173,6 @@ struct PlasticMapBody: View {
             fills: store.state.fills,
             covers: covers,
             outline: store.state.outline,
-            pins: store.state.pins,
             me: me,
             onTap: { latitude, longitude in
                 searching = false

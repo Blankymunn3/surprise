@@ -14,7 +14,6 @@ import android.graphics.Canvas as AndroidCanvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Rect
-import android.graphics.Typeface
 import coil3.SingletonImageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
@@ -23,7 +22,6 @@ import coil3.toBitmap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -37,12 +35,10 @@ import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.geometry.LatLngQuad
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
-import org.maplibre.android.style.expressions.Expression
 import org.maplibre.android.style.layers.CircleLayer
 import org.maplibre.android.style.layers.LineLayer
 import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.layers.RasterLayer
-import org.maplibre.android.style.layers.SymbolLayer
 import org.maplibre.android.style.sources.GeoJsonSource
 import org.maplibre.android.style.sources.ImageSource
 import kotlin.math.pow
@@ -56,7 +52,6 @@ import kotlin.math.pow
  */
 @Composable
 internal fun MapCanvas(
-    pins: List<RegionPin>,
     focus: MapFocus?,
     focusCount: Int,
     outline: RegionOutline?,
@@ -172,9 +167,7 @@ internal fun MapCanvas(
                 map.setStyle(Style.Builder().fromJson(OsmStyle.json())) { style ->
                     paintRegions(style, fills, covers)
                     drawOutline(style, outline)
-                    // 딱지는 지역 칠보다 **나중에** 얹습니다. 먼저 얹으면 칠에 덮입니다.
-                    drawBadges(style, pins, density)
-                    // 내 자리는 그보다 더 위입니다 — "지금 여기" 는 무엇에도 가리면 안 됩니다.
+                    // 내 자리는 칠보다 위입니다 — "지금 여기" 는 무엇에도 가리면 안 됩니다.
                     drawMyLocation(style, myLocation)
                 }
 
@@ -466,95 +459,6 @@ private fun Bitmap.cutTo(fill: RegionFill, box: GeoBox): Bitmap? {
     canvas.drawBitmap(this, src, Rect(0, 0, w, h), Paint(Paint.FILTER_BITMAP_FLAG))
     return out
 }
-
-private const val BADGE_SOURCE = "region-badge"
-private const val BADGE_LAYER = "region-badge-symbol"
-
-/** 딱지 높이. 시안이 정한 22×16 중 높이만 고정하고 너비는 숫자에 맞춰 늘립니다. */
-private val BADGE_HEIGHT = 16.dp
-private val BADGE_MIN_WIDTH = 22.dp
-
-/** 좌우 여백. 세 자리 수가 와도 숫자가 테에 닿지 않게. */
-private val BADGE_SIDE = 6.dp
-
-/**
- * 지역마다 **사진 수를 적은 작은 잉크 딱지**를 찍습니다.
- *
- * 사진이 있는 지역은 이미 그 사진으로 칠해져 있어서, 딱지는 "몇 장인지"만 말합니다 —
- * 여기에 사진을 또 넣으면 같은 그림을 두 번 보여 주는 셈이고, 지역을 가리기까지 합니다.
- *
- * **누를 수 없습니다.** 지역을 고르는 일은 지도를 누르면 되고, 딱지까지 누르게 하면
- * 딱지를 살짝 빗나갔을 때만 되는 이상한 경계가 생깁니다. iOS `PinBadge` 와 같은 규칙입니다.
- *
- * 딱지를 **그림으로 그려** 등록합니다. 글자 뒤에 네모를 깔려면 `icon-text-fit` 같은
- * 늘어나는 이미지가 필요한데, 수는 몇 가지 안 되므로 그냥 수마다 한 장씩 그리는 편이
- * 간단하고 결과도 정확합니다.
- */
-private fun drawBadges(style: Style, pins: List<RegionPin>, density: Density) {
-    style.getLayer(BADGE_LAYER)?.let { style.removeLayer(it) }
-    style.getSource(BADGE_SOURCE)?.let { style.removeSource(it) }
-
-    val marked = pins.filter { it.photoCount > 0 }
-    if (marked.isEmpty()) return
-
-    // 같은 수는 한 번만 그립니다. 지역이 서른 곳이어도 그림은 몇 장뿐입니다.
-    marked.map { it.photoCount }.distinct().forEach { count ->
-        style.addImage(badgeName(count), badgeBitmap(count, density))
-    }
-
-    val features = marked.joinToString(",") { pin ->
-        feature(
-            type = "Point",
-            coordinates = "[${pin.longitude},${pin.latitude}]",
-            properties = "\"badge\":\"${badgeName(pin.photoCount)}\"",
-        )
-    }
-    style.addSource(GeoJsonSource(BADGE_SOURCE, """{"type":"FeatureCollection","features":[$features]}"""))
-
-    style.addLayer(
-        SymbolLayer(BADGE_LAYER, BADGE_SOURCE).withProperties(
-            PropertyFactory.iconImage(Expression.get("badge")),
-            // 겹쳐도 다 보여 줍니다. 숨기면 "여기 다녀왔다" 를 놓칩니다.
-            PropertyFactory.iconAllowOverlap(true),
-            PropertyFactory.iconIgnorePlacement(true),
-        )
-    )
-}
-
-private fun badgeName(count: Int): String = "badge-$count"
-
-private fun badgeBitmap(count: Int, density: Density): Bitmap {
-    val text = count.toString()
-    val height = with(density) { BADGE_HEIGHT.roundToPx() }
-
-    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = BADGE_TEXT
-        textAlign = Paint.Align.CENTER
-        textSize = height * 0.62f
-        typeface = Typeface.DEFAULT_BOLD
-    }
-
-    val side = with(density) { BADGE_SIDE.roundToPx() }
-    val minWidth = with(density) { BADGE_MIN_WIDTH.roundToPx() }
-    val width = maxOf(minWidth, (paint.measureText(text) + side * 2).toInt())
-
-    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-    AndroidCanvas(bitmap).apply {
-        drawColor(BADGE_BACK)
-        // 글자를 세로 가운데에. 글꼴의 위아래 여유가 위쪽에 몰려 있어 그냥 h/2 로는 내려앉습니다.
-        drawText(text, width / 2f, height / 2f - (paint.descent() + paint.ascent()) / 2f, paint)
-    }
-    return bitmap
-}
-
-/**
- * 딱지 바탕과 글자.
- *
- * 패미컴 스타일은 **어두운 지도** 위라 밝은 칩이어야 합니다 — 검정 딱지는 그대로 묻힙니다.
- * 기준 디자인은 밝은 지도라 반대로 잉크 딱지입니다. iOS `PlasticPinBadge` 와 같은 규칙입니다.
- */
-private val BADGE_BACK = 0xFFDCD9D3.toInt()
-private val BADGE_TEXT = 0xFF3B3B3B.toInt()
 
 private fun feature(type: String, coordinates: String, properties: String = ""): String =
     """{"type":"Feature","properties":{$properties},"geometry":{"type":"$type","coordinates":$coordinates}}"""
