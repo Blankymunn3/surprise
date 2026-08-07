@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
-import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
 import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
 
@@ -31,30 +30,16 @@ import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
 @Composable
 fun MemoryToast(host: SnackbarHostState, modifier: Modifier = Modifier) {
     SnackbarHost(host, modifier) { data ->
-        if (PLASTIC_TRIAL) {
-            // 검정 판에 얹은 글자. 기기가 말하는 것이라 화면 색으로 그립니다.
-            Text(
-                text = data.visuals.message,
-                style = MemoryType.Label,
-                color = PlasticColors.OnPlate,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .clip(PlasticShapes.Chip)
-                    .background(PlasticColors.Plate)
-                    .padding(horizontal = 14.dp, vertical = 11.dp),
-            )
-        } else {
-            // 흰 면에 1px 잉크 선. 떠 있는 것들과 같은 규칙입니다.
-            Text(
-                text = data.visuals.message,
-                style = MemoryType.Label,
-                color = MemoryColors.Ink,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .background(MemoryColors.Surface)
-                    .border(MemoryStroke.Border, MemoryColors.Line)
-                    .padding(horizontal = 14.dp, vertical = 11.dp),
-            )
-        }
+        // 검정 판에 얹은 글자. 기기가 말하는 것이라 화면 색으로 그립니다.
+        Text(
+            text = data.visuals.message,
+            style = MemoryType.Label,
+            color = PlasticColors.OnPlate,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .clip(PlasticShapes.Chip)
+                .background(PlasticColors.Plate)
+                .padding(horizontal = 14.dp, vertical = 11.dp),
+        )
     }
 }

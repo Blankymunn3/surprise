@@ -22,7 +22,7 @@ public struct SpaceListView: View {
         // 만들기·참여·로그인·초대 코드는 **아래에서 올라오는 시트**입니다.
         // 목록을 잠깐 가리고 끝내는 일이라, 화면을 통째로 갈아 끼우면
         // 어디에서 하던 일인지 놓칩니다. 시트 안의 모양은 새 디자인 그대로입니다.
-        (plasticTrial ? AnyView(PlasticListBody(store: store, onOpen: onOpen)) : AnyView(list))
+        PlasticListBody(store: store, onOpen: onOpen)
             .task { await store.send(.appeared) }
             .sheet(isPresented: sheetShown) {
                 SpaceSheet(store: store, onOpen: onOpen)

@@ -56,7 +56,7 @@ private val PlasticScheme = lightColorScheme(
 @Composable
 fun MemoryTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = if (PLASTIC_TRIAL) PlasticScheme else LightScheme,
+        colorScheme = PlasticScheme,
         typography = MemoryTypography,
         content = content,
     )

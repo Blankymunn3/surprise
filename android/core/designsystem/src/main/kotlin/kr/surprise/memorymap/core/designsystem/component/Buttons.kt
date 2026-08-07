@@ -26,7 +26,6 @@ import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
-import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
 import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
 import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
@@ -73,40 +72,24 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
     // 초대 코드·올리기)이 모두 이 부품으로 만들어져 있어서, 여기 한 곳만 바꾸면
     // 넷이 같이 따라옵니다. 화살표는 뺍니다 — 알약 안에서는 글자만으로 충분하고,
     // 넣으면 A 버튼이 아니라 목록의 한 줄처럼 보입니다.
-    if (PLASTIC_TRIAL) {
-        Box(modifier.raisedPlastic(PlasticShapes.Housing).padding(PlasticSize.ButtonInset)) {
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(PlasticSize.Button)
-                    .clip(PlasticShapes.Pill)
-                    .background(if (enabled) PlasticColors.Red else PlasticColors.ButtonOff)
-                    .pressable(enabled = enabled, onClick = onClick),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = text,
-                    fontFamily = Pretendard,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = if (enabled) PlasticColors.OnRed else PlasticColors.OnButtonOff,
-                )
-            }
+    Box(modifier.raisedPlastic(PlasticShapes.Housing).padding(PlasticSize.ButtonInset)) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(PlasticSize.Button)
+                .clip(PlasticShapes.Pill)
+                .background(if (enabled) PlasticColors.Red else PlasticColors.ButtonOff)
+                .pressable(enabled = enabled, onClick = onClick),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = text,
+                fontFamily = Pretendard,
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                color = if (enabled) PlasticColors.OnRed else PlasticColors.OnButtonOff,
+            )
         }
-        return
-    }
-
-    Row(
-        modifier = modifier
-            .clip(MemoryShapes.Button)
-            .background(if (enabled) MemoryColors.Accent else MemoryColors.Fill)
-            .pressable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        val fg = if (enabled) MemoryColors.OnAccent else MemoryColors.Ink3
-        Text(text = text, style = MemoryType.Headline, color = fg, modifier = Modifier.weight(1f))
-        Text(text = "→", style = MemoryType.Headline, color = fg)
     }
 }
 
@@ -114,38 +97,24 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
 @Composable
 fun SoftButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     // 패미컴 스타일에서는 하우징에 앉힌 **검은 고무 알약**입니다.
-    if (PLASTIC_TRIAL) {
-        Box(modifier.raisedPlastic(PlasticShapes.Housing).padding(PlasticSize.ButtonInset)) {
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(PlasticSize.Button)
-                    .clip(PlasticShapes.Pill)
-                    .background(PlasticColors.Rubber)
-                    .pressable(onClick = onClick),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = text,
-                    fontFamily = Pretendard,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = PlasticColors.OnRubber,
-                )
-            }
+    Box(modifier.raisedPlastic(PlasticShapes.Housing).padding(PlasticSize.ButtonInset)) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(PlasticSize.Button)
+                .clip(PlasticShapes.Pill)
+                .background(PlasticColors.Rubber)
+                .pressable(onClick = onClick),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = text,
+                fontFamily = Pretendard,
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                color = PlasticColors.OnRubber,
+            )
         }
-        return
-    }
-
-    Box(
-        modifier = modifier
-            .clip(MemoryShapes.Button)
-            .background(MemoryColors.Surface)
-            .border(MemoryStroke.Border, MemoryColors.Line, MemoryShapes.Button)
-            .pressable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 13.dp),
-    ) {
-        Text(text, style = MemoryType.Body, color = MemoryColors.Ink)
     }
 }
 

@@ -27,7 +27,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraUpdate
 import org.maplibre.android.camera.CameraUpdateFactory
@@ -161,7 +160,7 @@ internal fun MapCanvas(
             view.getMapAsync { map ->
                 // 패미컴 스타일에서는 **어두운 지도**입니다. 검정 판에 끼운 화면 안에서
                 // 하얀 지도가 혼자 빛나면 화면이 아니라 구멍처럼 보입니다.
-                map.setStyle(Style.Builder().fromJson(OsmStyle.json(dark = PLASTIC_TRIAL))) { style ->
+                map.setStyle(Style.Builder().fromJson(OsmStyle.json(dark = true))) { style ->
                     paintRegions(style, fills, covers)
                     drawOutline(style, outline)
                     // 딱지는 지역 칠보다 **나중에** 얹습니다. 먼저 얹으면 칠에 덮입니다.
@@ -328,7 +327,7 @@ private fun drawOutline(style: Style, outline: RegionOutline?) {
  * 두 스타일이 쓰는 빨강이 다릅니다 — 기준 디자인은 `MemoryColors.Accent`,
  * 패미컴은 컨트롤러의 빨강입니다. 어두운 지도에서 이 선이 더 눈에 띕니다.
  */
-private val OUTLINE_COLOR = if (PLASTIC_TRIAL) "#D8342A" else "#EC3013"
+private const val OUTLINE_COLOR = "#D8342A"
 
 private fun RegionOutline.toGeoJson(): String =
     feature("MultiLineString", "[" + polygons.flatten().joinToString(",") { it.ring() } + "]")
@@ -455,8 +454,8 @@ private fun badgeBitmap(count: Int, density: Density): Bitmap {
  * 패미컴 스타일은 **어두운 지도** 위라 밝은 칩이어야 합니다 — 검정 딱지는 그대로 묻힙니다.
  * 기준 디자인은 밝은 지도라 반대로 잉크 딱지입니다. iOS `PlasticPinBadge` 와 같은 규칙입니다.
  */
-private val BADGE_BACK = if (PLASTIC_TRIAL) 0xFFDCD9D3.toInt() else 0xFF201E1D.toInt()
-private val BADGE_TEXT = if (PLASTIC_TRIAL) 0xFF3B3B3B.toInt() else AndroidColor.WHITE
+private val BADGE_BACK = 0xFFDCD9D3.toInt()
+private val BADGE_TEXT = 0xFF3B3B3B.toInt()
 
 private fun feature(type: String, coordinates: String, properties: String = ""): String =
     """{"type":"Feature","properties":{$properties},"geometry":{"type":"$type","coordinates":$coordinates}}"""
@@ -504,7 +503,7 @@ private fun drawMyLocation(style: Style, me: MyPin?) {
 }
 
 /** 내 자리 표시의 색. 앱의 레드입니다 — 지도 위에서 유일하게 "지금" 을 뜻하는 색입니다. */
-private val ME_COLOR = if (PLASTIC_TRIAL) "#D8342A" else "#EC3013"
+private const val ME_COLOR = "#D8342A"
 private const val ME_DOT_RADIUS = 6f
 private const val ME_HALO_RADIUS = 20f
 

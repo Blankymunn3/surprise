@@ -28,26 +28,7 @@ public struct SpaceMenu: View {
 
             // 패미컴 스타일에서는 몸통이 통째로 올라오고 내용은 끼운 검정 화면에 놓입니다.
             // 스위치는 DesignSystem 에 하나뿐입니다.
-            if plasticTrial {
-                PlasticSpaceMenu(store: store, onClose: onClose)
-            } else {
-                VStack(alignment: .leading, spacing: 0) {
-                    MemoryColor.ink.frame(height: MemoryStroke.divider)
-
-                    VStack(alignment: .leading, spacing: 0) {
-                        if store.state.renaming {
-                            renameBody
-                        } else {
-                            menuBody
-                        }
-                    }
-                    .padding(.horizontal, MemorySpace.xl)
-                    .padding(.top, 18)
-                    .padding(.bottom, 44)
-                }
-                .frame(maxWidth: .infinity)
-                .background(MemoryColor.surface)
-            }
+            PlasticSpaceMenu(store: store, onClose: onClose)
         }
         .task { await store.appeared() }
     }

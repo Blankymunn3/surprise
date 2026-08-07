@@ -43,7 +43,6 @@ import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
-import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 
 /** 지도 위 물건들의 가장자리 여백. 시안이 정한 값입니다. */
@@ -72,110 +71,7 @@ fun MapScreen(
 ) {
     // 패미컴 스타일 시험 중에는 짜임새가 통째로 다릅니다 — 조작하는 것이
     // 지도 위가 아니라 몸통 위(화면 밖)에 섭니다. 스위치는 designsystem 에 하나뿐입니다.
-    if (PLASTIC_TRIAL) {
-        Box(modifier.fillMaxSize()) { PlasticMapBody(state, onIntent) }
-        return
-    }
-
-    // 시트 높이는 **재서** 씁니다. 사진이 있느냐에 따라 시트가 훌쩍 달라지는데,
-    // 고정값으로 두면 시트가 짧을 때 버튼만 허공에 뜹니다.
-    var sheetHeight by remember { mutableStateOf(0.dp) }
-    // 검색칸도 **재서** 씁니다. 글자 크기를 키운 폰에서는 이 칸이 더 높아집니다.
-    var searchHeight by remember { mutableStateOf(0.dp) }
-    // 확대·축소는 상태로 남길 것이 없습니다 — 누른 그때 지도를 움직이면 끝이라
-    // 뷰모델까지 올리지 않고 여기서 지도에 바로 건넵니다.
-    var zoom by remember { mutableStateOf(ZoomNudge()) }
-    val density = LocalDensity.current
-    val keyboard = LocalSoftwareKeyboardController.current
-
-    // 시트가 없을 때는 이 칸 아래에서 18dp. 있을 때는 시트 바로 위로 올라갑니다.
-    val floatBottom = if (state.sheet == null) 18.dp else sheetHeight + Gap.m
-
-    Box(modifier.fillMaxSize().background(MemoryColors.MapSea)) {
-        MapCanvas(
-            pins = state.pins,
-            focus = state.focus,
-            focusCount = state.focusCount,
-            outline = state.outline,
-            fills = state.fills,
-            myLocation = state.myLocation,
-            onTap = { lat, lon ->
-                // 검색하다 지도를 누르면 자판부터 내려갑니다. 자판이 화면 절반을 덮은 채로
-                // 지역 시트가 올라오면 아무것도 안 보입니다.
-                keyboard?.hide()
-                onIntent(MapIntent.MapTapped(lat, lon))
-            },
-            // **지도를 가려지는 만큼 줄여 놓습니다.** 카메라에 여백을 주는 것으로는
-            // 러시아처럼 위아래로 긴 나라의 윗부분이 검색칸 뒤로 계속 숨었습니다.
-            // 지도 자체가 그 자리에 없으면 숨을 곳도 없습니다.
-            //
-            // 남는 위아래는 이 Box 의 바다색이 채웁니다 — 지도 배경과 같은 색이라
-            // 띠가 따로 보이지 않고 지도가 이어지는 것처럼 보입니다.
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    top = 10.dp + searchHeight,
-                    bottom = if (state.sheet == null) 0.dp else sheetHeight,
-                ),
-            zoom = zoom,
-        )
-
-        SearchField(
-            query = state.query,
-            onTyped = { onIntent(MapIntent.QueryTyped(it)) },
-            onClear = { onIntent(MapIntent.QueryCleared) },
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(start = Edge, end = Edge, top = 10.dp)
-                .onSizeChanged { searchHeight = with(density) { it.height.toDp() } }
-                .blockMapTouches(),
-        )
-
-        if (state.results.isNotEmpty()) {
-            SearchResults(
-                state = state,
-                onPick = { onIntent(MapIntent.RegionChosen(it)) },
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = Edge, end = Edge, top = 10.dp + searchHeight + Gap.xs)
-                    .blockMapTouches(),
-            )
-        }
-
-        // 왼쪽 아래: 확대·축소·내 위치. 세 칸이 **따로 떨어져** 섭니다 —
-        // 붙여 놓으면 가운데 선이 두 겹이 되고, 무엇이 한 벌인지도 흐려집니다.
-        Column(
-            Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = Edge, bottom = floatBottom)
-                .blockMapTouches(),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            MapCtlButton(MemoryIcons.Plus, stringResource(R.string.map_zoom_in)) { zoom = ZoomNudge(zoom.serial + 1, ZOOM_STEP) }
-            MapCtlButton(MemoryIcons.Minus, stringResource(R.string.map_zoom_out)) { zoom = ZoomNudge(zoom.serial + 1, -ZOOM_STEP) }
-            MapCtlButton(MemoryIcons.MyLocation, stringResource(R.string.map_my_location)) { onIntent(MapIntent.MyLocationTapped) }
-        }
-
-        MemoryFab(
-            onClick = { onIntent(MapIntent.AddPhotoTapped) },
-            contentDescription = stringResource(R.string.map_add_photo),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = Edge, bottom = floatBottom)
-                .blockMapTouches(),
-        )
-
-        state.sheet?.let { sheet ->
-            RegionSheet(
-                sheet = sheet,
-                onIntent = onIntent,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .onSizeChanged { sheetHeight = with(density) { it.height.toDp() } }
-                    .blockMapTouches(),
-            )
-        }
-    }
+    Box(modifier.fillMaxSize()) { PlasticMapBody(state, onIntent) }
 }
 
 /**

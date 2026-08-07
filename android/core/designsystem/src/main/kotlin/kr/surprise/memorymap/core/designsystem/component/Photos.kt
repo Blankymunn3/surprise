@@ -22,7 +22,6 @@ import kr.surprise.memorymap.core.designsystem.R
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
-import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
 import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
 
@@ -43,9 +42,9 @@ fun PhotoThumb(
     // 패미컴 스타일에서는 사진이 **검정 판 위**에 놓입니다. 기준 디자인의 밝은 회색
     // 자리(Fill)를 그대로 두면 사진이 없는 칸만 하얗게 떠서, 정작 사진보다 눈에 띕니다.
     // 대표사진 표시는 두 스타일 다 레드라 그대로 갑니다 — 이 앱에서 레드는 한 벌입니다.
-    val shape = if (PLASTIC_TRIAL) PlasticShapes.Chip else MemoryShapes.Thumb
-    val empty = if (PLASTIC_TRIAL) PlasticColors.PlateLo else MemoryColors.Fill
-    val cover = if (PLASTIC_TRIAL) PlasticColors.Red else MemoryColors.Accent
+    val shape = PlasticShapes.Chip
+    val empty = PlasticColors.PlateLo
+    val cover = PlasticColors.Red
 
     Box(
         modifier = modifier

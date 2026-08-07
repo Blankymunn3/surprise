@@ -33,39 +33,32 @@ public struct UploadView: View {
 
     public var body: some View {
         Group {
-            // 패미컴 스타일 시험 중에는 몸통 위에 화면을 끼우고 조작을 화면 밖으로 냅니다.
-            // 스위치는 DesignSystem 에 하나뿐입니다.
-            if plasticTrial {
-                if store.state.editingRegionOf != nil {
-                    PlasticRegionPicker(store: store)
-                } else {
-                    PlasticUploadBody(
-                        store: store,
-                        onClose: onClose,
-                        onPickDate: { pickingDateOf = $0 },
-                        picked: $picked
-                    )
-                    .sheet(item: Binding(
-                        get: { pickingDateOf.map(DateEdit.init(uri:)) },
-                        set: { pickingDateOf = $0?.uri }
-                    )) { edit in
-                        dateSheet(for: edit.uri)
-                    }
-                    .onChange(of: picked) { _, items in
-                        Task { await load(items) }
-                    }
-                }
-            } else if store.state.editingRegionOf != nil {
-                regionPicker
+            // 몸통 위에 화면을 끼우고 조작은 화면 밖으로 냅니다.
+            if store.state.editingRegionOf != nil {
+                PlasticRegionPicker(store: store)
             } else {
-                main
+                PlasticUploadBody(
+                    store: store,
+                    onClose: onClose,
+                    onPickDate: { pickingDateOf = $0 },
+                    picked: $picked
+                )
+                .sheet(item: Binding(
+                    get: { pickingDateOf.map(DateEdit.init(uri:)) },
+                    set: { pickingDateOf = $0?.uri }
+                )) { edit in
+                    dateSheet(for: edit.uri)
+                }
+                .onChange(of: picked) { _, items in
+                    Task { await load(items) }
+                }
             }
         }
         // **세로를 채우지 않습니다.** 이 화면은 시트 안에 있고, 시트 높이는 이 내용을
         // 재서 정합니다(`SpaceDetailView` 의 uploadHeight). 여기서 `maxHeight: .infinity`
         // 를 주면 늘 화면 전체로 재져서 재는 의미가 없어집니다.
         .frame(maxWidth: .infinity, alignment: .topLeading)
-        .background(plasticTrial ? PlasticColor.body : MemoryColor.paper)
+        .background(PlasticColor.body)
         .onChange(of: store.state.step) { _, step in
             // 다 올라가면 화면이 스스로 닫힙니다. "완료" 를 또 누르게 하지 않습니다.
             if step == .done { onClose() }

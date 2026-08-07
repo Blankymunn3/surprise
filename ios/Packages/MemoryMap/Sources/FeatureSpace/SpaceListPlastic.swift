@@ -4,13 +4,12 @@ import Foundation
 import SwiftUI
 
 /**
- **시험용 화면 — 패미컴 컨트롤러 스타일의 짜국 목록.**
+ **짜국 목록 — 패미컴 컨트롤러 스타일.**
 
- 지금 앱의 목록은 `SpaceListView` 의 `list` 이고, 이 파일은 같은 상태를 다른 옷으로
- 그린 것뿐입니다. 상태·Store·시트는 하나도 건드리지 않습니다 —
- 켜고 끄는 것은 `SpaceListView` 의 `plasticTrial` 하나입니다.
+ `SpaceListView` 가 Store 와 시트를 들고 이 파일이 그립니다. 여기에는 상태가 없습니다 —
+ 받은 것을 그리고, 누른 것을 올려 보낼 뿐입니다.
 
- 옮긴 규칙 (안드로이드 `SpaceListPlastic.kt` 와 같습니다):
+ 규칙 (안드로이드 `SpaceListPlastic.kt` 와 같습니다):
  - 화면 바탕 = 회색 플라스틱 몸통
  - 사진이 놓이는 판 = 검정 페이스플레이트
  - 짜국 카드 = 버튼 하우징에 **움푹 끼운** 사진. 사진은 손대지 않습니다

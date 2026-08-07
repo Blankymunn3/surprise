@@ -8,7 +8,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
-import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
 
 /** 원본 그림의 좌표계. iOS 와 **같은 수를 씁니다** — 다르면 두 앱의 그림이 달라집니다. */
@@ -32,10 +31,10 @@ const val FRAMES_RATIO = W / H
  */
 @Composable
 fun PhotoFramesScene(modifier: Modifier = Modifier) {
-    val stroke = if (PLASTIC_TRIAL) PlasticColors.OnPlateDim else MemoryColors.Ink
-    val back = if (PLASTIC_TRIAL) PlasticColors.Plate else MemoryColors.Fill
-    val front = if (PLASTIC_TRIAL) PlasticColors.PlateHi else MemoryColors.Surface
-    val mark = if (PLASTIC_TRIAL) PlasticColors.Red else MemoryColors.Accent
+    val stroke = PlasticColors.OnPlateDim
+    val back = PlasticColors.Plate
+    val front = PlasticColors.PlateHi
+    val mark = PlasticColors.Red
 
     Canvas(modifier) {
         val k = size.width / W

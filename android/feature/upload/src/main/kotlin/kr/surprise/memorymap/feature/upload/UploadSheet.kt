@@ -33,7 +33,6 @@ import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
-import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 
 /**
@@ -51,61 +50,7 @@ fun UploadSheet(
 ) {
     // 패미컴 스타일 시험 중에는 몸통 위에 화면을 끼우고 조작을 화면 밖으로 냅니다.
     // 스위치는 designsystem 에 하나뿐입니다.
-    if (PLASTIC_TRIAL) {
-        Box(modifier.fillMaxWidth()) { PlasticUploadBody(state, onIntent, onPickPhotos) }
-        return
-    }
-
-    Column(modifier.fillMaxWidth().background(MemoryColors.Paper)) {
-        if (state.editingRegionOf != null) {
-            RegionPicker(state, onIntent)
-            return@Column
-        }
-
-        Header(count = state.items.size)
-        Divider()
-
-        val failure = state.step as? UploadStep.Failed
-        if (failure != null) {
-            FailureCard(savedLocally = failure.savedLocally) { onIntent(UploadIntent.RetryTapped) }
-        }
-
-        if (state.items.isEmpty()) {
-            EmptyPick(onPickPhotos)
-        } else {
-            AutoNotice()
-            LazyColumn(
-                Modifier.weight(1f),
-                contentPadding = PaddingValues(start = Gap.xl, end = Gap.xl, top = Gap.xs, bottom = Gap.s),
-            ) {
-                items(state.items, key = { it.uri }) { item ->
-                    ItemRow(item, onIntent)
-                }
-            }
-
-            Divider(inset = false)
-            Column(Modifier.padding(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = Gap.xxl)) {
-                state.splitCounts()?.let { split ->
-                    Text(
-                        stringResource(R.string.upload_split_notice, split.places, split.days),
-                        style = MemoryType.Micro,
-                        color = MemoryColors.Ink2,
-                        modifier = Modifier.padding(bottom = Gap.s),
-                    )
-                }
-                PrimaryButton(
-                    text = when (state.step) {
-                        UploadStep.Uploading -> stringResource(R.string.upload_uploading)
-                        UploadStep.Reading -> stringResource(R.string.upload_reading)
-                        else -> stringResource(R.string.upload_confirm, state.items.size)
-                    },
-                    enabled = state.canUpload(),
-                    onClick = { onIntent(UploadIntent.Confirmed) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        }
-    }
+    Box(modifier.fillMaxWidth()) { PlasticUploadBody(state, onIntent, onPickPhotos) }
 }
 
 /** 시트라 닫기 버튼을 두지 않습니다 — 끌어 내리거나 뒤를 눌러 닫습니다. */

@@ -57,7 +57,6 @@ import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
-import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
 import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
 import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
@@ -91,17 +90,17 @@ fun SpaceListScreen(
             .background(MemoryColors.Paper)
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
-        if (PLASTIC_TRIAL) PlasticListBody(state, onIntent) else ListBody(state, onIntent)
+        PlasticListBody(state, onIntent)
     }
 
     if (state.sheet != SpaceListSheet.None) {
         ModalBottomSheet(
             onDismissRequest = { onIntent(SpaceListIntent.SheetDismissed) },
             sheetState = rememberModalBottomSheetState(),
-            containerColor = if (PLASTIC_TRIAL) PlasticColors.Body else MemoryColors.Surface,
+            containerColor = PlasticColors.Body,
             // 시트 위쪽에도 2px 잉크 선을 긋습니다 — 지역 시트와 같은 규칙입니다.
             dragHandle = { SheetGrip() },
-            shape = if (PLASTIC_TRIAL) PlasticShapes.Device else MemoryShapes.Sheet,
+            shape = PlasticShapes.Device,
         ) {
             when (val sheet = state.sheet) {
                 SpaceListSheet.None -> Unit
@@ -124,20 +123,15 @@ private fun SheetGrip() {
     // 패미컴 스타일에서는 **몸통이 통째로 올라옵니다.** 화면(검정 판)만 올라오면
     // 기기에서 화면이 떨어져 나온 것처럼 보입니다. 그래서 손잡이도 잉크 선이 아니라
     // 몸통에 새긴 회색 홈 — 목록 화면 위쪽의 줄무늬와 같은 것입니다.
-    if (PLASTIC_TRIAL) {
-        Box(Modifier.fillMaxWidth().padding(vertical = Gap.s), contentAlignment = Alignment.Center) {
-            Box(
-                Modifier
-                    .width(PlasticSize.Grip)
-                    .height(PlasticSize.Stripe)
-                    .clip(PlasticShapes.Pill)
-                    .background(PlasticColors.Trim)
-            )
-        }
-        return
+    Box(Modifier.fillMaxWidth().padding(vertical = Gap.s), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier
+                .width(PlasticSize.Grip)
+                .height(PlasticSize.Stripe)
+                .clip(PlasticShapes.Pill)
+                .background(PlasticColors.Trim)
+        )
     }
-
-    Box(Modifier.fillMaxWidth().height(MemoryStroke.Divider).background(MemoryColors.Ink))
 }
 
 // ---------------------------------------------------------------------------
@@ -323,11 +317,11 @@ private fun Hint(text: String) {
  * 지저분해져서 여기 두 개로 모읍니다.
  */
 private val bodyInk: Color
-    @Composable get() = if (PLASTIC_TRIAL) PlasticColors.Ink else MemoryColors.Ink
+    @Composable get() = PlasticColors.Ink
 
 /** 몸통 위의 흐린 글자 (설명·각주) */
 private val bodyDim: Color
-    @Composable get() = if (PLASTIC_TRIAL) PlasticColors.TrimLo else MemoryColors.Ink2
+    @Composable get() = PlasticColors.TrimLo
 
 /**
  * 시트 제목. 뒤로 버튼을 두지 않습니다 — 시트는 끌어 내리거나 뒤를 눌러 닫습니다.
@@ -339,7 +333,7 @@ private fun SheetTitle(text: String) {
     Text(
         text = text,
         style = MemoryType.Title,
-        color = if (PLASTIC_TRIAL) PlasticColors.Ink else MemoryColors.Ink,
+        color = PlasticColors.Ink,
         modifier = Modifier.padding(bottom = Gap.m),
     )
 }
@@ -350,7 +344,7 @@ private fun SectionLabel(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         style = MemoryType.Micro,
-        color = if (PLASTIC_TRIAL) PlasticColors.TrimLo else MemoryColors.Ink2,
+        color = PlasticColors.TrimLo,
         letterSpacing = 0.7.sp,
         modifier = modifier,
     )
@@ -364,56 +358,33 @@ private fun SectionLabel(text: String, modifier: Modifier = Modifier) {
  */
 @Composable
 private fun Field(value: String, placeholder: String, onValueChange: (String) -> Unit) {
-    if (PLASTIC_TRIAL) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .sunken(PlasticShapes.Chip, face = PlasticColors.PlateLo)
-                .padding(horizontal = Gap.m, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Gap.s),
-        ) {
-            Box(
-                Modifier
-                    .size(width = 3.dp, height = 14.dp)
-                    .clip(PlasticShapes.Chip)
-                    .background(PlasticColors.Ink)
-            )
-            Box(Modifier.weight(1f)) {
-                if (value.isEmpty()) {
-                    Text(placeholder, style = MemoryType.Body, color = PlasticColors.OnPlateDim)
-                }
-                BasicTextField(
-                    value = value,
-                    onValueChange = onValueChange,
-                    singleLine = true,
-                    textStyle = MemoryType.Body.copy(color = PlasticColors.OnPlate),
-                    cursorBrush = SolidColor(PlasticColors.Red),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        }
-        return
-    }
-
-    Box(
+    Row(
         Modifier
             .fillMaxWidth()
-            .background(MemoryColors.Surface)
-            .border(MemoryStroke.Border, MemoryColors.Line)
-            .padding(horizontal = 14.dp, vertical = 13.dp),
+            .sunken(PlasticShapes.Chip, face = PlasticColors.PlateLo)
+            .padding(horizontal = Gap.m, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Gap.s),
     ) {
-        if (value.isEmpty()) {
-            Text(placeholder, style = MemoryType.Body, color = MemoryColors.Ink3)
-        }
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            singleLine = true,
-            textStyle = MemoryType.Body.copy(color = MemoryColors.Ink),
-            cursorBrush = SolidColor(MemoryColors.Accent),
-            modifier = Modifier.fillMaxWidth(),
+        Box(
+            Modifier
+                .size(width = 3.dp, height = 14.dp)
+                .clip(PlasticShapes.Chip)
+                .background(PlasticColors.Ink)
         )
+        Box(Modifier.weight(1f)) {
+            if (value.isEmpty()) {
+                Text(placeholder, style = MemoryType.Body, color = PlasticColors.OnPlateDim)
+            }
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                singleLine = true,
+                textStyle = MemoryType.Body.copy(color = PlasticColors.OnPlate),
+                cursorBrush = SolidColor(PlasticColors.Red),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 
@@ -502,68 +473,30 @@ private fun KindOption(
     // 서고 바닥이 밝아집니다 — 달력의 '고른 날' 과 같은 규칙입니다. 라디오 네모는
     // 뺐습니다: 빨간 막대와 밝아진 바닥이 이미 고른 것을 말하는데, 표식이 셋이 되면
     // 무엇을 봐야 할지 흐려집니다.
-    if (PLASTIC_TRIAL) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .clip(PlasticShapes.Chip)
-                .background(if (checked) PlasticColors.PlateHi else PlasticColors.Plate)
-                .selectable(selected = checked, role = Role.RadioButton, onClick = onClick)
-                .padding(end = 15.dp, top = 13.dp, bottom = 13.dp),
-            horizontalArrangement = Arrangement.spacedBy(Gap.m),
-        ) {
-            Box(
-                Modifier
-                    .width(3.dp)
-                    .height(PlasticSize.KindBar)
-                    .background(if (checked) PlasticColors.Red else PlasticColors.Plate)
-            )
-            Column {
-                Text(title, style = MemoryType.Headline, color = PlasticColors.OnPlate)
-                Text(
-                    text = detail,
-                    style = MemoryType.Label,
-                    color = PlasticColors.OnPlateDim,
-                    modifier = Modifier.padding(top = 3.dp),
-                )
-                Text(sub, style = MemoryType.Label, color = PlasticColors.OnPlateDim)
-            }
-        }
-        return
-    }
-
     Row(
         Modifier
             .fillMaxWidth()
-            .background(MemoryColors.Surface)
-            .then(
-                if (checked) Modifier.border(2.dp, MemoryColors.Accent)
-                else Modifier.border(MemoryStroke.Border, MemoryColors.Line2)
-            )
+            .clip(PlasticShapes.Chip)
+            .background(if (checked) PlasticColors.PlateHi else PlasticColors.Plate)
             .selectable(selected = checked, role = Role.RadioButton, onClick = onClick)
-            .padding(horizontal = 15.dp, vertical = 14.dp),
+            .padding(end = 15.dp, top = 13.dp, bottom = 13.dp),
         horizontalArrangement = Arrangement.spacedBy(Gap.m),
     ) {
         Box(
             Modifier
-                .padding(top = 2.dp)
-                .size(16.dp)
-                .border(MemoryStroke.Border, MemoryColors.Line),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (checked) {
-                Box(Modifier.size(8.dp).background(MemoryColors.Accent))
-            }
-        }
+                .width(3.dp)
+                .height(PlasticSize.KindBar)
+                .background(if (checked) PlasticColors.Red else PlasticColors.Plate)
+        )
         Column {
-            Text(title, style = MemoryType.Headline)
+            Text(title, style = MemoryType.Headline, color = PlasticColors.OnPlate)
             Text(
-                detail,
+                text = detail,
                 style = MemoryType.Label,
-                color = MemoryColors.Ink2,
+                color = PlasticColors.OnPlateDim,
                 modifier = Modifier.padding(top = 3.dp),
             )
-            Text(sub, style = MemoryType.Label, color = MemoryColors.Ink3)
+            Text(sub, style = MemoryType.Label, color = PlasticColors.OnPlateDim)
         }
     }
 }
@@ -614,8 +547,8 @@ private fun SignInSheet(
         Box(
             Modifier
                 .size(13.dp)
-                .then(if (PLASTIC_TRIAL) Modifier.clip(PlasticShapes.Chip) else Modifier)
-                .background(if (PLASTIC_TRIAL) PlasticColors.Red else MemoryColors.Accent)
+                .clip(PlasticShapes.Chip)
+                .background(PlasticColors.Red)
         )
         Spacer(Modifier.height(14.dp))
         // 시트에서는 25단이 너무 큽니다 — 제목만으로 시트가 반을 먹습니다.
@@ -669,42 +602,25 @@ private fun SignInSheet(
  */
 @Composable
 private fun GoogleButton(text: String, enabled: Boolean, onClick: () -> Unit) {
-    if (PLASTIC_TRIAL) {
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .raisedPlastic(PlasticShapes.Housing)
-                .padding(PlasticSize.ButtonInset)
-        ) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(PlasticShapes.Pill)
-                    .background(MemoryColors.Surface)
-                    .clickable(enabled = enabled, onClick = onClick)
-                    .padding(horizontal = Gap.l, vertical = 13.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(11.dp),
-            ) {
-                GoogleMark(Modifier.size(19.dp))
-                Text(text, style = MemoryType.Headline, color = MemoryColors.Ink)
-            }
-        }
-        return
-    }
-
-    Row(
+    Box(
         Modifier
             .fillMaxWidth()
-            .background(MemoryColors.Surface)
-            .border(MemoryStroke.Border, MemoryColors.Line)
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = Gap.l, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(11.dp),
+            .raisedPlastic(PlasticShapes.Housing)
+            .padding(PlasticSize.ButtonInset)
     ) {
-        GoogleMark(Modifier.size(19.dp))
-        Text(text, style = MemoryType.Headline, color = MemoryColors.Ink)
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clip(PlasticShapes.Pill)
+                .background(MemoryColors.Surface)
+                .clickable(enabled = enabled, onClick = onClick)
+                .padding(horizontal = Gap.l, vertical = 13.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(11.dp),
+        ) {
+            GoogleMark(Modifier.size(19.dp))
+            Text(text, style = MemoryType.Headline, color = MemoryColors.Ink)
+        }
     }
 }
 
@@ -771,11 +687,7 @@ private fun InvitedSheet(sheet: SpaceListSheet.Invited, onIntent: (SpaceListInte
             Modifier
                 .fillMaxWidth()
                 .then(
-                    if (PLASTIC_TRIAL) {
-                        Modifier.sunken(PlasticShapes.Screen)
-                    } else {
-                        Modifier.background(MemoryColors.Surface).border(MemoryStroke.Border, MemoryColors.Line)
-                    }
+                    Modifier.sunken(PlasticShapes.Screen)
                 )
                 .padding(horizontal = Gap.xl, vertical = 18.dp),
         ) {
@@ -787,7 +699,7 @@ private fun InvitedSheet(sheet: SpaceListSheet.Invited, onIntent: (SpaceListInte
                 fontWeight = FontWeight.Bold,
                 fontSize = 32.sp,
                 letterSpacing = 8.sp,
-                color = if (PLASTIC_TRIAL) PlasticColors.OnPlate else MemoryColors.Ink,
+                color = PlasticColors.OnPlate,
             )
         }
 

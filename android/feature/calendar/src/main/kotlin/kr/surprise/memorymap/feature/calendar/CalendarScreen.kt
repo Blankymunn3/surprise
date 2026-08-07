@@ -47,7 +47,6 @@ import kr.surprise.memorymap.core.designsystem.component.PhotoThumb
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
-import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
@@ -73,45 +72,7 @@ fun CalendarScreen(
 ) {
     // 패미컴 스타일 시험 중에는 격자가 몸통에 끼운 화면 안으로 들어가고
     // 조작은 화면 밖에 섭니다. 스위치는 designsystem 에 하나뿐입니다.
-    if (PLASTIC_TRIAL) {
-        Box(modifier.fillMaxSize()) { PlasticCalendarBody(state, onIntent) }
-        return
-    }
-
-    // 격자와 '달력 접기' 는 **붙박이**고 아래 목록만 구릅니다. 목록을 내리는데
-    // 달력까지 같이 밀려 올라가면, 지금 무슨 달을 보고 있는지가 사라집니다.
-    Column(modifier.fillMaxSize().background(MemoryColors.Paper)) {
-        MonthHeader(state, onIntent)
-
-        if (!state.collapsed) {
-            WeekdayRow()
-            MonthGrid(state, onIntent)
-        }
-
-        CollapseBar(state.collapsed) { onIntent(CalendarIntent.CollapseToggled) }
-        Divider()
-
-        val groups = state.visibleDays()
-        if (groups.isEmpty()) {
-            Column(
-                Modifier.fillMaxSize().padding(horizontal = 28.dp),
-                verticalArrangement = Arrangement.Center,
-            ) {
-                PhotoFramesScene(Modifier.fillMaxWidth(0.42f).aspectRatio(FRAMES_RATIO))
-                Spacer(Modifier.height(14.dp))
-                Text(stringResource(R.string.calendar_empty), style = MemoryType.Title)
-            }
-        } else {
-            LazyColumn(
-                Modifier.weight(1f),
-                contentPadding = PaddingValues(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = 90.dp),
-            ) {
-                items(groups.size, key = { groups[it].date.toString() }) { index ->
-                    DaySection(groups[index], state.selected == groups[index].date, onIntent)
-                }
-            }
-        }
-    }
+    Box(modifier.fillMaxSize()) { PlasticCalendarBody(state, onIntent) }
 }
 
 /** 구획선은 2px 입니다. 테두리(1px)보다 굵어야 '나누는 선' 으로 읽힙니다. */

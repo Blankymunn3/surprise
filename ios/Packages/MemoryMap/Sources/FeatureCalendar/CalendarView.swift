@@ -58,21 +58,17 @@ public struct CalendarView: View {
         //
         // 넘김 상태(기준 달·페이지·격자 폭)는 **여기 그대로 둡니다.** 시험 화면으로
         // 옮기면 스위치를 껐다 켤 때 보던 달을 잃고, 두 벌을 따로 관리하게 됩니다.
-        if plasticTrial {
-            PlasticCalendarBody(
-                store: store,
-                onAddPhoto: onAddPhoto,
-                anchor: $anchor,
-                page: $page,
-                gridWidth: $gridWidth,
-                pageCount: Self.pageCount,
-                pageCenter: Self.pageCenter,
-                weekRows: Self.weekRows
-            )
-            .task { await store.refresh() }
-        } else {
-            standard
-        }
+        PlasticCalendarBody(
+            store: store,
+            onAddPhoto: onAddPhoto,
+            anchor: $anchor,
+            page: $page,
+            gridWidth: $gridWidth,
+            pageCount: Self.pageCount,
+            pageCenter: Self.pageCenter,
+            weekRows: Self.weekRows
+        )
+        .task { await store.refresh() }
     }
 
     private var standard: some View {

@@ -20,10 +20,10 @@ public struct PhotoFramesScene: View {
 
     public init() {}
 
-    private var stroke: Color { plasticTrial ? PlasticColor.onPlateDim : MemoryColor.ink }
-    private var back: Color { plasticTrial ? PlasticColor.plate : MemoryColor.fill }
-    private var front: Color { plasticTrial ? PlasticColor.plateHi : MemoryColor.surface }
-    private var mark: Color { plasticTrial ? PlasticColor.red : MemoryColor.accent }
+    private var stroke: Color { PlasticColor.onPlateDim }
+    private var back: Color { PlasticColor.plate }
+    private var front: Color { PlasticColor.plateHi }
+    private var mark: Color { PlasticColor.red }
 
     public var body: some View {
         Canvas { context, size in

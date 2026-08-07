@@ -42,11 +42,10 @@ import kr.surprise.memorymap.core.model.Space
 import kr.surprise.memorymap.core.model.SpaceKind
 
 /**
- * **시험용 화면 — 패미컴 컨트롤러 스타일의 짜국 목록.**
+ * **짜국 목록 — 패미컴 컨트롤러 스타일.**
  *
- * 지금 앱의 목록은 [SpaceListScreen] 안의 `ListBody` 이고, 이 파일은 같은 상태를
- * 다른 옷으로 그린 것뿐입니다. 상태·Intent·시트는 하나도 건드리지 않습니다 —
- * 켜고 끄는 것은 `SpaceListScreen` 의 `PLASTIC_TRIAL` 하나입니다.
+ * [SpaceListScreen] 이 상태를 들고 이 파일이 그립니다. 여기에는 상태도 Intent 도
+ * 없습니다 — 받은 것을 그리고, 누른 것을 올려 보낼 뿐입니다.
  *
  * 옮긴 규칙:
  * - 화면 바탕 = 회색 플라스틱 몸통

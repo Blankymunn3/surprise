@@ -122,35 +122,18 @@ public struct PrimaryButton: View {
         // 초대 코드·올리기)이 모두 이 부품으로 만들어져 있어서, 여기 한 곳만 바꾸면
         // 넷이 같이 따라옵니다. 화살표는 뺍니다 — 알약 안에서는 글자만으로 충분하고,
         // 넣으면 A 버튼이 아니라 목록의 한 줄처럼 보입니다.
-        if plasticTrial {
-            Button(action: action) {
-                Text(title)
-                    .font(MemoryFont.font(15, .bold))
-                    .foregroundStyle(enabled ? PlasticColor.onRed : PlasticColor.onButtonOff)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: PlasticSize.button)
-                    .background(Capsule().fill(enabled ? PlasticColor.red : PlasticColor.buttonOff))
-            }
-            .buttonStyle(.plasticPress)
-            .disabled(!enabled)
-            .padding(PlasticSize.buttonInset)
-            .raisedPlastic()
-        } else {
-            Button(action: action) {
-                HStack(spacing: MemorySpace.s) {
-                    Text(title).memoryHeadline()
-                    Spacer(minLength: 0)
-                    Text("→").memoryHeadline()
-                }
-                .foregroundStyle(enabled ? MemoryColor.onAccent : MemoryColor.ink3)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
+        Button(action: action) {
+            Text(title)
+                .font(MemoryFont.font(15, .bold))
+                .foregroundStyle(enabled ? PlasticColor.onRed : PlasticColor.onButtonOff)
                 .frame(maxWidth: .infinity)
-                .background(enabled ? MemoryColor.accent : MemoryColor.fill)
-            }
-            .buttonStyle(.plasticPress)
-            .disabled(!enabled)
+                .frame(height: PlasticSize.button)
+                .background(Capsule().fill(enabled ? PlasticColor.red : PlasticColor.buttonOff))
         }
+        .buttonStyle(.plasticPress)
+        .disabled(!enabled)
+        .padding(PlasticSize.buttonInset)
+        .raisedPlastic()
     }
 }
 
@@ -166,31 +149,17 @@ public struct SoftButton: View {
 
     public var body: some View {
         // 패미컴 스타일에서는 하우징에 앉힌 **검은 고무 알약**입니다.
-        if plasticTrial {
-            Button(action: action) {
-                Text(title)
-                    .font(MemoryFont.font(15, .bold))
-                    .foregroundStyle(PlasticColor.onRubber)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: PlasticSize.button)
-                    .background(Capsule().fill(PlasticColor.rubber))
-            }
-            .buttonStyle(.plasticPress)
-            .padding(PlasticSize.buttonInset)
-            .raisedPlastic()
-        } else {
-            Button(action: action) {
-                Text(title)
-                    .memoryBody()
-                    .foregroundStyle(MemoryColor.ink)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 13)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(MemoryColor.surface)
-                    .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
-            }
-            .buttonStyle(.plasticPress)
+        Button(action: action) {
+            Text(title)
+                .font(MemoryFont.font(15, .bold))
+                .foregroundStyle(PlasticColor.onRubber)
+                .frame(maxWidth: .infinity)
+                .frame(height: PlasticSize.button)
+                .background(Capsule().fill(PlasticColor.rubber))
         }
+        .buttonStyle(.plasticPress)
+        .padding(PlasticSize.buttonInset)
+        .raisedPlastic()
     }
 }
 

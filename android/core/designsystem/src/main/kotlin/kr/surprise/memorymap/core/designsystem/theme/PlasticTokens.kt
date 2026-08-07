@@ -11,26 +11,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * **시험용 토큰 — 패미컴 컨트롤러 스타일.**
- *
- * 지금 앱의 기준은 [MemoryColors] (웜 그레이 + 잉크 + 레드, 모서리 0) 입니다.
- * 이 파일은 그것과 **나란히** 두는 다른 한 벌이고, 짜국 목록 한 화면에서만 씁니다
- * (`SpaceListScreen` 의 `PLASTIC_TRIAL`). 채택되지 않으면 이 파일과 그 화면만 지우면 됩니다.
+ * **짜국의 디자인 토큰 — 패미컴 컨트롤러 스타일.**
  *
  * 색은 NES 컨트롤러 실물에서 땄습니다 — 회색 플라스틱 몸통, 검정 페이스플레이트,
- * 빨간 A·B 버튼, 검은 십자키.
+ * 빨간 A·B 버튼, 검은 십자키. 앱의 모든 화면이 이 한 벌을 씁니다.
  */
-/**
- * **시험 스위치 하나로 모든 화면을 켜고 끕니다.**
- *
- * 처음엔 화면마다 `PLASTIC_TRIAL` 을 뒀는데, 화면이 늘자 켜 보려면 여러 파일을
- * 고쳐야 했습니다. 검수는 앱 전체를 한 벌로 보는 일이라 스위치도 하나여야 합니다.
- *
- * `false` 로 두면 앱은 기준 디자인([MemoryColors]) 그대로 돌아갑니다.
- * 채택하지 않기로 하면 `*Plastic.kt` 파일들과 이 파일을 지우면 됩니다.
- */
-const val PLASTIC_TRIAL = true
-
 object PlasticColors {
     /** 몸통 플라스틱. 화면 바탕입니다. */
     val Body = Color(0xFFDCD9D3)

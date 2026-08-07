@@ -20,17 +20,12 @@ import androidx.compose.ui.unit.dp
  *
  * 색을 어둡게 하지 않는 이유: 빨간 A 버튼은 이미 진한 빨강이고 고무는 검정이라,
  * 더 어둡게 해도 거의 티가 안 납니다. **움직임이 훨씬 잘 읽힙니다.**
- *
- * 기준 디자인에서는 평소대로 머티리얼 물결이 나옵니다 — 그쪽은 종이와 잉크의 세계라
- * 눌러서 내려갈 두께가 없습니다.
  */
 @Composable
 fun Modifier.pressable(
     enabled: Boolean = true,
     onClick: () -> Unit,
 ): Modifier {
-    if (!PLASTIC_TRIAL) return clickable(enabled = enabled, onClick = onClick)
-
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
     // 뗄 때가 누를 때보다 조금 느립니다. 손가락이 떨어진 뒤 버튼이 올라오는 것이

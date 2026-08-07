@@ -49,21 +49,17 @@ public struct MapView: View {
         //
         // 지도의 상태(카메라·보이는 범위·대표사진)는 **여기 그대로 둡니다.** 시험 화면에
         // 옮겨 두면 스위치를 껐다 켤 때 보던 자리를 잃고, 두 벌을 따로 관리하게 됩니다.
-        if plasticTrial {
-            PlasticMapBody(
-                store: store,
-                onAddPhoto: onAddPhoto,
-                position: $position,
-                visibleRegion: $visibleRegion,
-                covers: $covers,
-                searching: $searching
-            )
-            .task { await store.refresh() }
-            .task(id: store.state.fills) { await loadCovers() }
-            .onChange(of: store.state.focusCount) { _, _ in fitToFocus() }
-        } else {
-            standard
-        }
+        PlasticMapBody(
+            store: store,
+            onAddPhoto: onAddPhoto,
+            position: $position,
+            visibleRegion: $visibleRegion,
+            covers: $covers,
+            searching: $searching
+        )
+        .task { await store.refresh() }
+        .task(id: store.state.fills) { await loadCovers() }
+        .onChange(of: store.state.focusCount) { _, _ in fitToFocus() }
     }
 
     private var standard: some View {

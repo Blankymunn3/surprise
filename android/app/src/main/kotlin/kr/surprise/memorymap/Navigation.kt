@@ -80,7 +80,6 @@ import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
-import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
 import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
 import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
@@ -343,7 +342,7 @@ private fun SpaceTabs(
     Box(
         Modifier
             .fillMaxSize()
-            .background(if (PLASTIC_TRIAL) PlasticColors.Body else MemoryColors.Paper)
+            .background(PlasticColors.Body)
     ) {
         // 머리말과 탭은 **지도 위에 떠 있지 않고 자리를 차지합니다.** 지도가 그 아래에서
         // 시작하니, 러시아처럼 위로 긴 나라가 검색칸 뒤로 숨을 자리 자체가 없습니다.
@@ -354,17 +353,8 @@ private fun SpaceTabs(
                 onBack = onBack,
                 onMore = { menuOpen = true },
             )
-            // 패미컴 스타일에서는 탭도 몸통 위의 고무 스위치입니다.
-            if (PLASTIC_TRIAL) {
-                PlasticTabs(selectedIndex = tab, onSelect = { tab = it })
-            } else {
-                Segmented(
-                    options = stringArrayResource(R.array.space_tabs).toList(),
-                    selectedIndex = tab,
-                    onSelect = { tab = it },
-                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 2.dp, bottom = 10.dp),
-                )
-            }
+            // 탭은 몸통 위의 고무 스위치입니다.
+            PlasticTabs(selectedIndex = tab, onSelect = { tab = it })
 
             // 탭도 옆으로 밀립니다. 누른 쪽으로 미끄러져야 어느 쪽으로 옮겼는지 보입니다.
             AnimatedContent(
@@ -386,19 +376,8 @@ private fun SpaceTabs(
             }
         }
 
-        // 패미컴 스타일에서는 ＋ 가 떠 있지 않고 **달력 안쪽 조작부**에 앉습니다
-        // (`CalendarPlastic` 의 빨간 A 버튼). 몸통 위에 버튼이 다 모여 있는데
-        // 하나만 화면 위에 떠 있으면 어긋납니다.
-        if (tab == 1 && !PLASTIC_TRIAL) {
-            MemoryFab(
-                onClick = { uploading = true },
-                contentDescription = stringResource(R.string.space_add_photo),
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .systemBarsPadding()
-                    .padding(end = 14.dp, bottom = 18.dp),
-            )
-        }
+        // ＋ 는 떠 있지 않고 **달력 안쪽 조작부**에 앉습니다(`CalendarPlastic` 의 빨간 A 버튼).
+        // 몸통 위에 버튼이 다 모여 있는데 하나만 화면 위에 떠 있으면 어긋납니다.
 
         MemoryToast(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 110.dp))
 
@@ -477,8 +456,8 @@ private fun SpaceTabs(
         ModalBottomSheet(
             onDismissRequest = { uploading = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = if (PLASTIC_TRIAL) PlasticColors.Body else MemoryColors.Surface,
-            shape = if (PLASTIC_TRIAL) PlasticShapes.Device else MemoryShapes.Sheet,
+            containerColor = PlasticColors.Body,
+            shape = PlasticShapes.Device,
             dragHandle = { UploadGrip() },
         ) {
             UploadSheet(
@@ -521,20 +500,15 @@ private const val MAX_PICK = 20
  */
 @Composable
 private fun UploadGrip() {
-    if (PLASTIC_TRIAL) {
-        Box(Modifier.fillMaxWidth().padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
-            Box(
-                Modifier
-                    .width(PlasticSize.Grip)
-                    .height(PlasticSize.Stripe)
-                    .clip(PlasticShapes.Pill)
-                    .background(PlasticColors.Trim)
-            )
-        }
-        return
+    Box(Modifier.fillMaxWidth().padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier
+                .width(PlasticSize.Grip)
+                .height(PlasticSize.Stripe)
+                .clip(PlasticShapes.Pill)
+                .background(PlasticColors.Trim)
+        )
     }
-
-    Box(Modifier.fillMaxWidth().height(MemoryStroke.Divider).background(MemoryColors.Ink))
 }
 
 /**
@@ -563,7 +537,7 @@ private fun TopBar(
             text = spaceName,
             style = MemoryType.Title,
             // 몸통 위의 글자는 잉크가 아니라 플라스틱에 새긴 검정입니다.
-            color = if (PLASTIC_TRIAL) PlasticColors.Ink else MemoryColors.Ink,
+            color = PlasticColors.Ink,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f).padding(horizontal = 2.dp),
@@ -572,29 +546,17 @@ private fun TopBar(
         if (onlyOnThisPhone) {
             // 이 딱지는 몸통 위에서 **파인 자리**로 그립니다. 흰 면에 잉크 선은
             // 플라스틱 위에서 종이를 붙인 것처럼 떠 보입니다.
-            if (PLASTIC_TRIAL) {
-                Text(
-                    text = stringResource(DesignR.string.component_only_on_this_phone),
-                    fontFamily = Pretendard,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 11.sp,
-                    color = PlasticColors.OnPlateDim,
-                    modifier = Modifier
-                        .clip(PlasticShapes.Chip)
-                        .background(PlasticColors.Plate)
-                        .padding(horizontal = 7.dp, vertical = 3.dp),
-                )
-            } else {
-                Text(
-                    text = stringResource(DesignR.string.component_only_on_this_phone),
-                    style = MemoryType.Micro,
-                    color = MemoryColors.Ink,
-                    modifier = Modifier
-                        .background(MemoryColors.Surface)
-                        .border(MemoryStroke.Border, MemoryColors.Line)
-                        .padding(horizontal = 7.dp, vertical = 2.dp),
-                )
-            }
+            Text(
+                text = stringResource(DesignR.string.component_only_on_this_phone),
+                fontFamily = Pretendard,
+                fontWeight = FontWeight.Bold,
+                fontSize = 11.sp,
+                color = PlasticColors.OnPlateDim,
+                modifier = Modifier
+                    .clip(PlasticShapes.Chip)
+                    .background(PlasticColors.Plate)
+                    .padding(horizontal = 7.dp, vertical = 3.dp),
+            )
         }
 
         PlainIconButton(MemoryIcons.More, stringResource(R.string.space_more), onMore)
@@ -658,8 +620,8 @@ private fun DateSheet(current: LocalDate, onDismiss: () -> Unit, onPick: (LocalD
     // 우리가 다시 그리면 시스템 달력과 미묘하게 달라서 오히려 낯섭니다.
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = if (PLASTIC_TRIAL) PlasticColors.Body else MemoryColors.Surface,
-        shape = if (PLASTIC_TRIAL) PlasticShapes.Device else MemoryShapes.Sheet,
+        containerColor = PlasticColors.Body,
+        shape = PlasticShapes.Device,
         dragHandle = null,
     ) {
         DatePicker(state = picker)
