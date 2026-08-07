@@ -25,11 +25,14 @@ struct PlasticUploadBody: View {
     @Binding var picked: [PhotosPickerItem]
 
     var body: some View {
+        // **높이를 채우지 않습니다.** 내용만큼만 자라고, 시트가 그 높이를 재서 씁니다
+        // (`SpaceDetailView` 의 uploadHeight). 사진 한 장을 올릴 때 시트가 화면 반을
+        // 먹을 까닭이 없습니다.
         VStack(spacing: 0) {
             header
 
             screen
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity)
                 .sunken(PlasticRadius.screen)
 
             controls
@@ -48,6 +51,11 @@ struct PlasticUploadBody: View {
             if store.state.items.isEmpty {
                 emptyPlate
             } else {
+                // **여기가 시트 높이를 정합니다.** 목록은 사진 수만큼 자라다가
+                // 이 한도에서 멈추고 그 뒤로는 구릅니다 — 시트가 화면을 삼키지 않으면서도
+                // 사진이 많을 때 훑어 내릴 수 있습니다.
+                //
+                // 머리말과 아래 버튼은 이 밖에 있어 늘 보입니다.
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 0) {
                         ForEach(store.state.items) { item in
@@ -56,6 +64,7 @@ struct PlasticUploadBody: View {
                     }
                     .padding(.bottom, MemorySpace.xs)
                 }
+                .frame(maxHeight: uploadList)
 
                 if let notice = store.state.splitNotice {
                     // 나눠 올린다고 알려 주기만 합니다. 막지는 않습니다 — 일부러 그럴 수도 있어서요.
@@ -67,7 +76,7 @@ struct PlasticUploadBody: View {
             }
         }
         .padding(MemorySpace.s)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
     private var header: some View {
@@ -223,8 +232,9 @@ struct PlasticUploadBody: View {
             }
             .padding(.top, MemorySpace.m)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .padding(.horizontal, MemorySpace.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, MemorySpace.s)
+        .padding(.vertical, MemorySpace.l)
     }
 
     /**
@@ -275,6 +285,15 @@ struct PlasticUploadBody: View {
         }
     }
 }
+
+/**
+ 올리기 시트 안 목록의 **최대** 높이.
+
+ 시트는 내용만큼만 자랍니다 — 사진 한 장을 올릴 때 화면 반을 먹을 까닭이 없습니다.
+ 이 값은 그 자람이 멈추는 자리이고, 넘으면 목록이 대신 구릅니다.
+ 안드로이드 `PlasticSize.UploadList` 와 같은 값입니다.
+ */
+private let uploadList: CGFloat = 300
 
 /// 지역 고르기. 카트리지 슬롯에 이름을 넣고, 나온 것을 화면 안에서 고릅니다.
 struct PlasticRegionPicker: View {
@@ -353,7 +372,7 @@ struct PlasticRegionPicker: View {
                     }
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: uploadList)
             .sunken(PlasticRadius.screen)
 
             Spacer().frame(height: MemorySpace.m)

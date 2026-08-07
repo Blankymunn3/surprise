@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,7 +35,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
@@ -71,6 +69,7 @@ import androidx.navigation.navArgument
 import kr.surprise.memorymap.core.designsystem.component.FloatingIconButton
 import kr.surprise.memorymap.core.designsystem.component.MemoryFab
 import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
+import kr.surprise.memorymap.core.designsystem.component.MemoryToast
 import kr.surprise.memorymap.core.designsystem.component.PlainIconButton
 import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
 import kr.surprise.memorymap.core.designsystem.component.Segmented
@@ -198,7 +197,7 @@ fun MemoryMapNavHost(container: AppContainer) {
 
             Box(Modifier.fillMaxSize()) {
                 SpaceListScreen(state = state, onIntent = vm::onIntent)
-                SnackbarHost(
+                MemoryToast(
                     snackbar,
                     Modifier.align(Alignment.BottomCenter).systemBarsPadding().padding(bottom = 16.dp),
                 )
@@ -379,7 +378,7 @@ private fun SpaceTabs(
             )
         }
 
-        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 110.dp))
+        MemoryToast(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 110.dp))
 
         if (menuOpen) {
             val menuVm: SpaceMenuViewModel =
@@ -463,9 +462,10 @@ private fun SpaceTabs(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )
                 },
-                // 시트 안이라 높이를 정해 줘야 합니다. 안 주면 목록이 끝없이 늘어나
-                // 아래 '올리기' 버튼이 화면 밖으로 밀립니다.
-                modifier = Modifier.fillMaxHeight(UPLOAD_SHEET_HEIGHT),
+                // **높이를 정해 주지 않습니다.** 내용만큼만 차지하고, 사진이 많아지면
+                // 안쪽 목록이 대신 구릅니다 (`UploadPlastic` 의 `heightIn`).
+                // 사진 한 장을 올릴 때 시트가 화면 반을 먹을 까닭이 없습니다.
+                modifier = Modifier.fillMaxWidth(),
             )
         }
 
@@ -487,19 +487,6 @@ private fun SpaceTabs(
  * 너무 크게 두면 줄이고 올리는 데 한참 걸려 멈춘 것처럼 보입니다.
  */
 private const val MAX_PICK = 20
-
-/**
- * 올리기 시트가 화면에서 차지하는 높이.
- *
- * 예전에는 0.92 였습니다 — "사진이 여러 장이면 훑어 내려야 하는데 반만 올라오면
- * 두 장밖에 안 보인다" 는 이유였습니다. 그런데 그러면 시트가 아니라 **전체 화면**으로
- * 보입니다. 다른 시트(만들기·참여·로그인)는 다 화면 일부만 덮는데 이것만 혼자
- * 화면을 삼켜서, 같은 앱의 같은 종류 동작으로 안 읽혔습니다.
- *
- * 낮추는 대신 **사진 목록이 판 안에서 구릅니다.** 머리말과 아래 버튼은 붙박이라
- * 몇 장을 골랐든 '올리기' 는 늘 같은 자리에 있습니다 — 예전 걱정거리는 이걸로 풀립니다.
- */
-private const val UPLOAD_SHEET_HEIGHT = 0.62f
 
 /**
  * 올리기 시트의 손잡이. 시트 넷과 같은 규칙입니다 —

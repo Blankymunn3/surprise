@@ -22,6 +22,8 @@ struct SpaceDetailView: View {
     @State private var menuOpen = false
     /// 지역 시트에서 열었으면 그 지역. 아래 ＋ 로 열었으면 `nil` 입니다.
     @State private var uploadRegion: Region?
+    /// 올리기 시트 높이. **재서** 씁니다 — 고른 사진 수에 따라 달라집니다.
+    @State private var uploadHeight: CGFloat = 320
     @State private var calendar: CalendarStore
     @State private var map: MapStore
 
@@ -67,17 +69,22 @@ struct SpaceDetailView: View {
         .background(plasticTrial ? PlasticColor.body : MemoryColor.paper)
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
-        // 아래에서 올라오는 시트입니다. 다른 시트들처럼 **화면을 덮지 않는 판**으로
-        // 뜹니다 — 사진 목록은 판 안에서 구릅니다. 안드로이드 `UPLOAD_SHEET_HEIGHT` 와
-        // 같은 값입니다.
+        // 아래에서 올라오는 시트입니다. 높이는 **내용에 맞춰 잽니다** — 만들기·참여·
+        // 로그인 시트와 같은 방식입니다(`SpaceListView`). 사진 한 장을 올릴 때 시트가
+        // 화면 반을 먹을 까닭이 없습니다.
         //
-        // 예전에는 `.large` 였습니다("여러 장이면 훑어 내려야 한다"). 그런데 그러면
-        // 시트가 아니라 전체 화면으로 보입니다 — 만들기·참여·로그인은 다 화면 일부만
-        // 덮는데 이것만 혼자 화면을 삼켜서 같은 종류의 동작으로 안 읽혔습니다.
-        // 머리말과 아래 버튼이 붙박이라 몇 장을 골랐든 '올리기' 는 늘 같은 자리입니다.
+        // 사진이 많아지면 안쪽 목록이 대신 구릅니다(`PlasticUploadBody` 의 uploadList).
+        // 머리말과 아래 버튼은 그 밖에 있어 몇 장을 골랐든 늘 보입니다.
         .sheet(isPresented: $uploading) {
             UploadView(store: uploadStore()) { uploading = false }
-                .presentationDetents([.fraction(uploadSheetHeight)])
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear
+                            .onAppear { uploadHeight = proxy.size.height }
+                            .onChange(of: proxy.size.height) { _, value in uploadHeight = value }
+                    }
+                )
+                .presentationDetents([.height(uploadHeight)])
                 .presentationDragIndicator(.hidden)
         }
         .overlay {
@@ -225,6 +232,3 @@ struct SpaceDetailView: View {
         .accessibilityLabel(label)
     }
 }
-
-/// 올리기 시트가 화면에서 차지하는 높이. 안드로이드 `UPLOAD_SHEET_HEIGHT` 와 같은 값입니다.
-private let uploadSheetHeight: CGFloat = 0.62

@@ -59,7 +59,7 @@ internal fun PlasticUploadBody(
 ) {
     Column(
         Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .background(PlasticColors.Body)
             .padding(horizontal = Gap.s)
     ) {
@@ -72,7 +72,6 @@ internal fun PlasticUploadBody(
 
         Column(
             Modifier
-                .weight(1f)
                 .fillMaxWidth()
                 .sunken(PlasticShapes.Screen)
                 .padding(Gap.s)
@@ -83,10 +82,15 @@ internal fun PlasticUploadBody(
             }
 
             if (state.items.isEmpty()) {
-                Box(Modifier.weight(1f)) { EmptyPlate(onPickPhotos) }
+                EmptyPlate(onPickPhotos)
             } else {
+                // **여기가 시트 높이를 정합니다.** 목록은 사진 수만큼 자라다가
+                // 이 한도에서 멈추고 그 뒤로는 구릅니다 — 시트가 화면을 삼키지 않으면서도
+                // 사진이 많을 때 훑어 내릴 수 있습니다.
+                //
+                // 머리말과 아래 버튼은 이 밖에 있어 늘 보입니다.
                 LazyColumn(
-                    Modifier.weight(1f),
+                    Modifier.heightIn(max = PlasticSize.UploadList),
                     contentPadding = PaddingValues(bottom = Gap.xs),
                 ) {
                     items(state.items, key = { it.uri }) { item ->
@@ -307,8 +311,7 @@ private fun FailurePlate(savedLocally: Boolean, onRetry: () -> Unit) {
 @Composable
 private fun EmptyPlate(onPickPhotos: () -> Unit) {
     Column(
-        Modifier.fillMaxSize().padding(horizontal = Gap.m),
-        verticalArrangement = Arrangement.Center,
+        Modifier.fillMaxWidth().padding(horizontal = Gap.s, vertical = Gap.l),
     ) {
         Text(
             text = "올릴 사진을 골라 주세요",
@@ -480,9 +483,10 @@ private fun ColumnScope.PlasticRegionPicker(state: UploadState, onIntent: (Uploa
         }
     }
 
+    // 지역 고르기도 같습니다 — 나온 만큼만 자라다가 한도에서 멈추고 구릅니다.
     LazyColumn(
         Modifier
-            .weight(1f)
+            .heightIn(max = PlasticSize.UploadList)
             .fillMaxWidth()
             .sunken(PlasticShapes.Screen)
     ) {
