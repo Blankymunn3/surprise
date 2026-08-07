@@ -8,6 +8,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
+import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
+import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
 
 /** 원본 그림의 좌표계. iOS 와 **같은 수를 씁니다** — 다르면 두 앱의 그림이 달라집니다. */
 private const val W = 150f
@@ -23,9 +25,18 @@ const val FRAMES_RATIO = W / H
  * 말이 아니라 그림으로 먼저 알리려는 것입니다. 레드 사각 하나가 구성을 잡아 줍니다.
  *
  * 지도·달력 화면에는 지도 자체가 그림 역할을 하므로 이 그림을 쓰지 않습니다.
+ *
+ * **패미컴 스타일에서는 검정 판 위에 놓입니다.** 그래서 색을 뒤집습니다 — 선이 잉크면
+ * 검정 위의 검정이라 아예 안 보이고, 면이 흰색이면 판 위에서 혼자 번쩍입니다.
+ * 모양(좌표·굵기)은 그대로라 두 스타일이 같은 그림입니다.
  */
 @Composable
 fun PhotoFramesScene(modifier: Modifier = Modifier) {
+    val stroke = if (PLASTIC_TRIAL) PlasticColors.OnPlateDim else MemoryColors.Ink
+    val back = if (PLASTIC_TRIAL) PlasticColors.Plate else MemoryColors.Fill
+    val front = if (PLASTIC_TRIAL) PlasticColors.PlateHi else MemoryColors.Surface
+    val mark = if (PLASTIC_TRIAL) PlasticColors.Red else MemoryColors.Accent
+
     Canvas(modifier) {
         val k = size.width / W
         fun x(v: Float) = v * k
@@ -37,16 +48,16 @@ fun PhotoFramesScene(modifier: Modifier = Modifier) {
             val at = Offset(x(left), y(top))
             val wh = Size(x(76f), y(58f))
             if (fill != null) drawRect(color = fill, topLeft = at, size = wh)
-            drawRect(color = MemoryColors.Ink, topLeft = at, size = wh, style = line)
+            drawRect(color = stroke, topLeft = at, size = wh, style = line)
         }
 
         // 뒤에서 앞으로. 앞의 것이 뒤의 것을 가려야 겹쳐 보입니다.
         frame(6f, 18f, null)
-        frame(26f, 34f, MemoryColors.Fill)
-        frame(46f, 50f, MemoryColors.Surface)
+        frame(26f, 34f, back)
+        frame(46f, 50f, front)
 
         drawRect(
-            color = MemoryColors.Accent,
+            color = mark,
             topLeft = Offset(x(98f), y(10f)),
             size = Size(x(22f), y(22f)),
         )
@@ -59,7 +70,7 @@ fun PhotoFramesScene(modifier: Modifier = Modifier) {
                 lineTo(x(86f), y(74f))
                 lineTo(x(98f), y(60f))
             },
-            color = MemoryColors.Ink,
+            color = stroke,
             style = line,
         )
     }
