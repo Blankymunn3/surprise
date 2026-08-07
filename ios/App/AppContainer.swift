@@ -113,6 +113,12 @@ final class AppContainer {
                 case .token(let value): return value
                 case .cancelled, .failed: return nil
                 }
+            },
+            presentAppleSignIn: {
+                switch await AppleSignInBridge.payload() {
+                case .payload(let value): return value
+                case .cancelled, .failed: return nil
+                }
             }
         )
     }

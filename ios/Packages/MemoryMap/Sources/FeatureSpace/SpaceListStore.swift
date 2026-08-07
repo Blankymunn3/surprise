@@ -53,6 +53,20 @@ public struct SpaceListState: Equatable, Sendable {
     }
 }
 
+/// 애플 로그인 창이 돌려주는 것들. 토큰 말고도 **nonce 원문**(서버 검증 재료)과
+/// **이름**(첫 로그인에만 옴)이 있어 문자열 하나로는 못 나릅니다.
+public struct AppleSignInPayload: Sendable {
+    public let idToken: String
+    public let nonce: String
+    public let displayName: String?
+
+    public init(idToken: String, nonce: String, displayName: String?) {
+        self.idToken = idToken
+        self.nonce = nonce
+        self.displayName = displayName
+    }
+}
+
 public enum SpaceListIntent: Sendable {
     case appeared
     case createTapped
@@ -66,6 +80,10 @@ public enum SpaceListIntent: Sendable {
     /// '구글로 계속하기'. 창을 띄우는 일은 앱 껍데기가 하고, 받아 온 토큰이 돌아옵니다.
     case signInTapped
     case googleTokenReceived(String)
+    /// 'Apple로 계속하기'. 스토어 심사 요건입니다 — 남의 로그인(구글)을 두면
+    /// 애플 로그인도 있어야 합니다(지침 4.8).
+    case appleSignInTapped
+    case appleTokenReceived(AppleSignInPayload)
     /// '그냥 혼자 쓸래요' — 만들기에서 왔을 때만 있습니다.
     case signInGaveUp
 }
@@ -181,9 +199,10 @@ public final class SpaceListStore {
     private let createSpace: CreateSpace
     private let joinSpace: JoinSpace
     private let accounts: any AuthRepository
-    /// 구글 창을 띄우는 일은 **앱 껍데기**가 합니다 — UIViewController 가 필요해서요.
+    /// 로그인 창을 띄우는 일은 **앱 껍데기**가 합니다 — UIViewController 가 필요해서요.
     /// 창을 닫으면 `nil` 이 돌아옵니다(실패가 아닙니다).
     private let presentGoogleSignIn: @MainActor @Sendable () async -> String?
+    private let presentAppleSignIn: @MainActor @Sendable () async -> AppleSignInPayload?
 
     public init(
         observeSpaces: ObserveSpaces,
@@ -191,13 +210,15 @@ public final class SpaceListStore {
         createSpace: CreateSpace,
         joinSpace: JoinSpace,
         accounts: any AuthRepository,
-        presentGoogleSignIn: @escaping @MainActor @Sendable () async -> String?
+        presentGoogleSignIn: @escaping @MainActor @Sendable () async -> String?,
+        presentAppleSignIn: @escaping @MainActor @Sendable () async -> AppleSignInPayload?
     ) {
         self.observeSpaces = observeSpaces
         self.refreshSpaces = refreshSpaces
         self.createSpace = createSpace
         self.joinSpace = joinSpace
         self.accounts = accounts
+        self.presentAppleSignIn = presentAppleSignIn
         self.presentGoogleSignIn = presentGoogleSignIn
     }
 
@@ -258,27 +279,45 @@ public final class SpaceListStore {
         case .googleTokenReceived(let idToken):
             let next: SignInNext? = if case .signIn(let value) = state.sheet { value } else { nil }
             state = SpaceListReducer.working(state)
+            await signedIn(await accounts.signInWithGoogle(idToken: idToken), thenContinue: next)
 
-            switch await accounts.signInWithGoogle(idToken: idToken) {
-            case .ok:
-                state = SpaceListReducer.accountChanged(state, true)
-                // 로그인만 하고 멈추지 않습니다 — 하던 일을 이어서 합니다.
-                switch next {
-                case .create:
-                    state.sheet = .create
-                    await create()
-                case .join:
-                    state.sheet = .join
-                    await join()
-                case nil:
-                    state = SpaceListReducer.sheetDismissed(state)
-                }
-            case .fail(let reason):
-                state = SpaceListReducer.loadFailed(state, reason)
-            }
+        case .appleSignInTapped:
+            guard let payload = await presentAppleSignIn() else { return }
+            await send(.appleTokenReceived(payload))
+
+        case .appleTokenReceived(let payload):
+            let next: SignInNext? = if case .signIn(let value) = state.sheet { value } else { nil }
+            state = SpaceListReducer.working(state)
+            await signedIn(
+                await accounts.signInWithApple(
+                    idToken: payload.idToken, nonce: payload.nonce, fallbackName: payload.displayName
+                ),
+                thenContinue: next
+            )
 
         case .signInGaveUp:
             state = SpaceListReducer.signInGaveUp(state)
+        }
+    }
+
+    /// 어느 문(구글·애플)으로 들어왔든 **로그인 뒤는 같습니다** —
+    /// 로그인만 하고 멈추지 않고, 하던 일을 이어서 합니다.
+    private func signedIn(_ outcome: Outcome<Account>, thenContinue next: SignInNext?) async {
+        switch outcome {
+        case .ok:
+            state = SpaceListReducer.accountChanged(state, true)
+            switch next {
+            case .create:
+                state.sheet = .create
+                await create()
+            case .join:
+                state.sheet = .join
+                await join()
+            case nil:
+                state = SpaceListReducer.sheetDismissed(state)
+            }
+        case .fail(let reason):
+            state = SpaceListReducer.loadFailed(state, reason)
         }
     }
 

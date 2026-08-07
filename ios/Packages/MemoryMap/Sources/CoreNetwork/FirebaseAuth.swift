@@ -61,12 +61,24 @@ public struct FirebaseAuth: Sendable {
     }
 
     /// 구글 ID 토큰 → Firebase 세션.
+    public func signInWithGoogle(idToken: String) async -> Outcome<Session> {
+        await signInWithIdp(postBody: "id_token=\(idToken)&providerId=google.com")
+    }
+
+    /// 애플 ID 토큰 → Firebase 세션.
     ///
+    /// [nonce] 는 로그인 요청 때 만든 **원문**입니다. 애플에는 SHA-256 을 보내고 토큰에
+    /// 그 해시가 박혀 오는데, 여기에 원문을 실어야 서버가 둘을 맞춰 보고 **다른 데서
+    /// 가로챈 토큰이 아님**을 확인합니다. 구글 갈래에는 없는 재료라 따로 받습니다.
+    public func signInWithApple(idToken: String, nonce: String) async -> Outcome<Session> {
+        await signInWithIdp(postBody: "id_token=\(idToken)&providerId=apple.com&nonce=\(nonce)")
+    }
+
     /// `postBody` 가 폼 형식인 것은 이 API 가 원래 OAuth 응답을 그대로 받도록
     /// 만들어져서입니다. `requestUri` 는 웹 리다이렉트용이라 앱에서는 아무 값이나 됩니다.
-    public func signInWithGoogle(idToken: String) async -> Outcome<Session> {
+    private func signInWithIdp(postBody: String) async -> Outcome<Session> {
         let body: [String: Any] = [
-            "postBody": "id_token=\(idToken)&providerId=google.com",
+            "postBody": postBody,
             "requestUri": "http://localhost",
             "returnSecureToken": true,
         ]

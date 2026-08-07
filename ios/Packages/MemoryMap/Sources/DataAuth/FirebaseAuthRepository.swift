@@ -26,15 +26,27 @@ public actor FirebaseAuthRepository: AuthRepository {
     }
 
     public func signInWithGoogle(idToken: String) async -> Outcome<Account> {
-        switch await auth.signInWithGoogle(idToken: idToken) {
+        keep(await auth.signInWithGoogle(idToken: idToken), fallbackName: nil)
+    }
+
+    public func signInWithApple(idToken: String, nonce: String, fallbackName: String?) async -> Outcome<Account> {
+        // 애플 토큰에는 이름이 없습니다. 첫 로그인 때 창이 준 이름을 여기서 심어야
+        // 멤버 목록에 이메일 조각(그마저 가림 주소일 수 있는)이 뜨지 않습니다.
+        keep(await auth.signInWithApple(idToken: idToken, nonce: nonce), fallbackName: fallbackName)
+    }
+
+    /// 어느 문으로 들어왔든 **세션을 담는 방법은 하나**입니다.
+    private func keep(_ outcome: Outcome<FirebaseAuth.Session>, fallbackName: String?) -> Outcome<Account> {
+        switch outcome {
         case .fail(let reason):
             return .fail(reason)
         case .ok(let session):
             let record = Stored(
                 uid: session.uid,
-                // 구글 계정에 이름이 없으면 이메일 앞부분, 그것도 없으면 '나'.
+                // 계정에 이름이 없으면 이메일 앞부분, 그것도 없으면 '나'.
                 // 멤버 목록에 빈칸이 뜨면 누구인지 알 수 없습니다.
                 displayName: session.displayName
+                    ?? fallbackName
                     ?? session.email.map { String($0.prefix(while: { $0 != "@" })) }
                     ?? "나",
                 email: session.email,

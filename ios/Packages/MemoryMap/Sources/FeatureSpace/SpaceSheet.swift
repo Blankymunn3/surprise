@@ -199,6 +199,32 @@ struct SpaceSheet: View {
             .disabled(store.state.working)
             .modifier(GoogleHousing())
 
+            // 애플 버튼. 스토어 심사 요건입니다 — 남의 로그인(구글)을 두면 애플
+            // 로그인도 있어야 합니다(지침 4.8). 애플이 정한 검정 얼굴을 지키고,
+            // 구글과 같은 하우징에 앉혀 **같은 급의 문 둘**로 보이게 합니다.
+            Button {
+                Task { await store.send(.appleSignInTapped) }
+            } label: {
+                HStack(spacing: 11) {
+                    Image(systemName: "apple.logo")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundStyle(.white)
+                        .frame(width: 19, height: 19)
+                    Text(localized(store.state.working ? "signin_working" : "signin_apple"))
+                        .memoryHeadline()
+                        .foregroundStyle(.white)
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, MemorySpace.l)
+                .padding(.vertical, 13)
+                .background(Color.black)
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .disabled(store.state.working)
+            .modifier(GoogleHousing())
+            .padding(.top, MemorySpace.s)
+
             // 만들기에서 왔을 때만 빠져나갈 길을 둡니다. 참여로 왔으면 혼자로 갈 곳이
             // 없습니다 — 남의 짜국에 혼자 들어갈 수는 없으니까요.
             if next == .create {
@@ -214,7 +240,7 @@ struct SpaceSheet: View {
                 .padding(.top, 14)
             }
 
-            Text(localized("signin_only_google"))
+            Text(localized("signin_providers"))
                 .memoryMicro()
                 .foregroundStyle(bodyDim)
                 .padding(.top, MemorySpace.l)

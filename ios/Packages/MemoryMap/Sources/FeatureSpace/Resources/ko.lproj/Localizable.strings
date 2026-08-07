@@ -55,7 +55,8 @@
 "signin_google" = "Google로 계속하기";
 "signin_working" = "로그인 중…";
 "signin_give_up" = "그냥 혼자 쓸래요 — 이 폰에만 저장할게요";
-"signin_only_google" = "지금은 Google 계정만 돼요.";
+"signin_apple" = "Apple로 계속하기";
+"signin_providers" = "계정은 멤버 확인에만 써요.";
 
 /* 만든 직후 · 초대 코드 */
 "invited_title" = "'%1$@' 짜국을 만들었어요";
