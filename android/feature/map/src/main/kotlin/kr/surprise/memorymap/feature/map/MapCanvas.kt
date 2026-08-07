@@ -12,6 +12,8 @@ import androidx.compose.runtime.setValue
 import android.graphics.Bitmap
 import android.graphics.Canvas as AndroidCanvas
 import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.Rect
 import android.graphics.Typeface
 import coil3.SingletonImageLoader
 import coil3.request.ImageRequest
@@ -32,15 +34,17 @@ import org.maplibre.android.camera.CameraUpdate
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.geometry.LatLngBounds
+import org.maplibre.android.geometry.LatLngQuad
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.expressions.Expression
 import org.maplibre.android.style.layers.CircleLayer
-import org.maplibre.android.style.layers.FillLayer
 import org.maplibre.android.style.layers.LineLayer
 import org.maplibre.android.style.layers.PropertyFactory
+import org.maplibre.android.style.layers.RasterLayer
 import org.maplibre.android.style.layers.SymbolLayer
 import org.maplibre.android.style.sources.GeoJsonSource
+import org.maplibre.android.style.sources.ImageSource
 import kotlin.math.pow
 
 /**
@@ -294,7 +298,10 @@ private const val SPOT_ZOOM = 9.0
 private const val ME_ZOOM = 14.0
 
 /** 지도에 넣을 대표사진 크기. 크게 넣어 봐야 지역 안에서는 티가 안 나고 메모리만 먹습니다. */
-private const val COVER_PX = 256
+private const val COVER_PX = 512
+
+/** 지역을 채우는 그림의 긴 변. 화면에서 시군구 하나만 한 크기라 넉넉해야 합니다. */
+private const val FILL_PX = 512
 
 private const val FILL_SOURCE = "region-fill"
 private const val FILL_LAYER = "region-fill-area"
@@ -338,39 +345,126 @@ private fun RegionOutline.toGeoJson(): String =
     feature("MultiLineString", "[" + polygons.flatten().joinToString(",") { it.ring() } + "]")
 
 /**
- * 다녀온 지역을 **그 지역의 대표사진으로 칠합니다.**
+ * 다녀온 지역을 **그 지역의 대표사진 한 장으로 칠합니다.**
  *
- * 사진을 지도 스타일에 이미지로 등록하고, 지역 면을 그 이미지로 채웁니다
- * (`fill-pattern`). 사진은 타일처럼 반복되는데, 시군구 하나가 화면에서 그리 크지 않아
- * 대개 한 장으로 보입니다.
+ * 예전에는 `fill-pattern` 이었습니다. 그건 사진을 **타일처럼 반복**해서, 강남구 하나에
+ * 같은 사진이 예닐곱 장 깔렸습니다. 사진이 무늬가 되어 버려서 무엇을 찍은 것인지
+ * 알아볼 수가 없습니다. **대표사진은 한 장이니 한 번만 보여야 합니다.**
+ *
+ * 그래서 지역마다 사진을 그 **지역 모양으로 오려** 두고, 그 그림 한 장을 지역의
+ * 경계 상자에 맞춰 지도에 얹습니다(`ImageSource`). 확대·축소를 해도 좌표에 붙어 있어
+ * 늘 한 장입니다.
  *
  * 살짝 비치게(85%) 두는 이유: 완전히 덮으면 그 지역의 길·지명이 사라져서 어디인지
  * 알 수 없게 됩니다. 사진은 "다녀왔다" 는 표시이지 지도를 대신하는 것이 아닙니다.
  */
 private fun paintRegions(style: Style, fills: List<RegionFill>, covers: Map<String, Bitmap>) {
-    style.getLayer(FILL_LAYER)?.let { style.removeLayer(it) }
-    style.getSource(FILL_SOURCE)?.let { style.removeSource(it) }
+    // 지역마다 source·layer 가 하나씩이라 이름 앞머리로 찾아 걷어냅니다.
+    style.layers.filter { it.id.startsWith(FILL_LAYER) }.forEach { style.removeLayer(it) }
+    style.sources.filter { it.id.startsWith(FILL_SOURCE) }.forEach { style.removeSource(it) }
 
-    val paintable = fills.filter { covers.containsKey(it.coverUrl) }
-    if (paintable.isEmpty()) return
+    fills.forEach { fill ->
+        val cover = covers[fill.coverUrl] ?: return@forEach
+        val box = fill.bounds() ?: return@forEach
+        val cut = cover.cutTo(fill, box) ?: return@forEach
 
-    paintable.forEach { fill ->
-        covers[fill.coverUrl]?.let { style.addImage(fill.code, it) }
-    }
-
-    val features = paintable.joinToString(",") { fill ->
-        feature("MultiPolygon", fill.polygons.joinToString(",", "[", "]") { polygon ->
-            polygon.joinToString(",", "[", "]") { it.ring() }
-        }, "\"pattern\":\"" + fill.code + "\"")
-    }
-    style.addSource(GeoJsonSource(FILL_SOURCE, """{"type":"FeatureCollection","features":[$features]}"""))
-
-    style.addLayer(
-        FillLayer(FILL_LAYER, FILL_SOURCE).withProperties(
-            PropertyFactory.fillPattern(Expression.get("pattern")),
-            PropertyFactory.fillOpacity(0.85f),
+        val sourceId = FILL_SOURCE + fill.code
+        style.addSource(
+            ImageSource(
+                sourceId,
+                LatLngQuad(
+                    LatLng(box.north, box.west),
+                    LatLng(box.north, box.east),
+                    LatLng(box.south, box.east),
+                    LatLng(box.south, box.west),
+                ),
+                cut,
+            )
         )
+        style.addLayer(
+            RasterLayer(FILL_LAYER + fill.code, sourceId)
+                .withProperties(PropertyFactory.rasterOpacity(0.85f))
+        )
+    }
+}
+
+/** 지역을 감싸는 네모. 사진을 얹을 자리입니다. */
+private class GeoBox(val south: Double, val west: Double, val north: Double, val east: Double)
+
+private fun RegionFill.bounds(): GeoBox? {
+    var south = Double.MAX_VALUE
+    var west = Double.MAX_VALUE
+    var north = -Double.MAX_VALUE
+    var east = -Double.MAX_VALUE
+    polygons.forEach { polygon ->
+        polygon.forEach { ring ->
+            ring.forEach { point ->
+                if (point[1] < south) south = point[1]
+                if (point[1] > north) north = point[1]
+                if (point[0] < west) west = point[0]
+                if (point[0] > east) east = point[0]
+            }
+        }
+    }
+    if (north <= south || east <= west) return null
+    return GeoBox(south, west, north, east)
+}
+
+/**
+ * 사진을 지역 모양으로 오립니다.
+ *
+ * 사진은 네모고 지역은 아니라서, **가운데를 잘라 네모를 꽉 채운 뒤** 지역 밖을
+ * 지웁니다. 늘이지 않는 이유: 사람이 찍힌 사진이 지역 모양대로 늘어나면 얼굴이 일그러집니다.
+ *
+ * 구멍(섬 안의 호수 같은 것)도 그대로 뚫립니다 — GeoJSON 의 두 번째 고리부터가
+ * 구멍이고, `EVEN_ODD` 가 그걸 알아서 처리합니다.
+ */
+private fun Bitmap.cutTo(fill: RegionFill, box: GeoBox): Bitmap? {
+    // 경계 상자의 가로세로 비. 위도가 높을수록 경도 1도가 좁아지므로 그만큼 줄입니다.
+    val midLat = Math.toRadians((box.north + box.south) / 2)
+    val wide = (box.east - box.west) * kotlin.math.cos(midLat)
+    val tall = box.north - box.south
+    if (wide <= 0.0 || tall <= 0.0) return null
+
+    val w: Int
+    val h: Int
+    if (wide >= tall) {
+        w = FILL_PX
+        h = (FILL_PX * tall / wide).toInt().coerceAtLeast(1)
+    } else {
+        h = FILL_PX
+        w = (FILL_PX * wide / tall).toInt().coerceAtLeast(1)
+    }
+
+    val out = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+    val canvas = AndroidCanvas(out)
+
+    val path = Path()
+    path.fillType = Path.FillType.EVEN_ODD
+    fill.polygons.forEach { polygon ->
+        polygon.forEach { ring ->
+            ring.forEachIndexed { index, point ->
+                val x = ((point[0] - box.west) / (box.east - box.west) * w).toFloat()
+                val y = ((box.north - point[1]) / (box.north - box.south) * h).toFloat()
+                if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
+            }
+            path.close()
+        }
+    }
+    canvas.clipPath(path)
+
+    // 가운데 자르기 — 짧은 쪽에 맞춰 키우고 넘치는 만큼 양옆(또는 위아래)을 버립니다.
+    val scale = maxOf(w.toFloat() / width, h.toFloat() / height)
+    val cropW = (w / scale).toInt().coerceIn(1, width)
+    val cropH = (h / scale).toInt().coerceIn(1, height)
+    val src = Rect(
+        (width - cropW) / 2,
+        (height - cropH) / 2,
+        (width - cropW) / 2 + cropW,
+        (height - cropH) / 2 + cropH,
     )
+    canvas.drawBitmap(this, src, Rect(0, 0, w, h), Paint(Paint.FILTER_BITMAP_FLAG))
+    return out
 }
 
 private const val BADGE_SOURCE = "region-badge"
