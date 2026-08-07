@@ -244,7 +244,6 @@ private fun SpaceTabs(
     var tab by remember { mutableStateOf(0) }
     var uploading by remember { mutableStateOf(false) }
     var menuOpen by remember { mutableStateOf(false) }
-    val context = LocalContext.current
     // 지역 시트에서 열었으면 그 지역을 들고 갑니다. 이미 고른 곳을 아는데 올리기 화면에서
     // 다시 고르게 하면 안 됩니다. 아래쪽 ＋ 로 열었으면 null 이고, 그때는 사진의 EXIF 가 정합니다.
     var uploadRegion by remember { mutableStateOf<Region?>(null) }

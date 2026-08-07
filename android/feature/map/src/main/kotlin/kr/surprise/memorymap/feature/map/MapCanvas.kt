@@ -30,6 +30,7 @@ import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.expressions.Expression
+import org.maplibre.android.style.layers.CircleLayer
 import org.maplibre.android.style.layers.FillLayer
 import org.maplibre.android.style.layers.LineLayer
 import org.maplibre.android.style.layers.PropertyFactory
@@ -50,6 +51,7 @@ internal fun MapCanvas(
     focusCount: Int,
     outline: RegionOutline?,
     fills: List<RegionFill>,
+    myLocation: MyPin?,
     onTap: (latitude: Double, longitude: Double) -> Unit,
     modifier: Modifier = Modifier,
     zoom: ZoomNudge = ZoomNudge(),
@@ -153,6 +155,7 @@ internal fun MapCanvas(
                 map.setStyle(Style.Builder().fromJson(OsmStyle.json())) { style ->
                     paintRegions(style, fills, covers)
                     drawOutline(style, outline)
+                    drawMyLocation(style, myLocation)
                 }
 
                 // `update` 마다 달면 한 번 눌러도 여러 번 눌린 것이 됩니다.
@@ -339,6 +342,53 @@ private fun paintRegions(style: Style, fills: List<RegionFill>, covers: Map<Stri
 
 private fun feature(type: String, coordinates: String, properties: String = ""): String =
     """{"type":"Feature","properties":{$properties},"geometry":{"type":"$type","coordinates":$coordinates}}"""
+
+private const val ME_SOURCE = "my-location"
+private const val ME_HALO_LAYER = "my-location-halo"
+private const val ME_DOT_LAYER = "my-location-dot"
+
+/**
+ * **내가 지금 있는 자리.** 점 하나와 그것을 감싸는 옅은 원입니다.
+ *
+ * 지역 표시(딱지)와 다르게 생겨야 합니다 — 그건 "사진이 있는 곳" 이고 이건 "나" 라서,
+ * 같은 모양이면 다녀온 지역 하나가 더 있는 것으로 읽힙니다. 그래서 네모가 아니라 **원**이고,
+ * 유일하게 테두리가 흰색입니다.
+ *
+ * 자리를 찾은 뒤에도 **남아 있습니다.** 지도를 밀고 나서 다시 찾아갈 수 있어야 합니다.
+ * 배율을 바꿔도 크기가 그대로라, 넓게 보면 점 하나로 작게 남습니다.
+ */
+private fun drawMyLocation(style: Style, me: MyPin?) {
+    style.getLayer(ME_DOT_LAYER)?.let { style.removeLayer(it) }
+    style.getLayer(ME_HALO_LAYER)?.let { style.removeLayer(it) }
+    style.getSource(ME_SOURCE)?.let { style.removeSource(it) }
+    if (me == null) return
+
+    style.addSource(
+        GeoJsonSource(ME_SOURCE, feature("Point", "[${me.longitude},${me.latitude}]"))
+    )
+
+    // 옅은 원이 먼저(아래), 점이 나중(위)입니다. 순서가 바뀌면 점이 원에 덮입니다.
+    style.addLayer(
+        CircleLayer(ME_HALO_LAYER, ME_SOURCE).withProperties(
+            PropertyFactory.circleRadius(ME_HALO_RADIUS),
+            PropertyFactory.circleColor(ME_COLOR),
+            PropertyFactory.circleOpacity(0.18f),
+        )
+    )
+    style.addLayer(
+        CircleLayer(ME_DOT_LAYER, ME_SOURCE).withProperties(
+            PropertyFactory.circleRadius(ME_DOT_RADIUS),
+            PropertyFactory.circleColor(ME_COLOR),
+            PropertyFactory.circleStrokeWidth(2f),
+            PropertyFactory.circleStrokeColor("#FFFFFF"),
+        )
+    )
+}
+
+/** 내 자리 표시의 색. 앱의 레드입니다 — 지도 위에서 유일하게 "지금" 을 뜻하는 색입니다. */
+private const val ME_COLOR = "#EC3013"
+private const val ME_DOT_RADIUS = 6f
+private const val ME_HALO_RADIUS = 20f
 
 private fun List<DoubleArray>.ring(): String =
     joinToString(",", "[", "]") { """[${it[0]},${it[1]}]""" }

@@ -108,6 +108,7 @@ internal fun PlasticMapBody(state: MapState, onIntent: (MapIntent) -> Unit) {
                 focusCount = state.focusCount,
                 outline = state.outline,
                 fills = state.fills,
+                myLocation = state.myLocation,
                 onTap = { lat, lon ->
                     keyboard?.hide()
                     onIntent(MapIntent.MapTapped(lat, lon))

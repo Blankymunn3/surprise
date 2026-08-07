@@ -63,5 +63,6 @@ internal object MapReducer {
         state.copy(
             focus = MapFocus.Spot(latitude, longitude),
             focusCount = state.focusCount + 1,
+            myLocation = MyPin(latitude, longitude),
         )
 }

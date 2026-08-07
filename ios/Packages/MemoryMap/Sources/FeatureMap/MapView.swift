@@ -30,6 +30,9 @@ public struct MapView: View {
     @State private var finder = MyLocationFinder()
     /// 위치를 못 찾았을 때 알릴 말. 지도 아래에 잠깐 뜹니다.
     @State private var notice: String?
+    /// 찾은 내 자리. 지도에 표시로 남습니다 — 옮겨 준 뒤 손으로 밀어도 그 지점을
+    /// 잃지 않아야 합니다.
+    @State private var me: CLLocationCoordinate2D?
     /// 사진 올리기를 엽니다. **지역 시트에서 눌렀으면 그 지역**이 넘어갑니다 —
     /// 이미 아는 곳을 올리기 화면에서 다시 고르게 하면 안 됩니다.
     /// 아래 ＋ 로 눌렀으면 `nil` 이고, 그때는 사진의 정보가 지역을 정합니다.
@@ -204,6 +207,11 @@ public struct MapView: View {
                         PinBadge(count: pin.photoCount)
                     }
                 }
+
+                // 내가 지금 있는 자리. 찾은 뒤에도 남습니다.
+                if let me {
+                    Annotation("내 위치", coordinate: me) { MyLocationDot() }
+                }
             }
             .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
             // 지도 위에 **종이를 한 겹** 덮습니다. MapKit 은 색을 직접 못 바꿔서,
@@ -316,9 +324,11 @@ public struct MapView: View {
     private func goToMyLocation() async {
         switch await finder.find() {
         case let .found(latitude, longitude):
+            let here = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
             withAnimation(.easeInOut(duration: 0.4)) {
+                me = here
                 position = .region(MKCoordinateRegion(
-                    center: .init(latitude: latitude, longitude: longitude),
+                    center: here,
                     span: MKCoordinateSpan(latitudeDelta: 1.2, longitudeDelta: 1.2)
                 ))
             }

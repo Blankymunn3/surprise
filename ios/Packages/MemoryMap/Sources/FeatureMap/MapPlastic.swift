@@ -34,6 +34,8 @@ struct PlasticMapBody: View {
     /// 위치를 찾는 사람. 화면이 살아 있는 동안 하나만 둡니다 —
     /// 누를 때마다 새로 만들면 권한 창의 답을 받을 자리가 사라집니다.
     @State private var finder = MyLocationFinder()
+    /// 찾은 내 자리. 지도에 표시로 남습니다.
+    @State private var me: CLLocationCoordinate2D?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -192,6 +194,13 @@ struct PlasticMapBody: View {
                     ) {
                         PlasticPinBadge(count: pin.photoCount)
                     }
+                }
+
+                // **내가 지금 있는 자리.** 찾은 뒤에도 남습니다 — 지도를 밀고 나서
+                // 다시 찾아갈 수 있어야 합니다. 지역 딱지(네모)와 다르게 생겨야 해서
+                // 원이고, 유일하게 테두리가 흰색입니다.
+                if let me {
+                    Annotation("내 위치", coordinate: me) { MyLocationDot() }
                 }
             }
             .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
@@ -379,9 +388,11 @@ struct PlasticMapBody: View {
     private func goToMyLocation() async {
         switch await finder.find() {
         case let .found(latitude, longitude):
+            let here = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
             withAnimation(.easeInOut(duration: 0.4)) {
+                me = here
                 position = .region(MKCoordinateRegion(
-                    center: .init(latitude: latitude, longitude: longitude),
+                    center: here,
                     span: MKCoordinateSpan(latitudeDelta: spotSpan, longitudeDelta: spotSpan)
                 ))
             }
@@ -406,6 +417,28 @@ struct PlasticMapBody: View {
 /// 내 위치로 옮길 때의 배율. `MapFocus.spot` 과 같은 값이라 지역을 골랐을 때와
 /// 같은 만큼 확대됩니다.
 private let spotSpan = 1.2
+
+/**
+ 지도에 찍는 내 자리 — 점 하나와 그것을 감싸는 옅은 원.
+
+ 지역 딱지(사진 수를 적은 네모)와 **다르게 생겨야 합니다.** 그건 "사진이 있는 곳" 이고
+ 이건 "나" 라서, 같은 모양이면 다녀온 지역이 하나 더 있는 것으로 읽힙니다.
+ 안드로이드 `drawMyLocation` 과 같은 값(6·20·흰 테두리 2)입니다.
+ */
+struct MyLocationDot: View {
+    var body: some View {
+        Circle()
+            .fill(MemoryColor.accent.opacity(0.18))
+            .frame(width: 40, height: 40)
+            .overlay {
+                Circle()
+                    .fill(MemoryColor.accent)
+                    .frame(width: 12, height: 12)
+                    .overlay(Circle().strokeBorder(.white, lineWidth: 2))
+            }
+            .allowsHitTesting(false)
+    }
+}
 
 /// 십자키 좌·우 한 번에 미는 폭. 보이는 넓이의 1/3 이면 밀린 것이 보이면서도 길을 잃지 않습니다.
 private let panStep: Double = 0.33
