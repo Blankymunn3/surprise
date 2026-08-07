@@ -198,6 +198,35 @@ public struct PlasticPressStyle: ButtonStyle {
     }
 }
 
+/**
+ 십자키의 팔 전용 — **누르면 그늘로 들어갑니다.**
+
+ 팔은 제 얼굴이 없는 투명한 터치 영역이고 그 아래는 한 덩어리 고무입니다.
+ 그래서 `PlasticPressStyle` 처럼 내려앉기만 하면 작은 화살표만 움직여서
+ 눌린 것으로 안 보입니다. 실물 십자키는 한쪽을 누르면 그쪽이 기울어 어두워집니다 —
+ 눌린 자리에만 어두운 면이 깔리므로 어느 팔을 눌렀는지도 같이 보입니다.
+
+ 안드로이드 `Arm` 과 같은 규칙입니다.
+ */
+public struct PlasticArmStyle: ButtonStyle {
+    public init() {}
+
+    public func makeBody(configuration: Configuration) -> some View {
+        let lit = plasticTrial && configuration.isPressed
+        return configuration.label
+            .background(
+                RoundedRectangle(cornerRadius: PlasticRadius.knob, style: .continuous)
+                    .fill(lit ? PlasticColor.ink : .clear)
+            )
+            .animation(.easeOut(duration: configuration.isPressed ? 0.04 : 0.12), value: configuration.isPressed)
+    }
+}
+
+public extension ButtonStyle where Self == PlasticArmStyle {
+    /// 십자키의 팔. 누르면 그늘로 들어갑니다.
+    static var plasticArm: PlasticArmStyle { PlasticArmStyle() }
+}
+
 public extension ButtonStyle where Self == PlasticPressStyle {
     /// 누르면 내려앉는 플라스틱 버튼. `.plain` 자리에 씁니다.
     static var plasticPress: PlasticPressStyle { PlasticPressStyle() }

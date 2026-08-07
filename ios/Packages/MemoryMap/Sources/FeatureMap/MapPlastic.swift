@@ -361,7 +361,7 @@ struct PlasticMapBody: View {
                 .foregroundStyle(PlasticColor.onRubber)
                 .frame(width: arm, height: arm)
         }
-        .buttonStyle(.plasticPress)
+        .buttonStyle(.plasticArm)
         .accessibilityLabel(label)
         .offset(x: dx, y: dy)
     }

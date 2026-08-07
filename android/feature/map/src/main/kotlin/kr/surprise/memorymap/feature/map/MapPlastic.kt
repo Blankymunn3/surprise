@@ -1,7 +1,11 @@
 package kr.surprise.memorymap.feature.map
 
 import androidx.compose.foundation.background
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -31,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -409,6 +414,17 @@ private fun DPadFace(
 }
 
 @Composable
+/**
+ * 십자키의 팔 하나.
+ *
+ * **다른 버튼처럼 [pressable] 을 쓰지 않습니다.** 팔은 제 얼굴이 없는 투명한 터치
+ * 영역이고 그 아래는 한 덩어리 고무입니다 — 내려앉아 봐야 작은 아이콘만 움직여서
+ * 눌린 것으로 안 보입니다.
+ *
+ * 대신 **누른 팔이 그늘로 들어갑니다.** 실물 십자키는 한쪽을 누르면 그쪽이 기울어
+ * 어두워집니다. 눌린 자리에만 어두운 면이 깔리므로 어느 팔을 눌렀는지도 같이 보입니다.
+ */
+@Composable
 private fun BoxScope.Arm(
     at: Alignment,
     arm: Dp,
@@ -416,8 +432,21 @@ private fun BoxScope.Arm(
     label: String,
     onClick: () -> Unit,
 ) {
+    val source = remember { MutableInteractionSource() }
+    val pressed by source.collectIsPressedAsState()
+    val face by animateColorAsState(
+        targetValue = if (pressed) PlasticColors.Ink else Color.Transparent,
+        animationSpec = tween(if (pressed) 40 else 120),
+        label = "arm",
+    )
+
     Box(
-        Modifier.size(arm).align(at).pressable(onClick = onClick),
+        Modifier
+            .size(arm)
+            .align(at)
+            .clip(PlasticShapes.Knob)
+            .background(face)
+            .clickable(interactionSource = source, indication = null, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Icon(icon, contentDescription = label, tint = PlasticColors.OnRubber, modifier = Modifier.size(12.dp))
