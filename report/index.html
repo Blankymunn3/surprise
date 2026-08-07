@@ -147,6 +147,8 @@
   }
 })();
 </script>
-<script src="https://accounts.google.com/gsi/client?onload=onGoogleReady" async></script>
+<!-- ⚠️ `?onload=` 쿼리는 GIS 가 안 부릅니다(옛 platform.js 방식) —
+     버튼이 조용히 안 그려집니다. 스크립트 태그의 onload 속성이어야 합니다. -->
+<script src="https://accounts.google.com/gsi/client" async defer onload="onGoogleReady()"></script>
 </body>
 </html>
