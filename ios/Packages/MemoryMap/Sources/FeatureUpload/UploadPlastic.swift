@@ -29,6 +29,7 @@ struct PlasticUploadBody: View {
         // (`SpaceDetailView` 의 uploadHeight). 사진 한 장을 올릴 때 시트가 화면 반을
         // 먹을 까닭이 없습니다.
         VStack(spacing: 0) {
+            PlasticGrip()
             header
 
             screen
@@ -261,11 +262,9 @@ struct PlasticUploadBody: View {
             Button { Task { await store.confirm() } } label: {
                 Text("↑")
                     .font(MemoryFont.font(22, .bold))
-                    // 못 누르는 상태는 색을 죽입니다. 이 스타일에는 흐리게 하는 장치가
-                    // 없어서(고무는 원래 검정), 빨강을 어두운 쪽으로 내립니다.
-                    .foregroundStyle(store.state.canUpload ? PlasticColor.onRed : PlasticColor.onPlateDim)
+                    .foregroundStyle(store.state.canUpload ? PlasticColor.onRed : PlasticColor.onRedOff)
                     .frame(width: PlasticSize.button, height: PlasticSize.button)
-                    .background(Circle().fill(store.state.canUpload ? PlasticColor.red : PlasticColor.redLo))
+                    .background(Circle().fill(store.state.canUpload ? PlasticColor.red : PlasticColor.redOff))
             }
             .buttonStyle(.plasticPress)
             .disabled(!store.state.canUpload)
@@ -304,6 +303,8 @@ struct PlasticRegionPicker: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            PlasticGrip()
+
             HStack(spacing: MemorySpace.s) {
                 Button { store.cancelPickingRegion() } label: {
                     Text("‹")

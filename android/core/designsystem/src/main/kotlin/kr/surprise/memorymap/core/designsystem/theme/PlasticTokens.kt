@@ -65,6 +65,20 @@ object PlasticColors {
     val OnPlate = Color(0xFFDCD9D3)
     val OnPlateDim = Color(0xFF9E9B96)
     val OnRed = Color(0xFFFFFFFF)
+
+    /**
+     * **못 누르는 버튼.** 이 스타일에는 흐리게 하는 장치가 없어서(고무는 원래 검정)
+     * 색으로 가릅니다 — 빨강을 어두운 쪽으로 내리고 글자는 몸통 색으로 둡니다.
+     *
+     * 글자를 [OnPlateDim] 으로 두지 않는 이유: 어두운 빨강 위의 회색은 대비가 너무
+     * 낮아 **글자가 안 읽힙니다.** 못 누르는 것과 안 보이는 것은 다릅니다 —
+     * 왜 못 누르는지 알려면 글자부터 읽혀야 합니다.
+     *
+     * iOS 도 같은 값을 씁니다. 거기서는 `.disabled()` 가 위에 한 번 더 흐리게 하므로
+     * 애초에 넉넉히 밝아야 두 앱이 같게 보입니다.
+     */
+    val RedOff = RedLo
+    val OnRedOff = Body
 }
 
 /** 이 스타일에서는 모서리가 **둥급니다** — 지금 기준(모서리 0)과 정반대입니다. */

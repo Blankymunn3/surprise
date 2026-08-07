@@ -126,12 +126,10 @@ public struct PrimaryButton: View {
             Button(action: action) {
                 Text(title)
                     .font(MemoryFont.font(15, .bold))
-                    // 못 누르는 상태는 색을 죽입니다. 이 스타일에는 흐리게 하는 장치가
-                    // 없어서(고무는 원래 검정), 빨강을 어두운 쪽으로 내립니다.
-                    .foregroundStyle(enabled ? PlasticColor.onRed : PlasticColor.onPlateDim)
+                    .foregroundStyle(enabled ? PlasticColor.onRed : PlasticColor.onRedOff)
                     .frame(maxWidth: .infinity)
                     .frame(height: PlasticSize.button)
-                    .background(Capsule().fill(enabled ? PlasticColor.red : PlasticColor.redLo))
+                    .background(Capsule().fill(enabled ? PlasticColor.red : PlasticColor.redOff))
             }
             .buttonStyle(.plasticPress)
             .disabled(!enabled)

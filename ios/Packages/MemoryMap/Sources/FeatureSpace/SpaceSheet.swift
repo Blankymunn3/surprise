@@ -37,10 +37,7 @@ struct SpaceSheet: View {
                 // 패미컴 스타일에서는 **몸통이 통째로 올라옵니다.** 화면(검정 판)만
                 // 올라오면 기기에서 화면이 떨어져 나온 것처럼 보입니다. 그래서 손잡이도
                 // 잉크 선이 아니라 몸통에 새긴 회색 홈 — 목록 위쪽 줄무늬와 같은 것입니다.
-                Capsule()
-                    .fill(PlasticColor.trim)
-                    .frame(width: PlasticSize.grip, height: PlasticSize.stripe)
-                    .padding(.top, MemorySpace.s)
+                PlasticGrip()
             } else {
                 // 시트 위쪽 2px 잉크 선. 지역 시트도 같은 선으로 시작합니다 —
                 // 이 디자인에는 둥근 손잡이 막대가 들어갈 자리가 없습니다.

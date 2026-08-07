@@ -399,9 +399,7 @@ private fun Controls(
                 Modifier
                     .size(PlasticSize.Button)
                     .clip(PlasticShapes.Pill)
-                    // 못 누르는 상태는 **색을 죽입니다.** 이 스타일에는 흐리게 하는
-                    // 장치가 없어서(고무는 원래 검정), 빨강을 어두운 쪽으로 내립니다.
-                    .background(if (canUpload) PlasticColors.Red else PlasticColors.RedLo)
+                    .background(if (canUpload) PlasticColors.Red else PlasticColors.RedOff)
                     .pressable(enabled = canUpload, onClick = onUpload),
                 contentAlignment = Alignment.Center,
             ) {
@@ -410,7 +408,7 @@ private fun Controls(
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp,
-                    color = if (canUpload) PlasticColors.OnRed else PlasticColors.OnPlateDim,
+                    color = if (canUpload) PlasticColors.OnRed else PlasticColors.OnRedOff,
                 )
             }
         }

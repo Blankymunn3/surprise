@@ -56,6 +56,20 @@ public enum PlasticColor {
     public static let onPlate = Color(hex: 0xDCD9D3)
     public static let onPlateDim = Color(hex: 0x9E9B96)
     public static let onRed = Color(hex: 0xFFFFFF)
+
+    /**
+     **못 누르는 버튼.** 이 스타일에는 흐리게 하는 장치가 없어서(고무는 원래 검정)
+     색으로 가릅니다 — 빨강을 어두운 쪽으로 내리고 글자는 몸통 색으로 둡니다.
+
+     글자를 `onPlateDim` 으로 두지 않는 이유: 어두운 빨강 위의 회색은 대비가 너무
+     낮아 **글자가 안 읽힙니다.** 못 누르는 것과 안 보이는 것은 다릅니다.
+
+     ⚠️ 여기서는 `.disabled()` 가 **위에 한 번 더 흐리게** 합니다. 안드로이드에는
+     그런 것이 없어서, 같은 색을 써도 iOS 쪽이 더 옅게 보였습니다. 그래서 애초에
+     넉넉히 밝은 값으로 잡았습니다. 안드로이드 `RedOff`/`OnRedOff` 와 같은 값입니다.
+     */
+    public static let redOff = redLo
+    public static let onRedOff = body
 }
 
 /// 이 스타일에서는 모서리가 **둥급니다** — 지금 기준(모서리 0)과 정반대입니다.
@@ -130,6 +144,28 @@ public enum PlasticSize {
      두께는 `stripe` 와 같아서 목록 화면 위쪽 줄무늬와 한 벌로 읽힙니다.
      */
     public static let grip: CGFloat = 44
+}
+
+/**
+ 시트 손잡이 — **몸통에 새긴 회색 홈**입니다.
+
+ 아래에서 올라오는 판마다 하나씩 답니다. 기본 손잡이(`presentationDragIndicator`)를
+ 끄고 이것을 쓰는 이유: 시스템 손잡이는 둥근 진회색 막대라, 회색 플라스틱 위에서
+ 남의 앱 조각처럼 보입니다. 목록 화면 위쪽의 줄무늬와 같은 것입니다.
+
+ 손잡이가 하는 말이 하나 더 있습니다 — **끌어 내려 닫을 수 있다**는 것. 그래서
+ 닫기 버튼을 따로 두지 않는 시트에는 반드시 있어야 합니다.
+ */
+public struct PlasticGrip: View {
+    public init() {}
+
+    public var body: some View {
+        Capsule()
+            .fill(PlasticColor.trim)
+            .frame(width: PlasticSize.grip, height: PlasticSize.stripe)
+            .padding(.top, MemorySpace.s)
+            .padding(.bottom, MemorySpace.xs)
+    }
 }
 
 /**

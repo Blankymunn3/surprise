@@ -80,9 +80,7 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
                     .fillMaxWidth()
                     .height(PlasticSize.Button)
                     .clip(PlasticShapes.Pill)
-                    // 못 누르는 상태는 색을 죽입니다. 이 스타일에는 흐리게 하는 장치가
-                    // 없어서(고무는 원래 검정), 빨강을 어두운 쪽으로 내립니다.
-                    .background(if (enabled) PlasticColors.Red else PlasticColors.RedLo)
+                    .background(if (enabled) PlasticColors.Red else PlasticColors.RedOff)
                     .pressable(enabled = enabled, onClick = onClick),
                 contentAlignment = Alignment.Center,
             ) {
@@ -91,7 +89,7 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
-                    color = if (enabled) PlasticColors.OnRed else PlasticColors.OnPlateDim,
+                    color = if (enabled) PlasticColors.OnRed else PlasticColors.OnRedOff,
                 )
             }
         }
