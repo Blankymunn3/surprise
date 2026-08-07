@@ -626,9 +626,13 @@ private fun DateSheet(current: LocalDate, onDismiss: () -> Unit, onPick: (LocalD
         initialSelectedDateMillis = current.atStartOfDay(zone).toInstant().toEpochMilli()
     )
 
+    // 높이는 주지 않습니다 — 달력이 필요한 만큼만 차지합니다. 시트 넷과 같은 규칙입니다.
+    // 그릇(몸통 색·기기 모서리)은 맞추되 **달력 자체는 안드로이드 기본 그대로** 둡니다:
+    // 우리가 다시 그리면 시스템 달력과 미묘하게 달라서 오히려 낯섭니다.
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = MemoryColors.Surface,
+        containerColor = if (PLASTIC_TRIAL) PlasticColors.Body else MemoryColors.Surface,
+        shape = if (PLASTIC_TRIAL) PlasticShapes.Device else MemoryShapes.Sheet,
         dragHandle = null,
     ) {
         DatePicker(state = picker)

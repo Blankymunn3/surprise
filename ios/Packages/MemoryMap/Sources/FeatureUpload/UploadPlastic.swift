@@ -292,8 +292,11 @@ struct PlasticUploadBody: View {
  시트는 내용만큼만 자랍니다 — 사진 한 장을 올릴 때 화면 반을 먹을 까닭이 없습니다.
  이 값은 그 자람이 멈추는 자리이고, 넘으면 목록이 대신 구릅니다.
  안드로이드 `PlasticSize.UploadList` 와 같은 값입니다.
+
+ 기준 디자인 쪽(`UploadView.main`)도 같은 값을 씁니다 — 스위프트의 `private` 은
+ **파일 안까지**라 여기서는 열어 둡니다.
  */
-private let uploadList: CGFloat = 300
+let uploadList: CGFloat = 300
 
 /// 지역 고르기. 카트리지 슬롯에 이름을 넣고, 나온 것을 화면 안에서 고릅니다.
 struct PlasticRegionPicker: View {

@@ -12,20 +12,18 @@ import UniformTypeIdentifiers
  순서가 화면 순서입니다 — **사진 고르기 → 어디 → 언제 → 올리기.**
  EXIF 에서 읽어낸 값은 미리 채워 두고 "자동" 딱지를 붙입니다. 맞으면 그냥 올리면 되고,
  틀리면 눌러서 고칩니다. 안드로이드 `UploadSheet` 와 같은 흐름입니다.
- */
-/**
- 사진 올리기.
 
- 사진마다 어디·언제를 보고 고치는 일이라 **크게 뜨는 시트**입니다 —
- 여러 장을 훑어 내려야 해서 반만 올라오면 두 장밖에 안 보입니다.
- EXIF 에서 읽어낸 값은 미리 채워 두고 "자동" 딱지를 붙입니다. 맞으면 그냥 올리면 되고,
- 틀리면 눌러서 고칩니다. 안드로이드 `UploadSheet` 와 같은 흐름입니다.
+ **높이는 내용이 정합니다.** 사진 한 장을 올릴 때 시트가 화면 반을 먹을 까닭이
+ 없습니다. 사진이 많아지면 목록만 `uploadList` 에서 멈추고 그 안에서 구릅니다 —
+ 머리말과 아래 버튼은 그 밖이라 몇 장을 골랐든 늘 보입니다.
  */
 public struct UploadView: View {
     @State private var store: UploadStore
     @State private var picked: [PhotosPickerItem] = []
     /// 날짜를 고치는 중인 사진.
     @State private var pickingDateOf: String?
+    /// 날짜 시트 높이. **재서** 씁니다 — 달력이 필요한 만큼만 차지합니다.
+    @State private var dateHeight: CGFloat = 400
     private let onClose: () -> Void
 
     public init(store: UploadStore, onClose: @escaping () -> Void) {
@@ -63,7 +61,10 @@ public struct UploadView: View {
                 main
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        // **세로를 채우지 않습니다.** 이 화면은 시트 안에 있고, 시트 높이는 이 내용을
+        // 재서 정합니다(`SpaceDetailView` 의 uploadHeight). 여기서 `maxHeight: .infinity`
+        // 를 주면 늘 화면 전체로 재져서 재는 의미가 없어집니다.
+        .frame(maxWidth: .infinity, alignment: .topLeading)
         .background(plasticTrial ? PlasticColor.body : MemoryColor.paper)
         .onChange(of: store.state.step) { _, step in
             // 다 올라가면 화면이 스스로 닫힙니다. "완료" 를 또 누르게 하지 않습니다.
@@ -97,6 +98,9 @@ public struct UploadView: View {
                     .padding(.top, MemorySpace.xs)
                     .padding(.bottom, MemorySpace.s)
                 }
+                // **여기가 시트 높이를 정합니다.** 목록은 사진 수만큼 자라다가 이 한도에서
+                // 멈추고 그 뒤로는 구릅니다. 머리말과 아래 버튼은 이 밖이라 늘 보입니다.
+                .frame(maxHeight: uploadList)
 
                 MemoryColor.line2.frame(height: MemoryStroke.divider)
                 VStack(alignment: .leading, spacing: MemorySpace.s) {
@@ -208,8 +212,9 @@ public struct UploadView: View {
                 PickerTile()
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 28)
+        .padding(.vertical, MemorySpace.xl)
     }
 
     private var buttonTitle: String {
@@ -300,7 +305,15 @@ public struct UploadView: View {
         .labelsHidden()
         .datePickerStyle(.graphical)
         .padding(MemorySpace.xl)
-        .presentationDetents([.medium])
+        // 높이는 **재서** 씁니다 — 달력이 필요한 만큼만. 다른 시트와 같은 규칙입니다.
+        .background(
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { dateHeight = proxy.size.height }
+                    .onChange(of: proxy.size.height) { _, value in dateHeight = value }
+            }
+        )
+        .presentationDetents([.height(dateHeight)])
     }
 
     /// 고른 사진을 **임시 파일로 떨궈** 경로만 넘깁니다.
