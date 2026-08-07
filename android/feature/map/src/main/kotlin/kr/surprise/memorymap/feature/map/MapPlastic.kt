@@ -414,7 +414,6 @@ private fun DPadFace(
     }
 }
 
-@Composable
 /**
  * 십자키의 팔 하나.
  *
