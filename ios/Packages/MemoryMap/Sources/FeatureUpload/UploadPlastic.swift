@@ -106,9 +106,10 @@ struct PlasticUploadBody: View {
      */
     private func itemRow(_ item: UploadItem) -> some View {
         HStack(alignment: .top, spacing: MemorySpace.s) {
-            PhotoThumb(url: item.uri)
+            // **아직 안 올린 사진**이라 파일에서 읽습니다. 내려받는 `PhotoThumb` 을
+            // 쓰면 주소가 없어서 자리만 있고 그림이 안 나옵니다.
+            LocalPhotoThumb(path: item.uri)
                 .frame(width: PlasticSize.uploadThumb, height: PlasticSize.uploadThumb)
-                .clipShape(RoundedRectangle(cornerRadius: PlasticRadius.chip, style: .continuous))
 
             VStack(alignment: .leading, spacing: MemorySpace.xs) {
                 slotField(
