@@ -22,6 +22,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import kr.surprise.memorymap.core.designsystem.theme.PLASTIC_TRIAL
 import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraUpdate
 import org.maplibre.android.camera.CameraUpdateFactory
@@ -152,7 +153,9 @@ internal fun MapCanvas(
             val vertical = with(density) { EDGE_VERTICAL.roundToPx() }
 
             view.getMapAsync { map ->
-                map.setStyle(Style.Builder().fromJson(OsmStyle.json())) { style ->
+                // 패미컴 스타일에서는 **어두운 지도**입니다. 검정 판에 끼운 화면 안에서
+                // 하얀 지도가 혼자 빛나면 화면이 아니라 구멍처럼 보입니다.
+                map.setStyle(Style.Builder().fromJson(OsmStyle.json(dark = PLASTIC_TRIAL))) { style ->
                     paintRegions(style, fills, covers)
                     drawOutline(style, outline)
                     drawMyLocation(style, myLocation)
@@ -310,8 +313,14 @@ private fun drawOutline(style: Style, outline: RegionOutline?) {
     )
 }
 
-/** `design.html` 의 강조색. 지도 위에서도 같은 색이어야 같은 앱으로 보입니다. */
-private const val OUTLINE_COLOR = "#E0764F"
+/**
+ * 고른 지역 테두리의 색.
+ *
+ * 옛 시안(`design.html`)의 살구색이 그대로 남아 있었습니다 — 지금 기준 디자인의
+ * 레드도, 패미컴 스타일의 빨강도 아니었습니다. 지도가 어두워지면서 이 선이 더
+ * 눈에 띄어 드러났습니다. iOS 는 처음부터 스타일에 맞는 빨강을 쓰고 있었습니다.
+ */
+private val OUTLINE_COLOR = if (PLASTIC_TRIAL) "#D8342A" else "#EC3013"
 
 private fun RegionOutline.toGeoJson(): String =
     feature("MultiLineString", "[" + polygons.flatten().joinToString(",") { it.ring() } + "]")
@@ -398,7 +407,7 @@ private fun drawMyLocation(style: Style, me: MyPin?) {
 }
 
 /** 내 자리 표시의 색. 앱의 레드입니다 — 지도 위에서 유일하게 "지금" 을 뜻하는 색입니다. */
-private const val ME_COLOR = "#EC3013"
+private val ME_COLOR = if (PLASTIC_TRIAL) "#D8342A" else "#EC3013"
 private const val ME_DOT_RADIUS = 6f
 private const val ME_HALO_RADIUS = 20f
 

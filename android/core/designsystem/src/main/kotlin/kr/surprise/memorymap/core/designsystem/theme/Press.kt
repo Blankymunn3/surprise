@@ -41,7 +41,19 @@ fun Modifier.pressable(
         label = "press",
     )
 
-    return offset(y = drop)
+    // ⚠️ **`offset` 을 맨 바깥에 둡니다.** 부르는 쪽은 보통 이렇게 씁니다:
+    //
+    //     Modifier.size(...).clip(...).background(...).pressable(...)
+    //
+    // 여기서 `this.offset(...)` 으로 뒤에 붙이면 offset 이 체인 **안쪽**이 되어
+    // 배경보다 나중에 적용됩니다 — 버튼 면은 가만히 있고 **글자만 내려갑니다.**
+    // `Modifier.offset(...).then(this)` 로 앞에 세워야 크기·모서리·배경까지
+    // 통째로 내려갑니다. iOS 는 ButtonStyle 이 label 전체를 옮기므로 원래 이렇습니다.
+    //
+    // `clickable` 은 그대로 맨 뒤입니다. 누르는 자리는 크기가 정해진 뒤라야 합니다.
+    return Modifier
+        .offset(y = drop)
+        .then(this)
         .clickable(
             interactionSource = source,
             indication = null,

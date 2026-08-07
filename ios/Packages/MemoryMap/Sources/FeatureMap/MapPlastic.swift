@@ -204,6 +204,13 @@ struct PlasticMapBody: View {
                 }
             }
             .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
+            // **어두운 지도.** MapKit 은 주변 색 구성을 따라가므로 지도에만 어둡다고
+            // 일러 줍니다. 검정 판에 끼운 화면 안에서 하얀 지도가 혼자 빛나면
+            // 화면이 아니라 구멍처럼 보입니다.
+            //
+            // 앱 전체를 어둡게 하는 것이 아닙니다 — 몸통은 그대로 회색 플라스틱입니다.
+            // 안드로이드는 타일이 그림이라 밝기를 뒤집어 같은 결과를 냅니다(`OsmStyle`).
+            .environment(\.colorScheme, .dark)
             .onMapCameraChange(frequency: .onEnd) { context in
                 visibleRegion = context.region
             }
@@ -240,8 +247,8 @@ struct PlasticMapBody: View {
 
             // 가운데 고무 알약 둘 — 실물의 SELECT · START 자리입니다. 그 글자는 안 씁니다.
             HStack(spacing: MemorySpace.xs) {
-                pill("minus", "축소") { nudgeZoom(by: 2) }
-                pill("plus", "확대") { nudgeZoom(by: 0.5) }
+                pill(plus: false, "축소") { nudgeZoom(by: 2) }
+                pill(plus: true, "확대") { nudgeZoom(by: 0.5) }
             }
             .padding(PlasticSize.buttonInset)
             .raisedPlastic()
@@ -261,14 +268,28 @@ struct PlasticMapBody: View {
         .padding(.vertical, MemorySpace.m)
     }
 
-    /// 고무 알약. 실물에서 SELECT·START 가 있던 자리이고, 여기서는 확대·축소입니다.
-    private func pill(_ symbol: String, _ label: String, action: @escaping () -> Void) -> some View {
+    /**
+     고무 알약. 실물에서 SELECT·START 가 있던 자리이고, 여기서는 확대·축소입니다.
+
+     ＋ · － 를 **직접 그립니다.** SF Symbol 의 `plus` 와 `minus` 는 굵기·길이가 서로
+     달라서, 같은 크기로 놓아도 ＋ 가 눈에 띄게 커 보입니다(알약은 같은 크기인데
+     버튼이 커 보이는 것으로 읽힙니다). 안드로이드는 두 아이콘을 같은 폭으로 그려 둬서
+     애초에 그 문제가 없습니다 — 여기서도 같은 막대 둘로 맞춥니다.
+     */
+    private func pill(plus: Bool, _ label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(PlasticColor.onRubber)
-                .frame(width: PlasticSize.pillWidth, height: PlasticSize.pillHeight)
-                .background(Capsule().fill(PlasticColor.rubber))
+            ZStack {
+                Capsule()
+                    .fill(PlasticColor.onRubber)
+                    .frame(width: glyphBar, height: glyphThick)
+                if plus {
+                    Capsule()
+                        .fill(PlasticColor.onRubber)
+                        .frame(width: glyphThick, height: glyphBar)
+                }
+            }
+            .frame(width: PlasticSize.pillWidth, height: PlasticSize.pillHeight)
+            .background(Capsule().fill(PlasticColor.rubber))
         }
         .buttonStyle(.plasticPress)
         .accessibilityLabel(label)
@@ -448,6 +469,12 @@ struct MyLocationDot: View {
 /// 십자키 좌·우 한 번에 미는 폭. 보이는 넓이의 1/3 이면 밀린 것이 보이면서도 길을 잃지 않습니다.
 private let panStep: Double = 0.33
 
+/// ＋ · － 를 이루는 막대의 길이와 굵기. **둘이 같은 막대를 씁니다** —
+/// ＋ 는 거기에 세로 막대 하나가 더해질 뿐이라, 두 알약이 같은 무게로 보입니다.
+/// 안드로이드 아이콘(5.5→18.5, 굵기 2)과 같은 비율입니다.
+private let glyphBar: CGFloat = 13
+private let glyphThick: CGFloat = 2
+
 /**
  지도 위의 표시 — 사진 수만 적은 작은 딱지입니다. 기준 화면의 `PinBadge` 와 같은
  규칙이고 색만 이 스타일의 것입니다. **누를 수 없습니다** — 지역을 고르는 일은
@@ -457,11 +484,12 @@ private struct PlasticPinBadge: View {
     let count: Int
 
     var body: some View {
+        // 어두운 지도 위라 **밝은 칩**입니다. 검정 딱지는 어두운 지도에 묻힙니다.
         Text("\(count)")
             .font(MemoryFont.font(11, .bold))
-            .foregroundStyle(PlasticColor.onPlate)
+            .foregroundStyle(PlasticColor.plate)
             .frame(width: 22, height: 16)
-            .background(PlasticColor.ink)
+            .background(PlasticColor.body)
             .clipShape(RoundedRectangle(cornerRadius: PlasticRadius.chip, style: .continuous))
             .allowsHitTesting(false)
     }

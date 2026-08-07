@@ -126,10 +126,10 @@ public struct PrimaryButton: View {
             Button(action: action) {
                 Text(title)
                     .font(MemoryFont.font(15, .bold))
-                    .foregroundStyle(enabled ? PlasticColor.onRed : PlasticColor.onRedOff)
+                    .foregroundStyle(enabled ? PlasticColor.onRed : PlasticColor.onButtonOff)
                     .frame(maxWidth: .infinity)
                     .frame(height: PlasticSize.button)
-                    .background(Capsule().fill(enabled ? PlasticColor.red : PlasticColor.redOff))
+                    .background(Capsule().fill(enabled ? PlasticColor.red : PlasticColor.buttonOff))
             }
             .buttonStyle(.plasticPress)
             .disabled(!enabled)

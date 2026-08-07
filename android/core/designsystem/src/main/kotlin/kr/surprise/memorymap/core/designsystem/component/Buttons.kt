@@ -80,7 +80,7 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
                     .fillMaxWidth()
                     .height(PlasticSize.Button)
                     .clip(PlasticShapes.Pill)
-                    .background(if (enabled) PlasticColors.Red else PlasticColors.RedOff)
+                    .background(if (enabled) PlasticColors.Red else PlasticColors.ButtonOff)
                     .pressable(enabled = enabled, onClick = onClick),
                 contentAlignment = Alignment.Center,
             ) {
@@ -89,7 +89,7 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
-                    color = if (enabled) PlasticColors.OnRed else PlasticColors.OnRedOff,
+                    color = if (enabled) PlasticColors.OnRed else PlasticColors.OnButtonOff,
                 )
             }
         }

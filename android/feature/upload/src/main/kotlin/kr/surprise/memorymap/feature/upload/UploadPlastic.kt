@@ -399,7 +399,7 @@ private fun Controls(
                 Modifier
                     .size(PlasticSize.Button)
                     .clip(PlasticShapes.Pill)
-                    .background(if (canUpload) PlasticColors.Red else PlasticColors.RedOff)
+                    .background(if (canUpload) PlasticColors.Red else PlasticColors.ButtonOff)
                     .pressable(enabled = canUpload, onClick = onUpload),
                 contentAlignment = Alignment.Center,
             ) {
@@ -408,7 +408,7 @@ private fun Controls(
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp,
-                    color = if (canUpload) PlasticColors.OnRed else PlasticColors.OnRedOff,
+                    color = if (canUpload) PlasticColors.OnRed else PlasticColors.OnButtonOff,
                 )
             }
         }

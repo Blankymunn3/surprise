@@ -262,9 +262,9 @@ struct PlasticUploadBody: View {
             Button { Task { await store.confirm() } } label: {
                 Text("↑")
                     .font(MemoryFont.font(22, .bold))
-                    .foregroundStyle(store.state.canUpload ? PlasticColor.onRed : PlasticColor.onRedOff)
+                    .foregroundStyle(store.state.canUpload ? PlasticColor.onRed : PlasticColor.onButtonOff)
                     .frame(width: PlasticSize.button, height: PlasticSize.button)
-                    .background(Circle().fill(store.state.canUpload ? PlasticColor.red : PlasticColor.redOff))
+                    .background(Circle().fill(store.state.canUpload ? PlasticColor.red : PlasticColor.buttonOff))
             }
             .buttonStyle(.plasticPress)
             .disabled(!store.state.canUpload)
