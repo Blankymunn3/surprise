@@ -7,6 +7,7 @@
 /* 지도 위 조작 */
 "map_zoom_in" = "확대";
 "map_zoom_out" = "축소";
+"map_my_location" = "내 위치";
 
 /* 검색 */
 "map_search_placeholder" = "지역 검색 — 강릉, 제주…";
@@ -16,3 +17,19 @@
 "map_sheet_count" = "사진 %1$d장";
 "map_sheet_cover_hint" = "사진을 누르면 지도에 칠해지는 대표사진이 돼요";
 "map_sheet_add" = "이 지역에 사진 추가";
+
+/* 십자키의 팔 넷. 화면에는 화살표만 보이고 이 말은 읽어 주기용입니다. */
+"map_pad_up" = "위로";
+"map_pad_down" = "아래로";
+"map_pad_left" = "왼쪽으로";
+"map_pad_right" = "오른쪽으로";
+"map_search_clear" = "지우기";
+"map_add_photo" = "사진 올리기";
+
+/* 패미컴 지역 시트는 좁아서 장수와 안내를 **한 줄로** 붙입니다. */
+"map_sheet_count_and_hint" = "사진 %lld장 · 누르면 대표사진이 돼요";
+
+/* 내 위치를 못 찾았을 때. 왜 못 찾았는지를 갈라서 말합니다. */
+"map_location_denied" = "설정에서 위치를 켜 주면 지금 자리로 옮겨 드려요.";
+"map_location_off" = "위치 기능이 꺼져 있어요.";
+"map_location_not_found" = "지금 자리를 찾지 못했어요. 잠시 뒤에 다시 눌러 주세요.";

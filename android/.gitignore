@@ -4,3 +4,7 @@ local.properties
 *.iml
 .idea/
 .kotlin/
+
+# macOS 가 만드는 중복본. 디스크가 꽉 차거나 스튜디오가 겹쳐 쓸 때
+# "build 2" 같은 폴더가 생기는데, 위의 `build/` 로는 안 걸린다.
+build [0-9]/

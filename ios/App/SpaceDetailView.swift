@@ -22,6 +22,8 @@ struct SpaceDetailView: View {
     @State private var menuOpen = false
     /// 지역 시트에서 열었으면 그 지역. 아래 ＋ 로 열었으면 `nil` 입니다.
     @State private var uploadRegion: Region?
+    /// 올리기 시트 높이. **재서** 씁니다 — 고른 사진 수에 따라 달라집니다.
+    @State private var uploadHeight: CGFloat = 320
     @State private var calendar: CalendarStore
     @State private var map: MapStore
 
@@ -38,10 +40,8 @@ struct SpaceDetailView: View {
         // 시작하니, 러시아처럼 위로 긴 나라가 검색칸 뒤로 숨을 자리 자체가 없습니다.
         VStack(spacing: 0) {
             topBar
-            Segmented(options: SharedText.spaceTabs, selection: $tab)
-                .padding(.horizontal, MemorySpace.xl)
-                .padding(.top, 2)
-                .padding(.bottom, 10)
+            // 탭은 몸통 위의 고무 스위치입니다.
+            plasticTabs
 
             // 탭도 옆으로 밀립니다. 누른 쪽으로 미끄러져야 어느 쪽으로 옮겼는지 보입니다.
             Group {
@@ -59,14 +59,25 @@ struct SpaceDetailView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .animation(.easeInOut(duration: 0.3), value: tab)
         }
-        .background(MemoryColor.paper)
+        .background(PlasticColor.body)
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
-        // 아래에서 올라오는 시트입니다. **크게** 뜹니다 — 사진이 여러 장이면
-        // 훑어 내려야 해서, 반만 올라오면 두 장밖에 안 보입니다.
+        // 아래에서 올라오는 시트입니다. 높이는 **내용에 맞춰 잽니다** — 만들기·참여·
+        // 로그인 시트와 같은 방식입니다(`SpaceListView`). 사진 한 장을 올릴 때 시트가
+        // 화면 반을 먹을 까닭이 없습니다.
+        //
+        // 사진이 많아지면 안쪽 목록이 대신 구릅니다(`PlasticUploadBody` 의 uploadList).
+        // 머리말과 아래 버튼은 그 밖에 있어 몇 장을 골랐든 늘 보입니다.
         .sheet(isPresented: $uploading) {
             UploadView(store: uploadStore()) { uploading = false }
-                .presentationDetents([.large])
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear
+                            .onAppear { uploadHeight = proxy.size.height }
+                            .onChange(of: proxy.size.height) { _, value in uploadHeight = value }
+                    }
+                )
+                .presentationDetents([.height(uploadHeight)])
                 .presentationDragIndicator(.hidden)
         }
         .overlay {
@@ -95,18 +106,50 @@ struct SpaceDetailView: View {
         return store
     }
 
+    /// 달력에서는 지역을 알 수 없습니다 — 날짜만 아는 자리라서요.
+    /// 지난번에 지역 시트에서 열어 둔 값이 남지 않게 비웁니다.
+    private func openUpload() {
+        uploadRegion = nil
+        uploading = true
+    }
+
+    @ViewBuilder
     private var calendarTab: some View {
-        CalendarView(store: calendar)
-            .overlay(alignment: .bottomTrailing) {
-                // 달력에서는 지역을 알 수 없습니다 — 날짜만 아는 자리라서요.
-                // 지난번에 지역 시트에서 열어 둔 값이 남지 않게 비웁니다.
-                MemoryFab {
-                    uploadRegion = nil
-                    uploading = true
+        // ＋ 는 떠 있지 않고 **달력 안쪽 조작부**에 앉습니다.
+        // 몸통 위에 버튼이 다 모여 있는데 하나만 화면 위에 떠 있으면 어긋납니다.
+        CalendarView(store: calendar, onAddPhoto: openUpload)
+    }
+
+    /**
+     탭 두 칸 — 몸통 위의 고무 스위치.
+
+     고른 쪽만 빨갛습니다. 컨트롤러에서 빨강은 "지금 누른 것" 이고,
+     여기서 지금 누른 것은 보고 있는 탭입니다.
+     */
+    private var plasticTabs: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(["지도", "달력"].enumerated()), id: \.offset) { index, label in
+                Button { tab = index } label: {
+                    Text(label)
+                        .font(MemoryFont.font(15, .bold))
+                        .foregroundStyle(tab == index ? PlasticColor.onRed : PlasticColor.onRubber)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 34)
+                        .background(
+                            RoundedRectangle(cornerRadius: PlasticRadius.knob, style: .continuous)
+                                .fill(tab == index ? PlasticColor.red : Color.clear)
+                        )
                 }
-                    .padding(.trailing, 14)
-                    .padding(.bottom, 18)
+                .buttonStyle(.plain)
             }
+        }
+        .padding(3)
+        .background(
+            RoundedRectangle(cornerRadius: PlasticRadius.housing, style: .continuous)
+                .fill(PlasticColor.rubber)
+        )
+        .padding(.horizontal, MemorySpace.m)
+        .padding(.bottom, MemorySpace.s)
     }
 
     /**
@@ -121,18 +164,24 @@ struct SpaceDetailView: View {
 
             Text(name)
                 .memoryTitle()
+                // 몸통 위의 글자는 잉크가 아니라 플라스틱에 새긴 검정입니다.
+                .foregroundStyle(PlasticColor.ink)
                 .lineLimit(1)
                 .truncationMode(.tail)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             if kind == .personal {
+                // 이 딱지는 몸통 위에서 **파인 자리**로 그립니다. 흰 면에 잉크 선은
+                // 플라스틱 위에서 종이를 붙인 것처럼 떠 보입니다.
                 Text(SharedText.onlyOnThisPhone)
-                    .memoryMicro()
-                    .foregroundStyle(MemoryColor.ink)
+                    .font(MemoryFont.font(11, .bold))
+                    .foregroundStyle(PlasticColor.onPlateDim)
                     .padding(.horizontal, 7)
-                    .padding(.vertical, 2)
-                    .background(MemoryColor.surface)
-                    .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
+                    .padding(.vertical, 3)
+                    .background(
+                        RoundedRectangle(cornerRadius: PlasticRadius.chip, style: .continuous)
+                            .fill(PlasticColor.plate)
+                    )
             }
 
             barButton("ellipsis", label: SharedText.more) { menuOpen = true }

@@ -2,17 +2,14 @@ package kr.surprise.memorymap.feature.space
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,44 +18,37 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kr.surprise.memorymap.core.designsystem.component.FRAMES_RATIO
-import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
-import kr.surprise.memorymap.core.designsystem.component.PhotoFramesScene
 import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
 import kr.surprise.memorymap.core.designsystem.component.SoftButton
-import kr.surprise.memorymap.core.designsystem.component.SpaceCard
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
-import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
-import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
+import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
+import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
+import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
 import kr.surprise.memorymap.core.designsystem.theme.Pretendard
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
-import kr.surprise.memorymap.core.model.Space
+import kr.surprise.memorymap.core.designsystem.theme.raisedPlastic
+import kr.surprise.memorymap.core.designsystem.theme.sunken
 import kr.surprise.memorymap.core.model.SpaceKind
 
 /**
@@ -84,17 +74,17 @@ fun SpaceListScreen(
             .background(MemoryColors.Paper)
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
-        ListBody(state, onIntent)
+        PlasticListBody(state, onIntent)
     }
 
     if (state.sheet != SpaceListSheet.None) {
         ModalBottomSheet(
             onDismissRequest = { onIntent(SpaceListIntent.SheetDismissed) },
             sheetState = rememberModalBottomSheetState(),
-            containerColor = MemoryColors.Surface,
+            containerColor = PlasticColors.Body,
             // 시트 위쪽에도 2px 잉크 선을 긋습니다 — 지역 시트와 같은 규칙입니다.
             dragHandle = { SheetGrip() },
-            shape = MemoryShapes.Sheet,
+            shape = PlasticShapes.Device,
         ) {
             when (val sheet = state.sheet) {
                 SpaceListSheet.None -> Unit
@@ -114,183 +104,39 @@ fun SpaceListScreen(
  */
 @Composable
 private fun SheetGrip() {
-    Box(Modifier.fillMaxWidth().height(MemoryStroke.Divider).background(MemoryColors.Ink))
+    // 패미컴 스타일에서는 **몸통이 통째로 올라옵니다.** 화면(검정 판)만 올라오면
+    // 기기에서 화면이 떨어져 나온 것처럼 보입니다. 그래서 손잡이도 잉크 선이 아니라
+    // 몸통에 새긴 회색 홈 — 목록 화면 위쪽의 줄무늬와 같은 것입니다.
+    Box(Modifier.fillMaxWidth().padding(vertical = Gap.s), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier
+                .width(PlasticSize.Grip)
+                .height(PlasticSize.Stripe)
+                .clip(PlasticShapes.Pill)
+                .background(PlasticColors.Trim)
+        )
+    }
 }
 
 // ---------------------------------------------------------------------------
 // 목록
 
-@Composable
-private fun ListBody(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit) {
-    Column(Modifier.fillMaxSize()) {
-        Header()
-        Divider()
-
-        // 목록만 늘어납니다. 만들기·참여는 아래에 **붙박이로** 둡니다 —
-        // 짜국이 늘어나도 그 둘을 찾으러 스크롤하지 않게요.
-        Box(Modifier.weight(1f)) {
-            when (val ui = state.spaces) {
-                is SpacesUi.Loading -> Hint(stringResource(R.string.list_loading))
-
-                is SpacesUi.Failed -> Hint(stringResource(R.string.list_failed))
-
-                is SpacesUi.Ready ->
-                    if (ui.items.isEmpty()) {
-                        EmptyScene()
-                    } else {
-                        LazyColumn(
-                            contentPadding = PaddingValues(
-                                start = Gap.xl, end = Gap.xl, top = Gap.l, bottom = Gap.s,
-                            ),
-                            verticalArrangement = Arrangement.spacedBy(14.dp),
-                        ) {
-                            items(ui.items, key = { it.id.value }) { space ->
-                                SpaceCard(
-                                    name = space.name,
-                                    meta = space.metaLine(),
-                                    coverUrl = space.coverPhotoUrl,
-                                    memberInitials = space.members.map { it.initial },
-                                    onClick = { onIntent(SpaceListIntent.SpaceTapped(space.id)) },
-                                    onlyOnThisPhone = space.kind == SpaceKind.Personal,
-                                )
-                            }
-                        }
-                    }
-            }
-        }
-
-        Divider(inset = false)
-        Column(
-            Modifier.padding(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = Gap.xxl),
-            verticalArrangement = Arrangement.spacedBy(Gap.s),
-        ) {
-            PrimaryButton(
-                text = stringResource(R.string.list_create),
-                onClick = { onIntent(SpaceListIntent.CreateTapped) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-            SoftButton(
-                text = stringResource(R.string.list_join),
-                onClick = { onIntent(SpaceListIntent.JoinTapped) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-    }
-}
-
-/**
- * 사진이 없으면 수를 세지 않고 그 사실만 말합니다. "사진 0 · 지역 0" 은 셈이 아니라 잡음입니다.
- *
- * 조각을 이어 붙이지 않고 **포맷 문자열 하나**로 만듭니다 — 쪼개 두면 옮길 때
- * "사진 " 만 보고는 무슨 말인지 알 수 없고, 말 순서가 다른 언어에서는 맞출 수도 없습니다.
- */
-@Composable
-private fun Space.metaLine(): String {
-    if (photoCount == 0) return stringResource(R.string.card_meta_empty)
-    val on = lastPhotoOn ?: return stringResource(R.string.card_meta, photoCount, regionCount)
-    return stringResource(R.string.card_meta_dated, photoCount, regionCount, on.monthValue, on.dayOfMonth)
-}
-
-/** 레드 사각 하나가 앱 이름 앞에 섭니다. 아이콘이 아니라 표식이라 뜻을 붙이지 않습니다. */
-@Composable
-private fun Header() {
-    Row(
-        Modifier.fillMaxWidth().padding(start = Gap.xl, end = Gap.xl, top = Gap.s, bottom = Gap.m),
-        verticalAlignment = Alignment.Bottom,
-    ) {
-        Box(
-            Modifier
-                .padding(bottom = 5.dp)
-                .size(13.dp)
-                .background(MemoryColors.Accent)
-        )
-        Spacer(Modifier.width(9.dp))
-        Text(stringResource(R.string.list_title), style = MemoryType.Display)
-        Spacer(Modifier.weight(1f))
-        Text(
-            text = stringResource(R.string.list_tagline),
-            style = MemoryType.Micro,
-            color = MemoryColors.Ink2,
-            modifier = Modifier.padding(bottom = 4.dp),
-        )
-    }
-}
-
-/** 구획선은 2px 입니다. 테두리(1px)보다 굵어야 '나누는 선' 으로 읽힙니다. */
-@Composable
-private fun Divider(inset: Boolean = true) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = if (inset) Gap.xl else 0.dp)
-            .height(MemoryStroke.Divider)
-            .background(MemoryColors.Line2)
-    )
-}
-
-/**
- * 첫 실행. **가운데 정렬하지 않습니다** — 글이 왼끝에 맞아야 다음에 올 목록과
- * 같은 자리에서 시작하고, 짜국이 생겼을 때 화면이 통째로 움직인 것처럼 안 보입니다.
- */
-@Composable
-private fun EmptyScene() {
-    Column(
-        Modifier.fillMaxSize().padding(horizontal = 28.dp),
-        verticalArrangement = Arrangement.Center,
-    ) {
-        PhotoFramesScene(Modifier.fillMaxWidth(0.42f).aspectRatio(FRAMES_RATIO))
-        Spacer(Modifier.height(14.dp))
-        Text(stringResource(R.string.list_empty_title), style = MemoryType.Title)
-        Spacer(Modifier.height(14.dp))
-        Text(
-            text = emphasised(
-                sentence = stringResource(R.string.list_empty_blurb),
-                words = listOf(
-                    stringResource(R.string.list_empty_bold_map),
-                    stringResource(R.string.list_empty_bold_calendar),
-                ),
-            ),
-            style = MemoryType.Label,
-            color = MemoryColors.Ink2,
-        )
-    }
-}
-
-/**
- * 문장 안의 낱말 몇 개만 굵게.
- *
- * 문장을 조각으로 쪼개 이어 붙이지 않고 **통째로 두고 낱말을 찾습니다.** 쪼개 놓으면
- * 문장을 고칠 때 조각 순서까지 맞춰야 하고, 다른 말로 옮길 때 조각만 보고는 무슨
- * 뜻인지 알 수 없습니다. iOS `emptyBlurb` 도 같은 방식입니다.
- *
- * 못 찾은 낱말은 그냥 건너뜁니다 — 문구를 고치다 낱말이 사라져도 화면은 멀쩡해야 합니다.
- */
-private fun emphasised(sentence: String, words: List<String>) = buildAnnotatedString {
-    append(sentence)
-    for (word in words) {
-        val start = sentence.indexOf(word)
-        if (start < 0) continue
-        addStyle(
-            SpanStyle(fontWeight = FontWeight.Bold, color = MemoryColors.Ink),
-            start,
-            start + word.length,
-        )
-    }
-}
-
-@Composable
-private fun Hint(text: String) {
-    Text(
-        text = text,
-        style = MemoryType.Body,
-        color = MemoryColors.Ink3,
-        textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = Gap.xl, vertical = Gap.xxxl),
-    )
-}
-
 // ---------------------------------------------------------------------------
 // 공통 부품 — 전체 화면들
+
+/**
+ * 시트 **몸통 위** 글자색.
+ *
+ * 시트는 패미컴 스타일에서 회색 플라스틱이 통째로 올라오는 것이라, 그 위의 글자는
+ * 잉크가 아니라 플라스틱에 새긴 검정입니다. 자리마다 조건문을 쓰면 시트 넷이
+ * 지저분해져서 여기 두 개로 모읍니다.
+ */
+private val bodyInk: Color
+    @Composable get() = PlasticColors.Ink
+
+/** 몸통 위의 흐린 글자 (설명·각주) */
+private val bodyDim: Color
+    @Composable get() = PlasticColors.TrimLo
 
 /**
  * 시트 제목. 뒤로 버튼을 두지 않습니다 — 시트는 끌어 내리거나 뒤를 눌러 닫습니다.
@@ -298,7 +144,13 @@ private fun Hint(text: String) {
  */
 @Composable
 private fun SheetTitle(text: String) {
-    Text(text, style = MemoryType.Title, modifier = Modifier.padding(bottom = Gap.m))
+    // 몸통 위의 글자는 잉크가 아니라 플라스틱에 새긴 검정입니다.
+    Text(
+        text = text,
+        style = MemoryType.Title,
+        color = PlasticColors.Ink,
+        modifier = Modifier.padding(bottom = Gap.m),
+    )
 }
 
 /** "어떻게 쓸까요" 같은 구역 이름표. */
@@ -307,33 +159,47 @@ private fun SectionLabel(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         style = MemoryType.Micro,
-        color = MemoryColors.Ink2,
+        color = PlasticColors.TrimLo,
         letterSpacing = 0.7.sp,
         modifier = modifier,
     )
 }
 
-/** 글자칸. 흰 면에 1px 잉크 선 — 회색 면을 쓰지 않습니다. */
+/**
+ * 글자칸. 흰 면에 1px 잉크 선 — 회색 면을 쓰지 않습니다.
+ *
+ * 패미컴 스타일에서는 **카트리지 슬롯**입니다. 지도 검색칸·올리기의 어디·언제와
+ * 같은 모양인데, 셋 다 "값을 꽂아 넣는 자리" 라서 같아야 합니다.
+ */
 @Composable
 private fun Field(value: String, placeholder: String, onValueChange: (String) -> Unit) {
-    Box(
+    Row(
         Modifier
             .fillMaxWidth()
-            .background(MemoryColors.Surface)
-            .border(MemoryStroke.Border, MemoryColors.Line)
-            .padding(horizontal = 14.dp, vertical = 13.dp),
+            .sunken(PlasticShapes.Chip, face = PlasticColors.PlateLo)
+            .padding(horizontal = Gap.m, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Gap.s),
     ) {
-        if (value.isEmpty()) {
-            Text(placeholder, style = MemoryType.Body, color = MemoryColors.Ink3)
-        }
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            singleLine = true,
-            textStyle = MemoryType.Body.copy(color = MemoryColors.Ink),
-            cursorBrush = SolidColor(MemoryColors.Accent),
-            modifier = Modifier.fillMaxWidth(),
+        Box(
+            Modifier
+                .size(width = 3.dp, height = 14.dp)
+                .clip(PlasticShapes.Chip)
+                .background(PlasticColors.Ink)
         )
+        Box(Modifier.weight(1f)) {
+            if (value.isEmpty()) {
+                Text(placeholder, style = MemoryType.Body, color = PlasticColors.OnPlateDim)
+            }
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                singleLine = true,
+                textStyle = MemoryType.Body.copy(color = PlasticColors.OnPlate),
+                cursorBrush = SolidColor(PlasticColors.Red),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 
@@ -418,38 +284,34 @@ private fun KindOption(
     checked: Boolean,
     onClick: () -> Unit,
 ) {
+    // 패미컴 스타일에서는 **화면 안에 끼운 칸**입니다. 고른 칸만 왼쪽에 빨간 막대가
+    // 서고 바닥이 밝아집니다 — 달력의 '고른 날' 과 같은 규칙입니다. 라디오 네모는
+    // 뺐습니다: 빨간 막대와 밝아진 바닥이 이미 고른 것을 말하는데, 표식이 셋이 되면
+    // 무엇을 봐야 할지 흐려집니다.
     Row(
         Modifier
             .fillMaxWidth()
-            .background(MemoryColors.Surface)
-            .then(
-                if (checked) Modifier.border(2.dp, MemoryColors.Accent)
-                else Modifier.border(MemoryStroke.Border, MemoryColors.Line2)
-            )
+            .clip(PlasticShapes.Chip)
+            .background(if (checked) PlasticColors.PlateHi else PlasticColors.Plate)
             .selectable(selected = checked, role = Role.RadioButton, onClick = onClick)
-            .padding(horizontal = 15.dp, vertical = 14.dp),
+            .padding(end = 15.dp, top = 13.dp, bottom = 13.dp),
         horizontalArrangement = Arrangement.spacedBy(Gap.m),
     ) {
         Box(
             Modifier
-                .padding(top = 2.dp)
-                .size(16.dp)
-                .border(MemoryStroke.Border, MemoryColors.Line),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (checked) {
-                Box(Modifier.size(8.dp).background(MemoryColors.Accent))
-            }
-        }
+                .width(3.dp)
+                .height(PlasticSize.KindBar)
+                .background(if (checked) PlasticColors.Red else PlasticColors.Plate)
+        )
         Column {
-            Text(title, style = MemoryType.Headline)
+            Text(title, style = MemoryType.Headline, color = PlasticColors.OnPlate)
             Text(
-                detail,
+                text = detail,
                 style = MemoryType.Label,
-                color = MemoryColors.Ink2,
+                color = PlasticColors.OnPlateDim,
                 modifier = Modifier.padding(top = 3.dp),
             )
-            Text(sub, style = MemoryType.Label, color = MemoryColors.Ink3)
+            Text(sub, style = MemoryType.Label, color = PlasticColors.OnPlateDim)
         }
     }
 }
@@ -472,7 +334,7 @@ private fun JoinSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit
         Text(
             text = stringResource(R.string.join_note),
             style = MemoryType.Micro,
-            color = MemoryColors.Ink2,
+            color = bodyDim,
             modifier = Modifier.padding(top = Gap.s),
         )
 
@@ -497,15 +359,20 @@ private fun SignInSheet(
     onIntent: (SpaceListIntent) -> Unit,
 ) {
     SheetBody {
-        Box(Modifier.size(13.dp).background(MemoryColors.Accent))
+        Box(
+            Modifier
+                .size(13.dp)
+                .clip(PlasticShapes.Chip)
+                .background(PlasticColors.Red)
+        )
         Spacer(Modifier.height(14.dp))
         // 시트에서는 25단이 너무 큽니다 — 제목만으로 시트가 반을 먹습니다.
-        Text(stringResource(R.string.signin_title), style = MemoryType.Title)
+        Text(stringResource(R.string.signin_title), style = MemoryType.Title, color = bodyInk)
         Spacer(Modifier.height(Gap.s))
         Text(
             text = stringResource(R.string.signin_why),
             style = MemoryType.Label,
-            color = MemoryColors.Ink2,
+            color = bodyDim,
         )
 
         Spacer(Modifier.height(Gap.xl))
@@ -522,6 +389,7 @@ private fun SignInSheet(
             Text(
                 text = stringResource(R.string.signin_give_up),
                 style = MemoryType.Body,
+                color = bodyInk,
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier
                     .clickable { onIntent(SpaceListIntent.SignInGaveUp) }
@@ -532,7 +400,7 @@ private fun SignInSheet(
         Text(
             text = stringResource(R.string.signin_only_google),
             style = MemoryType.Micro,
-            color = MemoryColors.Ink2,
+            color = bodyDim,
             modifier = Modifier.padding(top = Gap.l),
         )
     }
@@ -542,21 +410,32 @@ private fun SignInSheet(
  * 구글 버튼만 **레드가 아닙니다.** 우리 것이 아니라 남의 서비스로 넘어가는 문이라
  * 앱의 강조색을 입히면 우리가 하는 일처럼 보입니다. 흰 바탕에 잉크 선 —
  * 구글이 권하는 모양이기도 합니다.
+ *
+ * 패미컴 스타일에서도 **흰 면 그대로 둡니다.** 다른 버튼은 다 고무·플라스틱이 됐지만,
+ * 이 버튼만은 구글이 정한 모양을 지켜야 합니다. 하우징에 앉혀 기기에 달린 것처럼
+ * 보이게 하되, 버튼 얼굴 자체는 손대지 않습니다.
  */
 @Composable
 private fun GoogleButton(text: String, enabled: Boolean, onClick: () -> Unit) {
-    Row(
+    Box(
         Modifier
             .fillMaxWidth()
-            .background(MemoryColors.Surface)
-            .border(MemoryStroke.Border, MemoryColors.Line)
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = Gap.l, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(11.dp),
+            .raisedPlastic(PlasticShapes.Housing)
+            .padding(PlasticSize.ButtonInset)
     ) {
-        GoogleMark(Modifier.size(19.dp))
-        Text(text, style = MemoryType.Headline, color = MemoryColors.Ink)
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clip(PlasticShapes.Pill)
+                .background(MemoryColors.Surface)
+                .clickable(enabled = enabled, onClick = onClick)
+                .padding(horizontal = Gap.l, vertical = 13.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(11.dp),
+        ) {
+            GoogleMark(Modifier.size(19.dp))
+            Text(text, style = MemoryType.Headline, color = MemoryColors.Ink)
+        }
     }
 }
 
@@ -608,20 +487,23 @@ private fun GoogleMark(modifier: Modifier = Modifier) {
 @Composable
 private fun InvitedSheet(sheet: SpaceListSheet.Invited, onIntent: (SpaceListIntent) -> Unit) {
     SheetBody {
-        Text(stringResource(R.string.invited_title, sheet.spaceName), style = MemoryType.Title)
+        Text(stringResource(R.string.invited_title, sheet.spaceName), style = MemoryType.Title, color = bodyInk)
         Spacer(Modifier.height(10.dp))
         Text(
             text = stringResource(R.string.invited_note),
             style = MemoryType.Label,
-            color = MemoryColors.Ink2,
+            color = bodyDim,
         )
 
         Spacer(Modifier.height(18.dp))
+        // 코드는 **화면에 띄웁니다.** 패미컴 스타일에서 검정 판은 "기기가 보여 주는 것"
+        // 이고, 이 코드야말로 기기가 방금 만들어 낸 값입니다.
         Box(
             Modifier
                 .fillMaxWidth()
-                .background(MemoryColors.Surface)
-                .border(MemoryStroke.Border, MemoryColors.Line)
+                .then(
+                    Modifier.sunken(PlasticShapes.Screen)
+                )
                 .padding(horizontal = Gap.xl, vertical = 18.dp),
         ) {
             // 코드는 글자 단 밖입니다 — UI 글이 아니라 화면의 주인공(콘텐츠)이라서요.
@@ -632,7 +514,7 @@ private fun InvitedSheet(sheet: SpaceListSheet.Invited, onIntent: (SpaceListInte
                 fontWeight = FontWeight.Bold,
                 fontSize = 32.sp,
                 letterSpacing = 8.sp,
-                color = MemoryColors.Ink,
+                color = PlasticColors.OnPlate,
             )
         }
 

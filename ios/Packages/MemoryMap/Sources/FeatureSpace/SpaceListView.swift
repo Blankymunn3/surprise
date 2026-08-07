@@ -22,7 +22,7 @@ public struct SpaceListView: View {
         // 만들기·참여·로그인·초대 코드는 **아래에서 올라오는 시트**입니다.
         // 목록을 잠깐 가리고 끝내는 일이라, 화면을 통째로 갈아 끼우면
         // 어디에서 하던 일인지 놓칩니다. 시트 안의 모양은 새 디자인 그대로입니다.
-        list
+        PlasticListBody(store: store, onOpen: onOpen)
             .task { await store.send(.appeared) }
             .sheet(isPresented: sheetShown) {
                 SpaceSheet(store: store, onOpen: onOpen)
@@ -51,32 +51,6 @@ public struct SpaceListView: View {
         )
     }
 
-    private var list: some View {
-        VStack(spacing: 0) {
-            header
-            divider(inset: true)
-
-            // 목록만 늘어납니다. 만들기·참여는 아래에 **붙박이로** 둡니다 —
-            // 짜국이 늘어나도 그 둘을 찾으러 스크롤하지 않게요.
-            body(for: store.state.spaces)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            divider(inset: false)
-            VStack(spacing: MemorySpace.s) {
-                PrimaryButton(localized("list_create")) {
-                    Task { await store.send(.createTapped) }
-                }
-                SoftButton(localized("list_join")) {
-                    Task { await store.send(.joinTapped) }
-                }
-            }
-            .padding(.horizontal, MemorySpace.xl)
-            .padding(.top, MemorySpace.m)
-            .padding(.bottom, MemorySpace.xxl)
-        }
-        .background(MemoryColor.paper)
-    }
-
     @ViewBuilder
     private func body(for spaces: SpacesUi) -> some View {
         switch spaces {
@@ -100,31 +74,6 @@ public struct SpaceListView: View {
                 }
             }
         }
-    }
-
-    /// 레드 사각 하나가 앱 이름 앞에 섭니다. 아이콘이 아니라 표식이라 뜻을 붙이지 않습니다.
-    private var header: some View {
-        HStack(alignment: .lastTextBaseline, spacing: 9) {
-            Rectangle()
-                .fill(MemoryColor.accent)
-                .frame(width: 13, height: 13)
-                .alignmentGuide(.lastTextBaseline) { $0[.bottom] }
-            Text(localized("list_title")).memoryDisplay()
-            Spacer()
-            Text(localized("list_tagline"))
-                .memoryMicro()
-                .foregroundStyle(MemoryColor.ink2)
-        }
-        .padding(.horizontal, MemorySpace.xl)
-        .padding(.top, MemorySpace.s)
-        .padding(.bottom, MemorySpace.m)
-    }
-
-    /// 구획선은 2px 입니다. 테두리(1px)보다 굵어야 '나누는 선' 으로 읽힙니다.
-    private func divider(inset: Bool) -> some View {
-        MemoryColor.line2
-            .frame(height: MemoryStroke.divider)
-            .padding(.horizontal, inset ? MemorySpace.xl : 0)
     }
 
     /// 첫 실행. **가운데 정렬하지 않습니다** — 글이 왼끝에 맞아야 다음에 올 목록과

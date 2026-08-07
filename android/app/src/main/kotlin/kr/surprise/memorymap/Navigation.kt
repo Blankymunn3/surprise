@@ -1,5 +1,6 @@
 package kr.surprise.memorymap
 
+import android.Manifest
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -19,13 +20,12 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,7 +33,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
@@ -43,15 +42,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -63,22 +66,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kr.surprise.memorymap.core.designsystem.R as DesignR
-import kr.surprise.memorymap.core.designsystem.component.FloatingIconButton
-import kr.surprise.memorymap.core.designsystem.component.MemoryFab
 import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
+import kr.surprise.memorymap.core.designsystem.component.MemoryToast
 import kr.surprise.memorymap.core.designsystem.component.PlainIconButton
 import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
-import kr.surprise.memorymap.core.designsystem.component.Segmented
-import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
-import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
-import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
+import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
+import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
+import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
+import kr.surprise.memorymap.core.designsystem.theme.Pretendard
 import kr.surprise.memorymap.core.model.Region
 import kr.surprise.memorymap.core.model.SpaceId
 import kr.surprise.memorymap.core.model.SpaceKind
 import kr.surprise.memorymap.feature.calendar.CalendarEffect
 import kr.surprise.memorymap.feature.calendar.say
-import kr.surprise.memorymap.feature.calendar.CalendarIntent
 import kr.surprise.memorymap.feature.calendar.CalendarScreen
 import kr.surprise.memorymap.feature.calendar.CalendarViewModel
 import kr.surprise.memorymap.feature.map.MapEffect
@@ -102,6 +103,7 @@ import kr.surprise.memorymap.feature.upload.say
 import kr.surprise.memorymap.feature.upload.UploadIntent
 import kr.surprise.memorymap.feature.upload.UploadSheet
 import kr.surprise.memorymap.feature.upload.UploadViewModel
+import kotlinx.coroutines.launch
 
 private const val ROUTE_SPACES = "spaces"
 
@@ -200,7 +202,7 @@ fun MemoryMapNavHost(container: AppContainer) {
 
             Box(Modifier.fillMaxSize()) {
                 SpaceListScreen(state = state, onIntent = vm::onIntent)
-                SnackbarHost(
+                MemoryToast(
                     snackbar,
                     Modifier.align(Alignment.BottomCenter).systemBarsPadding().padding(bottom = 16.dp),
                 )
@@ -246,7 +248,6 @@ private fun SpaceTabs(
     var tab by remember { mutableStateOf(0) }
     var uploading by remember { mutableStateOf(false) }
     var menuOpen by remember { mutableStateOf(false) }
-    val context = LocalContext.current
     // 지역 시트에서 열었으면 그 지역을 들고 갑니다. 이미 고른 곳을 아는데 올리기 화면에서
     // 다시 고르게 하면 안 됩니다. 아래쪽 ＋ 로 열었으면 null 이고, 그때는 사진의 EXIF 가 정합니다.
     var uploadRegion by remember { mutableStateOf<Region?>(null) }
@@ -262,8 +263,40 @@ private fun SpaceTabs(
 
     LaunchedEffect(spaceId) { container.refreshPhotos(kind, spaceId) }
 
-    // 스낵바 문구는 미리 읽어 둡니다 — LaunchedEffect 안은 Composable 이 아닙니다.
-    val locationNotYet = stringResource(R.string.my_location_not_yet)
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // 문구는 **미리 읽어 둡니다** — LaunchedEffect 안은 Composable 이 아니라
+    // 거기서는 stringResource 를 부를 수 없습니다.
+    val locationOff = stringResource(R.string.my_location_off)
+    val locationNotFound = stringResource(R.string.my_location_not_found)
+    val locationDenied = stringResource(R.string.my_location_denied)
+
+    /**
+     * 자리를 찾아 지도에 넘깁니다. 못 찾으면 **왜 못 찾았는지**를 말합니다 —
+     * 눌렀는데 아무 일이 없으면 고장 난 것으로 보입니다.
+     *
+     * 권한이 없을 때는 여기서 알리지 않습니다. 부르는 쪽이 곧바로 권한 창을 띄우니까요.
+     */
+    suspend fun goToMyLocation() {
+        when (val here = findMyLocation(context)) {
+            is MyLocation.Found -> mapVm.onIntent(MapIntent.MyLocationFound(here.latitude, here.longitude))
+            MyLocation.NoPermission -> Unit
+            MyLocation.Off -> snackbar.showSnackbar(locationOff)
+            MyLocation.NotFound -> snackbar.showSnackbar(locationNotFound)
+        }
+    }
+
+    // 권한을 물은 결과. **허락받은 그 자리에서 바로** 다시 찾습니다 —
+    // 허락하고 나서 버튼을 또 누르게 하면 두 번 일 시키는 것입니다.
+    val askLocation = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        scope.launch {
+            if (granted) goToMyLocation() else snackbar.showSnackbar(locationDenied)
+        }
+    }
+
     LaunchedEffect(mapVm) {
         mapVm.effect.collect { effect ->
             when (effect) {
@@ -272,7 +305,14 @@ private fun SpaceTabs(
                     uploading = true
                 }
                 is MapEffect.ShowMessage -> snackbar.showSnackbar(effect.message.say(context))
-                MapEffect.AskMyLocation -> snackbar.showSnackbar(locationNotYet)
+
+                // 이미 허락받았으면 창을 다시 띄우지 않고 바로 찾습니다.
+                MapEffect.AskMyLocation ->
+                    if (hasLocationPermission(context)) {
+                        goToMyLocation()
+                    } else {
+                        askLocation.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+                    }
             }
         }
     }
@@ -289,7 +329,11 @@ private fun SpaceTabs(
         }
     }
 
-    Box(Modifier.fillMaxSize().background(MemoryColors.Paper)) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(PlasticColors.Body)
+    ) {
         // 머리말과 탭은 **지도 위에 떠 있지 않고 자리를 차지합니다.** 지도가 그 아래에서
         // 시작하니, 러시아처럼 위로 긴 나라가 검색칸 뒤로 숨을 자리 자체가 없습니다.
         Column(Modifier.fillMaxSize().systemBarsPadding()) {
@@ -299,12 +343,8 @@ private fun SpaceTabs(
                 onBack = onBack,
                 onMore = { menuOpen = true },
             )
-            Segmented(
-                options = stringArrayResource(R.array.space_tabs).toList(),
-                selectedIndex = tab,
-                onSelect = { tab = it },
-                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 2.dp, bottom = 10.dp),
-            )
+            // 탭은 몸통 위의 고무 스위치입니다.
+            PlasticTabs(selectedIndex = tab, onSelect = { tab = it })
 
             // 탭도 옆으로 밀립니다. 누른 쪽으로 미끄러져야 어느 쪽으로 옮겼는지 보입니다.
             AnimatedContent(
@@ -326,18 +366,10 @@ private fun SpaceTabs(
             }
         }
 
-        if (tab == 1) {
-            MemoryFab(
-                onClick = { uploading = true },
-                contentDescription = stringResource(R.string.space_add_photo),
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .systemBarsPadding()
-                    .padding(end = 14.dp, bottom = 18.dp),
-            )
-        }
+        // ＋ 는 떠 있지 않고 **달력 안쪽 조작부**에 앉습니다(`CalendarPlastic` 의 빨간 A 버튼).
+        // 몸통 위에 버튼이 다 모여 있는데 하나만 화면 위에 떠 있으면 어긋납니다.
 
-        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 110.dp))
+        MemoryToast(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 110.dp))
 
         if (menuOpen) {
             val menuVm: SpaceMenuViewModel =
@@ -387,14 +419,14 @@ private fun SpaceTabs(
             }
         }
 
-        // 지역 시트에서 열었으면 그 지역을 **고른 사진 전부에** 미리 넣습니다.
-        // 사진마다 지역을 들게 되면서 한 번에 하나씩만 넣을 수 있게 됐습니다.
-        LaunchedEffect(uploadVm, uploadRegion, uploadState.items.size) {
-            val region = uploadRegion ?: return@LaunchedEffect
-            uploadState.items.forEach { item ->
-                uploadVm.onIntent(UploadIntent.RegionFieldTapped(item.uri))
-                uploadVm.onIntent(UploadIntent.RegionChosen(region))
-            }
+        // 지역 시트에서 열었으면 그 지역을 뷰모델에 **미리 건네 둡니다.**
+        //
+        // 예전에는 고른 사진마다 '어디' 를 눌렀다 고르는 시늉을 여기서 냈는데,
+        // 그 직후에 EXIF 를 읽은 결과가 목록을 통째로 갈아 끼우면서 넣은 지역이
+        // 지워졌습니다(장수가 그대로라 이 블록도 다시 안 돌았습니다).
+        // 지역은 사진을 만들 때 쓰는 재료라 **뷰모델이 들고 있어야** 합니다.
+        LaunchedEffect(uploadVm, uploadRegion) {
+            uploadVm.onIntent(UploadIntent.RegionPreselected(uploadRegion))
         }
 
         // 날짜 고르기. 어느 사진의 날짜인지 들고 있다가 고르면 그 사진에만 넣습니다.
@@ -409,16 +441,14 @@ private fun SpaceTabs(
             }
         }
 
-        // 아래에서 올라오는 시트입니다. **거의 다 펴진 채로** 뜹니다 —
-        // 사진이 여러 장이면 훑어 내려야 해서, 반만 올라오면 두 장밖에 안 보입니다.
+        // 아래에서 올라오는 시트입니다. 다른 시트들처럼 **화면을 덮지 않는 판**으로
+        // 뜹니다 — 사진 목록은 판 안에서 구릅니다.
         ModalBottomSheet(
             onDismissRequest = { uploading = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = MemoryColors.Surface,
-            shape = MemoryShapes.Sheet,
-            dragHandle = {
-                Box(Modifier.fillMaxWidth().height(MemoryStroke.Divider).background(MemoryColors.Ink))
-            },
+            containerColor = PlasticColors.Body,
+            shape = PlasticShapes.Device,
+            dragHandle = { UploadGrip() },
         ) {
             UploadSheet(
                 state = uploadState,
@@ -428,9 +458,10 @@ private fun SpaceTabs(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )
                 },
-                // 시트 안이라 높이를 정해 줘야 합니다. 안 주면 목록이 끝없이 늘어나
-                // 아래 '올리기' 버튼이 화면 밖으로 밀립니다.
-                modifier = Modifier.fillMaxHeight(0.92f),
+                // **높이를 정해 주지 않습니다.** 내용만큼만 차지하고, 사진이 많아지면
+                // 안쪽 목록이 대신 구릅니다 (`UploadPlastic` 의 `heightIn`).
+                // 사진 한 장을 올릴 때 시트가 화면 반을 먹을 까닭이 없습니다.
+                modifier = Modifier.fillMaxWidth(),
             )
         }
 
@@ -452,6 +483,23 @@ private fun SpaceTabs(
  * 너무 크게 두면 줄이고 올리는 데 한참 걸려 멈춘 것처럼 보입니다.
  */
 private const val MAX_PICK = 20
+
+/**
+ * 올리기 시트의 손잡이. 시트 넷과 같은 규칙입니다 —
+ * 패미컴 스타일에서는 몸통에 새긴 회색 홈, 기준 디자인에서는 2px 잉크 선.
+ */
+@Composable
+private fun UploadGrip() {
+    Box(Modifier.fillMaxWidth().padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier
+                .width(PlasticSize.Grip)
+                .height(PlasticSize.Stripe)
+                .clip(PlasticShapes.Pill)
+                .background(PlasticColors.Trim)
+        )
+    }
+}
 
 /**
  * 짜국 안쪽의 머리말 — 뒤로 · 이름 · ⋯.
@@ -478,24 +526,70 @@ private fun TopBar(
         Text(
             text = spaceName,
             style = MemoryType.Title,
+            // 몸통 위의 글자는 잉크가 아니라 플라스틱에 새긴 검정입니다.
+            color = PlasticColors.Ink,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f).padding(horizontal = 2.dp),
         )
 
         if (onlyOnThisPhone) {
+            // 이 딱지는 몸통 위에서 **파인 자리**로 그립니다. 흰 면에 잉크 선은
+            // 플라스틱 위에서 종이를 붙인 것처럼 떠 보입니다.
             Text(
                 text = stringResource(DesignR.string.component_only_on_this_phone),
-                style = MemoryType.Micro,
-                color = MemoryColors.Ink,
+                fontFamily = Pretendard,
+                fontWeight = FontWeight.Bold,
+                fontSize = 11.sp,
+                color = PlasticColors.OnPlateDim,
                 modifier = Modifier
-                    .background(MemoryColors.Surface)
-                    .border(MemoryStroke.Border, MemoryColors.Line)
-                    .padding(horizontal = 7.dp, vertical = 2.dp),
+                    .clip(PlasticShapes.Chip)
+                    .background(PlasticColors.Plate)
+                    .padding(horizontal = 7.dp, vertical = 3.dp),
             )
         }
 
         PlainIconButton(MemoryIcons.More, stringResource(R.string.space_more), onMore)
+    }
+}
+
+/**
+ * 탭 두 칸 — 몸통 위의 고무 스위치.
+ *
+ * 고른 쪽만 빨갛습니다. 컨트롤러에서 빨강은 "지금 누른 것" 이고,
+ * 여기서 지금 누른 것은 보고 있는 탭입니다.
+ */
+@Composable
+private fun PlasticTabs(selectedIndex: Int, onSelect: (Int) -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp)
+            .padding(bottom = 8.dp)
+            .clip(PlasticShapes.Housing)
+            .background(PlasticColors.Rubber)
+            .padding(3.dp),
+    ) {
+        listOf("지도", "달력").forEachIndexed { index, label ->
+            val chosen = index == selectedIndex
+            Box(
+                Modifier
+                    .weight(1f)
+                    .height(34.dp)
+                    .clip(PlasticShapes.Knob)
+                    .background(if (chosen) PlasticColors.Red else Color.Transparent)
+                    .clickable { onSelect(index) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = label,
+                    fontFamily = Pretendard,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = if (chosen) PlasticColors.OnRed else PlasticColors.OnRubber,
+                )
+            }
+        }
     }
 }
 
@@ -511,9 +605,13 @@ private fun DateSheet(current: LocalDate, onDismiss: () -> Unit, onPick: (LocalD
         initialSelectedDateMillis = current.atStartOfDay(zone).toInstant().toEpochMilli()
     )
 
+    // 높이는 주지 않습니다 — 달력이 필요한 만큼만 차지합니다. 시트 넷과 같은 규칙입니다.
+    // 그릇(몸통 색·기기 모서리)은 맞추되 **달력 자체는 안드로이드 기본 그대로** 둡니다:
+    // 우리가 다시 그리면 시스템 달력과 미묘하게 달라서 오히려 낯섭니다.
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = MemoryColors.Surface,
+        containerColor = PlasticColors.Body,
+        shape = PlasticShapes.Device,
         dragHandle = null,
     ) {
         DatePicker(state = picker)

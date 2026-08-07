@@ -19,7 +19,17 @@ data class MapState(
     val focusCount: Int = 0,
     val outline: RegionOutline? = null,
     val fills: List<RegionFill> = emptyList(),
+    /**
+     * 지금 내가 있는 자리. **찾았을 때만** 채워집니다.
+     *
+     * 화면을 옮기는 것만으로는 부족해서 둡니다 — 옮겨 준 뒤 조금만 손으로 밀면
+     * 어디가 그 자리였는지 잃습니다. 표시가 남아 있으면 다시 찾아갈 수 있습니다.
+     */
+    val myLocation: MyPin? = null,
 )
+
+/** 지도에 찍는 내 자리. */
+data class MyPin(val latitude: Double, val longitude: Double)
 
 /**
  * 고른 지역의 **경계선**. 지도에 테두리를 그립니다.
@@ -83,6 +93,13 @@ sealed interface MapIntent {
     data object AddPhotoTapped : MapIntent
     data object SheetDismissed : MapIntent
     data object MyLocationTapped : MapIntent
+
+    /**
+     * 기기가 알려 준 지금 자리. 위치를 **찾는 일은 앱 껍데기**가 합니다 —
+     * 권한을 묻고 안드로이드 위치 서비스를 부르는 일이라 도메인이 알 필요가 없습니다.
+     * 여기서는 좌표만 받아 지도를 옮깁니다.
+     */
+    data class MyLocationFound(val latitude: Double, val longitude: Double) : MapIntent
 }
 
 /**

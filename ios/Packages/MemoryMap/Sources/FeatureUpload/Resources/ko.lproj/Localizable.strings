@@ -40,3 +40,9 @@
 "upload_region_back" = "뒤로";
 "upload_region_title" = "어디에서 찍었나요";
 "upload_region_placeholder" = "지역 검색 — 강릉, 제주…";
+
+/* 패미컴 올리기는 판이 좁아 **짧게** 씁니다. */
+"upload_reading_short" = "읽는 중…";
+"upload_cancel" = "취소";
+"upload_confirm_short" = "올리기";
+"upload_empty_hint" = "지역·날짜는 사진에서 자동으로 읽어요. 눌러서 고칠 수 있어요.";

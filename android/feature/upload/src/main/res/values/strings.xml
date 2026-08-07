@@ -17,6 +17,11 @@
     <string name="upload_reading">사진 읽는 중…</string>
 
     <!-- 자동 채움 안내 -->
+    <!-- 패미컴 올리기는 판이 좁아 **짧게** 씁니다. -->
+    <string name="upload_reading_short">읽는 중…</string>
+    <string name="upload_cancel">취소</string>
+    <string name="upload_empty_hint">지역·날짜는 사진에서 자동으로 읽어요. 눌러서 고칠 수 있어요.</string>
+
     <string name="upload_auto_notice">지역·날짜는 사진에서 자동으로 읽었어요. 눌러서 고치면 \'자동\' 표시가 사라져요.</string>
     <string name="upload_auto_badge">자동</string>
 

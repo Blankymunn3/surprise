@@ -28,6 +28,16 @@
       뷰모델이 알려 오는 일. 뷰모델은 Composable 이 아니라 stringResource 를 못 써서,
       **무슨 일이 있었는지만** 나르고 말은 여기서 고릅니다 (MapMessage).
     -->
+    <!-- 십자키의 팔 넷. 화면에는 화살표만 보이고 이 말은 읽어 주기용입니다. -->
+    <string name="map_pad_up">위로</string>
+    <string name="map_pad_down">아래로</string>
+    <string name="map_pad_left">왼쪽으로</string>
+    <string name="map_pad_right">오른쪽으로</string>
+
+    <!-- 패미컴 스타일 지역 시트는 장수와 안내를 **한 줄로** 붙입니다.
+         시트가 좁아 두 줄을 놓을 자리가 없습니다. -->
+    <string name="map_sheet_count_and_hint">사진 %1$d장 · 누르면 대표사진이 돼요</string>
+
     <string name="map_msg_region_unknown">여기는 아직 지역을 알 수 없어요.</string>
     <string name="map_msg_cover_failed">대표사진을 바꾸지 못했어요.</string>
 

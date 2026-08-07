@@ -19,6 +19,15 @@ sealed interface MapFocus {
 
     /** 경계 없이 좌표만 있는 장소 — 맞출 넓이가 없어 배율을 정해 줍니다. */
     data class Spot(val latitude: Double, val longitude: Double) : MapFocus
+
+    /**
+     * 내가 지금 있는 자리. [Spot] 과 좌표만 있는 것은 같지만 **훨씬 바짝 당깁니다.**
+     *
+     * 지역을 고를 때는 그 지역이 어디쯤인지 알면 되지만, 내 위치는 "지금 여기가 어디냐"
+     * 를 보는 것이라 동네가 보여야 합니다. 도 단위로 보이는 배율에서는 점만 찍히고
+     * 정작 내가 어디 있는지는 알 수 없습니다.
+     */
+    data class Me(val latitude: Double, val longitude: Double) : MapFocus
 }
 
 /**

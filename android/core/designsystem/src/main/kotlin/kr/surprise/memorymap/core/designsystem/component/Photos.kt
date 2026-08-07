@@ -19,9 +19,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import kr.surprise.memorymap.core.designsystem.R
-import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
+import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
+import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
 
 /**
  * 사진 썸네일. 비율 1:1 고정 — 세로 사진도 가운데를 잘라 씁니다.
@@ -37,11 +38,18 @@ fun PhotoThumb(
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
 ) {
+    // 패미컴 스타일에서는 사진이 **검정 판 위**에 놓입니다. 기준 디자인의 밝은 회색
+    // 자리(Fill)를 그대로 두면 사진이 없는 칸만 하얗게 떠서, 정작 사진보다 눈에 띕니다.
+    // 대표사진 표시는 두 스타일 다 레드라 그대로 갑니다 — 이 앱에서 레드는 한 벌입니다.
+    val shape = PlasticShapes.Chip
+    val empty = PlasticColors.PlateLo
+    val cover = PlasticColors.Red
+
     Box(
         modifier = modifier
-            .clip(MemoryShapes.Thumb)
-            .background(MemoryColors.Fill)
-            .then(if (isCover) Modifier.border(2.dp, MemoryColors.Accent, MemoryShapes.Thumb) else Modifier)
+            .clip(shape)
+            .background(empty)
+            .then(if (isCover) Modifier.border(2.dp, cover, shape) else Modifier)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
     ) {
         if (url != null) {
@@ -80,7 +88,7 @@ fun PhotoThumb(
                     .padding(6.dp)
                     .size(20.dp)
                     .clip(MemoryShapes.Pill)
-                    .background(MemoryColors.Accent),
+                    .background(cover),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(MemoryIcons.Star, contentDescription = stringResource(R.string.component_cover_photo), tint = Color.White, modifier = Modifier.size(12.dp))

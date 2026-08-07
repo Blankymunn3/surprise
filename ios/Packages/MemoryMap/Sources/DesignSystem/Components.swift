@@ -2,106 +2,6 @@ import CoreModel
 import Foundation
 import SwiftUI
 
-/**
- 콘텐츠 **위에 떠 있는** 조작 층 — 지도 위 검색칸·버튼 같은 것.
-
- **유리가 아닙니다.** 예전에는 반투명 흰색으로 뒤가 비치게 했는데, 새 디자인은
- 유리를 아예 쓰지 않습니다 — 꽉 찬 흰 면과 1px 잉크 선으로만 떠 있음을 나타냅니다.
- 사진 위에 반투명을 얹으면 사진 색이 그대로 올라와, 글자가 읽히는 정도가
- 사진마다 달라지기 때문입니다.
-
- 이름에 Glass 를 다시 붙이지 마세요. 반투명을 되살리는 첫걸음이 됩니다.
- */
-public struct FloatingBackground: ViewModifier {
-    public func body(content: Content) -> some View {
-        content
-            .background(MemoryColor.surface)
-            .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
-            .shadow(color: MemoryColor.ink.opacity(0.16), radius: 6, y: 2)
-    }
-}
-
-public extension View {
-    func floatingSurface() -> some View { modifier(FloatingBackground()) }
-}
-
-/// 탭 높이. 시안이 정한 값입니다.
-private let tabHeight: CGFloat = 40
-
-/**
- 지도 | 달력 탭. **가로를 꽉 채운 네모 두 칸**입니다.
-
- 알약이 아닌 이유: 이 탭은 지도 위에 떠 있지 않고 지도 **위쪽에 자리를 차지하고**
- 있습니다. 떠 있지 않으니 알약으로 만들어 배경과 떼어 놓을 까닭이 없고,
- 가로를 꽉 채우면 두 칸이 정확히 반씩이라 어느 쪽이 켜졌는지 한눈에 보입니다.
-
- 고른 칸은 **잉크로 꽉 채웁니다** — 선만으로는 두 칸 중 어느 쪽인지 헷갈립니다.
- */
-public struct Segmented: View {
-    let options: [String]
-    @Binding var selection: Int
-
-    public init(options: [String], selection: Binding<Int>) {
-        self.options = options
-        self._selection = selection
-    }
-
-    public var body: some View {
-        HStack(spacing: 0) {
-            ForEach(options.indices, id: \.self) { index in
-                let on = index == selection
-
-                // 칸 사이 선은 **한 줄만** 긋습니다. 칸마다 테두리를 두르면 가운데가
-                // 두 겹이 되어 그 선만 굵어 보입니다.
-                if index > 0 {
-                    MemoryColor.line.frame(width: MemoryStroke.border)
-                }
-
-                Text(options[index])
-                    .memoryBody()
-                    .foregroundStyle(on ? MemoryColor.paper : MemoryColor.ink)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(on ? MemoryColor.ink : MemoryColor.surface)
-                    .contentShape(Rectangle())
-                    .onTapGesture { selection = index }
-                    .accessibilityAddTraits(on ? [.isSelected, .isButton] : .isButton)
-            }
-        }
-        .frame(height: tabHeight)
-        .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
-    }
-}
-
-/**
- 사진 올리기 버튼. **네모, 54, 단색 레드.**
-
- 동그라미가 아닌 이유: 이 디자인에는 둥근 것이 하나도 없습니다. 지도 위에서
- 형태로 먼저 읽히게 하는 일은 모서리가 아니라 **레드 한 색**이 맡습니다 —
- 화면에서 유일하게 꽉 찬 레드라 다른 것과 헷갈릴 수가 없습니다.
- */
-public struct MemoryFab: View {
-    let action: () -> Void
-    let label: LocalizedStringKey
-
-    public init(label: LocalizedStringKey = "component_add_photo", action: @escaping () -> Void) {
-        self.label = label
-        self.action = action
-    }
-
-    public var body: some View {
-        Button(action: action) {
-            Image(systemName: "plus")
-                .font(.system(size: 21, weight: .semibold))
-                .foregroundStyle(MemoryColor.onAccent)
-                .frame(width: 54, height: 54)
-                .background(MemoryColor.accent)
-                .shadow(color: MemoryColor.ink.opacity(0.28), radius: 8, y: 4)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(label, bundle: .module))
-    }
-}
-
 /// 주 동작. **글자는 왼끝에 맞추고 화살표가 오른끝에 섭니다** — 가운데 정렬이 아닙니다.
 ///
 /// 왼끝 맞춤인 이유: 이 버튼은 화면 가로를 꽉 채웁니다. 가운데에 두면 글자가
@@ -118,20 +18,22 @@ public struct PrimaryButton: View {
     }
 
     public var body: some View {
+        // 패미컴 스타일에서는 하우징에 앉힌 **빨간 A 버튼**입니다. 시트 넷(만들기·참여·
+        // 초대 코드·올리기)이 모두 이 부품으로 만들어져 있어서, 여기 한 곳만 바꾸면
+        // 넷이 같이 따라옵니다. 화살표는 뺍니다 — 알약 안에서는 글자만으로 충분하고,
+        // 넣으면 A 버튼이 아니라 목록의 한 줄처럼 보입니다.
         Button(action: action) {
-            HStack(spacing: MemorySpace.s) {
-                Text(title).memoryHeadline()
-                Spacer(minLength: 0)
-                Text("→").memoryHeadline()
-            }
-            .foregroundStyle(enabled ? MemoryColor.onAccent : MemoryColor.ink3)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .frame(maxWidth: .infinity)
-            .background(enabled ? MemoryColor.accent : MemoryColor.fill)
+            Text(title)
+                .font(MemoryFont.font(15, .bold))
+                .foregroundStyle(enabled ? PlasticColor.onRed : PlasticColor.onButtonOff)
+                .frame(maxWidth: .infinity)
+                .frame(height: PlasticSize.button)
+                .background(Capsule().fill(enabled ? PlasticColor.red : PlasticColor.buttonOff))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plasticPress)
         .disabled(!enabled)
+        .padding(PlasticSize.buttonInset)
+        .raisedPlastic()
     }
 }
 
@@ -146,17 +48,18 @@ public struct SoftButton: View {
     }
 
     public var body: some View {
+        // 패미컴 스타일에서는 하우징에 앉힌 **검은 고무 알약**입니다.
         Button(action: action) {
             Text(title)
-                .memoryBody()
-                .foregroundStyle(MemoryColor.ink)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 13)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(MemoryColor.surface)
-                .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
+                .font(MemoryFont.font(15, .bold))
+                .foregroundStyle(PlasticColor.onRubber)
+                .frame(maxWidth: .infinity)
+                .frame(height: PlasticSize.button)
+                .background(Capsule().fill(PlasticColor.rubber))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plasticPress)
+        .padding(PlasticSize.buttonInset)
+        .raisedPlastic()
     }
 }
 
@@ -196,79 +99,6 @@ public struct MemberAvatars: View {
             .frame(width: 24, height: 24)
             .background(filled ? MemoryColor.ink : MemoryColor.surface)
             .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
-    }
-}
-
-/// 숫자 위에 까는 그늘의 높이. 숫자 한 줄만 덮으면 됩니다.
-private let dayShadeHeight: CGFloat = 22
-
-public struct DayCell: View {
-    let day: Int
-    let photoURL: String?
-    let isToday: Bool
-    let isSunday: Bool
-    let isSelected: Bool
-
-    public init(
-        day: Int, photoURL: String?, isToday: Bool, isSunday: Bool, isSelected: Bool = false
-    ) {
-        self.day = day
-        self.photoURL = photoURL
-        self.isToday = isToday
-        self.isSunday = isSunday
-        self.isSelected = isSelected
-    }
-
-    /**
-     숫자는 **늘 왼쪽 위**, 배경은 **사진이 있을 때만**. 안드로이드 `DayCell` 과 같습니다.
-     빈 날까지 회색을 깔면 달력이 격자무늬가 되어 정작 사진이 묻힙니다.
-
-     테두리는 두 가지입니다 — **고른 날은 잉크, 오늘은 레드.** 둘 다면 고른 쪽이
-     이깁니다. 지금 무엇을 보고 있는지가, 오늘이 언제인지보다 급합니다.
-     */
-    public var body: some View {
-        ZStack(alignment: .topLeading) {
-            Color.clear
-
-            if let photoURL, let url = URL(string: photoURL) {
-                RemotePhoto(url: url) { MemoryColor.fill }
-                // 밝은 사진 위에서도 흰 숫자가 읽히도록 **위쪽 한 줄만** 어둡게.
-                // 칸 전체를 덮으면 사진이 어두워지고, 사진을 보려고 만든 칸이 아니게 됩니다.
-                .overlay(alignment: .top) {
-                    LinearGradient(
-                        colors: [MemoryColor.ink.opacity(0.45), .clear],
-                        startPoint: .top, endPoint: .bottom
-                    )
-                    .frame(height: dayShadeHeight)
-                }
-                .clipped()
-            }
-
-            Text("\(day)")
-                .memoryMicro()
-                .foregroundStyle(textColor)
-                .padding(.leading, 5)
-                .padding(.top, 3)
-        }
-        .aspectRatio(1, contentMode: .fit)
-        .overlay {
-            if let edge = edgeColor {
-                Rectangle().strokeBorder(edge, lineWidth: 2)
-            }
-        }
-    }
-
-    private var edgeColor: Color? {
-        if isSelected { return MemoryColor.ink }
-        if isToday { return MemoryColor.accent }
-        return nil
-    }
-
-    private var textColor: Color {
-        if photoURL != nil { return .white }
-        // 일요일만 딥레드입니다. 레드는 주 동작에 쓰는 색이라, 눌러야 할 것이
-        // 아닌 자리에는 한 단계 어두운 쪽을 씁니다.
-        return isSunday ? MemoryColor.accentDeep : MemoryColor.ink
     }
 }
 

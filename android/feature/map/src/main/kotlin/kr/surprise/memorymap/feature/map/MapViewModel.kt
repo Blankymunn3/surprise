@@ -88,6 +88,8 @@ class MapViewModel(
                 sendEffect(MapEffect.OpenUpload(currentState().sheet?.region))
             MapIntent.SheetDismissed -> setState { MapReducer.sheetDismissed(this) }
             MapIntent.MyLocationTapped -> sendEffect(MapEffect.AskMyLocation)
+            is MapIntent.MyLocationFound ->
+                setState { MapReducer.movedToMyLocation(this, intent.latitude, intent.longitude) }
         }
     }
 

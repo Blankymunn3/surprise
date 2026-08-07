@@ -48,8 +48,12 @@ public struct RemotePhoto<Placeholder: View>: View {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
+        // **HTTP 가 아닐 수도 있습니다.** 혼자 쓰는 짜국의 사진은 서버에 없고 기기 안에만
+        // 있어서 주소가 `file://` 입니다. 그때는 응답에 상태 번호가 아예 없으므로,
+        // 없으면 성공으로 봅니다 — 실패는 위에서 예외로 걸러집니다.
+        // (`?? false` 로 두면 기기 안 사진이 전부 하얗게 나옵니다.)
         guard let (data, response) = try? await URLSession.shared.data(for: request),
-              (response as? HTTPURLResponse).map({ (200..<300).contains($0.statusCode) }) ?? false,
+              (response as? HTTPURLResponse).map({ (200..<300).contains($0.statusCode) }) ?? true,
               let image = Self.image(from: data)
         else { return }
 
