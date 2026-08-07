@@ -419,14 +419,14 @@ private fun SpaceTabs(
             }
         }
 
-        // 지역 시트에서 열었으면 그 지역을 **고른 사진 전부에** 미리 넣습니다.
-        // 사진마다 지역을 들게 되면서 한 번에 하나씩만 넣을 수 있게 됐습니다.
-        LaunchedEffect(uploadVm, uploadRegion, uploadState.items.size) {
-            val region = uploadRegion ?: return@LaunchedEffect
-            uploadState.items.forEach { item ->
-                uploadVm.onIntent(UploadIntent.RegionFieldTapped(item.uri))
-                uploadVm.onIntent(UploadIntent.RegionChosen(region))
-            }
+        // 지역 시트에서 열었으면 그 지역을 뷰모델에 **미리 건네 둡니다.**
+        //
+        // 예전에는 고른 사진마다 '어디' 를 눌렀다 고르는 시늉을 여기서 냈는데,
+        // 그 직후에 EXIF 를 읽은 결과가 목록을 통째로 갈아 끼우면서 넣은 지역이
+        // 지워졌습니다(장수가 그대로라 이 블록도 다시 안 돌았습니다).
+        // 지역은 사진을 만들 때 쓰는 재료라 **뷰모델이 들고 있어야** 합니다.
+        LaunchedEffect(uploadVm, uploadRegion) {
+            uploadVm.onIntent(UploadIntent.RegionPreselected(uploadRegion))
         }
 
         // 날짜 고르기. 어느 사진의 날짜인지 들고 있다가 고르면 그 사진에만 넣습니다.

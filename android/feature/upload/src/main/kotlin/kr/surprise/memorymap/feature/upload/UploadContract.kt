@@ -51,6 +51,15 @@ sealed interface UploadStep {
 }
 
 sealed interface UploadIntent {
+    /**
+     * 이 시트를 **지역 시트에서 열었다** — 그 지역을 미리 넣어 둡니다.
+     * 달력이나 ＋ 로 열었으면 `null` 입니다.
+     *
+     * 시트를 여는 순간에는 아직 고른 사진이 없어서 바로 넣을 수가 없습니다.
+     * 그래서 뷰모델이 들고 있다가 **사진이 들어올 때 EXIF 값 대신 이걸 씁니다.**
+     * iOS `UploadStore.preselect` 와 같은 자리입니다.
+     */
+    data class RegionPreselected(val region: Region?) : UploadIntent
     data class PhotosPicked(val uris: List<PickedPhoto>) : UploadIntent
     /** 그 사진의 '어디' 를 누름 */
     data class RegionFieldTapped(val uri: String) : UploadIntent

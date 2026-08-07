@@ -3,6 +3,7 @@ package kr.surprise.memorymap.feature.upload
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import kr.surprise.memorymap.core.common.Outcome
+import kr.surprise.memorymap.core.model.Region
 import kr.surprise.memorymap.core.model.SpaceId
 import kr.surprise.memorymap.core.ui.MviViewModel
 import kr.surprise.memorymap.domain.UploadPlan
@@ -26,8 +27,15 @@ class UploadViewModel(
     private val clock: Clock = Clock.systemDefaultZone(),
 ) : MviViewModel<UploadIntent, UploadState, UploadEffect>(UploadState(spaceId)) {
 
+    /**
+     * 지역 시트에서 열었으면 그 지역. 상태가 아니라 여기 두는 이유는
+     * **화면에 그리는 값이 아니라 사진을 만들 때 쓰는 재료**이기 때문입니다.
+     */
+    private var preselected: Region? = null
+
     override fun onIntent(intent: UploadIntent) {
         when (intent) {
+            is UploadIntent.RegionPreselected -> preselected = intent.region
             is UploadIntent.PhotosPicked -> pick(intent.uris)
             is UploadIntent.RegionFieldTapped ->
                 setState { UploadReducer.regionPickerOpened(this, intent.uri) }
@@ -67,12 +75,17 @@ class UploadViewModel(
             val items = uris.mapIndexed { index, picked ->
                 val hint = hints[index]
                 val own = hint.regionCode?.let { regions.find(it.value) }
+                // 지역 시트에서 열었으면 **그 지역이 EXIF 보다 위**입니다. 사용자가
+                // 지도에서 그 지역을 짚고 들어온 것이라, 사진이 무엇을 말하든
+                // 여기에 넣겠다는 뜻입니다.
+                val region = preselected ?: own ?: fallbackRegion
                 UploadItem(
                     uri = picked.uri,
-                    region = own ?: fallbackRegion,
+                    region = region,
                     takenOn = hint.takenOn ?: fallback.takenOn,
                     // 사진에서 왔든 여럿에서 메웠든 사용자가 고른 값은 아닙니다.
-                    regionAuto = (own ?: fallbackRegion) != null,
+                    // 지역 시트에서 온 것은 고른 값이라 '자동' 딱지를 안 붙입니다.
+                    regionAuto = preselected == null && region != null,
                     dateAuto = hint.takenOn != null || fallback.dateFromExif,
                 )
             }
