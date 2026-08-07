@@ -61,7 +61,7 @@ internal object MapReducer {
      */
     fun movedToMyLocation(state: MapState, latitude: Double, longitude: Double): MapState =
         state.copy(
-            focus = MapFocus.Spot(latitude, longitude),
+            focus = MapFocus.Me(latitude, longitude),
             focusCount = state.focusCount + 1,
             myLocation = MyPin(latitude, longitude),
         )

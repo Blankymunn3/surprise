@@ -247,6 +247,9 @@ private fun MapFocus.toUpdate(side: Int, vertical: Int): CameraUpdate = when (th
     is MapFocus.Spot ->
         CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), SPOT_ZOOM)
 
+    is MapFocus.Me ->
+        CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), ME_ZOOM)
+
     is MapFocus.Area -> CameraUpdateFactory.newLatLngBounds(
         LatLngBounds.from(north, east, south, west),
         side, vertical, side, vertical,
@@ -264,6 +267,15 @@ private val EDGE_VERTICAL = 40.dp
 
 /** 경계가 없는 장소의 배율. 맞출 넓이가 없어 정해 둡니다 — 전에 쓰던 값 그대로입니다. */
 private const val SPOT_ZOOM = 9.0
+
+/**
+ * 내 위치의 배율. **동네가 보이는 정도**입니다 — 큰길과 동 이름이 읽힙니다.
+ *
+ * [SPOT_ZOOM] 보다 5단 높습니다(한 단마다 넓이가 절반이므로 32배 가깝습니다).
+ * 지역을 고를 때는 "어디쯤" 이면 되지만 내 위치는 "지금 여기" 를 보는 것이라
+ * 도 단위로 보이면 점만 찍히고 정작 내가 어디 있는지는 알 수 없습니다.
+ */
+private const val ME_ZOOM = 14.0
 
 /** 지도에 넣을 대표사진 크기. 크게 넣어 봐야 지역 안에서는 티가 안 나고 메모리만 먹습니다. */
 private const val COVER_PX = 256

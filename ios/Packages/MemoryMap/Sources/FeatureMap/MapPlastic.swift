@@ -393,7 +393,7 @@ struct PlasticMapBody: View {
                 me = here
                 position = .region(MKCoordinateRegion(
                     center: here,
-                    span: MKCoordinateSpan(latitudeDelta: spotSpan, longitudeDelta: spotSpan)
+                    span: MKCoordinateSpan(latitudeDelta: meSpan, longitudeDelta: meSpan)
                 ))
             }
         case .denied:
@@ -414,9 +414,14 @@ struct PlasticMapBody: View {
     }
 }
 
-/// 내 위치로 옮길 때의 배율. `MapFocus.spot` 과 같은 값이라 지역을 골랐을 때와
-/// 같은 만큼 확대됩니다.
-private let spotSpan = 1.2
+/**
+ 내 위치로 옮길 때 보이는 넓이. **동네가 보이는 정도**입니다 — 큰길과 동 이름이 읽힙니다.
+
+ 경계 없는 지역(`MapFocus.spot`, 1.2도)보다 훨씬 좁습니다. 지역을 고를 때는 "어디쯤"
+ 이면 되지만 내 위치는 "지금 여기" 를 보는 것이라, 도 단위로 보이면 점만 찍히고
+ 정작 내가 어디 있는지는 알 수 없습니다. 안드로이드 `ME_ZOOM`(14단)과 같은 넓이입니다.
+ */
+private let meSpan = 0.04
 
 /**
  지도에 찍는 내 자리 — 점 하나와 그것을 감싸는 옅은 원.

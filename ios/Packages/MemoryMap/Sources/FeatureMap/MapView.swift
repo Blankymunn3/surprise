@@ -327,9 +327,11 @@ public struct MapView: View {
             let here = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
             withAnimation(.easeInOut(duration: 0.4)) {
                 me = here
+                // 동네가 보이는 정도. 경계 없는 지역(1.2도)보다 훨씬 좁습니다 —
+                // 내 위치는 "지금 여기" 를 보는 것이라 도 단위로는 알 수 없습니다.
                 position = .region(MKCoordinateRegion(
                     center: here,
-                    span: MKCoordinateSpan(latitudeDelta: 1.2, longitudeDelta: 1.2)
+                    span: MKCoordinateSpan(latitudeDelta: 0.04, longitudeDelta: 0.04)
                 ))
             }
         case .denied:
