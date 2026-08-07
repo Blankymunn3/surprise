@@ -105,7 +105,7 @@ struct PlasticCalendarBody: View {
                         .fill(PlasticColor.rubber)
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plasticPress)
         .accessibilityLabel(label)
     }
 
@@ -279,7 +279,7 @@ struct PlasticCalendarBody: View {
                     .frame(height: PlasticSize.button)
                     .background(Capsule().fill(PlasticColor.rubber))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plasticPress)
             .padding(PlasticSize.buttonInset)
             .raisedPlastic()
 
@@ -290,7 +290,7 @@ struct PlasticCalendarBody: View {
                     .frame(width: PlasticSize.button, height: PlasticSize.button)
                     .background(Circle().fill(PlasticColor.red))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plasticPress)
             .accessibilityLabel("사진 올리기")
             .padding(PlasticSize.buttonInset)
             .raisedPlastic()

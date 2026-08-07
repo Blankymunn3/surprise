@@ -2,7 +2,6 @@ package kr.surprise.memorymap.core.designsystem.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,6 +31,7 @@ import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
 import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
 import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
 import kr.surprise.memorymap.core.designsystem.theme.Pretendard
+import kr.surprise.memorymap.core.designsystem.theme.pressable
 import kr.surprise.memorymap.core.designsystem.theme.raisedPlastic
 
 /**
@@ -53,7 +53,7 @@ fun MemoryFab(
             .size(54.dp)
             .shadow(8.dp, MemoryShapes.Square, spotColor = MemoryColors.Ink)
             .background(MemoryColors.Accent)
-            .clickable(onClick = onClick)
+            .pressable(onClick = onClick)
             .semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center,
     ) {
@@ -83,7 +83,7 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
                     // 못 누르는 상태는 색을 죽입니다. 이 스타일에는 흐리게 하는 장치가
                     // 없어서(고무는 원래 검정), 빨강을 어두운 쪽으로 내립니다.
                     .background(if (enabled) PlasticColors.Red else PlasticColors.RedLo)
-                    .clickable(enabled = enabled, onClick = onClick),
+                    .pressable(enabled = enabled, onClick = onClick),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -102,7 +102,7 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
         modifier = modifier
             .clip(MemoryShapes.Button)
             .background(if (enabled) MemoryColors.Accent else MemoryColors.Fill)
-            .clickable(enabled = enabled, onClick = onClick)
+            .pressable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -124,7 +124,7 @@ fun SoftButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier)
                     .height(PlasticSize.Button)
                     .clip(PlasticShapes.Pill)
                     .background(PlasticColors.Rubber)
-                    .clickable(onClick = onClick),
+                    .pressable(onClick = onClick),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -144,7 +144,7 @@ fun SoftButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier)
             .clip(MemoryShapes.Button)
             .background(MemoryColors.Surface)
             .border(MemoryStroke.Border, MemoryColors.Line, MemoryShapes.Button)
-            .clickable(onClick = onClick)
+            .pressable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 13.dp),
     ) {
         Text(text, style = MemoryType.Body, color = MemoryColors.Ink)
@@ -163,7 +163,7 @@ fun FloatingIconButton(
         Box(
             Modifier
                 .matchParentSize()
-                .clickable(onClick = onClick)
+                .pressable(onClick = onClick)
                 .semantics { this.contentDescription = contentDescription },
             contentAlignment = Alignment.Center,
         ) {
@@ -185,7 +185,7 @@ fun PlainIconButton(
         modifier = modifier
             .size(38.dp)
             .clip(MemoryShapes.Pill)
-            .clickable(onClick = onClick)
+            .pressable(onClick = onClick)
             .semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center,
     ) {

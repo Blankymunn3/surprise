@@ -97,7 +97,7 @@ public struct MemoryFab: View {
                 .background(MemoryColor.accent)
                 .shadow(color: MemoryColor.ink.opacity(0.28), radius: 8, y: 4)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plasticPress)
         .accessibilityLabel(label)
     }
 }
@@ -133,7 +133,7 @@ public struct PrimaryButton: View {
                     .frame(height: PlasticSize.button)
                     .background(Capsule().fill(enabled ? PlasticColor.red : PlasticColor.redLo))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plasticPress)
             .disabled(!enabled)
             .padding(PlasticSize.buttonInset)
             .raisedPlastic()
@@ -150,7 +150,7 @@ public struct PrimaryButton: View {
                 .frame(maxWidth: .infinity)
                 .background(enabled ? MemoryColor.accent : MemoryColor.fill)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plasticPress)
             .disabled(!enabled)
         }
     }
@@ -177,7 +177,7 @@ public struct SoftButton: View {
                     .frame(height: PlasticSize.button)
                     .background(Capsule().fill(PlasticColor.rubber))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plasticPress)
             .padding(PlasticSize.buttonInset)
             .raisedPlastic()
         } else {
@@ -191,7 +191,7 @@ public struct SoftButton: View {
                     .background(MemoryColor.surface)
                     .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plasticPress)
         }
     }
 }

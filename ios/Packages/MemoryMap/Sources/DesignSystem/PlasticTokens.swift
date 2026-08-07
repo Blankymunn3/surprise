@@ -132,6 +132,46 @@ public enum PlasticSize {
     public static let grip: CGFloat = 44
 }
 
+/**
+ **누르면 내려앉습니다.**
+
+ 플라스틱 버튼에는 물결(ripple)이 없습니다 — 실제 버튼은 빛이 번지는 것이 아니라
+ 그냥 **내려갑니다.** `.buttonStyle(.plain)` 대신 이것을 씁니다.
+
+ 색을 어둡게 하지 않는 이유: 빨간 A 버튼은 이미 진한 빨강이고 고무는 검정이라
+ 더 어둡게 해도 거의 티가 안 납니다. **움직임이 훨씬 잘 읽힙니다.**
+
+ 기준 디자인에서는 아무 일도 하지 않습니다 — 그쪽은 종이와 잉크의 세계라
+ 눌러서 내려갈 두께가 없습니다. 안드로이드 `Modifier.pressable` 과 같습니다.
+ */
+public struct PlasticPressStyle: ButtonStyle {
+    public init() {}
+
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .offset(y: plasticTrial && configuration.isPressed ? pressDrop : 0)
+            // 뗄 때가 누를 때보다 조금 느립니다. 손가락이 떨어진 뒤 버튼이 올라오는 것이
+            // 눈에 보여야 "눌렀다" 가 완결됩니다.
+            .animation(
+                .easeOut(duration: configuration.isPressed ? 0.04 : 0.09),
+                value: configuration.isPressed
+            )
+    }
+}
+
+public extension ButtonStyle where Self == PlasticPressStyle {
+    /// 누르면 내려앉는 플라스틱 버튼. `.plain` 자리에 씁니다.
+    static var plasticPress: PlasticPressStyle { PlasticPressStyle() }
+}
+
+/**
+ 눌렸을 때 내려가는 깊이.
+
+ 2 면 베벨(위 2 · 아래 3)만큼이라 버튼이 제 그림자 속으로 들어가는 것처럼 보입니다.
+ 더 깊게 하면 눌린 것이 아니라 화면이 흔들린 것으로 읽힙니다.
+ */
+private let pressDrop: CGFloat = 2
+
 /// 베벨 두께. 위·왼쪽보다 아래·오른쪽을 한 겹 두껍게 해야 두께가 느껴집니다.
 private let bevelLight: CGFloat = 2
 private let bevelDark: CGFloat = 3

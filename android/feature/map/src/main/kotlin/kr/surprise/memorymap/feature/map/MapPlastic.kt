@@ -49,6 +49,7 @@ import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
 import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
 import kr.surprise.memorymap.core.designsystem.theme.Pretendard
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
+import kr.surprise.memorymap.core.designsystem.theme.pressable
 import kr.surprise.memorymap.core.designsystem.theme.raisedPlastic
 import kr.surprise.memorymap.core.designsystem.theme.sunken
 import kr.surprise.memorymap.core.model.Region
@@ -190,7 +191,7 @@ private fun CartridgeSlot(query: String, onTyped: (String) -> Unit, onClear: () 
                 text = "×",
                 style = slotStyle.copy(fontSize = 17.sp),
                 color = PlasticColors.OnPlateDim,
-                modifier = Modifier.clickable(onClick = onClear).padding(horizontal = Gap.xs),
+                modifier = Modifier.pressable(onClick = onClear).padding(horizontal = Gap.xs),
             )
         }
     }
@@ -311,7 +312,7 @@ private fun Pill(icon: ImageVector, label: String, onClick: () -> Unit) {
             .size(width = PlasticSize.PillWidth, height = PlasticSize.PillHeight)
             .clip(PlasticShapes.Pill)
             .background(PlasticColors.Rubber)
-            .clickable(onClick = onClick),
+            .pressable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Icon(icon, contentDescription = label, tint = PlasticColors.OnRubber, modifier = Modifier.size(14.dp))
@@ -326,7 +327,7 @@ private fun RedButton(icon: ImageVector, label: String, onClick: () -> Unit) {
             .size(PlasticSize.RedButton)
             .clip(PlasticShapes.Pill)
             .background(PlasticColors.Red)
-            .clickable(onClick = onClick),
+            .pressable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Icon(icon, contentDescription = label, tint = PlasticColors.OnRed, modifier = Modifier.size(18.dp))
@@ -416,7 +417,7 @@ private fun BoxScope.Arm(
     onClick: () -> Unit,
 ) {
     Box(
-        Modifier.size(arm).align(at).clickable(onClick = onClick),
+        Modifier.size(arm).align(at).pressable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Icon(icon, contentDescription = label, tint = PlasticColors.OnRubber, modifier = Modifier.size(12.dp))
@@ -483,7 +484,7 @@ private fun PlasticRegionSheet(
                     .size(PlasticSize.SheetClose)
                     .clip(PlasticShapes.Pill)
                     .background(PlasticColors.Rubber)
-                    .clickable { onIntent(MapIntent.SheetDismissed) },
+                    .pressable { onIntent(MapIntent.SheetDismissed) },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(

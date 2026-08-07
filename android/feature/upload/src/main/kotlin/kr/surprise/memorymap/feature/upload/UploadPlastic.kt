@@ -37,6 +37,7 @@ import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
 import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
 import kr.surprise.memorymap.core.designsystem.theme.Pretendard
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
+import kr.surprise.memorymap.core.designsystem.theme.pressable
 import kr.surprise.memorymap.core.designsystem.theme.raisedPlastic
 import kr.surprise.memorymap.core.designsystem.theme.sunken
 
@@ -220,7 +221,7 @@ private fun SlotField(
             .fillMaxWidth()
             .clip(PlasticShapes.Chip)
             .background(PlasticColors.Plate)
-            .clickable(onClick = onClick)
+            .pressable(onClick = onClick)
             .padding(horizontal = Gap.s, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Gap.s),
@@ -302,7 +303,7 @@ private fun FailurePlate(savedLocally: Boolean, onRetry: () -> Unit) {
                     .padding(top = Gap.xs)
                     .clip(PlasticShapes.Pill)
                     .background(PlasticColors.Rubber)
-                    .clickable(onClick = onRetry)
+                    .pressable(onClick = onRetry)
                     .padding(horizontal = Gap.m, vertical = 6.dp),
             )
         }
@@ -339,7 +340,7 @@ private fun EmptyPlate(onPickPhotos: () -> Unit) {
                 .padding(top = Gap.m)
                 .clip(PlasticShapes.Pill)
                 .background(PlasticColors.Rubber)
-                .clickable(onClick = onPickPhotos)
+                .pressable(onClick = onPickPhotos)
                 .padding(horizontal = Gap.l, vertical = Gap.s),
         )
     }
@@ -376,7 +377,7 @@ private fun Controls(
                     .height(PlasticSize.Button)
                     .clip(PlasticShapes.Pill)
                     .background(PlasticColors.Rubber)
-                    .clickable(onClick = onCancel),
+                    .pressable(onClick = onCancel),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -401,7 +402,7 @@ private fun Controls(
                     // 못 누르는 상태는 **색을 죽입니다.** 이 스타일에는 흐리게 하는
                     // 장치가 없어서(고무는 원래 검정), 빨강을 어두운 쪽으로 내립니다.
                     .background(if (canUpload) PlasticColors.Red else PlasticColors.RedLo)
-                    .clickable(enabled = canUpload, onClick = onUpload),
+                    .pressable(enabled = canUpload, onClick = onUpload),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -434,7 +435,7 @@ private fun ColumnScope.PlasticRegionPicker(state: UploadState, onIntent: (Uploa
                 .size(PlasticSize.MonthNav)
                 .clip(PlasticShapes.Knob)
                 .background(PlasticColors.Rubber)
-                .clickable { onIntent(UploadIntent.Dismissed) },
+                .pressable { onIntent(UploadIntent.Dismissed) },
             contentAlignment = Alignment.Center,
         ) {
             Text(

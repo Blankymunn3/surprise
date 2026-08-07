@@ -30,6 +30,7 @@ import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
 import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
 import kr.surprise.memorymap.core.designsystem.theme.Pretendard
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
+import kr.surprise.memorymap.core.designsystem.theme.pressable
 import kr.surprise.memorymap.core.designsystem.theme.sunken
 import kr.surprise.memorymap.core.model.MemberRole
 import kr.surprise.memorymap.core.model.SpaceKind
@@ -107,7 +108,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
                 .size(PlasticSize.SheetClose)
                 .clip(PlasticShapes.Pill)
                 .background(PlasticColors.Rubber)
-                .clickable { onIntent(SpaceMenuIntent.Dismissed) },
+                .pressable { onIntent(SpaceMenuIntent.Dismissed) },
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -192,7 +193,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
                         modifier = Modifier
                             .clip(PlasticShapes.Pill)
                             .background(PlasticColors.Rubber)
-                            .clickable { onIntent(SpaceMenuIntent.CodeCopied(code)) }
+                            .pressable { onIntent(SpaceMenuIntent.CodeCopied(code)) }
                             .padding(horizontal = Gap.m, vertical = 6.dp),
                     )
                 }

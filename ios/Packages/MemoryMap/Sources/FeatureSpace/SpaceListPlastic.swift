@@ -109,7 +109,7 @@ struct PlasticListBody: View {
                     .frame(height: PlasticSize.button)
                     .background(Capsule().fill(PlasticColor.rubber))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plasticPress)
             .padding(PlasticSize.buttonInset)
             .raisedPlastic()
 
@@ -120,7 +120,7 @@ struct PlasticListBody: View {
                     .frame(width: PlasticSize.button, height: PlasticSize.button)
                     .background(Circle().fill(PlasticColor.red))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plasticPress)
             .padding(PlasticSize.buttonInset)
             .raisedPlastic()
         }
@@ -189,7 +189,7 @@ private struct PlasticCard: View {
                 .padding(.horizontal, MemorySpace.xs)
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plasticPress)
     }
 
     @ViewBuilder

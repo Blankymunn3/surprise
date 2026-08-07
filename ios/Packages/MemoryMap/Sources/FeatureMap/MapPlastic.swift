@@ -118,7 +118,7 @@ struct PlasticMapBody: View {
                         .foregroundStyle(PlasticColor.onPlateDim)
                         .padding(.horizontal, MemorySpace.xs)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plasticPress)
                 .accessibilityLabel("지우기")
             }
         }
@@ -148,7 +148,7 @@ struct PlasticMapBody: View {
                         .padding(.horizontal, MemorySpace.m)
                         .padding(.vertical, 11)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.plasticPress)
 
                     PlasticColor.plateLo.frame(height: 1)
                 }
@@ -270,7 +270,7 @@ struct PlasticMapBody: View {
                 .frame(width: PlasticSize.pillWidth, height: PlasticSize.pillHeight)
                 .background(Capsule().fill(PlasticColor.rubber))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plasticPress)
         .accessibilityLabel(label)
     }
 
@@ -285,7 +285,7 @@ struct PlasticMapBody: View {
                 .frame(width: PlasticSize.redButton, height: PlasticSize.redButton)
                 .background(Circle().fill(PlasticColor.red))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plasticPress)
         .accessibilityLabel(label)
     }
 
@@ -340,7 +340,7 @@ struct PlasticMapBody: View {
                 .foregroundStyle(PlasticColor.onRubber)
                 .frame(width: arm, height: arm)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plasticPress)
         .accessibilityLabel(label)
         .offset(x: dx, y: dy)
     }
@@ -507,7 +507,7 @@ private struct PlasticRegionSheet: View {
                         .frame(width: PlasticSize.sheetClose, height: PlasticSize.sheetClose)
                         .background(Circle().fill(PlasticColor.rubber))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plasticPress)
                 .accessibilityLabel("닫기")
             }
 

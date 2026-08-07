@@ -170,7 +170,7 @@ struct PlasticUploadBody: View {
             .background(PlasticColor.plate)
             .clipShape(RoundedRectangle(cornerRadius: PlasticRadius.chip, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plasticPress)
     }
 
     /**
@@ -204,7 +204,7 @@ struct PlasticUploadBody: View {
                         .padding(.vertical, 6)
                         .background(Capsule().fill(PlasticColor.rubber))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plasticPress)
                 .padding(.top, MemorySpace.xs)
             }
         }
@@ -254,7 +254,7 @@ struct PlasticUploadBody: View {
                     .frame(height: PlasticSize.button)
                     .background(Capsule().fill(PlasticColor.rubber))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plasticPress)
             .padding(PlasticSize.buttonInset)
             .raisedPlastic()
 
@@ -267,7 +267,7 @@ struct PlasticUploadBody: View {
                     .frame(width: PlasticSize.button, height: PlasticSize.button)
                     .background(Circle().fill(store.state.canUpload ? PlasticColor.red : PlasticColor.redLo))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plasticPress)
             .disabled(!store.state.canUpload)
             .accessibilityLabel("올리기")
             .padding(PlasticSize.buttonInset)
@@ -315,7 +315,7 @@ struct PlasticRegionPicker: View {
                                 .fill(PlasticColor.rubber)
                         )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plasticPress)
                 .accessibilityLabel("뒤로")
 
                 Text("어디에서 찍었나요")
@@ -369,7 +369,7 @@ struct PlasticRegionPicker: View {
                             .padding(.horizontal, MemorySpace.m)
                             .padding(.vertical, 13)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.plasticPress)
 
                         PlasticColor.plateLo.frame(height: 1)
                     }

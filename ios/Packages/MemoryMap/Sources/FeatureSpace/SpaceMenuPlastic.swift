@@ -64,7 +64,7 @@ struct PlasticSpaceMenu: View {
                     .frame(width: PlasticSize.sheetClose, height: PlasticSize.sheetClose)
                     .background(Circle().fill(PlasticColor.rubber))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plasticPress)
             .accessibilityLabel("닫기")
         }
         .padding(.horizontal, MemorySpace.xs)
@@ -121,7 +121,7 @@ struct PlasticSpaceMenu: View {
                                 .padding(.vertical, 6)
                                 .background(Capsule().fill(PlasticColor.rubber))
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.plasticPress)
                     }
                 }
 
@@ -145,7 +145,7 @@ struct PlasticSpaceMenu: View {
                 .contentShape(Rectangle())
                 .padding(.vertical, MemorySpace.s)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plasticPress)
         }
         .padding(MemorySpace.s)
         .frame(maxWidth: .infinity, alignment: .leading)

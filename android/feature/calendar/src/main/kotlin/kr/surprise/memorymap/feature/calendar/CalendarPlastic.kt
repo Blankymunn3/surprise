@@ -1,7 +1,6 @@
 package kr.surprise.memorymap.feature.calendar
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -46,6 +45,7 @@ import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
 import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
 import kr.surprise.memorymap.core.designsystem.theme.Pretendard
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
+import kr.surprise.memorymap.core.designsystem.theme.pressable
 import kr.surprise.memorymap.core.designsystem.theme.raisedPlastic
 import kr.surprise.memorymap.core.designsystem.theme.sunken
 import kr.surprise.memorymap.domain.CalendarMonth
@@ -160,7 +160,7 @@ private fun MonthNav(glyph: String, onClick: () -> Unit) {
             .size(PlasticSize.MonthNav)
             .clip(PlasticShapes.Knob)
             .background(PlasticColors.Rubber)
-            .clickable(onClick = onClick),
+            .pressable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -278,7 +278,7 @@ private fun PlasticDayCell(
             .padding(1.dp)
             .clip(PlasticShapes.Chip)
             .background(if (isSelected) PlasticColors.PlateHi else PlasticColors.PlateLo)
-            .clickable(onClick = onClick)
+            .pressable(onClick = onClick)
     ) {
         cell.coverUrl?.let { url ->
             AsyncImage(
@@ -410,7 +410,7 @@ private fun Bottom(collapsed: Boolean, onToggle: () -> Unit, onAdd: () -> Unit) 
                     .height(PlasticSize.Button)
                     .clip(PlasticShapes.Pill)
                     .background(PlasticColors.Rubber)
-                    .clickable(onClick = onToggle),
+                    .pressable(onClick = onToggle),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -429,7 +429,7 @@ private fun Bottom(collapsed: Boolean, onToggle: () -> Unit, onAdd: () -> Unit) 
                     .size(PlasticSize.Button)
                     .clip(PlasticShapes.Pill)
                     .background(PlasticColors.Red)
-                    .clickable(onClick = onAdd),
+                    .pressable(onClick = onAdd),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(

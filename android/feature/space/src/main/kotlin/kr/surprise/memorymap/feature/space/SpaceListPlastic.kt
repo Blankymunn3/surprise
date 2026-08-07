@@ -1,7 +1,6 @@
 package kr.surprise.memorymap.feature.space
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +33,7 @@ import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
 import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
 import kr.surprise.memorymap.core.designsystem.theme.Pretendard
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
+import kr.surprise.memorymap.core.designsystem.theme.pressable
 import kr.surprise.memorymap.core.designsystem.theme.raisedPlastic
 import kr.surprise.memorymap.core.designsystem.theme.sunken
 import kr.surprise.memorymap.core.model.Space
@@ -149,7 +149,7 @@ private fun Stripes() {
 
 @Composable
 private fun PlasticCard(space: Space, onClick: () -> Unit) {
-    Column(Modifier.clickable(onClick = onClick)) {
+    Column(Modifier.pressable(onClick = onClick)) {
         // 하우징 — 볼록한 플라스틱. 그 안에 사진을 움푹 끼웁니다.
         Box(Modifier.fillMaxWidth().raisedPlastic(PlasticShapes.Housing).padding(PlasticSize.HousingInset)) {
             Box(
@@ -287,7 +287,7 @@ private fun Controls(onCreate: () -> Unit, onJoin: () -> Unit) {
                     .height(PlasticSize.Button)
                     .clip(PlasticShapes.Pill)
                     .background(PlasticColors.Rubber)
-                    .clickable(onClick = onJoin),
+                    .pressable(onClick = onJoin),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -310,7 +310,7 @@ private fun Controls(onCreate: () -> Unit, onJoin: () -> Unit) {
                     .size(PlasticSize.Button)
                     .clip(PlasticShapes.Pill)
                     .background(PlasticColors.Red)
-                    .clickable(onClick = onCreate),
+                    .pressable(onClick = onCreate),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
