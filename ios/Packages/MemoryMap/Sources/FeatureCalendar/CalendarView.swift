@@ -4,8 +4,20 @@ import Domain
 import Foundation
 import SwiftUI
 
-/// 요일 이름. **순서가 뜻을 가집니다** — 코드가 요일 번호로 꺼내 씁니다. 일요일부터.
-private var weekdays: [String] { (0..<7).map { localized("calendar_weekday_\($0)") } }
+/**
+ 요일 이름. **순서가 뜻을 가집니다** — 코드가 요일 번호로 꺼내 씁니다. 일요일부터.
+
+ ⚠️ **키를 보간으로 만들면 안 됩니다.** `localized("calendar_weekday_\(i)")` 는
+ `String.LocalizationValue` 를 서식 문자열로 만들어서, 찾는 키가 `calendar_weekday_%lld`
+ 같은 것이 됩니다 — 번역 파일에 그런 키가 없으니 **키를 그대로 화면에 뿌립니다.**
+ 키는 하나씩 글자 그대로 적어야 합니다.
+ */
+private let weekdayKeys: [String.LocalizationValue] = [
+    "calendar_weekday_0", "calendar_weekday_1", "calendar_weekday_2", "calendar_weekday_3",
+    "calendar_weekday_4", "calendar_weekday_5", "calendar_weekday_6",
+]
+
+private var weekdays: [String] { weekdayKeys.map { localized($0) } }
 
 /// 격자 칸 사이. 3 이면 칸끼리 붙지 않으면서도 달력이 한 덩어리로 보입니다.
 private let cellGap: CGFloat = 3

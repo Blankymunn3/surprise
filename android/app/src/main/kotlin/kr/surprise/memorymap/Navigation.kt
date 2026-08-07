@@ -345,6 +345,10 @@ private fun SpaceTabs(
             val menuState by menuVm.state.collectAsStateWithLifecycle()
 
             val renameFailed = stringResource(SpaceR.string.msg_rename_failed)
+            // 목록 화면에도 같은 이름이 있지만 **그건 다른 함수 안**입니다.
+            // 여기서 쓰려면 여기서 읽어야 합니다.
+            val clipLabel = stringResource(R.string.invite_clip_label)
+            val copiedMessage = stringResource(R.string.invite_copied)
             LaunchedEffect(menuVm) {
                 menuVm.onIntent(SpaceMenuIntent.Appeared)
                 menuVm.effect.collect { effect ->
