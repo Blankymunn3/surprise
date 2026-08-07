@@ -19,8 +19,8 @@ public struct MapView: View {
     /// 지도가 실제로 몇 점 높이인지. 시트가 덮는 만큼을 빼고 맞추려면 있어야 합니다.
     @FocusState private var searching: Bool
     /// 지역을 칠할 대표사진. 주소가 아니라 **그림 자체**가 있어야 채울 수 있어서
-    /// 미리 받아 둡니다.
-    @State private var covers: [String: Image] = [:]
+    /// 미리 받아 둡니다. 오버레이가 픽셀을 그려야 해서 `Image` 가 아니라 `CGImage` 입니다.
+    @State private var covers: [String: CGImage] = [:]
     /// 지금 지도가 보여 주고 있는 범위. 확대·축소를 여기서부터 계산합니다 —
     /// `MapCameraPosition` 은 우리가 넣은 값만 알려 주고, 손으로 옮긴 것은 모릅니다.
     @State private var visibleRegion: MKCoordinateRegion?
@@ -63,14 +63,15 @@ public struct MapView: View {
     }
 
     /// 대표사진을 한 번씩만 받아 둡니다. 이미 받은 주소는 건너뜁니다.
+    /// 혼자 쓰는 짜국은 주소가 `file://` 인데, `URLSession` 이 그것도 읽어 줍니다.
     private func loadCovers() async {
         for fill in store.state.fills where covers[fill.coverURL] == nil {
             guard let url = URL(string: fill.coverURL),
                   let (data, _) = try? await URLSession.shared.data(from: url)
             else { continue }
             #if canImport(UIKit)
-            if let image = UIImage(data: data) {
-                covers[fill.coverURL] = Image(uiImage: image)
+            if let image = UIImage(data: data)?.cgImage {
+                covers[fill.coverURL] = image
             }
             #endif
         }

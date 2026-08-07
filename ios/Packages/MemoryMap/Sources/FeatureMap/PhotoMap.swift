@@ -1,0 +1,318 @@
+import CoreModel
+import DesignSystem
+import MapKit
+import SwiftUI
+
+#if canImport(UIKit)
+import UIKit
+
+/**
+ MKMapView 로 그리는 지도.
+
+ SwiftUI `Map` 을 버린 이유: `MapPolygon` 은 **색으로만** 칠할 수 있습니다.
+ `ImagePaint` 를 줘도 조용히 무시되어, 다녀온 지역을 대표사진으로 채우는 이 앱의
+ 핵심 그림이 iOS 에서만 안 나왔습니다. MKMapView 의 오버레이 렌더러는 CGContext 를
+ 그대로 주므로 사진을 지역 모양으로 오려 그릴 수 있습니다 — 안드로이드
+ (`ImageSource` + `RasterLayer`)와 같은 그림이 됩니다.
+
+ 카메라 계약은 SwiftUI 지도와 같게 유지합니다 — `position` 은 **명령**(부모가 넣으면
+ 지도가 따라가고), `visibleRegion` 은 **보고**(지도가 실제로 보여 주는 범위)입니다.
+ 십자키·확대축소·내 위치가 전부 이 두 값으로 만들어져 있어서, 계약을 지키면
+ 그쪽 코드는 한 줄도 안 바뀝니다.
+ */
+struct PhotoMap: UIViewRepresentable {
+    @Binding var position: MapCameraPosition
+    @Binding var visibleRegion: MKCoordinateRegion?
+    let fills: [RegionFill]
+    let covers: [String: CGImage]
+    let outline: [[GeoPoint]]
+    let pins: [RegionPin]
+    let me: CLLocationCoordinate2D?
+    let onTap: (Double, Double) -> Void
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    func makeUIView(context: Context) -> MKMapView {
+        let map = MKMapView()
+        let setup = MKStandardMapConfiguration(elevationStyle: .flat)
+        setup.pointOfInterestFilter = .excludingAll
+        map.preferredConfiguration = setup
+        // 어두운 지도. 검정 판에 끼운 화면 안에서 하얀 지도가 혼자 빛나면
+        // 화면이 아니라 구멍처럼 보입니다. 앱 전체가 아니라 지도만 어둡습니다.
+        map.overrideUserInterfaceStyle = .dark
+        map.showsCompass = false
+        map.delegate = context.coordinator
+
+        let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.tapped))
+        map.addGestureRecognizer(tap)
+        return map
+    }
+
+    func updateUIView(_ map: MKMapView, context: Context) {
+        let coordinator = context.coordinator
+        coordinator.parent = self
+
+        // 카메라 명령. 마지막으로 따른 명령과 같으면 무시합니다 — `updateUIView` 는
+        // 다시 그릴 때마다 불려서, 매번 따르면 손으로 민 지도가 도로 튕겨 갑니다.
+        if let region = position.region, coordinator.lastApplied != Camera(region) {
+            coordinator.lastApplied = Camera(region)
+            coordinator.applying = true
+            map.setRegion(region, animated: true)
+        }
+
+        // 그림들. 통째로 갈아 끼웁니다 — 무엇이 바뀌었는지 견주는 것보다 서명 하나
+        // 비교가 쌉니다. 경계 점이 수천 개라 안의 값을 견주면 그게 더 비쌉니다.
+        let drawing = fills.map { "\($0.code)=\($0.coverURL):\(covers[$0.coverURL] != nil)" }
+            .joined(separator: "|") + "/outline:\(outline.count)"
+        if coordinator.drawn != drawing {
+            coordinator.drawn = drawing
+            map.removeOverlays(map.overlays)
+            for fill in fills {
+                guard let cover = covers[fill.coverURL] else { continue }
+                map.addOverlay(PhotoFill(fill: fill, image: cover), level: .aboveRoads)
+            }
+            for ring in outline {
+                var points = ring.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
+                map.addOverlay(MKPolyline(coordinates: &points, count: points.count), level: .aboveLabels)
+            }
+        }
+
+        // 딱지와 내 자리. 이것도 서명으로 비교합니다.
+        let marks = pins.map { "\($0.id):\($0.photoCount)" }.joined(separator: "|")
+            + "/me:\(me.map { "\($0.latitude),\($0.longitude)" } ?? "-")"
+        if coordinator.marked != marks {
+            coordinator.marked = marks
+            map.removeAnnotations(map.annotations)
+            for pin in pins {
+                map.addAnnotation(PinMark(pin: pin))
+            }
+            if let me {
+                map.addAnnotation(MeMark(coordinate: me))
+            }
+        }
+    }
+
+    /// 좌표 여섯 자리(cm 단위)면 "같은 명령" 을 가리기에 충분합니다.
+    /// `MKCoordinateRegion` 이 Equatable 이 아니라 직접 만듭니다.
+    struct Camera: Equatable {
+        let a: Int, b: Int, c: Int, d: Int
+        init(_ region: MKCoordinateRegion) {
+            a = Int(region.center.latitude * 1e6)
+            b = Int(region.center.longitude * 1e6)
+            c = Int(region.span.latitudeDelta * 1e6)
+            d = Int(region.span.longitudeDelta * 1e6)
+        }
+    }
+
+    final class Coordinator: NSObject, MKMapViewDelegate {
+        var parent: PhotoMap
+        var lastApplied: Camera?
+        /// 지금 움직임이 **우리 명령**인지. 아니면 사용자가 민 것이고,
+        /// 그때는 명령 기억을 지웁니다 — 지워야 같은 자리로 "다시" 보내는 명령이 통합니다.
+        var applying = false
+        var drawn = ""
+        var marked = ""
+
+        init(_ parent: PhotoMap) { self.parent = parent }
+
+        func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+            parent.visibleRegion = mapView.region
+            if applying {
+                applying = false
+            } else {
+                lastApplied = nil
+            }
+        }
+
+        func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+            if let fill = overlay as? PhotoFill {
+                return PhotoFillRenderer(fill: fill)
+            }
+            if let line = overlay as? MKPolyline {
+                let renderer = MKPolylineRenderer(polyline: line)
+                // 이 스타일에서 테두리는 컨트롤러의 빨강입니다.
+                renderer.strokeColor = UIColor(PlasticColor.red)
+                renderer.lineWidth = 3
+                return renderer
+            }
+            return MKOverlayRenderer(overlay: overlay)
+        }
+
+        func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+            if let pin = annotation as? PinMark {
+                let view = mapView.dequeueReusableAnnotationView(withIdentifier: "pin")
+                    ?? MKAnnotationView(annotation: pin, reuseIdentifier: "pin")
+                view.annotation = pin
+                // **누를 수 없습니다.** 지역을 고르는 일은 지도를 누르면 되고,
+                // 딱지를 꺼 둬야 그 자리를 눌러도 밑의 지도가 받습니다.
+                view.isEnabled = false
+                pinBadge(into: view, count: pin.pin.photoCount, name: pin.pin.region.displayName)
+                return view
+            }
+            if annotation is MeMark {
+                let view = mapView.dequeueReusableAnnotationView(withIdentifier: "me")
+                    ?? MKAnnotationView(annotation: annotation, reuseIdentifier: "me")
+                view.annotation = annotation
+                view.isEnabled = false
+                meDot(into: view)
+                return view
+            }
+            return nil
+        }
+
+        @objc func tapped(_ gesture: UITapGestureRecognizer) {
+            guard let map = gesture.view as? MKMapView else { return }
+            let coordinate = map.convert(gesture.location(in: map), toCoordinateFrom: map)
+            parent.onTap(coordinate.latitude, coordinate.longitude)
+        }
+
+        /// 지도 위의 표시 — 사진 수 딱지와 지역 이름. 어두운 지도 위라 **밝은 칩**입니다.
+        private func pinBadge(into view: MKAnnotationView, count: Int, name: String) {
+            view.subviews.forEach { $0.removeFromSuperview() }
+
+            let chip = UILabel()
+            chip.text = "\(count)"
+            chip.font = .boldSystemFont(ofSize: 11)
+            chip.textColor = UIColor(PlasticColor.plate)
+            chip.textAlignment = .center
+            chip.backgroundColor = UIColor(PlasticColor.body)
+            chip.layer.cornerRadius = 3
+            chip.clipsToBounds = true
+            chip.frame = CGRect(x: 0, y: 0, width: max(22, 10 + 8 * CGFloat("\(count)".count)), height: 16)
+
+            let label = UILabel()
+            label.text = name
+            label.font = .boldSystemFont(ofSize: 11)
+            label.textColor = UIColor(PlasticColor.body)
+            label.layer.shadowColor = UIColor.black.cgColor
+            label.layer.shadowOpacity = 0.8
+            label.layer.shadowRadius = 2
+            label.layer.shadowOffset = .zero
+            label.sizeToFit()
+
+            let width = max(chip.frame.width, label.frame.width)
+            view.frame = CGRect(x: 0, y: 0, width: width, height: 34)
+            chip.frame.origin.x = (width - chip.frame.width) / 2
+            label.frame.origin = CGPoint(x: (width - label.frame.width) / 2, y: 19)
+            view.addSubview(chip)
+            view.addSubview(label)
+        }
+
+        /// 내가 지금 있는 자리. 지역 딱지(네모)와 다르게 생겨야 해서 원이고,
+        /// 유일하게 테두리가 흰색입니다.
+        private func meDot(into view: MKAnnotationView) {
+            view.subviews.forEach { $0.removeFromSuperview() }
+            view.frame = CGRect(x: 0, y: 0, width: 16, height: 16)
+            let dot = UIView(frame: view.bounds)
+            dot.backgroundColor = UIColor(PlasticColor.red)
+            dot.layer.cornerRadius = 8
+            dot.layer.borderColor = UIColor.white.cgColor
+            dot.layer.borderWidth = 2
+            view.addSubview(dot)
+        }
+    }
+}
+
+/**
+ 사진으로 칠할 지역 하나 — 오버레이 데이터.
+
+ 경계 상자와 고리들을 **지도 점(MKMapPoint) 좌표로 미리** 바꿔 둡니다.
+ 렌더러의 `draw` 는 타일마다 불려서, 그때마다 수천 개 좌표를 바꾸면 지도가 버벅입니다.
+ */
+final class PhotoFill: NSObject, MKOverlay {
+    let image: CGImage
+    /// 고리 하나 = 지도 점 목록 하나. 첫 고리가 몸이고 그다음부터는 구멍입니다.
+    let rings: [[MKMapPoint]]
+    let boundingMapRect: MKMapRect
+
+    var coordinate: CLLocationCoordinate2D {
+        MKMapPoint(x: boundingMapRect.midX, y: boundingMapRect.midY).coordinate
+    }
+
+    init(fill: RegionFill, image: CGImage) {
+        self.image = image
+        var rings: [[MKMapPoint]] = []
+        var box = MKMapRect.null
+        for polygon in fill.polygons {
+            for ring in polygon {
+                let points = ring.map {
+                    MKMapPoint(CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude))
+                }
+                rings.append(points)
+                for point in points {
+                    box = box.union(MKMapRect(x: point.x, y: point.y, width: 0, height: 0))
+                }
+            }
+        }
+        self.rings = rings
+        self.boundingMapRect = box
+    }
+}
+
+/**
+ 대표사진 **한 장**을 지역 모양으로 오려 그립니다.
+
+ 안드로이드와 같은 규칙입니다 — 사진을 늘이지 않고 **가운데를 잘라** 경계 상자를
+ 꽉 채운 뒤, 지역 밖을 지웁니다. 구멍은 짝홀 규칙(`evenOdd`)이 알아서 뚫습니다.
+ 살짝 비치게(85%) 두는 것도 같습니다 — 완전히 덮으면 길·지명이 사라집니다.
+ */
+final class PhotoFillRenderer: MKOverlayRenderer {
+    private let fill: PhotoFill
+
+    init(fill: PhotoFill) {
+        self.fill = fill
+        super.init(overlay: fill)
+    }
+
+    override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in context: CGContext) {
+        let box = rect(for: fill.boundingMapRect)
+        guard box.width > 0, box.height > 0 else { return }
+
+        let path = CGMutablePath()
+        for ring in fill.rings {
+            guard let first = ring.first else { continue }
+            path.move(to: point(for: first))
+            for mapPoint in ring.dropFirst() {
+                path.addLine(to: point(for: mapPoint))
+            }
+            path.closeSubpath()
+        }
+
+        context.saveGState()
+        context.addPath(path)
+        context.clip(using: .evenOdd)
+        context.setAlpha(0.85)
+
+        // 가운데 자르기 — 짧은 쪽에 맞춰 키우고 넘치는 만큼은 지역 밖이라 잘려 나갑니다.
+        let scale = max(box.width / CGFloat(fill.image.width), box.height / CGFloat(fill.image.height))
+        let drawSize = CGSize(width: CGFloat(fill.image.width) * scale, height: CGFloat(fill.image.height) * scale)
+        let drawRect = CGRect(
+            x: box.midX - drawSize.width / 2,
+            y: box.midY - drawSize.height / 2,
+            width: drawSize.width,
+            height: drawSize.height
+        )
+
+        // CGContext 는 그림을 뒤집어 그립니다. 그 자리에서 위아래만 도로 뒤집습니다.
+        context.translateBy(x: 0, y: drawRect.midY * 2)
+        context.scaleBy(x: 1, y: -1)
+        context.draw(fill.image, in: drawRect)
+        context.restoreGState()
+    }
+}
+
+/// 사진 수 딱지가 붙는 자리.
+final class PinMark: NSObject, MKAnnotation {
+    let pin: RegionPin
+    var coordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
+    }
+    init(pin: RegionPin) { self.pin = pin }
+}
+
+/// 내가 지금 있는 자리.
+final class MeMark: NSObject, MKAnnotation {
+    let coordinate: CLLocationCoordinate2D
+    init(coordinate: CLLocationCoordinate2D) { self.coordinate = coordinate }
+}
+#endif

@@ -24,7 +24,8 @@ struct PlasticMapBody: View {
 
     @Binding var position: MapCameraPosition
     @Binding var visibleRegion: MKCoordinateRegion?
-    @Binding var covers: [String: Image]
+    /// 지역을 칠할 대표사진. 오버레이가 픽셀을 그려야 해서 `Image` 가 아니라 `CGImage` 입니다.
+    @Binding var covers: [String: CGImage]
     @FocusState.Binding var searching: Bool
 
     /// 못 찾았을 때 알릴 말. 화면 아래에 잠깐 뜹니다.
@@ -161,64 +162,29 @@ struct PlasticMapBody: View {
     // MARK: 지도
 
     private var map: some View {
-        MapReader { proxy in
-            Map(position: $position) {
-                // 다녀온 지역을 **그 지역의 대표사진으로** 칠합니다. 살짝 비치게 두는
-                // 이유는 기준 화면과 같습니다 — 완전히 덮으면 길·지명이 사라집니다.
-                ForEach(store.state.fills) { fill in
-                    if let image = covers[fill.coverURL] {
-                        ForEach(Array(fill.polygons.enumerated()), id: \.offset) { _, polygon in
-                            if let outer = polygon.first {
-                                MapPolygon(coordinates: outer.map {
-                                    CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
-                                })
-                                .foregroundStyle(ImagePaint(image: image, scale: 0.25).opacity(0.85))
-                            }
-                        }
-                    }
-                }
-
-                ForEach(Array(store.state.outline.enumerated()), id: \.offset) { _, ring in
-                    MapPolyline(coordinates: ring.map {
-                        CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
-                    })
-                    // 이 스타일에서 테두리는 컨트롤러의 빨강입니다.
-                    .stroke(PlasticColor.red, lineWidth: 3)
-                }
-
-                ForEach(store.state.pins) { pin in
-                    Annotation(
-                        pin.region.displayName,
-                        coordinate: .init(latitude: pin.latitude, longitude: pin.longitude)
-                    ) {
-                        PlasticPinBadge(count: pin.photoCount)
-                    }
-                }
-
-                // **내가 지금 있는 자리.** 찾은 뒤에도 남습니다 — 지도를 밀고 나서
-                // 다시 찾아갈 수 있어야 합니다. 지역 딱지(네모)와 다르게 생겨야 해서
-                // 원이고, 유일하게 테두리가 흰색입니다.
-                if let me {
-                    Annotation(localized("map_my_location"), coordinate: me) { MyLocationDot() }
-                }
-            }
-            .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
-            // **어두운 지도.** MapKit 은 주변 색 구성을 따라가므로 지도에만 어둡다고
-            // 일러 줍니다. 검정 판에 끼운 화면 안에서 하얀 지도가 혼자 빛나면
-            // 화면이 아니라 구멍처럼 보입니다.
-            //
-            // 앱 전체를 어둡게 하는 것이 아닙니다 — 몸통은 그대로 회색 플라스틱입니다.
-            // 안드로이드는 타일이 그림이라 밝기를 뒤집어 같은 결과를 냅니다(`OsmStyle`).
-            .environment(\.colorScheme, .dark)
-            .onMapCameraChange(frequency: .onEnd) { context in
-                visibleRegion = context.region
-            }
-            .onTapGesture { point in
+        // SwiftUI `Map` 이 아니라 MKMapView(`PhotoMap`)입니다 — 다녀온 지역을
+        // **대표사진 한 장으로** 칠하려면 오버레이에 그림을 그릴 수 있어야 하는데,
+        // SwiftUI 의 `MapPolygon` 은 색밖에 못 칠합니다. 어두운 지도·탭·딱지·내 자리도
+        // 전부 그 안에 있습니다.
+        #if canImport(UIKit)
+        PhotoMap(
+            position: $position,
+            visibleRegion: $visibleRegion,
+            fills: store.state.fills,
+            covers: covers,
+            outline: store.state.outline,
+            pins: store.state.pins,
+            me: me,
+            onTap: { latitude, longitude in
                 searching = false
-                guard let coordinate = proxy.convert(point, from: .local) else { return }
-                Task { await store.tapMap(latitude: coordinate.latitude, longitude: coordinate.longitude) }
+                Task { await store.tapMap(latitude: latitude, longitude: longitude) }
             }
-        }
+        )
+        #else
+        // macOS 는 컴파일만 합니다(`swift build` 검증용). UIViewRepresentable 이 없어
+        // 지도 대신 검정 판을 둡니다 — 앱은 iOS 로만 나갑니다.
+        PlasticColor.plate
+        #endif
     }
 
     // MARK: 조작부
@@ -443,28 +409,6 @@ struct PlasticMapBody: View {
  */
 private let meSpan = 0.04
 
-/**
- 지도에 찍는 내 자리 — 점 하나와 그것을 감싸는 옅은 원.
-
- 지역 딱지(사진 수를 적은 네모)와 **다르게 생겨야 합니다.** 그건 "사진이 있는 곳" 이고
- 이건 "나" 라서, 같은 모양이면 다녀온 지역이 하나 더 있는 것으로 읽힙니다.
- 안드로이드 `drawMyLocation` 과 같은 값(6·20·흰 테두리 2)입니다.
- */
-struct MyLocationDot: View {
-    var body: some View {
-        Circle()
-            .fill(MemoryColor.accent.opacity(0.18))
-            .frame(width: 40, height: 40)
-            .overlay {
-                Circle()
-                    .fill(MemoryColor.accent)
-                    .frame(width: 12, height: 12)
-                    .overlay(Circle().strokeBorder(.white, lineWidth: 2))
-            }
-            .allowsHitTesting(false)
-    }
-}
-
 /// 십자키 좌·우 한 번에 미는 폭. 보이는 넓이의 1/3 이면 밀린 것이 보이면서도 길을 잃지 않습니다.
 private let panStep: Double = 0.33
 
@@ -473,26 +417,6 @@ private let panStep: Double = 0.33
 /// 안드로이드 아이콘(5.5→18.5, 굵기 2)과 같은 비율입니다.
 private let glyphBar: CGFloat = 13
 private let glyphThick: CGFloat = 2
-
-/**
- 지도 위의 표시 — 사진 수만 적은 작은 딱지입니다. 기준 화면의 `PinBadge` 와 같은
- 규칙이고 색만 이 스타일의 것입니다. **누를 수 없습니다** — 지역을 고르는 일은
- 지도를 누르면 됩니다.
- */
-private struct PlasticPinBadge: View {
-    let count: Int
-
-    var body: some View {
-        // 어두운 지도 위라 **밝은 칩**입니다. 검정 딱지는 어두운 지도에 묻힙니다.
-        Text("\(count)")
-            .font(MemoryFont.font(11, .bold))
-            .foregroundStyle(PlasticColor.plate)
-            .frame(width: 22, height: 16)
-            .background(PlasticColor.body)
-            .clipShape(RoundedRectangle(cornerRadius: PlasticRadius.chip, style: .continuous))
-            .allowsHitTesting(false)
-    }
-}
 
 /**
  지역 시트 — 끼운 화면 **안에서** 아래부터 올라오는 검정 판.
