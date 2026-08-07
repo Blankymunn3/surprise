@@ -76,3 +76,10 @@
 "menu_rename_placeholder" = "예) 우리 여름";
 "menu_rename_confirm" = "바꾸기";
 "menu_rename_working" = "바꾸는 중…";
+
+/* 패미컴 목록은 검정 판이 좁아 **짧게** 씁니다. */
+"list_failed_short" = "목록을 불러오지 못했어요";
+"list_empty_hint" = "아래 빨간 버튼으로 하나 만들어 보세요.";
+"card_meta_short_empty" = "아직 비어 있어요";
+"card_meta_short" = "%1$lld · %2$lld곳";
+"card_meta_short_dated" = "%1$lld · %2$lld곳 · %3$lld.%4$lld";

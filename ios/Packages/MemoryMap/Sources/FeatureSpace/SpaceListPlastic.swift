@@ -44,9 +44,9 @@ struct PlasticListBody: View {
     private var plate: some View {
         switch store.state.spaces {
         case .loading:
-            plateHint("불러오는 중이에요")
+            plateHint(localized("list_loading"))
         case .failed:
-            plateHint("목록을 불러오지 못했어요")
+            plateHint(localized("list_failed_short"))
         case .ready(let items):
             if items.isEmpty {
                 plateEmpty
@@ -66,7 +66,7 @@ struct PlasticListBody: View {
     /// 로고 자리. 기울임은 쓰지 않습니다 — Pretendard 에 진짜 이탤릭이 없어 흉내만 나옵니다.
     private var brand: some View {
         HStack(alignment: .lastTextBaseline, spacing: 0) {
-            Text("짜국")
+            Text(localized("list_title"))
                 .font(MemoryFont.font(25, .bold))
                 .tracking(-0.5)
                 .foregroundStyle(PlasticColor.red)
@@ -102,7 +102,7 @@ struct PlasticListBody: View {
     private var controls: some View {
         HStack(spacing: MemorySpace.m) {
             Button { Task { await store.send(.joinTapped) } } label: {
-                Text("초대 코드로 참여")
+                Text(localized("list_join"))
                     .font(MemoryFont.font(15, .bold))
                     .foregroundStyle(PlasticColor.onRubber)
                     .frame(maxWidth: .infinity)
@@ -140,11 +140,11 @@ struct PlasticListBody: View {
             PhotoFramesScene()
                 .aspectRatio(PhotoFramesScene.ratio, contentMode: .fit)
                 .frame(maxWidth: 130)
-            Text("아직 짜국이 없어요")
+            Text(localized("list_empty_title"))
                 .font(MemoryFont.font(17, .bold))
                 .foregroundStyle(PlasticColor.onPlate)
                 .padding(.top, MemorySpace.l)
-            Text("아래 빨간 버튼으로 하나 만들어 보세요.")
+            Text(localized("list_empty_hint"))
                 .font(MemoryFont.font(12.5, .regular))
                 .foregroundStyle(PlasticColor.onPlateDim)
                 .padding(.top, MemorySpace.s)
@@ -202,7 +202,7 @@ private struct PlasticCard: View {
     }
 
     private var onlyHere: some View {
-        Text("이 폰에만")
+        Text(SharedText.onlyOnThisPhone)
             .font(MemoryFont.font(11, .bold))
             .tracking(0.4)
             .foregroundStyle(PlasticColor.plate)
@@ -239,9 +239,13 @@ private struct PlasticCard: View {
 
     /// "13 · 8곳 · 7.27" — 몰드된 라벨처럼 짧게 끊습니다.
     private var metaShort: String {
-        guard space.photoCount > 0 else { return "아직 비어 있어요" }
-        var parts = ["\(space.photoCount)", "\(space.regionCount)곳"]
-        if let last = space.lastPhotoOn { parts.append("\(last.month).\(last.day)") }
-        return parts.joined(separator: " · ")
+        guard space.photoCount > 0 else { return localized("card_meta_short_empty") }
+        guard let last = space.lastPhotoOn else {
+            return localized("card_meta_short", space.photoCount, space.regionCount)
+        }
+        return localized(
+            "card_meta_short_dated",
+            space.photoCount, space.regionCount, last.month, last.day
+        )
     }
 }

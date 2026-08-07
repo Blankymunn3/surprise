@@ -83,12 +83,12 @@ struct PlasticCalendarBody: View {
      */
     private var monthBar: some View {
         HStack(spacing: MemorySpace.s) {
-            Text("\(String(store.state.year))년 \(store.state.month)월")
+            Text(localized("calendar_month", store.state.year, store.state.month))
                 .font(MemoryFont.font(17, .bold))
                 .foregroundStyle(PlasticColor.ink)
             Spacer(minLength: 0)
-            monthNav("‹", "이전 달") { store.move(by: -1) }
-            monthNav("›", "다음 달") { store.move(by: 1) }
+            monthNav("‹", localized("calendar_previous_month")) { store.move(by: -1) }
+            monthNav("›", localized("calendar_next_month")) { store.move(by: 1) }
         }
         .padding(.horizontal, MemorySpace.xs)
         .padding(.vertical, MemorySpace.s)
@@ -229,10 +229,10 @@ struct PlasticCalendarBody: View {
 
             VStack(alignment: .leading, spacing: MemorySpace.xs) {
                 HStack(alignment: .lastTextBaseline, spacing: MemorySpace.s) {
-                    Text("\(group.date.month)월 \(group.date.day)일")
+                    Text(localized("calendar_day_header", group.date.month, group.date.day))
                         .font(MemoryFont.font(15, .bold))
                         .foregroundStyle(PlasticColor.onPlate)
-                    Text([group.placeName, "\(group.photos.count)장"]
+                    Text([group.placeName, localized("calendar_photo_count", group.photos.count)]
                         .compactMap { $0 }.joined(separator: " · "))
                         .font(MemoryFont.font(11, .semibold))
                         .foregroundStyle(PlasticColor.onPlateDim)
@@ -252,7 +252,7 @@ struct PlasticCalendarBody: View {
             PhotoFramesScene()
                 .aspectRatio(PhotoFramesScene.ratio, contentMode: .fit)
                 .frame(maxWidth: 130)
-            Text("이 달엔 아직 사진이 없어요")
+            Text(localized("calendar_empty"))
                 .font(MemoryFont.font(17, .bold))
                 .foregroundStyle(PlasticColor.onPlate)
                 .padding(.top, MemorySpace.m)
@@ -272,7 +272,7 @@ struct PlasticCalendarBody: View {
     private var bottom: some View {
         HStack(spacing: MemorySpace.m) {
             Button { store.toggleCollapse() } label: {
-                Text(store.state.collapsed ? "달력 펴기" : "달력 접기")
+                Text(localized(store.state.collapsed ? "calendar_expand" : "calendar_collapse"))
                     .font(MemoryFont.font(15, .bold))
                     .foregroundStyle(PlasticColor.onRubber)
                     .frame(maxWidth: .infinity)
@@ -291,7 +291,7 @@ struct PlasticCalendarBody: View {
                     .background(Circle().fill(PlasticColor.red))
             }
             .buttonStyle(.plasticPress)
-            .accessibilityLabel("사진 올리기")
+            .accessibilityLabel(localized("calendar_add_photo"))
             .padding(PlasticSize.buttonInset)
             .raisedPlastic()
         }

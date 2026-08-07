@@ -102,7 +102,7 @@ struct PlasticMapBody: View {
                     get: { store.state.query },
                     set: { value in Task { await store.search(value) } }
                 ),
-                prompt: Text("지역 검색 — 강릉, 제주…")
+                prompt: Text(localized("map_search_placeholder"))
                     .foregroundStyle(PlasticColor.onPlateDim)
             )
             .textFieldStyle(.plain)
@@ -119,7 +119,7 @@ struct PlasticMapBody: View {
                         .padding(.horizontal, MemorySpace.xs)
                 }
                 .buttonStyle(.plasticPress)
-                .accessibilityLabel("지우기")
+                .accessibilityLabel(localized("map_search_clear"))
             }
         }
         .padding(.horizontal, MemorySpace.m)
@@ -200,7 +200,7 @@ struct PlasticMapBody: View {
                 // 다시 찾아갈 수 있어야 합니다. 지역 딱지(네모)와 다르게 생겨야 해서
                 // 원이고, 유일하게 테두리가 흰색입니다.
                 if let me {
-                    Annotation("내 위치", coordinate: me) { MyLocationDot() }
+                    Annotation(localized("map_my_location"), coordinate: me) { MyLocationDot() }
                 }
             }
             .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
@@ -247,8 +247,8 @@ struct PlasticMapBody: View {
 
             // 가운데 고무 알약 둘 — 실물의 SELECT · START 자리입니다. 그 글자는 안 씁니다.
             HStack(spacing: MemorySpace.xs) {
-                pill(plus: false, "축소") { nudgeZoom(by: 2) }
-                pill(plus: true, "확대") { nudgeZoom(by: 0.5) }
+                pill(plus: false, localized("map_zoom_out")) { nudgeZoom(by: 2) }
+                pill(plus: true, localized("map_zoom_in")) { nudgeZoom(by: 0.5) }
             }
             .padding(PlasticSize.buttonInset)
             .raisedPlastic()
@@ -258,8 +258,8 @@ struct PlasticMapBody: View {
             // B · A — 실물처럼 B 가 왼쪽입니다. 자주 쓰는 쪽(올리기)이 A 인 것도 실물과
             // 같습니다: 오른쪽 끝 버튼이 엄지가 가장 편히 닿는 자리입니다.
             HStack(spacing: MemorySpace.s) {
-                redButton("location", "내 위치") { Task { await goToMyLocation() } }
-                redButton("plus", "사진 올리기") { onAddPhoto(nil) }
+                redButton("location", localized("map_my_location")) { Task { await goToMyLocation() } }
+                redButton("plus", localized("map_add_photo")) { onAddPhoto(nil) }
             }
             .padding(PlasticSize.buttonInset)
             .raisedPlastic()
@@ -330,10 +330,10 @@ struct PlasticMapBody: View {
                 .fill(PlasticColor.rubber)
                 .frame(width: PlasticSize.cross, height: arm)
 
-            arrow("chevron.up", "위로", dx: 0, dy: -arm) { pan(dx: 0, dy: -panStep) }
-            arrow("chevron.down", "아래로", dx: 0, dy: arm) { pan(dx: 0, dy: panStep) }
-            arrow("chevron.left", "왼쪽으로", dx: -arm, dy: 0) { pan(dx: -panStep, dy: 0) }
-            arrow("chevron.right", "오른쪽으로", dx: arm, dy: 0) { pan(dx: panStep, dy: 0) }
+            arrow("chevron.up", localized("map_pad_up"), dx: 0, dy: -arm) { pan(dx: 0, dy: -panStep) }
+            arrow("chevron.down", localized("map_pad_down"), dx: 0, dy: arm) { pan(dx: 0, dy: panStep) }
+            arrow("chevron.left", localized("map_pad_left"), dx: -arm, dy: 0) { pan(dx: -panStep, dy: 0) }
+            arrow("chevron.right", localized("map_pad_right"), dx: arm, dy: 0) { pan(dx: panStep, dy: 0) }
 
             // 가운데의 오목한 원. 실물의 그 원이고, 누르는 곳은 아닙니다.
             Circle()
@@ -418,11 +418,11 @@ struct PlasticMapBody: View {
                 ))
             }
         case .denied:
-            await say("설정에서 위치를 켜 주면 지금 자리로 옮겨 드려요.")
+            await say(localized("map_location_denied"))
         case .off:
-            await say("위치 기능이 꺼져 있어요.")
+            await say(localized("map_location_off"))
         case .notFound:
-            await say("지금 자리를 찾지 못했어요. 잠시 뒤에 다시 눌러 주세요.")
+            await say(localized("map_location_not_found"))
         }
     }
 
@@ -521,7 +521,7 @@ private struct PlasticRegionSheet: View {
                                 .foregroundStyle(PlasticColor.onPlateDim)
                         }
                     }
-                    Text("사진 \(sheet.photos.count)장 · 누르면 대표사진이 돼요")
+                    Text(localized("map_sheet_count_and_hint", sheet.photos.count))
                         .font(MemoryFont.font(11, .semibold))
                         .foregroundStyle(PlasticColor.onPlateDim)
                 }
@@ -536,7 +536,7 @@ private struct PlasticRegionSheet: View {
                         .background(Circle().fill(PlasticColor.rubber))
                 }
                 .buttonStyle(.plasticPress)
-                .accessibilityLabel("닫기")
+                .accessibilityLabel(localized("map_sheet_close"))
             }
 
             Spacer().frame(height: MemorySpace.m)

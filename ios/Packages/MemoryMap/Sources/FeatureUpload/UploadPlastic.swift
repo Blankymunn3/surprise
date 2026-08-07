@@ -82,12 +82,12 @@ struct PlasticUploadBody: View {
 
     private var header: some View {
         HStack {
-            Text("사진 올리기")
+            Text(localized("upload_title"))
                 .font(MemoryFont.font(17, .bold))
                 .foregroundStyle(PlasticColor.ink)
             Spacer(minLength: 0)
             if !store.state.items.isEmpty {
-                Text("\(store.state.items.count)장")
+                Text(localized("upload_count", store.state.items.count))
                     .font(MemoryFont.font(11, .bold))
                     .tracking(0.8)
                     .foregroundStyle(PlasticColor.trimLo)
@@ -112,15 +112,15 @@ struct PlasticUploadBody: View {
 
             VStack(alignment: .leading, spacing: MemorySpace.xs) {
                 slotField(
-                    label: "어디",
-                    value: item.region?.displayName ?? "고르기",
+                    label: localized("upload_field_where"),
+                    value: item.region?.displayName ?? localized("upload_field_pick"),
                     dimmed: item.region == nil,
                     auto: item.regionAuto
                 ) { store.startPickingRegion(item.uri) }
 
                 slotField(
-                    label: "언제",
-                    value: "\(item.takenOn.month)월 \(item.takenOn.day)일",
+                    label: localized("upload_field_when"),
+                    value: localized("upload_date", item.takenOn.month, item.takenOn.day),
                     dimmed: false,
                     auto: item.dateAuto
                 ) { onPickDate(item.uri) }
@@ -161,7 +161,7 @@ struct PlasticUploadBody: View {
                 Spacer(minLength: 0)
 
                 if auto {
-                    Text("자동")
+                    Text(localized("upload_auto_badge"))
                         .font(MemoryFont.font(11, .semibold))
                         .foregroundStyle(PlasticColor.onPlateDim)
                 }
@@ -186,19 +186,17 @@ struct PlasticUploadBody: View {
             Rectangle().fill(PlasticColor.red).frame(width: 3)
 
             VStack(alignment: .leading, spacing: 0) {
-                Text("지금은 올릴 수 없어요")
+                Text(localized("upload_failed_title"))
                     .font(MemoryFont.font(13.5, .bold))
                     .foregroundStyle(PlasticColor.redHi)
 
-                Text(savedLocally
-                     ? "사진은 폰에 저장해 뒀어요. 연결되면 다시 시도해 주세요."
-                     : "잠시 뒤에 다시 시도해 주세요.")
+                Text(localized(savedLocally ? "upload_failed_kept" : "upload_failed_plain"))
                     .font(MemoryFont.font(11, .semibold))
                     .foregroundStyle(PlasticColor.onPlateDim)
                     .padding(.top, 2)
 
                 Button { store.retry() } label: {
-                    Text("다시 시도")
+                    Text(localized("upload_retry"))
                         .font(MemoryFont.font(11, .bold))
                         .foregroundStyle(PlasticColor.onRubber)
                         .padding(.horizontal, MemorySpace.m)
@@ -214,17 +212,17 @@ struct PlasticUploadBody: View {
 
     private var emptyPlate: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("올릴 사진을 골라 주세요")
+            Text(localized("upload_empty_title"))
                 .font(MemoryFont.font(17, .bold))
                 .foregroundStyle(PlasticColor.onPlate)
 
-            Text("지역·날짜는 사진에서 자동으로 읽어요. 눌러서 고칠 수 있어요.")
+            Text(localized("upload_empty_hint"))
                 .font(MemoryFont.font(11, .semibold))
                 .foregroundStyle(PlasticColor.onPlateDim)
                 .padding(.top, MemorySpace.xs)
 
             PhotosPicker(selection: $picked, matching: .images) {
-                Text("사진 고르기")
+                Text(localized("upload_empty_pick"))
                     .font(MemoryFont.font(13.5, .bold))
                     .foregroundStyle(PlasticColor.onRubber)
                     .padding(.horizontal, MemorySpace.l)
@@ -248,7 +246,7 @@ struct PlasticUploadBody: View {
     private var controls: some View {
         HStack(spacing: MemorySpace.m) {
             Button(action: onClose) {
-                Text(workingLabel ?? "취소")
+                Text(workingLabel ?? localized("upload_cancel"))
                     .font(MemoryFont.font(15, .bold))
                     .foregroundStyle(PlasticColor.onRubber)
                     .frame(maxWidth: .infinity)
@@ -268,7 +266,7 @@ struct PlasticUploadBody: View {
             }
             .buttonStyle(.plasticPress)
             .disabled(!store.state.canUpload)
-            .accessibilityLabel("올리기")
+            .accessibilityLabel(localized("upload_confirm_short"))
             .padding(PlasticSize.buttonInset)
             .raisedPlastic()
         }
@@ -278,8 +276,8 @@ struct PlasticUploadBody: View {
 
     private var workingLabel: String? {
         switch store.state.step {
-        case .uploading: return "올리는 중…"
-        case .reading: return "읽는 중…"
+        case .uploading: return localized("upload_uploading")
+        case .reading: return localized("upload_reading_short")
         default: return nil
         }
     }
@@ -317,9 +315,9 @@ struct PlasticRegionPicker: View {
                         )
                 }
                 .buttonStyle(.plasticPress)
-                .accessibilityLabel("뒤로")
+                .accessibilityLabel(localized("upload_region_back"))
 
-                Text("어디에서 찍었나요")
+                Text(localized("upload_region_title"))
                     .font(MemoryFont.font(17, .bold))
                     .foregroundStyle(PlasticColor.ink)
                 Spacer(minLength: 0)
@@ -338,7 +336,7 @@ struct PlasticRegionPicker: View {
                         get: { store.state.regionQuery },
                         set: { value in Task { await store.search(value) } }
                     ),
-                    prompt: Text("지역 검색 — 강릉, 제주…")
+                    prompt: Text(localized("upload_region_placeholder"))
                         .foregroundStyle(PlasticColor.onPlateDim)
                 )
                 .textFieldStyle(.plain)
