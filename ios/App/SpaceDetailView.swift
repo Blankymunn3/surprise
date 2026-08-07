@@ -40,15 +40,8 @@ struct SpaceDetailView: View {
         // 시작하니, 러시아처럼 위로 긴 나라가 검색칸 뒤로 숨을 자리 자체가 없습니다.
         VStack(spacing: 0) {
             topBar
-            // 패미컴 스타일에서는 탭도 몸통 위의 고무 스위치입니다.
-            if plasticTrial {
-                plasticTabs
-            } else {
-                Segmented(options: SharedText.spaceTabs, selection: $tab)
-                    .padding(.horizontal, MemorySpace.xl)
-                    .padding(.top, 2)
-                    .padding(.bottom, 10)
-            }
+            // 탭은 몸통 위의 고무 스위치입니다.
+            plasticTabs
 
             // 탭도 옆으로 밀립니다. 누른 쪽으로 미끄러져야 어느 쪽으로 옮겼는지 보입니다.
             Group {
@@ -66,7 +59,7 @@ struct SpaceDetailView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .animation(.easeInOut(duration: 0.3), value: tab)
         }
-        .background(plasticTrial ? PlasticColor.body : MemoryColor.paper)
+        .background(PlasticColor.body)
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
         // 아래에서 올라오는 시트입니다. 높이는 **내용에 맞춰 잽니다** — 만들기·참여·
@@ -122,18 +115,9 @@ struct SpaceDetailView: View {
 
     @ViewBuilder
     private var calendarTab: some View {
-        // 패미컴 스타일에서는 ＋ 가 떠 있지 않고 **달력 안쪽 조작부**에 앉습니다.
+        // ＋ 는 떠 있지 않고 **달력 안쪽 조작부**에 앉습니다.
         // 몸통 위에 버튼이 다 모여 있는데 하나만 화면 위에 떠 있으면 어긋납니다.
-        if plasticTrial {
-            CalendarView(store: calendar, onAddPhoto: openUpload)
-        } else {
-            CalendarView(store: calendar)
-                .overlay(alignment: .bottomTrailing) {
-                    MemoryFab(action: openUpload)
-                        .padding(.trailing, 14)
-                        .padding(.bottom, 18)
-                }
-        }
+        CalendarView(store: calendar, onAddPhoto: openUpload)
     }
 
     /**
@@ -181,7 +165,7 @@ struct SpaceDetailView: View {
             Text(name)
                 .memoryTitle()
                 // 몸통 위의 글자는 잉크가 아니라 플라스틱에 새긴 검정입니다.
-                .foregroundStyle(plasticTrial ? PlasticColor.ink : MemoryColor.ink)
+                .foregroundStyle(PlasticColor.ink)
                 .lineLimit(1)
                 .truncationMode(.tail)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -189,27 +173,15 @@ struct SpaceDetailView: View {
             if kind == .personal {
                 // 이 딱지는 몸통 위에서 **파인 자리**로 그립니다. 흰 면에 잉크 선은
                 // 플라스틱 위에서 종이를 붙인 것처럼 떠 보입니다.
-                if plasticTrial {
-                    Text(SharedText.onlyOnThisPhone)
-                        .font(MemoryFont.font(11, .bold))
-                        .foregroundStyle(PlasticColor.onPlateDim)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background(
-                            RoundedRectangle(cornerRadius: PlasticRadius.chip, style: .continuous)
-                                .fill(PlasticColor.plate)
-                        )
-                } else {
-                    Text(SharedText.onlyOnThisPhone)
-                        .memoryMicro()
-                        .foregroundStyle(MemoryColor.ink)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 2)
-                        .background(MemoryColor.surface)
-                        .overlay(
-                            Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border)
-                        )
-                }
+                Text(SharedText.onlyOnThisPhone)
+                    .font(MemoryFont.font(11, .bold))
+                    .foregroundStyle(PlasticColor.onPlateDim)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(
+                        RoundedRectangle(cornerRadius: PlasticRadius.chip, style: .continuous)
+                            .fill(PlasticColor.plate)
+                    )
             }
 
             barButton("ellipsis", label: SharedText.more) { menuOpen = true }
