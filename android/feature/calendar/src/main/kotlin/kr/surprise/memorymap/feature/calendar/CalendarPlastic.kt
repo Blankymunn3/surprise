@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -141,7 +142,7 @@ private fun MonthBar(state: CalendarState, onIntent: (CalendarIntent) -> Unit) {
     ) {
         // 연·월을 한 덩어리로. 지난 해를 넘겨 볼 때는 연도가 더 중요합니다.
         Text(
-            text = "${state.month.year}년 ${state.month.monthValue}월",
+            text = stringResource(R.string.calendar_month, state.month.year, state.month.monthValue),
             fontFamily = Pretendard,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
@@ -331,15 +332,22 @@ private fun PlasticDaySection(
                 horizontalArrangement = Arrangement.spacedBy(Gap.s),
             ) {
                 Text(
-                    text = "${group.date.monthValue}월 ${group.date.dayOfMonth}일 " +
+                    text = stringResource(
+                        R.string.calendar_day_header,
+                        group.date.monthValue,
+                        group.date.dayOfMonth,
                         weekdays()[group.date.dayOfWeek.value % 7],
+                    ),
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = PlasticColors.OnPlate,
                 )
                 Text(
-                    text = listOfNotNull(group.placeName, "${group.photos.size}장").joinToString(" · "),
+                    text = listOfNotNull(
+                        group.placeName,
+                        stringResource(R.string.calendar_photo_count, group.photos.size),
+                    ).joinToString(" · "),
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 11.sp,
@@ -357,7 +365,7 @@ private fun PlasticDaySection(
                     PhotoThumb(
                         url = photo.downloadUrl,
                         isCover = photo.id == group.coverId,
-                        contentDescription = "${group.date} 사진",
+                        contentDescription = stringResource(R.string.calendar_photo_description, group.date.toString()),
                         onClick = { onIntent(CalendarIntent.PhotoLongPressed(group.date, photo.id)) },
                         modifier = Modifier.size(PlasticSize.CalendarPhoto),
                     )
@@ -376,7 +384,7 @@ private fun EmptyPlate() {
         PhotoFramesScene(Modifier.fillMaxWidth(0.42f).aspectRatio(FRAMES_RATIO))
         Spacer(Modifier.height(Gap.m))
         Text(
-            text = "이 달엔 아직 사진이 없어요",
+            text = stringResource(R.string.calendar_empty),
             fontFamily = Pretendard,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
@@ -414,7 +422,7 @@ private fun Bottom(collapsed: Boolean, onToggle: () -> Unit, onAdd: () -> Unit) 
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = if (collapsed) "달력 펴기" else "달력 접기",
+                    text = stringResource(if (collapsed) R.string.calendar_expand else R.string.calendar_collapse),
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,

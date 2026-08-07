@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -180,7 +181,7 @@ private fun CartridgeSlot(query: String, onTyped: (String) -> Unit, onClear: () 
         )
         Box(Modifier.weight(1f)) {
             if (query.isEmpty()) {
-                Text("지역 검색 — 강릉, 제주…", style = slotStyle, color = PlasticColors.OnPlateDim)
+                Text(stringResource(R.string.map_search_placeholder), style = slotStyle, color = PlasticColors.OnPlateDim)
             }
             BasicTextField(
                 value = query,
@@ -291,8 +292,8 @@ private fun Pad(
         // 가운데 고무 알약 둘 — 실물의 SELECT · START 자리입니다. 그 글자는 안 씁니다.
         Box(Modifier.raisedPlastic(PlasticShapes.Housing).padding(PlasticSize.ButtonInset)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Gap.xs)) {
-                Pill(MemoryIcons.Minus, "축소", onZoomOut)
-                Pill(MemoryIcons.Plus, "확대", onZoomIn)
+                Pill(MemoryIcons.Minus, stringResource(R.string.map_zoom_out), onZoomOut)
+                Pill(MemoryIcons.Plus, stringResource(R.string.map_zoom_in), onZoomIn)
             }
         }
 
@@ -302,8 +303,8 @@ private fun Pad(
         // 오른쪽 끝 버튼이 엄지가 가장 편히 닿는 자리입니다.
         Box(Modifier.raisedPlastic(PlasticShapes.Housing).padding(PlasticSize.ButtonInset)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Gap.s)) {
-                RedButton(MemoryIcons.MyLocation, "내 위치", onMyLocation)
-                RedButton(MemoryIcons.Plus, "사진 올리기", onAdd)
+                RedButton(MemoryIcons.MyLocation, stringResource(R.string.map_my_location), onMyLocation)
+                RedButton(MemoryIcons.Plus, stringResource(R.string.map_add_photo), onAdd)
             }
         }
     }
@@ -389,10 +390,10 @@ private fun DPadFace(
         )
 
         // 누르는 자리. 십자 밖(모서리)에는 아무것도 두지 않습니다.
-        Arm(Alignment.TopCenter, arm, MemoryIcons.ChevronUp, "위로", onUp)
-        Arm(Alignment.BottomCenter, arm, MemoryIcons.ChevronDown, "아래로", onDown)
-        Arm(Alignment.CenterStart, arm, MemoryIcons.ChevronLeft, "왼쪽으로", onLeft)
-        Arm(Alignment.CenterEnd, arm, MemoryIcons.ChevronRight, "오른쪽으로", onRight)
+        Arm(Alignment.TopCenter, arm, MemoryIcons.ChevronUp, stringResource(R.string.map_pad_up), onUp)
+        Arm(Alignment.BottomCenter, arm, MemoryIcons.ChevronDown, stringResource(R.string.map_pad_down), onDown)
+        Arm(Alignment.CenterStart, arm, MemoryIcons.ChevronLeft, stringResource(R.string.map_pad_left), onLeft)
+        Arm(Alignment.CenterEnd, arm, MemoryIcons.ChevronRight, stringResource(R.string.map_pad_right), onRight)
 
         // 가운데의 오목한 원. 실물의 그 원이고, 누르는 곳은 아닙니다.
         Box(
@@ -498,7 +499,7 @@ private fun PlasticRegionSheet(
                     }
                 }
                 Text(
-                    text = "사진 ${sheet.photos.size}장 · 누르면 대표사진이 돼요",
+                    text = stringResource(R.string.map_sheet_count_and_hint, sheet.photos.size),
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 11.sp,
@@ -534,7 +535,7 @@ private fun PlasticRegionSheet(
                     url = photo.downloadUrl,
                     isCover = photo.id == sheet.coverId,
                     dateLabel = "${photo.takenOn.monthValue}.${photo.takenOn.dayOfMonth}",
-                    contentDescription = "${sheet.region.displayName} 사진",
+                    contentDescription = stringResource(R.string.map_sheet_photo_description, sheet.region.displayName),
                     onClick = { onIntent(MapIntent.PhotoTapped(photo.id)) },
                     modifier = Modifier.size(PlasticSize.SheetPhoto),
                 )

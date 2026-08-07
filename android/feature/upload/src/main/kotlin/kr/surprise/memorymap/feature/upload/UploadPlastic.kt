@@ -116,8 +116,8 @@ internal fun PlasticUploadBody(
 
         Controls(
             uploadLabel = when (state.step) {
-                UploadStep.Uploading -> "올리는 중…"
-                UploadStep.Reading -> "읽는 중…"
+                UploadStep.Uploading -> stringResource(R.string.upload_uploading)
+                UploadStep.Reading -> stringResource(R.string.upload_reading_short)
                 else -> null
             },
             canUpload = state.canUpload(),
@@ -134,7 +134,7 @@ private fun Header(count: Int) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "사진 올리기",
+            text = stringResource(R.string.upload_title),
             fontFamily = Pretendard,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
@@ -143,7 +143,7 @@ private fun Header(count: Int) {
         )
         if (count > 0) {
             Text(
-                text = "${count}장",
+                text = stringResource(R.string.upload_count, count),
                 fontFamily = Pretendard,
                 fontWeight = FontWeight.Bold,
                 fontSize = 11.sp,
@@ -186,15 +186,15 @@ private fun PlasticItemRow(item: UploadItem, onIntent: (UploadIntent) -> Unit) {
             verticalArrangement = Arrangement.spacedBy(Gap.xs),
         ) {
             SlotField(
-                label = "어디",
-                value = item.region?.displayName ?: "고르기",
+                label = stringResource(R.string.upload_field_where),
+                value = item.region?.displayName ?: stringResource(R.string.upload_field_pick),
                 dimmed = item.region == null,
                 auto = item.regionAuto,
                 onClick = { onIntent(UploadIntent.RegionFieldTapped(item.uri)) },
             )
             SlotField(
-                label = "언제",
-                value = "${item.takenOn.monthValue}월 ${item.takenOn.dayOfMonth}일",
+                label = stringResource(R.string.upload_field_when),
+                value = stringResource(R.string.upload_date, item.takenOn.monthValue, item.takenOn.dayOfMonth),
                 dimmed = false,
                 auto = item.dateAuto,
                 onClick = { onIntent(UploadIntent.DateFieldTapped(item.uri)) },
@@ -253,7 +253,7 @@ private fun SlotField(
         )
         if (auto) {
             Text(
-                text = "자동",
+                text = stringResource(R.string.upload_auto_badge),
                 fontFamily = Pretendard,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 11.sp,
@@ -276,18 +276,16 @@ private fun FailurePlate(savedLocally: Boolean, onRetry: () -> Unit) {
         Box(Modifier.width(3.dp).height(PlasticSize.FailureBar).background(PlasticColors.Red))
         Column(Modifier.padding(start = Gap.s)) {
             Text(
-                text = "지금은 올릴 수 없어요",
+                text = stringResource(R.string.upload_failed_title),
                 fontFamily = Pretendard,
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.5.sp,
                 color = PlasticColors.RedHi,
             )
             Text(
-                text = if (savedLocally) {
-                    "사진은 폰에 저장해 뒀어요. 연결되면 다시 시도해 주세요."
-                } else {
-                    "잠시 뒤에 다시 시도해 주세요."
-                },
+                text = stringResource(
+                    if (savedLocally) R.string.upload_failed_kept else R.string.upload_failed_plain
+                ),
                 fontFamily = Pretendard,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 11.sp,
@@ -295,7 +293,7 @@ private fun FailurePlate(savedLocally: Boolean, onRetry: () -> Unit) {
                 modifier = Modifier.padding(top = 2.dp),
             )
             Text(
-                text = "다시 시도",
+                text = stringResource(R.string.upload_retry),
                 fontFamily = Pretendard,
                 fontWeight = FontWeight.Bold,
                 fontSize = 11.sp,
@@ -317,14 +315,14 @@ private fun EmptyPlate(onPickPhotos: () -> Unit) {
         Modifier.fillMaxWidth().padding(horizontal = Gap.s, vertical = Gap.l),
     ) {
         Text(
-            text = "올릴 사진을 골라 주세요",
+            text = stringResource(R.string.upload_empty_title),
             fontFamily = Pretendard,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
             color = PlasticColors.OnPlate,
         )
         Text(
-            text = "지역·날짜는 사진에서 자동으로 읽어요. 눌러서 고칠 수 있어요.",
+            text = stringResource(R.string.upload_empty_hint),
             fontFamily = Pretendard,
             fontWeight = FontWeight.SemiBold,
             fontSize = 11.sp,
@@ -332,7 +330,7 @@ private fun EmptyPlate(onPickPhotos: () -> Unit) {
             modifier = Modifier.padding(top = Gap.xs),
         )
         Text(
-            text = "사진 고르기",
+            text = stringResource(R.string.upload_empty_pick),
             fontFamily = Pretendard,
             fontWeight = FontWeight.Bold,
             fontSize = 13.5.sp,
@@ -382,7 +380,7 @@ private fun Controls(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = uploadLabel ?: "취소",
+                    text = uploadLabel ?: stringResource(R.string.upload_cancel),
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
@@ -446,7 +444,7 @@ private fun ColumnScope.PlasticRegionPicker(state: UploadState, onIntent: (Uploa
             )
         }
         Text(
-            text = "어디에서 찍었나요",
+            text = stringResource(R.string.upload_region_title),
             fontFamily = Pretendard,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
@@ -471,7 +469,7 @@ private fun ColumnScope.PlasticRegionPicker(state: UploadState, onIntent: (Uploa
         )
         Box(Modifier.weight(1f)) {
             if (state.regionQuery.isEmpty()) {
-                Text("지역 검색 — 강릉, 제주…", style = pickerStyle, color = PlasticColors.OnPlateDim)
+                Text(stringResource(R.string.upload_region_placeholder), style = pickerStyle, color = PlasticColors.OnPlateDim)
             }
             BasicTextField(
                 value = state.regionQuery,

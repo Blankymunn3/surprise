@@ -15,6 +15,14 @@
     <string name="list_tagline">어디와 언제로 보는 사진첩</string>
     <string name="list_loading">불러오는 중이에요</string>
     <string name="list_failed">목록을 불러오지 못했어요. 아래로 당겨 다시 시도해 주세요.</string>
+    <!-- 패미컴 목록은 검정 판이 좁아 **짧게** 씁니다. 기준 디자인의 긴 문구
+         (list_failed · card_meta)를 그대로 넣으면 줄이 넘칩니다. -->
+    <string name="list_failed_short">목록을 불러오지 못했어요</string>
+    <string name="list_empty_hint">아래 빨간 버튼으로 하나 만들어 보세요.</string>
+    <string name="card_meta_short_empty">아직 비어 있어요</string>
+    <string name="card_meta_short">%1$d · %2$d곳</string>
+    <string name="card_meta_short_dated">%1$d · %2$d곳 · %3$d.%4$d</string>
+
     <string name="list_create">새 짜국 만들기</string>
     <string name="list_join">초대 코드로 참여</string>
 

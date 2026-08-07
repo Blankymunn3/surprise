@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -124,7 +125,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
     Column(Modifier.fillMaxWidth().sunken(PlasticShapes.Screen).padding(Gap.s)) {
         // 혼자 쓰는 짜국에는 멤버도 초대 코드도 없습니다 — 있는 척하지 않습니다.
         if (state.space?.kind == SpaceKind.Shared) {
-            PlateLabel("멤버")
+            PlateLabel(stringResource(R.string.menu_members))
             state.space.members.forEach { member ->
                 Row(
                     Modifier.fillMaxWidth().padding(vertical = 7.dp),
@@ -158,7 +159,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
                     )
                     if (member.role == MemberRole.Owner) {
                         Text(
-                            text = "주인",
+                            text = stringResource(R.string.menu_owner),
                             fontFamily = Pretendard,
                             fontWeight = FontWeight.Bold,
                             fontSize = 11.sp,
@@ -169,13 +170,13 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
             }
 
             Spacer(Modifier.height(Gap.s))
-            PlateLabel("초대 코드")
+            PlateLabel(stringResource(R.string.menu_invite_code))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(Gap.s),
             ) {
                 Text(
-                    text = state.code ?: "만드는 중…",
+                    text = state.code ?: stringResource(R.string.menu_invite_code_making),
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
@@ -185,7 +186,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
                 )
                 state.code?.let { code ->
                     Text(
-                        text = "복사",
+                        text = stringResource(R.string.menu_copy),
                         fontFamily = Pretendard,
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.sp,
@@ -218,7 +219,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "이름 바꾸기",
+                text = stringResource(R.string.menu_rename),
                 fontFamily = Pretendard,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 13.5.sp,
@@ -239,7 +240,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
 @Composable
 private fun PlasticRenameBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -> Unit) {
     Text(
-        text = "이름 바꾸기",
+        text = stringResource(R.string.menu_rename),
         fontFamily = Pretendard,
         fontWeight = FontWeight.Bold,
         fontSize = 17.sp,
@@ -264,7 +265,7 @@ private fun PlasticRenameBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent)
         )
         Box(Modifier.weight(1f)) {
             if (state.pendingName.isEmpty()) {
-                Text("예) 우리 여름", style = MemoryType.Body, color = PlasticColors.OnPlateDim)
+                Text(stringResource(R.string.menu_rename_placeholder), style = MemoryType.Body, color = PlasticColors.OnPlateDim)
             }
             BasicTextField(
                 value = state.pendingName,
@@ -279,7 +280,7 @@ private fun PlasticRenameBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent)
 
     Spacer(Modifier.height(Gap.s))
     PrimaryButton(
-        text = if (state.working) "바꾸는 중…" else "바꾸기",
+        text = stringResource(if (state.working) R.string.menu_rename_working else R.string.menu_rename_confirm),
         enabled = state.pendingName.isNotBlank() && !state.working,
         onClick = { onIntent(SpaceMenuIntent.RenameConfirmed) },
         modifier = Modifier.fillMaxWidth(),

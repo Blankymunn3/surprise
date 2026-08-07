@@ -22,10 +22,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import kr.surprise.memorymap.core.designsystem.R as DesignR
 import kr.surprise.memorymap.core.designsystem.component.FRAMES_RATIO
 import kr.surprise.memorymap.core.designsystem.component.PhotoFramesScene
 import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
@@ -75,8 +77,8 @@ internal fun PlasticListBody(state: SpaceListState, onIntent: (SpaceListIntent) 
                 .sunken(PlasticShapes.Screen)
         ) {
             when (val ui = state.spaces) {
-                is SpacesUi.Loading -> PlateHint("불러오는 중이에요")
-                is SpacesUi.Failed -> PlateHint("목록을 불러오지 못했어요")
+                is SpacesUi.Loading -> PlateHint(stringResource(R.string.list_loading))
+                is SpacesUi.Failed -> PlateHint(stringResource(R.string.list_failed_short))
                 is SpacesUi.Ready ->
                     if (ui.items.isEmpty()) {
                         PlateEmpty()
@@ -108,7 +110,7 @@ private fun Brand() {
         verticalAlignment = Alignment.Bottom,
     ) {
         Text(
-            text = "짜국",
+            text = stringResource(R.string.list_title),
             fontFamily = Pretendard,
             fontWeight = FontWeight.Bold,
             fontSize = 25.sp,
@@ -203,18 +205,20 @@ private fun PlasticCard(space: Space, onClick: () -> Unit) {
 }
 
 /** "사진 13 · 8곳 · 7.27" — 몰드된 라벨처럼 짧게 끊습니다. */
+@Composable
 private fun Space.metaShort(): String {
-    if (photoCount == 0) return "아직 비어 있어요"
-    return buildString {
-        append(photoCount).append(" · ").append(regionCount).append("곳")
-        lastPhotoOn?.let { append(" · ").append(it.monthValue).append(".").append(it.dayOfMonth) }
-    }
+    if (photoCount == 0) return stringResource(R.string.card_meta_short_empty)
+    val on = lastPhotoOn ?: return stringResource(R.string.card_meta_short, photoCount, regionCount)
+    return stringResource(
+        R.string.card_meta_short_dated,
+        photoCount, regionCount, on.monthValue, on.dayOfMonth,
+    )
 }
 
 @Composable
 private fun OnlyHere(modifier: Modifier = Modifier) {
     Text(
-        text = "이 폰에만",
+        text = stringResource(DesignR.string.component_only_on_this_phone),
         fontFamily = Pretendard,
         fontWeight = FontWeight.Bold,
         fontSize = 11.sp,
@@ -291,7 +295,7 @@ private fun Controls(onCreate: () -> Unit, onJoin: () -> Unit) {
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "초대 코드로 참여",
+                    text = stringResource(R.string.list_join),
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
@@ -347,7 +351,7 @@ private fun PlateEmpty() {
         PhotoFramesScene(Modifier.fillMaxWidth(0.42f).aspectRatio(FRAMES_RATIO))
         Spacer(Modifier.height(Gap.l))
         Text(
-            text = "아직 짜국이 없어요",
+            text = stringResource(R.string.list_empty_title),
             fontFamily = Pretendard,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
@@ -355,7 +359,7 @@ private fun PlateEmpty() {
         )
         Spacer(Modifier.height(Gap.s))
         Text(
-            text = "아래 빨간 버튼으로 하나 만들어 보세요.",
+            text = stringResource(R.string.list_empty_hint),
             fontFamily = Pretendard,
             fontWeight = FontWeight.Normal,
             fontSize = 12.5.sp,
