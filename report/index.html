@@ -57,9 +57,13 @@
   #doc p, #doc li { font-size: 14px; }
   #doc .meta { color: #7D7979; font-size: 12.5px; }
   #doc table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
-  #doc th, #doc td { border: 1px solid var(--body-lo); padding: 7px 9px; text-align: left; vertical-align: top; }
+  #doc th, #doc td { border: 1px solid var(--body-lo); padding: 7px 9px; text-align: left; vertical-align: top;
+                     overflow-wrap: anywhere; }
   #doc th { background: var(--body); }
-  #doc code { background: var(--body); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  /* URL·경로가 긴 code 가 줄바꿈 없이 열 폭을 밀어내면 옆 열이 짜부라집니다 —
+     넘칠 때는 아무 데서나 접게 둡니다. */
+  #doc code { background: var(--body); padding: 1px 5px; border-radius: 3px; font-size: 12px;
+              overflow-wrap: anywhere; }
   #doc pre { background: var(--plate); color: var(--on-plate); padding: 14px; border-radius: 6px;
              overflow-x: auto; font-size: 12px; line-height: 1.5; }
   #doc pre code { background: none; color: inherit; }
