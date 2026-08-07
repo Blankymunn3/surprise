@@ -299,6 +299,12 @@ private const val FILL_PX = 512
 private const val FILL_SOURCE = "region-fill"
 private const val FILL_LAYER = "region-fill-area"
 
+/**
+ * 지역을 칠한 사진의 불투명도. iOS 는 85% 인데 여기는 60% 입니다 —
+ * 라벨이 사진 **뒤**에 깔리는 라스터 지도라, 이만큼 비쳐야 길·지명이 읽힙니다.
+ */
+private const val FILL_OPACITY = 0.6f
+
 private const val OUTLINE_SOURCE = "region-outline"
 private const val OUTLINE_LAYER = "region-outline-line"
 
@@ -348,8 +354,12 @@ private fun RegionOutline.toGeoJson(): String =
  * 경계 상자에 맞춰 지도에 얹습니다(`ImageSource`). 확대·축소를 해도 좌표에 붙어 있어
  * 늘 한 장입니다.
  *
- * 살짝 비치게(85%) 두는 이유: 완전히 덮으면 그 지역의 길·지명이 사라져서 어디인지
+ * **비치게 두는 이유** — 완전히 덮으면 그 지역의 길·지명이 사라져서 어디인지
  * 알 수 없게 됩니다. 사진은 "다녀왔다" 는 표시이지 지도를 대신하는 것이 아닙니다.
+ *
+ * iOS(85%)보다 **더 비칩니다**. iOS 는 벡터 지도라 길·지명이 **사진 위에 다시**
+ * 그려지지만, 여기 OSM 타일은 그림 한 장이라 라벨이 **사진 뒤에** 깔립니다 —
+ * 사진을 통해 비쳐야만 읽힙니다. 값이 달라야 두 앱의 보이는 결과가 같아집니다.
  */
 private fun paintRegions(style: Style, fills: List<RegionFill>, covers: Map<String, Bitmap>) {
     // 지역마다 source·layer 가 하나씩이라 이름 앞머리로 찾아 걷어냅니다.
@@ -376,7 +386,7 @@ private fun paintRegions(style: Style, fills: List<RegionFill>, covers: Map<Stri
         )
         style.addLayer(
             RasterLayer(FILL_LAYER + fill.code, sourceId)
-                .withProperties(PropertyFactory.rasterOpacity(0.85f))
+                .withProperties(PropertyFactory.rasterOpacity(FILL_OPACITY))
         )
     }
 }
