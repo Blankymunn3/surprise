@@ -2,17 +2,14 @@ package kr.surprise.memorymap.feature.space
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,12 +18,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -40,21 +34,13 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kr.surprise.memorymap.core.designsystem.component.FRAMES_RATIO
-import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
-import kr.surprise.memorymap.core.designsystem.component.PhotoFramesScene
 import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
 import kr.surprise.memorymap.core.designsystem.component.SoftButton
-import kr.surprise.memorymap.core.designsystem.component.SpaceCard
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
-import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
 import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
@@ -137,64 +123,6 @@ private fun SheetGrip() {
 // ---------------------------------------------------------------------------
 // 목록
 
-@Composable
-private fun ListBody(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit) {
-    Column(Modifier.fillMaxSize()) {
-        Header()
-        Divider()
-
-        // 목록만 늘어납니다. 만들기·참여는 아래에 **붙박이로** 둡니다 —
-        // 짜국이 늘어나도 그 둘을 찾으러 스크롤하지 않게요.
-        Box(Modifier.weight(1f)) {
-            when (val ui = state.spaces) {
-                is SpacesUi.Loading -> Hint(stringResource(R.string.list_loading))
-
-                is SpacesUi.Failed -> Hint(stringResource(R.string.list_failed))
-
-                is SpacesUi.Ready ->
-                    if (ui.items.isEmpty()) {
-                        EmptyScene()
-                    } else {
-                        LazyColumn(
-                            contentPadding = PaddingValues(
-                                start = Gap.xl, end = Gap.xl, top = Gap.l, bottom = Gap.s,
-                            ),
-                            verticalArrangement = Arrangement.spacedBy(14.dp),
-                        ) {
-                            items(ui.items, key = { it.id.value }) { space ->
-                                SpaceCard(
-                                    name = space.name,
-                                    meta = space.metaLine(),
-                                    coverUrl = space.coverPhotoUrl,
-                                    memberInitials = space.members.map { it.initial },
-                                    onClick = { onIntent(SpaceListIntent.SpaceTapped(space.id)) },
-                                    onlyOnThisPhone = space.kind == SpaceKind.Personal,
-                                )
-                            }
-                        }
-                    }
-            }
-        }
-
-        Divider(inset = false)
-        Column(
-            Modifier.padding(start = Gap.xl, end = Gap.xl, top = Gap.m, bottom = Gap.xxl),
-            verticalArrangement = Arrangement.spacedBy(Gap.s),
-        ) {
-            PrimaryButton(
-                text = stringResource(R.string.list_create),
-                onClick = { onIntent(SpaceListIntent.CreateTapped) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-            SoftButton(
-                text = stringResource(R.string.list_join),
-                onClick = { onIntent(SpaceListIntent.JoinTapped) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-    }
-}
-
 /**
  * 사진이 없으면 수를 세지 않고 그 사실만 말합니다. "사진 0 · 지역 0" 은 셈이 아니라 잡음입니다.
  *
@@ -208,31 +136,6 @@ private fun Space.metaLine(): String {
     return stringResource(R.string.card_meta_dated, photoCount, regionCount, on.monthValue, on.dayOfMonth)
 }
 
-/** 레드 사각 하나가 앱 이름 앞에 섭니다. 아이콘이 아니라 표식이라 뜻을 붙이지 않습니다. */
-@Composable
-private fun Header() {
-    Row(
-        Modifier.fillMaxWidth().padding(start = Gap.xl, end = Gap.xl, top = Gap.s, bottom = Gap.m),
-        verticalAlignment = Alignment.Bottom,
-    ) {
-        Box(
-            Modifier
-                .padding(bottom = 5.dp)
-                .size(13.dp)
-                .background(MemoryColors.Accent)
-        )
-        Spacer(Modifier.width(9.dp))
-        Text(stringResource(R.string.list_title), style = MemoryType.Display)
-        Spacer(Modifier.weight(1f))
-        Text(
-            text = stringResource(R.string.list_tagline),
-            style = MemoryType.Micro,
-            color = MemoryColors.Ink2,
-            modifier = Modifier.padding(bottom = 4.dp),
-        )
-    }
-}
-
 /** 구획선은 2px 입니다. 테두리(1px)보다 굵어야 '나누는 선' 으로 읽힙니다. */
 @Composable
 private fun Divider(inset: Boolean = true) {
@@ -242,67 +145,6 @@ private fun Divider(inset: Boolean = true) {
             .padding(horizontal = if (inset) Gap.xl else 0.dp)
             .height(MemoryStroke.Divider)
             .background(MemoryColors.Line2)
-    )
-}
-
-/**
- * 첫 실행. **가운데 정렬하지 않습니다** — 글이 왼끝에 맞아야 다음에 올 목록과
- * 같은 자리에서 시작하고, 짜국이 생겼을 때 화면이 통째로 움직인 것처럼 안 보입니다.
- */
-@Composable
-private fun EmptyScene() {
-    Column(
-        Modifier.fillMaxSize().padding(horizontal = 28.dp),
-        verticalArrangement = Arrangement.Center,
-    ) {
-        PhotoFramesScene(Modifier.fillMaxWidth(0.42f).aspectRatio(FRAMES_RATIO))
-        Spacer(Modifier.height(14.dp))
-        Text(stringResource(R.string.list_empty_title), style = MemoryType.Title)
-        Spacer(Modifier.height(14.dp))
-        Text(
-            text = emphasised(
-                sentence = stringResource(R.string.list_empty_blurb),
-                words = listOf(
-                    stringResource(R.string.list_empty_bold_map),
-                    stringResource(R.string.list_empty_bold_calendar),
-                ),
-            ),
-            style = MemoryType.Label,
-            color = MemoryColors.Ink2,
-        )
-    }
-}
-
-/**
- * 문장 안의 낱말 몇 개만 굵게.
- *
- * 문장을 조각으로 쪼개 이어 붙이지 않고 **통째로 두고 낱말을 찾습니다.** 쪼개 놓으면
- * 문장을 고칠 때 조각 순서까지 맞춰야 하고, 다른 말로 옮길 때 조각만 보고는 무슨
- * 뜻인지 알 수 없습니다. iOS `emptyBlurb` 도 같은 방식입니다.
- *
- * 못 찾은 낱말은 그냥 건너뜁니다 — 문구를 고치다 낱말이 사라져도 화면은 멀쩡해야 합니다.
- */
-private fun emphasised(sentence: String, words: List<String>) = buildAnnotatedString {
-    append(sentence)
-    for (word in words) {
-        val start = sentence.indexOf(word)
-        if (start < 0) continue
-        addStyle(
-            SpanStyle(fontWeight = FontWeight.Bold, color = MemoryColors.Ink),
-            start,
-            start + word.length,
-        )
-    }
-}
-
-@Composable
-private fun Hint(text: String) {
-    Text(
-        text = text,
-        style = MemoryType.Body,
-        color = MemoryColors.Ink3,
-        textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = Gap.xl, vertical = Gap.xxxl),
     )
 }
 

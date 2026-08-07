@@ -160,7 +160,7 @@ internal fun MapCanvas(
             view.getMapAsync { map ->
                 // 패미컴 스타일에서는 **어두운 지도**입니다. 검정 판에 끼운 화면 안에서
                 // 하얀 지도가 혼자 빛나면 화면이 아니라 구멍처럼 보입니다.
-                map.setStyle(Style.Builder().fromJson(OsmStyle.json(dark = true))) { style ->
+                map.setStyle(Style.Builder().fromJson(OsmStyle.json())) { style ->
                     paintRegions(style, fills, covers)
                     drawOutline(style, outline)
                     // 딱지는 지역 칠보다 **나중에** 얹습니다. 먼저 얹으면 칠에 덮입니다.

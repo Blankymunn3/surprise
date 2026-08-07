@@ -61,7 +61,7 @@ import kr.surprise.memorymap.core.designsystem.theme.sunken
 import kr.surprise.memorymap.core.model.Region
 
 /**
- * **시험용 화면 — 패미컴 컨트롤러 스타일의 지도.**
+ * **지도 — 패미컴 컨트롤러 스타일.**
  *
  * 지금 앱의 지도는 [MapScreen] 이고, 이 파일은 같은 상태를 다른 옷으로 그린 것뿐입니다.
  * 상태·Intent 는 하나도 건드리지 않습니다.

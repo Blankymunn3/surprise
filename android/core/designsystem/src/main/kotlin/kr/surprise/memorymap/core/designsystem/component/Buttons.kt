@@ -1,9 +1,7 @@
 package kr.surprise.memorymap.core.designsystem.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -14,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
@@ -24,41 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
-import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
-import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
 import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
 import kr.surprise.memorymap.core.designsystem.theme.PlasticSize
 import kr.surprise.memorymap.core.designsystem.theme.Pretendard
 import kr.surprise.memorymap.core.designsystem.theme.pressable
 import kr.surprise.memorymap.core.designsystem.theme.raisedPlastic
-
-/**
- * 사진 올리기 버튼. **네모, 54, 단색 레드.**
- *
- * 동그라미가 아닌 이유: 이 디자인에는 둥근 것이 하나도 없습니다. 지도 위에서
- * 형태로 먼저 읽히게 하는 일은 모서리가 아니라 **레드 한 색**이 맡습니다 —
- * 화면에서 유일하게 꽉 찬 레드라 다른 것과 헷갈릴 수가 없습니다.
- */
-@Composable
-fun MemoryFab(
-    onClick: () -> Unit,
-    contentDescription: String,
-    modifier: Modifier = Modifier,
-    icon: ImageVector = MemoryIcons.Plus,
-) {
-    Box(
-        modifier = modifier
-            .size(54.dp)
-            .shadow(8.dp, MemoryShapes.Square, spotColor = MemoryColors.Ink)
-            .background(MemoryColors.Accent)
-            .pressable(onClick = onClick)
-            .semantics { this.contentDescription = contentDescription },
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(icon, contentDescription = null, tint = MemoryColors.OnAccent, modifier = Modifier.size(22.dp))
-    }
-}
 
 /**
  * 주 동작. **글자는 왼끝에 맞추고 화살표가 오른끝에 섭니다** — 가운데 정렬이 아닙니다.
@@ -114,27 +82,6 @@ fun SoftButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier)
                 fontSize = 15.sp,
                 color = PlasticColors.OnRubber,
             )
-        }
-    }
-}
-
-/** 지도처럼 콘텐츠 위에 떠 있는 아이콘 버튼 */
-@Composable
-fun FloatingIconButton(
-    icon: ImageVector,
-    contentDescription: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    FloatingSurface(modifier = modifier.size(38.dp)) {
-        Box(
-            Modifier
-                .matchParentSize()
-                .pressable(onClick = onClick)
-                .semantics { this.contentDescription = contentDescription },
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(icon, contentDescription = null, tint = MemoryColors.Ink, modifier = Modifier.size(20.dp))
         }
     }
 }

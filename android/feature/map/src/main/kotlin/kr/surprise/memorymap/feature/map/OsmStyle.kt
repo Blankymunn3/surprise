@@ -17,45 +17,17 @@ internal object OsmStyle {
     const val TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 
     /**
-     * [dark] 면 **어두운 지도**를 만듭니다. 패미컴 스타일에서 지도는 검정 판에 끼운
-     * 화면이라, 그 안에서 하얀 지도가 혼자 빛나면 화면이 아니라 구멍처럼 보입니다.
+     * **어두운 지도**입니다. 지도는 검정 판에 끼운 화면이라, 그 안에서 하얀 지도가
+     * 혼자 빛나면 화면이 아니라 구멍처럼 보입니다.
      *
      * 그림 타일의 색을 바꾸는 방법이 하나뿐입니다 — **밝기를 뒤집는 것**
      * (`brightness-min: 1`, `max: 0`). 흰 종이에 검은 길이던 것이 검은 판에 흰 길이
      * 됩니다. 글자도 같이 뒤집혀 어두운 바탕에 밝은 글씨가 되므로 그대로 읽힙니다.
      *
      * 뒤집으면 색상이 보색으로 돌아갑니다(초록 공원 → 붉은 자국). 그래서 채도를
-     * 거의 다 뺍니다 — 어차피 이 스타일의 화면은 잿빛 한 벌입니다.
+     * 거의 다 뺍니다 — 어차피 이 앱의 화면은 잿빛 한 벌입니다.
      */
-    fun json(dark: Boolean = false): String = if (dark) darkJson() else lightJson()
-
-    private fun lightJson(): String = """
-        {
-          "version": 8,
-          "sources": { ${source()} },
-          "layers": [
-            { "id": "background", "type": "background", "paint": { "background-color": "#DCEBE0" } },
-            {
-              "id": "osm",
-              "type": "raster",
-              "source": "osm",
-              "paint": {
-                "raster-saturation": -0.45,
-                "raster-contrast": -0.12,
-                "raster-brightness-min": 0.06,
-                "raster-opacity": 0.92
-              }
-            },
-            {
-              "id": "paper",
-              "type": "background",
-              "paint": { "background-color": "#EFE3CB", "background-opacity": 0.2 }
-            }
-          ]
-        }
-    """.trimIndent()
-
-    private fun darkJson(): String = """
+    fun json(): String = """
         {
           "version": 8,
           "sources": { ${source()} },

@@ -7,7 +7,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
-import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
 import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
 
 /** 원본 그림의 좌표계. iOS 와 **같은 수를 씁니다** — 다르면 두 앱의 그림이 달라집니다. */

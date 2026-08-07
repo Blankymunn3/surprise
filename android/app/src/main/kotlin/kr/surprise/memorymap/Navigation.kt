@@ -20,9 +20,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -51,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.text.font.FontWeight
@@ -69,16 +66,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kr.surprise.memorymap.core.designsystem.R as DesignR
-import kr.surprise.memorymap.core.designsystem.component.FloatingIconButton
-import kr.surprise.memorymap.core.designsystem.component.MemoryFab
 import kr.surprise.memorymap.core.designsystem.component.MemoryIcons
 import kr.surprise.memorymap.core.designsystem.component.MemoryToast
 import kr.surprise.memorymap.core.designsystem.component.PlainIconButton
 import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
-import kr.surprise.memorymap.core.designsystem.component.Segmented
-import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
-import kr.surprise.memorymap.core.designsystem.theme.MemoryShapes
-import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
 import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
@@ -89,7 +80,6 @@ import kr.surprise.memorymap.core.model.SpaceId
 import kr.surprise.memorymap.core.model.SpaceKind
 import kr.surprise.memorymap.feature.calendar.CalendarEffect
 import kr.surprise.memorymap.feature.calendar.say
-import kr.surprise.memorymap.feature.calendar.CalendarIntent
 import kr.surprise.memorymap.feature.calendar.CalendarScreen
 import kr.surprise.memorymap.feature.calendar.CalendarViewModel
 import kr.surprise.memorymap.feature.map.MapEffect
