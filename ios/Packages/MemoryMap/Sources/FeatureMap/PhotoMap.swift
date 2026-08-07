@@ -59,21 +59,37 @@ struct PhotoMap: UIViewRepresentable {
             map.setRegion(region, animated: true)
         }
 
-        // 그림들. 통째로 갈아 끼웁니다 — 무엇이 바뀌었는지 견주는 것보다 서명 하나
-        // 비교가 쌉니다. 경계 점이 수천 개라 안의 값을 견주면 그게 더 비쌉니다.
+        // 지역 채우기. 서명이 같으면 손대지 않습니다 — 경계 점이 수천 개라
+        // 안의 값을 견주는 것도, 다시 만드는 것도 비쌉니다.
         let drawing = fills.map { "\($0.code)=\($0.coverURL):\(covers[$0.coverURL] != nil)" }
-            .joined(separator: "|") + "/outline:\(outline.count)"
+            .joined(separator: "|")
         if coordinator.drawn != drawing {
             coordinator.drawn = drawing
-            map.removeOverlays(map.overlays)
-            for fill in fills {
-                guard let cover = covers[fill.coverURL] else { continue }
-                map.addOverlay(PhotoFill(fill: fill, image: cover), level: .aboveRoads)
+            map.removeOverlays(coordinator.fillOverlays)
+            coordinator.fillOverlays = fills.compactMap { fill in
+                covers[fill.coverURL].map { PhotoFill(fill: fill, image: $0) }
             }
-            for ring in outline {
+            coordinator.fillOverlays.forEach { map.addOverlay($0, level: .aboveRoads) }
+        }
+
+        // 고른 지역의 테두리. 채우기와 **따로** 관리합니다 — 지역을 고를 때마다
+        // 채우기의 좌표 수천 개를 다시 만들 이유가 없습니다.
+        //
+        // ⚠️ 서명에 **고리 수만 쓰면 안 됩니다.** 시군구는 대부분 고리가 하나라,
+        // 다른 지역을 골라도 수가 같아 테두리가 옛 지역에 그대로 남습니다.
+        // 첫 점의 좌표까지 봐야 "다른 지역" 이 구분됩니다.
+        let outlined = "\(outline.reduce(0) { $0 + $1.count }):"
+            + (outline.first?.first.map { "\($0.latitude),\($0.longitude)" } ?? "-")
+        if coordinator.outlined != outlined {
+            coordinator.outlined = outlined
+            map.removeOverlays(coordinator.outlineOverlays)
+            coordinator.outlineOverlays = outline.map { ring in
                 var points = ring.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
-                map.addOverlay(MKPolyline(coordinates: &points, count: points.count), level: .aboveLabels)
+                return MKPolyline(coordinates: &points, count: points.count)
             }
+            // 채우기보다 위층입니다 — 사진으로 채워진 지역을 골라도 테두리가 보여야
+            // "지금 이 지역을 보고 있다" 가 읽힙니다. 안드로이드와 같은 그림입니다.
+            coordinator.outlineOverlays.forEach { map.addOverlay($0, level: .aboveLabels) }
         }
 
         // 내 자리. **사진 수 딱지는 없습니다** — 지역이 이미 그 사진으로 칠해져 있고,
@@ -108,7 +124,12 @@ struct PhotoMap: UIViewRepresentable {
         /// 그때는 명령 기억을 지웁니다 — 지워야 같은 자리로 "다시" 보내는 명령이 통합니다.
         var applying = false
         var drawn = ""
+        var outlined = ""
         var marked = ""
+        /// 우리가 얹은 오버레이들. 채우기와 테두리를 따로 걷어내려면 따로 들고 있어야
+        /// 합니다 — `map.overlays` 를 통째로 지우면 서로가 서로를 지웁니다.
+        var fillOverlays: [MKOverlay] = []
+        var outlineOverlays: [MKOverlay] = []
 
         init(_ parent: PhotoMap) { self.parent = parent }
 
