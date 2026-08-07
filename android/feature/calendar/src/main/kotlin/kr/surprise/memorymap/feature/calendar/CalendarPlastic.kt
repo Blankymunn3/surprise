@@ -176,7 +176,7 @@ private fun MonthNav(glyph: String, onClick: () -> Unit) {
 @Composable
 private fun WeekdayStrip() {
     Row(Modifier.fillMaxWidth()) {
-        WEEKDAYS.forEachIndexed { index, label ->
+        weekdays().forEachIndexed { index, label ->
             Text(
                 text = label,
                 fontFamily = Pretendard,
@@ -332,7 +332,7 @@ private fun PlasticDaySection(
             ) {
                 Text(
                     text = "${group.date.monthValue}월 ${group.date.dayOfMonth}일 " +
-                        WEEKDAYS[group.date.dayOfWeek.value % 7],
+                        weekdays()[group.date.dayOfWeek.value % 7],
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,

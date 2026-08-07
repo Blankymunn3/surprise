@@ -85,16 +85,17 @@ class UploadReducerTest {
         assertFalse(after.items[1].dateAuto)
     }
 
+    /** 리듀서는 **수만** 셉니다. 문구는 화면이 짓습니다 — 그래야 문구를 고쳐도 안 깨집니다. */
     @Test
-    fun `여러 곳 여러 날에 걸치면 나눠 올라간다고 알려 준다`() {
+    fun `여러 곳 여러 날에 걸치면 몇 곳 며칠인지 센다`() {
         val s = state(item(0), item(1, region = busan, day = nextDay))
 
-        assertEquals("지역 2곳 · 날짜 2일로 나눠 올라가요", s.splitNotice())
+        assertEquals(SplitCounts(places = 2, days = 2), s.splitCounts())
     }
 
     @Test
     fun `한 곳 한 날이면 알릴 것이 없다`() {
-        assertNull(state(item(0), item(1)).splitNotice())
+        assertNull(state(item(0), item(1)).splitCounts())
     }
 
     @Test

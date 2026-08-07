@@ -67,12 +67,12 @@ public struct SpaceMenu: View {
                     .overlay(Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border))
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("닫기")
+            .accessibilityLabel(localized("menu_close"))
         }
 
         // 혼자 쓰는 짜국에는 멤버도 초대 코드도 없습니다 — 있는 척하지 않습니다.
         if let space = store.state.space, space.kind == .shared {
-            sectionLabel("멤버").padding(.top, MemorySpace.m)
+            sectionLabel(localized("menu_members")).padding(.top, MemorySpace.m)
 
             ForEach(space.members, id: \.uid) { member in
                 HStack(spacing: 10) {
@@ -84,7 +84,7 @@ public struct SpaceMenu: View {
                     Text(member.displayName).memoryBody().lineLimit(1)
                     Spacer(minLength: 0)
                     if member.role == .owner {
-                        Text("주인")
+                        Text(localized("menu_owner"))
                             .memoryMicro()
                             .foregroundStyle(MemoryColor.ink)
                             .padding(.horizontal, 6)
@@ -99,9 +99,9 @@ public struct SpaceMenu: View {
                 MemoryColor.fill.frame(height: MemoryStroke.border)
             }
 
-            sectionLabel("초대 코드").padding(.top, 14)
+            sectionLabel(localized("menu_invite_code")).padding(.top, 14)
             HStack(spacing: 10) {
-                Text(store.state.code ?? "만드는 중…")
+                Text(store.state.code ?? localized("menu_invite_code_making"))
                     .font(MemoryFont.font(20, .bold))
                     .tracking(store.state.code != nil ? 4 : 0)
                     .foregroundStyle(store.state.code != nil ? MemoryColor.ink : MemoryColor.ink3)
@@ -112,7 +112,7 @@ public struct SpaceMenu: View {
                         UIPasteboard.general.string = code
                         #endif
                     } label: {
-                        Text("복사")
+                        Text(localized("menu_copy"))
                             .memoryMicro()
                             .foregroundStyle(MemoryColor.ink)
                             .padding(.horizontal, MemorySpace.m)
@@ -131,7 +131,7 @@ public struct SpaceMenu: View {
 
         Button { store.startRenaming() } label: {
             HStack {
-                Text("이름 바꾸기").memoryBody().foregroundStyle(MemoryColor.ink2)
+                Text(localized("menu_rename")).memoryBody().foregroundStyle(MemoryColor.ink2)
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.system(size: 11, weight: .semibold))
@@ -145,9 +145,9 @@ public struct SpaceMenu: View {
 
     @ViewBuilder
     private var renameBody: some View {
-        Text("이름 바꾸기").memoryHeadline()
+        Text(localized("menu_rename")).memoryHeadline()
 
-        TextField("예) 우리 여름", text: Binding(
+        TextField(localized("menu_rename_placeholder"), text: Binding(
             get: { store.state.pendingName },
             set: { store.typeName($0) }
         ))
@@ -160,7 +160,7 @@ public struct SpaceMenu: View {
         .padding(.top, MemorySpace.m)
 
         PrimaryButton(
-            store.state.working ? "바꾸는 중…" : "바꾸기",
+            localized(store.state.working ? "menu_rename_working" : "menu_rename_confirm"),
             enabled: !store.state.pendingName.trimmingCharacters(in: .whitespaces).isEmpty
                 && !store.state.working
         ) {

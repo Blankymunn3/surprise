@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.SolidColor
@@ -44,7 +45,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kr.surprise.memorymap.core.designsystem.component.FRAMES_RATIO
@@ -153,9 +153,9 @@ private fun ListBody(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit)
         // 짜국이 늘어나도 그 둘을 찾으러 스크롤하지 않게요.
         Box(Modifier.weight(1f)) {
             when (val ui = state.spaces) {
-                is SpacesUi.Loading -> Hint("불러오는 중이에요")
+                is SpacesUi.Loading -> Hint(stringResource(R.string.list_loading))
 
-                is SpacesUi.Failed -> Hint("목록을 불러오지 못했어요. 아래로 당겨 다시 시도해 주세요.")
+                is SpacesUi.Failed -> Hint(stringResource(R.string.list_failed))
 
                 is SpacesUi.Ready ->
                     if (ui.items.isEmpty()) {
@@ -188,12 +188,12 @@ private fun ListBody(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit)
             verticalArrangement = Arrangement.spacedBy(Gap.s),
         ) {
             PrimaryButton(
-                text = "새 짜국 만들기",
+                text = stringResource(R.string.list_create),
                 onClick = { onIntent(SpaceListIntent.CreateTapped) },
                 modifier = Modifier.fillMaxWidth(),
             )
             SoftButton(
-                text = "초대 코드로 참여",
+                text = stringResource(R.string.list_join),
                 onClick = { onIntent(SpaceListIntent.JoinTapped) },
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -201,14 +201,17 @@ private fun ListBody(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit)
     }
 }
 
-/** 사진이 없으면 수를 세지 않고 그 사실만 말합니다. "사진 0 · 지역 0" 은 셈이 아니라 잡음입니다. */
+/**
+ * 사진이 없으면 수를 세지 않고 그 사실만 말합니다. "사진 0 · 지역 0" 은 셈이 아니라 잡음입니다.
+ *
+ * 조각을 이어 붙이지 않고 **포맷 문자열 하나**로 만듭니다 — 쪼개 두면 옮길 때
+ * "사진 " 만 보고는 무슨 말인지 알 수 없고, 말 순서가 다른 언어에서는 맞출 수도 없습니다.
+ */
+@Composable
 private fun Space.metaLine(): String {
-    if (photoCount == 0) return "아직 사진이 없어요"
-    return buildString {
-        append("사진 ").append(photoCount)
-        append(" · 지역 ").append(regionCount)
-        lastPhotoOn?.let { append(" · ").append(it.monthValue).append("월 ").append(it.dayOfMonth).append("일") }
-    }
+    if (photoCount == 0) return stringResource(R.string.card_meta_empty)
+    val on = lastPhotoOn ?: return stringResource(R.string.card_meta, photoCount, regionCount)
+    return stringResource(R.string.card_meta_dated, photoCount, regionCount, on.monthValue, on.dayOfMonth)
 }
 
 /** 레드 사각 하나가 앱 이름 앞에 섭니다. 아이콘이 아니라 표식이라 뜻을 붙이지 않습니다. */
@@ -225,10 +228,10 @@ private fun Header() {
                 .background(MemoryColors.Accent)
         )
         Spacer(Modifier.width(9.dp))
-        Text("짜국", style = MemoryType.Display)
+        Text(stringResource(R.string.list_title), style = MemoryType.Display)
         Spacer(Modifier.weight(1f))
         Text(
-            text = "어디와 언제로 보는 사진첩",
+            text = stringResource(R.string.list_tagline),
             style = MemoryType.Micro,
             color = MemoryColors.Ink2,
             modifier = Modifier.padding(bottom = 4.dp),
@@ -260,18 +263,40 @@ private fun EmptyScene() {
     ) {
         PhotoFramesScene(Modifier.fillMaxWidth(0.42f).aspectRatio(FRAMES_RATIO))
         Spacer(Modifier.height(14.dp))
-        Text("아직 짜국이 없어요", style = MemoryType.Title)
+        Text(stringResource(R.string.list_empty_title), style = MemoryType.Title)
         Spacer(Modifier.height(14.dp))
         Text(
-            text = buildAnnotatedString {
-                append("짜국은 사진을 ")
-                withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = MemoryColors.Ink)) { append("지도") }
-                append("와 ")
-                withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = MemoryColors.Ink)) { append("달력") }
-                append(", 두 가지로 보는 사진첩이에요. 혼자 써도 되고, 가까운 사람들과 같이 채워도 돼요.")
-            },
+            text = emphasised(
+                sentence = stringResource(R.string.list_empty_blurb),
+                words = listOf(
+                    stringResource(R.string.list_empty_bold_map),
+                    stringResource(R.string.list_empty_bold_calendar),
+                ),
+            ),
             style = MemoryType.Label,
             color = MemoryColors.Ink2,
+        )
+    }
+}
+
+/**
+ * 문장 안의 낱말 몇 개만 굵게.
+ *
+ * 문장을 조각으로 쪼개 이어 붙이지 않고 **통째로 두고 낱말을 찾습니다.** 쪼개 놓으면
+ * 문장을 고칠 때 조각 순서까지 맞춰야 하고, 다른 말로 옮길 때 조각만 보고는 무슨
+ * 뜻인지 알 수 없습니다. iOS `emptyBlurb` 도 같은 방식입니다.
+ *
+ * 못 찾은 낱말은 그냥 건너뜁니다 — 문구를 고치다 낱말이 사라져도 화면은 멀쩡해야 합니다.
+ */
+private fun emphasised(sentence: String, words: List<String>) = buildAnnotatedString {
+    append(sentence)
+    for (word in words) {
+        val start = sentence.indexOf(word)
+        if (start < 0) continue
+        addStyle(
+            SpanStyle(fontWeight = FontWeight.Bold, color = MemoryColors.Ink),
+            start,
+            start + word.length,
         )
     }
 }
@@ -398,44 +423,44 @@ private fun Field(value: String, placeholder: String, onValueChange: (String) ->
 @Composable
 private fun CreateSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit) {
     SheetBody {
-        SheetTitle("새 짜국")
+        SheetTitle(stringResource(R.string.create_title))
 
         Column {
-            SectionLabel("어떻게 쓸까요", Modifier.padding(bottom = Gap.s))
+            SectionLabel(stringResource(R.string.create_kind_label), Modifier.padding(bottom = Gap.s))
             KindOption(
-                title = "혼자",
-                detail = "사진이 이 폰에만 남아요 · 로그인 없이 바로 시작해요",
-                sub = "폰을 잃어버리면 사진도 함께 사라져요",
+                title = stringResource(R.string.create_kind_solo),
+                detail = stringResource(R.string.create_kind_solo_detail),
+                sub = stringResource(R.string.create_kind_solo_sub),
                 checked = state.pendingKind == SpaceKind.Personal,
                 onClick = { onIntent(SpaceListIntent.KindSelected(SpaceKind.Personal)) },
             )
             Spacer(Modifier.height(9.dp))
             KindOption(
-                title = "같이",
-                detail = "초대한 사람들과 같이 채우고 같이 봐요 · 로그인이 필요해요",
-                sub = "만들면 초대 코드가 바로 나와요",
+                title = stringResource(R.string.create_kind_shared),
+                detail = stringResource(R.string.create_kind_shared_detail),
+                sub = stringResource(R.string.create_kind_shared_sub),
                 checked = state.pendingKind == SpaceKind.Shared,
                 onClick = { onIntent(SpaceListIntent.KindSelected(SpaceKind.Shared)) },
             )
 
-            SectionLabel("이름", Modifier.padding(top = Gap.xl, bottom = Gap.s))
+            SectionLabel(stringResource(R.string.create_name_label), Modifier.padding(top = Gap.xl, bottom = Gap.s))
             Field(
                 value = state.pendingName,
-                placeholder = "예) 우리 여름, 제주 한 달",
+                placeholder = stringResource(R.string.create_name_placeholder),
                 onValueChange = { onIntent(SpaceListIntent.NameTyped(it)) },
             )
         }
 
         Spacer(Modifier.height(Gap.xl))
         PrimaryButton(
-            text = if (state.working) "만드는 중…" else "만들기",
+            text = stringResource(if (state.working) R.string.create_working else R.string.create_confirm),
             enabled = state.canCreate(),
             onClick = { onIntent(SpaceListIntent.CreateConfirmed) },
             modifier = Modifier.fillMaxWidth(),
         )
         if (state.pendingKind == SpaceKind.Personal) {
             Text(
-                text = "로그인 없이 바로 만들어져요.",
+                text = stringResource(R.string.create_solo_note),
                 style = MemoryType.Micro,
                 color = MemoryColors.Ink2,
                 modifier = Modifier.padding(top = Gap.s),
@@ -550,16 +575,16 @@ private fun KindOption(
 @Composable
 private fun JoinSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit) {
     SheetBody {
-        SheetTitle("초대 코드로 참여")
+        SheetTitle(stringResource(R.string.join_title))
 
-        SectionLabel("받은 코드", Modifier.padding(bottom = Gap.s))
+        SectionLabel(stringResource(R.string.join_code_label), Modifier.padding(bottom = Gap.s))
         Field(
             value = state.pendingCode,
-            placeholder = "예) K7QF2M",
+            placeholder = stringResource(R.string.join_code_placeholder),
             onValueChange = { onIntent(SpaceListIntent.CodeTyped(it)) },
         )
         Text(
-            text = "코드를 보낸 사람의 짜국에 멤버로 들어가요.",
+            text = stringResource(R.string.join_note),
             style = MemoryType.Micro,
             color = bodyDim,
             modifier = Modifier.padding(top = Gap.s),
@@ -567,7 +592,7 @@ private fun JoinSheet(state: SpaceListState, onIntent: (SpaceListIntent) -> Unit
 
         Spacer(Modifier.height(Gap.xl))
         PrimaryButton(
-            text = if (state.working) "확인 중…" else "참여하기",
+            text = stringResource(if (state.working) R.string.join_working else R.string.join_confirm),
             enabled = state.canJoin(),
             onClick = { onIntent(SpaceListIntent.JoinConfirmed) },
             modifier = Modifier.fillMaxWidth(),
@@ -594,11 +619,10 @@ private fun SignInSheet(
         )
         Spacer(Modifier.height(14.dp))
         // 시트에서는 25단이 너무 큽니다 — 제목만으로 시트가 반을 먹습니다.
-        Text("같이 보려면 계정이 필요해요", style = MemoryType.Title, color = bodyInk)
+        Text(stringResource(R.string.signin_title), style = MemoryType.Title, color = bodyInk)
         Spacer(Modifier.height(Gap.s))
         Text(
-            text = "로그인은 멤버가 아닌 사람이 우리 사진을 못 보게 막는 잠금장치예요. " +
-                "계정 확인 말고 다른 데는 쓰지 않아요.",
+            text = stringResource(R.string.signin_why),
             style = MemoryType.Label,
             color = bodyDim,
         )
@@ -606,7 +630,7 @@ private fun SignInSheet(
         Spacer(Modifier.height(Gap.xl))
 
         GoogleButton(
-            text = if (working) "로그인 중…" else "Google로 계속하기",
+            text = stringResource(if (working) R.string.signin_working else R.string.signin_google),
             enabled = !working,
             onClick = { onIntent(SpaceListIntent.SignInTapped) },
         )
@@ -615,7 +639,7 @@ private fun SignInSheet(
         // 곳이 없습니다 — 남의 짜국에 혼자 들어갈 수는 없으니까요.
         if (sheet.next == SpaceListSheet.Next.Create) {
             Text(
-                text = "그냥 혼자 쓸래요 — 이 폰에만 저장할게요",
+                text = stringResource(R.string.signin_give_up),
                 style = MemoryType.Body,
                 color = bodyInk,
                 textDecoration = TextDecoration.Underline,
@@ -626,7 +650,7 @@ private fun SignInSheet(
         }
 
         Text(
-            text = "지금은 Google 계정만 돼요.",
+            text = stringResource(R.string.signin_only_google),
             style = MemoryType.Micro,
             color = bodyDim,
             modifier = Modifier.padding(top = Gap.l),
@@ -732,10 +756,10 @@ private fun GoogleMark(modifier: Modifier = Modifier) {
 @Composable
 private fun InvitedSheet(sheet: SpaceListSheet.Invited, onIntent: (SpaceListIntent) -> Unit) {
     SheetBody {
-        Text("'${sheet.spaceName}' 짜국을 만들었어요", style = MemoryType.Title, color = bodyInk)
+        Text(stringResource(R.string.invited_title, sheet.spaceName), style = MemoryType.Title, color = bodyInk)
         Spacer(Modifier.height(10.dp))
         Text(
-            text = "이 코드를 받은 사람이 들어올 수 있어요. 지금 보내 두면 나중에 다시 찾지 않아도 돼요.",
+            text = stringResource(R.string.invited_note),
             style = MemoryType.Label,
             color = bodyDim,
         )
@@ -770,12 +794,12 @@ private fun InvitedSheet(sheet: SpaceListSheet.Invited, onIntent: (SpaceListInte
         Spacer(Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(Gap.s)) {
             SoftButton(
-                text = "코드 복사",
+                text = stringResource(R.string.invited_copy),
                 onClick = { onIntent(SpaceListIntent.InviteCopied(sheet.code)) },
                 modifier = Modifier.weight(1f),
             )
             SoftButton(
-                text = "공유하기",
+                text = stringResource(R.string.invited_share),
                 onClick = { onIntent(SpaceListIntent.InviteShared(sheet.code)) },
                 modifier = Modifier.weight(1f),
             )
@@ -783,7 +807,7 @@ private fun InvitedSheet(sheet: SpaceListSheet.Invited, onIntent: (SpaceListInte
 
         Spacer(Modifier.height(Gap.l))
         PrimaryButton(
-            text = "짜국 열기",
+            text = stringResource(R.string.invited_open),
             onClick = { onIntent(SpaceListIntent.InviteOpenTapped) },
             modifier = Modifier.fillMaxWidth(),
         )

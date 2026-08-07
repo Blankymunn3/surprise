@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  달력 화면의 글.
+
+  ⚠️ iOS 에는 같은 글이 Swift 코드에 그대로 박혀 있습니다
+  (`ios/Packages/MemoryMap/Sources/FeatureCalendar/`). 여기 문구를 고치면 그쪽도 같이.
+-->
+<resources>
+
+    <!--
+      요일. **배열로 둡니다** — 코드가 요일 번호로 꺼내 쓰므로 순서가 뜻을 갖습니다.
+      일요일부터입니다 (달력 격자가 일요일에서 시작합니다).
+    -->
+    <string-array name="calendar_weekdays">
+        <item>일</item>
+        <item>월</item>
+        <item>화</item>
+        <item>수</item>
+        <item>목</item>
+        <item>금</item>
+        <item>토</item>
+    </string-array>
+
+    <!-- 머리말 -->
+    <string name="calendar_month">%1$d년 %2$d월</string>
+    <string name="calendar_previous_month">이전 달</string>
+    <string name="calendar_next_month">다음 달</string>
+
+    <!-- 접기 -->
+    <string name="calendar_collapse">달력 접기</string>
+    <string name="calendar_expand">달력 펴기</string>
+
+    <!-- 날짜 묶음 -->
+    <string name="calendar_day_header">%1$d월 %2$d일 %3$s</string>
+    <string name="calendar_photo_count">%1$d장</string>
+    <string name="calendar_photo_description">%1$s 사진</string>
+
+    <!-- 빈 달 -->
+    <string name="calendar_empty">이 달엔 아직 사진이 없어요</string>
+
+    <!-- 뷰모델이 알려 오는 일 (CalendarMessage). 말은 화면이 고릅니다. -->
+    <string name="calendar_msg_cover_failed">대표사진을 바꾸지 못했어요.</string>
+
+</resources>

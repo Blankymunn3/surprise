@@ -44,7 +44,7 @@ struct SpaceDetailView: View {
             if plasticTrial {
                 plasticTabs
             } else {
-                Segmented(options: ["지도", "달력"], selection: $tab)
+                Segmented(options: SharedText.spaceTabs, selection: $tab)
                     .padding(.horizontal, MemorySpace.xl)
                     .padding(.top, 2)
                     .padding(.bottom, 10)
@@ -176,7 +176,7 @@ struct SpaceDetailView: View {
      */
     private var topBar: some View {
         HStack(spacing: 2) {
-            barButton("chevron.left", label: "뒤로") { dismiss() }
+            barButton("chevron.left", label: SharedText.back) { dismiss() }
 
             Text(name)
                 .memoryTitle()
@@ -190,7 +190,7 @@ struct SpaceDetailView: View {
                 // 이 딱지는 몸통 위에서 **파인 자리**로 그립니다. 흰 면에 잉크 선은
                 // 플라스틱 위에서 종이를 붙인 것처럼 떠 보입니다.
                 if plasticTrial {
-                    Text("이 폰에만")
+                    Text(SharedText.onlyOnThisPhone)
                         .font(MemoryFont.font(11, .bold))
                         .foregroundStyle(PlasticColor.onPlateDim)
                         .padding(.horizontal, 7)
@@ -200,7 +200,7 @@ struct SpaceDetailView: View {
                                 .fill(PlasticColor.plate)
                         )
                 } else {
-                    Text("이 폰에만")
+                    Text(SharedText.onlyOnThisPhone)
                         .memoryMicro()
                         .foregroundStyle(MemoryColor.ink)
                         .padding(.horizontal, 7)
@@ -212,7 +212,7 @@ struct SpaceDetailView: View {
                 }
             }
 
-            barButton("ellipsis", label: "더 보기") { menuOpen = true }
+            barButton("ellipsis", label: SharedText.more) { menuOpen = true }
         }
         .padding(.horizontal, MemorySpace.s)
         .padding(.vertical, 6)

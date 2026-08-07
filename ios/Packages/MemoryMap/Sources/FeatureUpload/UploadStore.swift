@@ -43,6 +43,17 @@ public struct UploadItem: Equatable, Sendable, Identifiable {
     }
 }
 
+/// 몇 곳 · 며칠에 걸쳐 있는지.
+public struct SplitCounts: Equatable, Sendable {
+    public let places: Int
+    public let days: Int
+
+    public init(places: Int, days: Int) {
+        self.places = places
+        self.days = days
+    }
+}
+
 public struct UploadState: Equatable, Sendable {
     public let spaceId: SpaceId
     /**
@@ -69,14 +80,17 @@ public struct UploadState: Equatable, Sendable {
     }
 
     /**
-     "지역 2곳 · 날짜 2일로 나눠 올라가요" — 한 번에 고른 사진이 여러 곳·여러 날에
-     걸쳐 있을 때만 알립니다. 한 곳 한 날이면 알릴 것이 없습니다.
+     한 번에 고른 사진이 여러 곳·여러 날에 걸쳐 있는지. 한 곳 한 날이면 `nil` —
+     알릴 것이 없습니다.
+
+     **수만 돌려주고 문구는 화면이 짓습니다.** Store 가 글을 만들면 그 글이 테스트에
+     박혀서, 문구를 고칠 때마다 멀쩡한 테스트가 깨집니다. 안드로이드 `splitCounts()` 와 같습니다.
      */
-    public var splitNotice: String? {
+    public var splitCounts: SplitCounts? {
         let places = Set(items.compactMap { $0.region?.code }).count
         let days = Set(items.map(\.takenOn)).count
         guard places > 1 || days > 1 else { return nil }
-        return "지역 \(places)곳 · 날짜 \(days)일로 나눠 올라가요"
+        return SplitCounts(places: places, days: days)
     }
 }
 

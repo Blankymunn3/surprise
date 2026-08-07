@@ -11,6 +11,9 @@ import PackageDescription
  */
 let package = Package(
     name: "MemoryMap",
+    // 화면의 글을 Localizable.strings 로 뺐습니다. 이 값이 있어야 SwiftPM 이
+    // `Resources/ko.lproj` 를 번역 파일로 알아봅니다 — 없으면 그냥 파일로 복사만 합니다.
+    defaultLocalization: "ko",
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
         .library(name: "CoreModel", targets: ["CoreModel"]),
@@ -32,16 +35,16 @@ let package = Package(
         .target(name: "CoreModel"),
         .target(name: "CoreCommon"),
         .target(name: "CoreNetwork", dependencies: ["CoreCommon"]),
-        .target(name: "DesignSystem", dependencies: ["CoreModel"]),
+        .target(name: "DesignSystem", dependencies: ["CoreModel"], resources: [.process("Resources")]),
         .target(name: "Domain", dependencies: ["CoreModel", "CoreCommon"]),
         .target(name: "DataAuth", dependencies: ["CoreModel", "CoreCommon", "Domain", "CoreNetwork"]),
         .target(name: "DataPhoto", dependencies: ["CoreModel", "CoreCommon", "Domain", "CoreNetwork"]),
         .target(name: "DataSpace", dependencies: ["CoreModel", "CoreCommon", "Domain", "CoreNetwork"]),
         .target(name: "DataRegion", dependencies: ["CoreModel", "Domain"], resources: [.process("Resources")]),
-        .target(name: "FeatureSpace", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"]),
-        .target(name: "FeatureMap", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"]),
-        .target(name: "FeatureCalendar", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"]),
-        .target(name: "FeatureUpload", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"]),
+        .target(name: "FeatureSpace", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"], resources: [.process("Resources")]),
+        .target(name: "FeatureMap", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"], resources: [.process("Resources")]),
+        .target(name: "FeatureCalendar", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"], resources: [.process("Resources")]),
+        .target(name: "FeatureUpload", dependencies: ["CoreModel", "CoreCommon", "Domain", "DesignSystem"], resources: [.process("Resources")]),
 
         .testTarget(name: "CoreNetworkTests", dependencies: ["CoreNetwork"]),
         .testTarget(name: "DomainTests", dependencies: ["Domain", "CoreModel", "CoreCommon"]),

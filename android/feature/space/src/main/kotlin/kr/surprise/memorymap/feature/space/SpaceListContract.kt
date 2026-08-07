@@ -1,5 +1,8 @@
 package kr.surprise.memorymap.feature.space
 
+import android.content.Context
+import kr.surprise.memorymap.core.common.Failure
+
 import kr.surprise.memorymap.core.common.Failure
 import kr.surprise.memorymap.core.model.Space
 import kr.surprise.memorymap.core.model.SpaceId
@@ -86,10 +89,23 @@ sealed interface SpaceListIntent {
 }
 
 /** 한 번만 일어나는 일. 화면에 남아 있어야 하는 건 State 로 갑니다. */
+/**
+ * 화면에 알릴 일. **문구가 아니라 "무슨 일이 있었는지"** 를 나릅니다 —
+ * 말은 화면이 고릅니다. 뷰모델은 Composable 이 아니라 `stringResource` 를 못 씁니다.
+ */
+sealed interface SpaceListMessage {
+    /** 구글 로그인이 안 됨 */
+    data object SignInFailed : SpaceListMessage
+    /** 그런 초대 코드가 없음 */
+    data object InviteNotFound : SpaceListMessage
+    /** 그 밖의 실패. 원인을 그대로 나르고 말은 화면이 고릅니다. */
+    data class Failed(val reason: Failure) : SpaceListMessage
+}
+
 sealed interface SpaceListEffect {
     /** 종류를 같이 넘깁니다 — 들어간 화면이 기기 안 사진을 볼지 서버 사진을 볼지 정합니다. */
     data class OpenSpace(val id: SpaceId, val kind: SpaceKind, val name: String) : SpaceListEffect
-    data class ShowMessage(val text: String) : SpaceListEffect
+    data class ShowMessage(val message: SpaceListMessage) : SpaceListEffect
     /** 시스템 공유 창으로 코드를 보냅니다. */
     data class ShareInvite(val code: String) : SpaceListEffect
     /** 클립보드에 코드를 넣습니다. 공유와 다른 일이라 따로 둡니다. */
@@ -101,3 +117,24 @@ sealed interface SpaceListEffect {
      */
     data object StartGoogleSignIn : SpaceListEffect
 }
+
+/**
+ * [SpaceListMessage] 를 사람이 읽을 말로. **화면 쪽에서 고릅니다.**
+ *
+ * 실패 원인마다 다르게 적는 이유: "다시 해 주세요" 만 띄우면 몇 번을 다시 해도
+ * 안 되는 경우(권한)를 알 길이 없습니다.
+ */
+fun SpaceListMessage.say(context: Context): String = context.getString(
+    when (this) {
+        SpaceListMessage.SignInFailed -> R.string.msg_sign_in_failed
+        SpaceListMessage.InviteNotFound -> R.string.msg_invite_not_found
+        is SpaceListMessage.Failed -> when (reason) {
+            Failure.Denied -> R.string.msg_denied
+            Failure.Network -> R.string.msg_network
+            Failure.Timeout -> R.string.msg_timeout
+            Failure.TooLarge -> R.string.msg_too_large
+            Failure.NotFound -> R.string.msg_not_found
+            Failure.Unknown -> R.string.msg_unknown
+        }
+    }
+)

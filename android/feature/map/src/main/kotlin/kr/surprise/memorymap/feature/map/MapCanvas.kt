@@ -10,10 +10,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import android.graphics.Bitmap
-import android.graphics.Typeface
-import android.graphics.Paint
-import android.graphics.Color as AndroidColor
 import android.graphics.Canvas as AndroidCanvas
+import android.graphics.Color as AndroidColor
+import android.graphics.Paint
+import android.graphics.Typeface
 import coil3.SingletonImageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
@@ -21,6 +21,7 @@ import coil3.toBitmap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.viewinterop.AndroidView
@@ -164,7 +165,9 @@ internal fun MapCanvas(
                 map.setStyle(Style.Builder().fromJson(OsmStyle.json(dark = PLASTIC_TRIAL))) { style ->
                     paintRegions(style, fills, covers)
                     drawOutline(style, outline)
+                    // 딱지는 지역 칠보다 **나중에** 얹습니다. 먼저 얹으면 칠에 덮입니다.
                     drawBadges(style, pins, density)
+                    // 내 자리는 그보다 더 위입니다 — "지금 여기" 는 무엇에도 가리면 안 됩니다.
                     drawMyLocation(style, myLocation)
                 }
 
@@ -321,11 +324,10 @@ private fun drawOutline(style: Style, outline: RegionOutline?) {
 }
 
 /**
- * 고른 지역 테두리의 색.
+ * 고른 지역 테두리의 색. 지도 위에서도 앱과 같은 색이어야 같은 앱으로 보입니다.
  *
- * 옛 시안(`design.html`)의 살구색이 그대로 남아 있었습니다 — 지금 기준 디자인의
- * 레드도, 패미컴 스타일의 빨강도 아니었습니다. 지도가 어두워지면서 이 선이 더
- * 눈에 띄어 드러났습니다. iOS 는 처음부터 스타일에 맞는 빨강을 쓰고 있었습니다.
+ * 두 스타일이 쓰는 빨강이 다릅니다 — 기준 디자인은 `MemoryColors.Accent`,
+ * 패미컴은 컨트롤러의 빨강입니다. 어두운 지도에서 이 선이 더 눈에 띕니다.
  */
 private val OUTLINE_COLOR = if (PLASTIC_TRIAL) "#D8342A" else "#EC3013"
 

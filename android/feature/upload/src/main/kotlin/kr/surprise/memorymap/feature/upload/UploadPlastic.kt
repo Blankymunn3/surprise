@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -100,9 +101,9 @@ internal fun PlasticUploadBody(
                     }
                 }
 
-                state.splitNotice()?.let {
+                state.splitCounts()?.let { split ->
                     Text(
-                        text = it,
+                        text = stringResource(R.string.upload_split_notice, split.places, split.days),
                         fontFamily = Pretendard,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 11.sp,

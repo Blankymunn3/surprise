@@ -80,32 +80,32 @@ struct SpaceSheet: View {
 
     private var create: some View {
         VStack(alignment: .leading, spacing: 0) {
-            sheetTitle("새 짜국")
+            sheetTitle(localized("create_title"))
 
             VStack(alignment: .leading, spacing: 0) {
-                sectionLabel("어떻게 쓸까요").padding(.bottom, MemorySpace.s)
+                sectionLabel(localized("create_kind_label")).padding(.bottom, MemorySpace.s)
 
                 kindOption(
                     .personal,
-                    title: "혼자",
-                    detail: "사진이 이 폰에만 남아요 · 로그인 없이 바로 시작해요",
-                    sub: "폰을 잃어버리면 사진도 함께 사라져요"
+                    title: localized("create_kind_solo"),
+                    detail: localized("create_kind_solo_detail"),
+                    sub: localized("create_kind_solo_sub")
                 )
                 .padding(.bottom, 9)
 
                 kindOption(
                     .shared,
-                    title: "같이",
-                    detail: "초대한 사람들과 같이 채우고 같이 봐요 · 로그인이 필요해요",
-                    sub: "만들면 초대 코드가 바로 나와요"
+                    title: localized("create_kind_shared"),
+                    detail: localized("create_kind_shared_detail"),
+                    sub: localized("create_kind_shared_sub")
                 )
 
-                sectionLabel("이름")
+                sectionLabel(localized("create_name_label"))
                     .padding(.top, MemorySpace.xl)
                     .padding(.bottom, MemorySpace.s)
 
                 field(
-                    placeholder: "예) 우리 여름, 제주 한 달",
+                    placeholder: localized("create_name_placeholder"),
                     text: Binding(
                         get: { store.state.pendingName },
                         set: { value in Task { await store.send(.nameTyped(value)) } }
@@ -114,7 +114,7 @@ struct SpaceSheet: View {
             }
 
             PrimaryButton(
-                store.state.working ? "만드는 중…" : "만들기",
+                localized(store.state.working ? "create_working" : "create_confirm"),
                 enabled: store.state.canCreate
             ) {
                 Task { await store.send(.createConfirmed) }
@@ -122,7 +122,7 @@ struct SpaceSheet: View {
             .padding(.top, MemorySpace.xl)
 
             if store.state.pendingKind == .personal {
-                Text("로그인 없이 바로 만들어져요.")
+                Text(localized("create_solo_note"))
                     .memoryMicro()
                     .foregroundStyle(bodyDim)
                     .padding(.top, MemorySpace.s)
@@ -135,12 +135,12 @@ struct SpaceSheet: View {
     /// 시안에 따로 그려져 있지 않아 '새 짜국' 과 같은 뼈대로 갑니다.
     private var join: some View {
         VStack(alignment: .leading, spacing: 0) {
-            sheetTitle("초대 코드로 참여")
+            sheetTitle(localized("join_title"))
 
             VStack(alignment: .leading, spacing: MemorySpace.s) {
-                sectionLabel("받은 코드")
+                sectionLabel(localized("join_code_label"))
                 field(
-                    placeholder: "예) K7QF2M",
+                    placeholder: localized("join_code_placeholder"),
                     text: Binding(
                         get: { store.state.pendingCode },
                         set: { value in Task { await store.send(.codeTyped(value.uppercased())) } }
@@ -148,13 +148,13 @@ struct SpaceSheet: View {
                     // 코드는 영문·숫자라 자동 대문자·자동 수정이 방해만 됩니다.
                     code: true
                 )
-                Text("코드를 보낸 사람의 짜국에 멤버로 들어가요.")
+                Text(localized("join_note"))
                     .memoryMicro()
                     .foregroundStyle(bodyDim)
             }
 
             PrimaryButton(
-                store.state.working ? "찾는 중…" : "참여하기",
+                localized(store.state.working ? "join_working" : "join_confirm"),
                 enabled: store.state.canJoin
             ) {
                 Task { await store.send(.joinConfirmed) }
@@ -172,9 +172,9 @@ struct SpaceSheet: View {
                 .padding(.bottom, 14)
 
             // 시트에서는 25단이 너무 큽니다 — 제목만으로 시트가 반을 먹습니다.
-            Text("같이 보려면 계정이 필요해요").memoryTitle().foregroundStyle(bodyInk)
+            Text(localized("signin_title")).memoryTitle().foregroundStyle(bodyInk)
 
-            Text("로그인은 멤버가 아닌 사람이 우리 사진을 못 보게 막는 잠금장치예요. 계정 확인 말고 다른 데는 쓰지 않아요.")
+            Text(localized("signin_why"))
                 .memoryLabel()
                 .foregroundStyle(bodyDim)
                 .lineSpacing(4)
@@ -192,7 +192,7 @@ struct SpaceSheet: View {
             } label: {
                 HStack(spacing: 11) {
                     GoogleMark().frame(width: 19, height: 19)
-                    Text(store.state.working ? "로그인 중…" : "Google로 계속하기")
+                    Text(localized(store.state.working ? "signin_working" : "signin_google"))
                         .memoryHeadline()
                         .foregroundStyle(MemoryColor.ink)
                     Spacer(minLength: 0)
@@ -211,7 +211,7 @@ struct SpaceSheet: View {
                 Button {
                     Task { await store.send(.signInGaveUp) }
                 } label: {
-                    Text("그냥 혼자 쓸래요 — 이 폰에만 저장할게요")
+                    Text(localized("signin_give_up"))
                         .memoryBody()
                         .foregroundStyle(bodyInk)
                         .underline()
@@ -220,7 +220,7 @@ struct SpaceSheet: View {
                 .padding(.top, 14)
             }
 
-            Text("지금은 Google 계정만 돼요.")
+            Text(localized("signin_only_google"))
                 .memoryMicro()
                 .foregroundStyle(bodyDim)
                 .padding(.top, MemorySpace.l)
@@ -237,9 +237,9 @@ struct SpaceSheet: View {
      */
     private func invited(space: Space, code: String) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("'\(space.name)' 짜국을 만들었어요").memoryTitle().foregroundStyle(bodyInk)
+            Text(localized("invited_title", space.name)).memoryTitle().foregroundStyle(bodyInk)
 
-            Text("이 코드를 받은 사람이 들어올 수 있어요. 지금 보내 두면 나중에 다시 찾지 않아도 돼요.")
+            Text(localized("invited_note"))
                 .memoryLabel()
                 .foregroundStyle(bodyDim)
                 .lineSpacing(3)
@@ -260,13 +260,13 @@ struct SpaceSheet: View {
                 .padding(.top, 18)
 
             HStack(spacing: MemorySpace.s) {
-                SoftButton("코드 복사") {
+                SoftButton(localized("invited_copy")) {
                     #if os(iOS)
                     UIPasteboard.general.string = code
                     #endif
                 }
                 ShareLink(item: code) {
-                    Text("공유하기")
+                    Text(localized("invited_share"))
                         .memoryBody()
                         .foregroundStyle(MemoryColor.ink)
                         .padding(.horizontal, 16)
@@ -281,12 +281,12 @@ struct SpaceSheet: View {
             }
             .padding(.top, 10)
 
-            Text("위쪽 ⋯ 메뉴에서 언제든 다시 볼 수 있어요.")
+            Text(localized("invited_menu_hint"))
                 .memoryMicro()
                 .foregroundStyle(bodyDim)
                 .padding(.top, MemorySpace.m)
 
-            PrimaryButton("짜국 열기") {
+            PrimaryButton(localized("invited_open")) {
                 Task { await store.send(.sheetDismissed) }
                 onOpen(space)
             }

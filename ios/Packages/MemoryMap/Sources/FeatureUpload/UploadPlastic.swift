@@ -67,9 +67,9 @@ struct PlasticUploadBody: View {
                 }
                 .frame(maxHeight: uploadList)
 
-                if let notice = store.state.splitNotice {
+                if let split = store.state.splitCounts {
                     // 나눠 올린다고 알려 주기만 합니다. 막지는 않습니다 — 일부러 그럴 수도 있어서요.
-                    Text(notice)
+                    Text(localized("upload_split_notice", split.places, split.days))
                         .font(MemoryFont.font(11, .semibold))
                         .foregroundStyle(PlasticColor.onPlateDim)
                         .padding(.top, MemorySpace.xs)

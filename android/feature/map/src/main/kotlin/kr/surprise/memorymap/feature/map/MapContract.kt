@@ -1,5 +1,7 @@
 package kr.surprise.memorymap.feature.map
 
+import android.content.Context
+
 import kr.surprise.memorymap.core.model.Photo
 import kr.surprise.memorymap.core.model.PhotoId
 import kr.surprise.memorymap.core.model.Region
@@ -100,6 +102,20 @@ sealed interface MapIntent {
     data class MyLocationFound(val latitude: Double, val longitude: Double) : MapIntent
 }
 
+/**
+ * 화면에 알릴 일. **문구가 아니라 "무슨 일이 있었는지"** 를 나릅니다 —
+ * 말은 화면이 고릅니다.
+ *
+ * 뷰모델이 문장을 만들면 그 문장이 리소스로 못 가고 코드에 박힙니다.
+ * 뷰모델은 Composable 이 아니라 `stringResource` 를 쓸 수 없기 때문입니다.
+ */
+enum class MapMessage {
+    /** 누른 자리가 어느 지역인지 판정하지 못함 */
+    RegionUnknown,
+    /** 대표사진을 바꾸지 못함 */
+    CoverFailed,
+}
+
 sealed interface MapEffect {
     /**
      * 사진 올리기를 엽니다.
@@ -109,6 +125,19 @@ sealed interface MapEffect {
      * 그때는 사진의 EXIF 가 지역을 정합니다.
      */
     data class OpenUpload(val region: Region?) : MapEffect
-    data class ShowMessage(val text: String) : MapEffect
+    data class ShowMessage(val message: MapMessage) : MapEffect
     data object AskMyLocation : MapEffect
 }
+
+/**
+ * [MapMessage] 를 사람이 읽을 말로. **화면 쪽에서 고릅니다.**
+ *
+ * `Context` 를 받는 이유: 스낵바는 `LaunchedEffect` 안에서 띄우는데 그 안은
+ * Composable 이 아니라 `stringResource` 를 못 씁니다.
+ */
+fun MapMessage.say(context: Context): String = context.getString(
+    when (this) {
+        MapMessage.RegionUnknown -> R.string.map_msg_region_unknown
+        MapMessage.CoverFailed -> R.string.map_msg_cover_failed
+    }
+)

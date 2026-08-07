@@ -81,9 +81,9 @@ public struct Segmented: View {
  */
 public struct MemoryFab: View {
     let action: () -> Void
-    let label: String
+    let label: LocalizedStringKey
 
-    public init(label: String = "사진 올리기", action: @escaping () -> Void) {
+    public init(label: LocalizedStringKey = "component_add_photo", action: @escaping () -> Void) {
         self.label = label
         self.action = action
     }
@@ -98,7 +98,7 @@ public struct MemoryFab: View {
                 .shadow(color: MemoryColor.ink.opacity(0.28), radius: 8, y: 4)
         }
         .buttonStyle(.plasticPress)
-        .accessibilityLabel(label)
+        .accessibilityLabel(Text(label, bundle: .module))
     }
 }
 
@@ -335,7 +335,7 @@ public struct PhotoThumb: View {
                     .frame(width: 20, height: 20)
                     .background(Circle().fill(MemoryColor.accent))
                     .padding(6)
-                    .accessibilityLabel("대표사진")
+                    .accessibilityLabel(Text("component_cover_photo", bundle: .module))
             }
         }
         .aspectRatio(1, contentMode: .fit)
