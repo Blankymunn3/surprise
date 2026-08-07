@@ -27,14 +27,47 @@ final class AppContainer {
     /// 요청할 때마다 물어봐야 그때의 토큰(필요하면 갱신된 것)이 실립니다.
     private let storage: FirebaseStorage
 
-    /// `GoogleService-Info.plist` 에 들어 있는 값들입니다. **비밀이 아닙니다** — 실제 보안은
-    /// 규칙이 합니다. 파일을 읽어 꺼내지 않고 여기 적어 두는 이유는 버킷과 같습니다:
+    /// 이 빌드가 붙는 서버 한 벌. `GoogleService-Info.plist` 의 값들이고 **비밀이
+    /// 아닙니다** — 실제 보안은 규칙이 합니다. 파일을 읽지 않고 여기 적어 두는 이유는
     /// 조립하는 곳 한 군데만 보면 이 앱이 어디에 붙는지 알 수 있게 하려는 것입니다.
-    private let apiKey = "AIzaSyBLC3qqFukg__VivJe2HkN23UI_X94ENEc"
+    ///
+    /// dev 와 prod 는 **빌드 구성이 고릅니다** (`MemoryMap-Dev` 스킴 = `DEV` 플래그,
+    /// 안드로이드의 flavor 와 같은 자리). 지금은 dev 전용 Firebase 프로젝트가 아직
+    /// 없어 둘이 같은 값입니다 — dev 프로젝트를 만들면 `dev` 의 네 값만 바꾸면 됩니다.
+    ///
+    /// ⚠️ dev 빌드는 번들이 `kr.surprise.memorymap.dev` 라서, dev 프로젝트를 만들 때
+    /// 그 번들로 iOS 앱을 등록해야 구글 로그인이 됩니다. 그전까지 dev 빌드에서
+    /// 같이 쓰는 짜국의 로그인은 실패할 수 있습니다 — 혼자 짜국은 지금도 됩니다.
+    private struct FirebaseEnv {
+        let projectId: String
+        let bucket: String
+        let apiKey: String
+        /// iOS 는 **자기 클라이언트 ID** 를 씁니다. 안드로이드가 web 클라이언트를
+        /// 쓰는 것과 다릅니다 — 자주 헷갈리는 곳입니다.
+        let googleClientID: String
 
-    /// iOS 는 **자기 클라이언트 ID** 를 씁니다. 안드로이드가 web 클라이언트를 쓰는 것과
-    /// 다릅니다 — 자주 헷갈리는 곳입니다.
-    let googleClientID = "419812459548-4vruv826mfgfkfi3dppobg87c3du1vdr.apps.googleusercontent.com"
+        static let prod = FirebaseEnv(
+            projectId: "our-surprise",
+            bucket: "our-surprise.firebasestorage.app",
+            apiKey: "AIzaSyBLC3qqFukg__VivJe2HkN23UI_X94ENEc",
+            googleClientID: "419812459548-4vruv826mfgfkfi3dppobg87c3du1vdr.apps.googleusercontent.com"
+        )
+
+        /// 아직 prod 와 같다. dev 프로젝트가 생기면 여기만 바꾼다.
+        static let dev = prod
+
+        static var current: FirebaseEnv {
+            #if DEV
+            dev
+            #else
+            prod
+            #endif
+        }
+    }
+
+    private let env = FirebaseEnv.current
+
+    var googleClientID: String { env.googleClientID }
 
     private let spaces: SharedSpaceRepository
     private let regions = AssetRegionCatalog()
@@ -46,14 +79,15 @@ final class AppContainer {
     private let localPhotos: LocalPhotoRepository
 
     private init() {
-        let accounts = FirebaseAuthRepository(auth: FirebaseAuth(apiKey: apiKey))
+        let env = FirebaseEnv.current
+        let accounts = FirebaseAuthRepository(auth: FirebaseAuth(apiKey: env.apiKey))
         self.accounts = accounts
         storage = FirebaseStorage(
-            bucket: "our-surprise.firebasestorage.app",
+            bucket: env.bucket,
             token: { await accounts.idToken() }
         )
         // 멤버 판정이 사는 곳. 규칙이 여기를 봅니다 (`firestore.rules`).
-        let firestore = Firestore(projectId: "our-surprise", token: { await accounts.idToken() })
+        let firestore = Firestore(projectId: env.projectId, token: { await accounts.idToken() })
         spaces = SharedSpaceRepository(firestore: firestore, accounts: accounts)
         remotePhotos = FirebasePhotoRepository(
             storage: storage, firestore: firestore, accounts: accounts

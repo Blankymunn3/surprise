@@ -35,9 +35,48 @@ import kr.surprise.memorymap.domain.usecase.UploadPhotosUseCase
  * 그래프가 커지면 그때 바꿉니다 — 그때 고칠 자리가 이 파일 하나뿐이도록 만들어 뒀습니다.
  * (iOS 도 같은 이유로 수동 조립입니다 — `docs/app/ARCHITECTURE.md`)
  */
+/**
+ * 이 빌드가 붙는 서버 한 벌. **비밀이 아닙니다** — 실제 보안은 규칙이 합니다.
+ * (`google-services.json` 의 값들. 파일을 읽지 않고 여기 적어 두는 이유는
+ * 조립하는 곳 한 군데만 보면 이 앱이 어디에 붙는지 알 수 있게 하려는 것입니다.)
+ *
+ * dev 와 prod 를 **flavor 가 고릅니다** (`BuildConfig.FLAVOR`). 지금은 dev 전용
+ * Firebase 프로젝트가 아직 없어 둘이 같은 값입니다 — dev 프로젝트를 만들면
+ * [Dev] 의 네 값만 그 프로젝트 것으로 바꾸면 됩니다. 코드는 안 바뀝니다.
+ *
+ * ⚠️ dev 빌드는 패키지가 `kr.surprise.memorymap.dev` 라서, dev 프로젝트를 만들 때
+ * 그 패키지(+ 디버그 SHA-1)로 안드로이드 앱을 등록해야 구글 로그인이 됩니다.
+ * 그전까지 dev 빌드에서 같이 쓰는 짜국의 로그인은 실패할 수 있습니다 —
+ * 혼자 쓰는 짜국은 서버를 안 쓰니 지금도 됩니다.
+ */
+private class FirebaseEnv(
+    val projectId: String,
+    val bucket: String,
+    val apiKey: String,
+    /** ⚠️ **web 클라이언트(type 3)** 입니다. android 클라이언트(type 1)를 주면
+     *  ID 토큰이 안 나옵니다 — 자주 틀리는 곳이라 `docs/app/AUTH.md` 에도 적어 뒀습니다. */
+    val webClientId: String,
+) {
+    companion object {
+        val Prod = FirebaseEnv(
+            projectId = "our-surprise",
+            bucket = "our-surprise.firebasestorage.app",
+            apiKey = "AIzaSyBMg1m08msg7_xPISuEwx5gwImi5MVz-1Q",
+            webClientId = "419812459548-ldmh2hi0vb5lmjase8jpctqei4sk4mbp.apps.googleusercontent.com",
+        )
+
+        /** 아직 prod 와 같다. dev 프로젝트가 생기면 여기만 바꾼다. */
+        val Dev = Prod
+
+        fun of(flavor: String): FirebaseEnv = if (flavor == "dev") Dev else Prod
+    }
+}
+
 class AppContainer(context: Context) {
 
     private val appContext = context.applicationContext
+
+    private val env = FirebaseEnv.of(BuildConfig.FLAVOR)
 
     /**
      * 웹과 **같은 버킷**입니다. 한쪽에서 넣은 사진이 다른 쪽에서 보여야 합니다.
@@ -46,29 +85,18 @@ class AppContainer(context: Context) {
      * 요청할 때마다 물어봐야 그때의 토큰(필요하면 갱신된 것)이 실립니다.
      */
     private val storage = FirebaseStorage(
-        bucket = "our-surprise.firebasestorage.app",
+        bucket = env.bucket,
         token = { accounts.idToken() },
     )
 
-    /**
-     * `google-services.json` 에 들어 있는 값들입니다. **비밀이 아닙니다** — 실제 보안은
-     * 규칙이 합니다. 파일을 읽어 꺼내지 않고 여기 적어 두는 이유는 버킷과 같습니다:
-     * 조립하는 곳 한 군데만 보면 이 앱이 어디에 붙는지 알 수 있게 하려는 것입니다.
-     */
-    private val auth = FirebaseAuth(apiKey = "AIzaSyBMg1m08msg7_xPISuEwx5gwImi5MVz-1Q")
+    private val auth = FirebaseAuth(apiKey = env.apiKey)
 
-    /**
-     * ⚠️ **web 클라이언트(type 3)** 입니다. android 클라이언트(type 1)를 주면 ID 토큰이
-     * 안 나옵니다 — 자주 틀리는 곳이라 `docs/app/AUTH.md` 에도 적어 뒀습니다.
-     */
-    val googleSignIn = GoogleSignIn(
-        serverClientId = "419812459548-ldmh2hi0vb5lmjase8jpctqei4sk4mbp.apps.googleusercontent.com",
-    )
+    val googleSignIn = GoogleSignIn(serverClientId = env.webClientId)
 
     val accounts = FirebaseAuthRepository(appContext, auth)
 
     /** 멤버 판정이 사는 곳. 규칙이 여기를 봅니다 (`firestore.rules`). */
-    private val firestore = Firestore(projectId = "our-surprise", token = { accounts.idToken() })
+    private val firestore = Firestore(projectId = env.projectId, token = { accounts.idToken() })
 
     val regions = AssetRegionCatalog(appContext)
     val spaces = SharedSpaceRepository(appContext, firestore, accounts)

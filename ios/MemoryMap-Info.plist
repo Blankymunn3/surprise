@@ -8,9 +8,11 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>ko</string>
-	<!-- 홈 화면에 보이는 이름. 폴더·모듈 이름(MemoryMap)은 코드 안쪽이라 그대로 둡니다. -->
+	<!-- 홈 화면에 보이는 이름. 값은 빌드 구성이 넣습니다(APP_DISPLAY_NAME) —
+	     dev 는 '짜국 Dev' 로 갈라 폰에 나란히 설치했을 때 어느 쪽인지 보이게 합니다.
+	     폴더·모듈 이름(MemoryMap)은 코드 안쪽이라 그대로 둡니다. -->
 	<key>CFBundleDisplayName</key>
-	<string>짜국</string>
+	<string>$(APP_DISPLAY_NAME)</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

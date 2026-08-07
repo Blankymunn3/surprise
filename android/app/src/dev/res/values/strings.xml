@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- dev 빌드의 앱 이름. 폰에 prod 와 나란히 설치되므로 이름으로 갈라야
+     어느 쪽을 열었는지 압니다. 나머지 문구는 main 것을 그대로 씁니다. -->
+<resources>
+    <string name="app_name">짜국 Dev</string>
+</resources>
