@@ -1,17 +1,10 @@
 package kr.surprise.memorymap.feature.calendar
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
-import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
-import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
-import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 
 /**
  * 요일 이름. 리소스 배열에서 읽습니다 — **순서가 뜻을 가지므로** 배열이어야 합니다
@@ -35,18 +28,3 @@ fun CalendarScreen(
     // 격자는 몸통에 끼운 화면 안에 들어가고 조작은 화면 밖에 섭니다.
     Box(modifier.fillMaxSize()) { PlasticCalendarBody(state, onIntent) }
 }
-
-/** 구획선은 2px 입니다. 테두리(1px)보다 굵어야 '나누는 선' 으로 읽힙니다. */
-@Composable
-private fun Divider() {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = Gap.xl)
-            .height(MemoryStroke.Divider)
-            .background(MemoryColors.Line2)
-    )
-}
-
-/** ±100년. 넘기다 끝에 닿을 일은 없습니다. */
-private const val PAGE_COUNT = 2401

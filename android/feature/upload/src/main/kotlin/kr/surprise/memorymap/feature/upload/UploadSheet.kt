@@ -1,16 +1,9 @@
 package kr.surprise.memorymap.feature.upload
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
-import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
-import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 
 /**
  * 사진 올리기. 두 탭에서 같은 시트를 엽니다.
@@ -27,15 +20,4 @@ fun UploadSheet(
 ) {
     // 몸통 위에 화면을 끼우고 조작은 화면 밖으로 냅니다.
     Box(modifier.fillMaxWidth()) { PlasticUploadBody(state, onIntent, onPickPhotos) }
-}
-
-@Composable
-private fun Divider(inset: Boolean = true) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = if (inset) Gap.xl else 0.dp)
-            .height(MemoryStroke.Divider)
-            .background(MemoryColors.Line2)
-    )
 }

@@ -11,7 +11,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import android.graphics.Bitmap
 import android.graphics.Canvas as AndroidCanvas
-import android.graphics.Color as AndroidColor
 import android.graphics.Paint
 import android.graphics.Typeface
 import coil3.SingletonImageLoader

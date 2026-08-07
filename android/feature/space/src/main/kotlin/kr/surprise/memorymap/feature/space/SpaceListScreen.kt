@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.sp
 import kr.surprise.memorymap.core.designsystem.component.PrimaryButton
 import kr.surprise.memorymap.core.designsystem.component.SoftButton
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
-import kr.surprise.memorymap.core.designsystem.theme.MemoryStroke
 import kr.surprise.memorymap.core.designsystem.theme.MemoryType
 import kr.surprise.memorymap.core.designsystem.theme.PlasticColors
 import kr.surprise.memorymap.core.designsystem.theme.PlasticShapes
@@ -50,7 +49,6 @@ import kr.surprise.memorymap.core.designsystem.theme.Pretendard
 import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 import kr.surprise.memorymap.core.designsystem.theme.raisedPlastic
 import kr.surprise.memorymap.core.designsystem.theme.sunken
-import kr.surprise.memorymap.core.model.Space
 import kr.surprise.memorymap.core.model.SpaceKind
 
 /**
@@ -122,31 +120,6 @@ private fun SheetGrip() {
 
 // ---------------------------------------------------------------------------
 // 목록
-
-/**
- * 사진이 없으면 수를 세지 않고 그 사실만 말합니다. "사진 0 · 지역 0" 은 셈이 아니라 잡음입니다.
- *
- * 조각을 이어 붙이지 않고 **포맷 문자열 하나**로 만듭니다 — 쪼개 두면 옮길 때
- * "사진 " 만 보고는 무슨 말인지 알 수 없고, 말 순서가 다른 언어에서는 맞출 수도 없습니다.
- */
-@Composable
-private fun Space.metaLine(): String {
-    if (photoCount == 0) return stringResource(R.string.card_meta_empty)
-    val on = lastPhotoOn ?: return stringResource(R.string.card_meta, photoCount, regionCount)
-    return stringResource(R.string.card_meta_dated, photoCount, regionCount, on.monthValue, on.dayOfMonth)
-}
-
-/** 구획선은 2px 입니다. 테두리(1px)보다 굵어야 '나누는 선' 으로 읽힙니다. */
-@Composable
-private fun Divider(inset: Boolean = true) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = if (inset) Gap.xl else 0.dp)
-            .height(MemoryStroke.Divider)
-            .background(MemoryColors.Line2)
-    )
-}
 
 // ---------------------------------------------------------------------------
 // 공통 부품 — 전체 화면들

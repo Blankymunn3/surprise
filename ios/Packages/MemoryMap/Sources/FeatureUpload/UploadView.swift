@@ -67,13 +67,6 @@ public struct UploadView: View {
 
     // MARK: - 본 화면
 
-    /**
-     못 올렸을 때. **왜 안 됐는지와 사진이 어디 있는지**를 같이 말합니다 —
-     실패만 알리면 사용자는 사진을 잃었다고 생각합니다.
-    /**
-     '어디'·'언제' 한 줄. **네모 상자입니다** — 눌러서 고치는 칸이라 눌릴 수 있게
-     생겨야 합니다. 예전에는 밑줄만 있는 줄이었는데, 사진마다 두 줄씩 쌓이니
-     어디까지가 한 사진인지 알 수 없었습니다.
     private func dateSheet(for uri: String) -> some View {
         let current = store.state.items.first { $0.uri == uri }?.takenOn
         return DatePicker(
@@ -122,83 +115,6 @@ public struct UploadView: View {
 private struct DateEdit: Identifiable {
     let uri: String
     var id: String { uri }
-}
-
-/**
- 사진 고르기 칸.
-
- `PhotosPicker` 의 라벨 자리는 **MainActor 가 아니라서** 거기서 `memoryMicro()` 같은
- 디자인 시스템 함수를 바로 부르면 컴파일되지 않습니다. 별도 View 로 빼면 그 안쪽은
- 다시 MainActor 라 평소처럼 쓸 수 있습니다.
- */
-private struct PickerTile: View {
-    var body: some View {
-        VStack(spacing: 4) {
-            Image(systemName: "plus")
-                .font(.system(size: 18, weight: .medium))
-            Text(localized("upload_empty_pick")).memoryMicro()
-        }
-        .foregroundStyle(MemoryColor.ink2)
-        .frame(width: 92, height: 92)
-        .background(
-            RoundedRectangle(cornerRadius: MemoryRadius.thumb, style: .continuous)
-                .fill(MemoryColor.fill)
-        )
-    }
-}
-
-/// 아직 안 올라간 사진은 주소가 없어서 파일에서 바로 읽습니다.
-///
-/// **한 번만** 읽어 두고 씁니다. 그릴 때마다 읽으면 몇 MB짜리 원본을 화면이 움직일
-/// 때마다 다시 여는 셈이 됩니다.
-private struct LocalThumb: View {
-    let path: String
-    @State private var image: Image?
-
-    var body: some View {
-        RoundedRectangle(cornerRadius: MemoryRadius.thumb, style: .continuous)
-            .fill(MemoryColor.fill)
-            .overlay {
-                image?
-                    .resizable()
-                    .scaledToFill()
-                    .clipShape(RoundedRectangle(cornerRadius: MemoryRadius.thumb, style: .continuous))
-            }
-            .task(id: path) { image = await load() }
-    }
-
-    /// 썸네일로 쓸 만큼만 줄여서 읽습니다 (올릴 때 쓰는 것과 같은 길, 크기만 다름).
-    private func load() async -> Image? {
-        #if canImport(UIKit)
-        let data = await Task.detached(priority: .userInitiated) {
-            PhotoFileThumb.small(at: path)
-        }.value
-        return data.flatMap(UIImage.init(data:)).map { Image(uiImage: $0) }
-        #else
-        return nil
-        #endif
-    }
-}
-
-/// 화면용 작은 미리보기. 올리는 크기(760px)와 굳이 같을 필요가 없어 더 작게 만듭니다.
-private enum PhotoFileThumb {
-    static func small(at path: String) -> Data? {
-        guard let source = CGImageSourceCreateWithURL(URL(fileURLWithPath: path) as CFURL, nil),
-              let image = CGImageSourceCreateThumbnailAtIndex(source, 0, [
-                  kCGImageSourceCreateThumbnailFromImageAlways: true,
-                  kCGImageSourceCreateThumbnailWithTransform: true,
-                  kCGImageSourceThumbnailMaxPixelSize: 240,
-              ] as CFDictionary)
-        else { return nil }
-
-        let out = NSMutableData()
-        guard let destination = CGImageDestinationCreateWithData(
-            out, UTType.jpeg.identifier as CFString, 1, nil
-        ) else { return nil }
-        CGImageDestinationAddImage(destination, image, nil)
-        guard CGImageDestinationFinalize(destination) else { return nil }
-        return out as Data
-    }
 }
 
 extension CalendarDate {

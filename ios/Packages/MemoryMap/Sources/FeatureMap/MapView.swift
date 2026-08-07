@@ -16,7 +16,6 @@ import SwiftUI
 public struct MapView: View {
     @State private var store: MapStore
     @State private var position: MapCameraPosition = .region(.korea)
-    @State private var sheetHeight: CGFloat = 0
     /// 지도가 실제로 몇 점 높이인지. 시트가 덮는 만큼을 빼고 맞추려면 있어야 합니다.
     @FocusState private var searching: Bool
     /// 지역을 칠할 대표사진. 주소가 아니라 **그림 자체**가 있어야 채울 수 있어서
@@ -25,14 +24,6 @@ public struct MapView: View {
     /// 지금 지도가 보여 주고 있는 범위. 확대·축소를 여기서부터 계산합니다 —
     /// `MapCameraPosition` 은 우리가 넣은 값만 알려 주고, 손으로 옮긴 것은 모릅니다.
     @State private var visibleRegion: MKCoordinateRegion?
-    /// 위치를 찾는 사람. 화면이 살아 있는 동안 하나만 둡니다 —
-    /// 누를 때마다 새로 만들면 권한 창의 답을 받을 자리가 사라집니다.
-    @State private var finder = MyLocationFinder()
-    /// 위치를 못 찾았을 때 알릴 말. 지도 아래에 잠깐 뜹니다.
-    @State private var notice: String?
-    /// 찾은 내 자리. 지도에 표시로 남습니다 — 옮겨 준 뒤 손으로 밀어도 그 지점을
-    /// 잃지 않아야 합니다.
-    @State private var me: CLLocationCoordinate2D?
     /// 사진 올리기를 엽니다. **지역 시트에서 눌렀으면 그 지역**이 넘어갑니다 —
     /// 이미 아는 곳을 올리기 화면에서 다시 고르게 하면 안 됩니다.
     /// 아래 ＋ 로 눌렀으면 `nil` 이고, 그때는 사진의 정보가 지역을 정합니다.
@@ -71,13 +62,6 @@ public struct MapView: View {
         }
     }
 
-    /**
-     아래를 시트가 덮는 만큼 **위로 올려** 잡습니다.
-
-     지도 위쪽 `높이 - 덮인 높이` 안에 지역이 들어가야 하므로, 남는 자리 비율만큼 위아래를
-     넓히고 그 넓어진 만큼 가운데를 아래로 내립니다 — 지역의 윗변은 그대로 두고 아래로만
-     자리를 벌리는 셈입니다. 안 그러면 화면에는 들어와도 아래 절반이 시트 뒤에 가립니다.
-     */
     /// 대표사진을 한 번씩만 받아 둡니다. 이미 받은 주소는 건너뜁니다.
     private func loadCovers() async {
         for fill in store.state.fills where covers[fill.coverURL] == nil {
@@ -92,118 +76,6 @@ public struct MapView: View {
         }
     }
 
-    /**
-     검색 결과. **사진이 있는 지역이 먼저** 옵니다 — 이미 다녀온 곳을 다시 찾는 일이
-     새 곳을 찾는 일보다 훨씬 잦습니다. 그 순서는 Store 가 정하고 여기서는 그리기만 합니다.
-    /**
-     왼쪽 아래: 확대 · 축소 · 내 위치.
-
-     세 칸이 **따로 떨어져** 섭니다 — 붙여 놓으면 가운데 선이 두 겹이 되고,
-     무엇이 한 벌인지도 흐려집니다.
-    /**
-     지금 자리로 지도를 옮깁니다. 패미컴 화면(`PlasticMapBody.goToMyLocation`)과
-     같은 일을 하고, 못 찾았을 때 알리는 방식만 이 화면의 것입니다.
-}
-
-/**
- 지도 위의 표시 — **사진 수만 적은 작은 잉크 딱지**입니다.
-
- 예전에는 지름 44 짜리 원에 대표사진을 넣었는데, 이제 지역 자체가 그 사진으로
- 칠해집니다. 같은 사진을 두 번 보여 줄 까닭이 없고, 원이 지역을 덮어 가렸습니다.
-
- **누를 수 없습니다.** 지역을 고르는 일은 지도를 누르면 되고, 딱지까지 누르게 하면
- 딱지를 살짝 빗나갔을 때만 되는 이상한 경계가 생깁니다.
- */
-private struct PinBadge: View {
-    let count: Int
-
-    var body: some View {
-        Text("\(count)")
-            .memoryMicro()
-            .foregroundStyle(MemoryColor.onAccent)
-            .frame(width: 22, height: 16)
-            .background(MemoryColor.ink)
-            .allowsHitTesting(false)
-    }
-}
-
-/**
- 지역 시트. **위쪽에만 2px 잉크 선**을 긋고 나머지는 흰 면입니다.
-
- 손잡이(작은 막대)를 두지 않습니다 — 이 시트는 끌어 올리는 것이 아니라 지역을
- 누르면 나타났다가 × 로 닫는 것이라, 끌 수 있게 생기면 안 됩니다.
- */
-private struct RegionSheet: View {
-    let sheet: RegionSheetUi
-    let store: MapStore
-    let onAddPhoto: (Region?) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            MemoryColor.ink.frame(height: MemoryStroke.divider)
-
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(alignment: .top, spacing: 10) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack(alignment: .lastTextBaseline, spacing: MemorySpace.s) {
-                            Text(sheet.region.name).memoryTitle()
-                            if let parent = sheet.region.parentName {
-                                Text(parent).memoryMicro().foregroundStyle(MemoryColor.ink2)
-                            }
-                        }
-                        Text(localized("map_sheet_count", sheet.photos.count))
-                            .memoryLabel()
-                            .foregroundStyle(MemoryColor.ink2)
-                    }
-                    Spacer(minLength: 0)
-                    Button { store.dismissSheet() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundStyle(MemoryColor.ink)
-                            .frame(width: 34, height: 34)
-                            .overlay(
-                                Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(localized("map_sheet_close"))
-                }
-
-                Spacer().frame(height: MemorySpace.m)
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: MemorySpace.s) {
-                        ForEach(sheet.photos) { photo in
-                            PhotoThumb(
-                                url: photo.downloadURL,
-                                isCover: photo.id == sheet.coverId,
-                                dateLabel: "\(photo.takenOn.month).\(photo.takenOn.day)"
-                            )
-                            .frame(width: 92, height: 92)
-                            .onTapGesture { Task { await store.setCover(photo.id) } }
-                        }
-                    }
-                }
-
-                // 누르면 바로 대표가 되므로, 그렇다고 **말해 줘야** 합니다. 버튼이 없으니
-                // 알려 주지 않으면 누를 수 있다는 것 자체를 모릅니다.
-                Text(localized("map_sheet_cover_hint"))
-                    .memoryMicro()
-                    .foregroundStyle(MemoryColor.ink2)
-                    .padding(.top, 6)
-
-                Spacer().frame(height: MemorySpace.m)
-
-                // 이 시트가 아는 지역을 그대로 들려 보냅니다.
-                PrimaryButton(localized("map_sheet_add")) { onAddPhoto(sheet.region) }
-            }
-            .padding(.horizontal, 18)
-            .padding(.top, 14)
-            .padding(.bottom, 26)
-        }
-        .background(MemoryColor.surface)
-        .transition(.move(edge: .bottom))
-    }
 }
 
 extension MKCoordinateRegion {
@@ -243,9 +115,6 @@ extension MapFocus {
 
 /// 테두리와 화면 끝 사이에 남길 여유.
 private let edgeRoom = 1.18
-
-/// 지도 위 물건들의 가장자리 여백. 시안이 정한 값입니다. 안드로이드 `Edge` 와 같습니다.
-private let edge: CGFloat = 14
 
 /// 날짜변경선을 넘는 지역은 가운데가 180 을 넘어갑니다. 지도에 줄 때는 접어서 줍니다 —
 /// 넓이(span)는 그대로라 접어도 보이는 범위는 같습니다.

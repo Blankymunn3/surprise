@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import kr.surprise.memorymap.core.designsystem.theme.MemoryColors
-import kr.surprise.memorymap.core.designsystem.theme.Space as Gap
 
 /**
  * ⋯ 하나에 **멤버 · 초대 코드 · 이름**을 다 넣습니다.
