@@ -26,13 +26,9 @@ public struct SpaceMenu: View {
                 .ignoresSafeArea()
                 .onTapGesture { onClose() }
 
-            // 패미컴 스타일에서는 몸통이 통째로 올라오고 내용은 끼운 검정 화면에 놓입니다.
-            // 스위치는 DesignSystem 에 하나뿐입니다.
+            // 몸통이 통째로 올라오고 내용은 끼운 검정 화면에 놓입니다.
             PlasticSpaceMenu(store: store, onClose: onClose)
         }
         .task { await store.appeared() }
     }
-
-    @ViewBuilder
-    @ViewBuilder
 }

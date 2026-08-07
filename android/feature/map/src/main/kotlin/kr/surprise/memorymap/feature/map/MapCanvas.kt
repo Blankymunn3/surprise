@@ -16,6 +16,7 @@ import android.graphics.Typeface
 import coil3.SingletonImageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
+import coil3.request.allowHardware
 import coil3.toBitmap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -84,6 +85,11 @@ internal fun MapCanvas(
             val request = ImageRequest.Builder(context)
                 .data(fill.coverUrl)
                 .size(COVER_PX, COVER_PX)
+                // **하드웨어 비트맵을 받으면 안 됩니다.** 화면에 그냥 그릴 때는 그쪽이
+                // 빠르지만, 이 그림은 지도 스타일에 넣으려고 픽셀을 다시 읽습니다.
+                // 하드웨어 비트맵은 픽셀이 GPU 에만 있어서 읽는 순간 앱이 죽습니다
+                // (`can't create mutable bitmap with Config.HARDWARE`).
+                .allowHardware(false)
                 .build()
             val result = loader.execute(request)
             if (result is SuccessResult) {
