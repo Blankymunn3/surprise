@@ -124,12 +124,16 @@ internal class TileProxy : AutoCloseable {
 
     companion object {
         /**
-         * 512 인 이유: 고밀도 화면에서 MapLibre 는 256 규격 타일이면 **더 높은 줌의
-         * 타일**을 가져와 픽셀 칸이 잘게 보입니다(실기기에서 iOS 의 절반 크기).
-         * 512 규격으로 선언하면 한 줌 낮은 타일을 크게 그려서 칸이 iOS 와 비슷해집니다.
+         * iOS 와 **같은 그림**이 되는 조합은 512 규격 + 96칸입니다.
+         *
+         * - 256 규격 + 48칸: 고밀도 화면에서 MapLibre 가 더 높은 줌의 타일을
+         *   가져와 칸이 iOS 의 절반 크기(잘아서 노이즈처럼 보임)
+         * - 512 규격 + 48칸: 칸은 커졌는데 **정보 밀도가 절반**이라 가는 도로가
+         *   칸 하나를 못 채워 통째로 사라짐 (실기기에서 확인)
+         * - 512 규격 + 96칸: 칸 크기 512/96 = iOS 의 256/48 과 동일, 정보도 동일
          */
         private const val TILE = 512
-        private const val CELLS = 48
+        private const val CELLS = 96
         private const val AMPLIFY = 3
     }
 }
