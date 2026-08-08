@@ -81,7 +81,15 @@ class AssetRegionCatalog(private val context: Context) : RegionCatalog {
     private suspend fun loadRegions(): List<Region> = withContext(Dispatchers.IO) {
         val text = context.assets.open("regions.json").bufferedReader().use { it.readText() }
         json.decodeFromString<List<RegionRow>>(text)
-            .map { Region(RegionCode(it.code), it.name, it.parent) }
+            .map { Region(RegionCode(it.code), spaced(it.name), it.parent) }
+    }
+
+    private companion object {
+        /** "성남시수정구" → "성남시 수정구". 데이터가 붙여 놓은 시+구 복합명을
+         *  표시용으로 띄웁니다 — 코드(키)는 그대로라 저장된 사진과 안 어긋납니다.
+         *  검색은 띄어쓰기를 무시하므로(도메인 `RegionSearch`) 붙여 쳐도 찾힙니다. */
+        val SI_GU = Regex("^(.+시)(.+구)$")
+        fun spaced(name: String) = SI_GU.replace(name, "$1 $2")
     }
 
     private suspend fun loadShapes(assetName: String): List<GeoShape> = withContext(Dispatchers.IO) {

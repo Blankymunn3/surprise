@@ -78,7 +78,16 @@ public actor AssetRegionCatalog: RegionCatalog {
               let data = try? Data(contentsOf: url),
               let rows = try? JSONDecoder().decode([RegionRow].self, from: data)
         else { return [] }
-        return rows.map { Region(code: RegionCode($0.code), name: $0.name, parentName: $0.parent) }
+        return rows.map { Region(code: RegionCode($0.code), name: Self.spaced($0.name), parentName: $0.parent) }
+    }
+
+    /// "성남시수정구" → "성남시 수정구". 데이터가 붙여 놓은 시+구 복합명을
+    /// 표시용으로 띄웁니다 — 코드(키)는 그대로라 저장된 사진과 안 어긋납니다.
+    /// 검색은 띄어쓰기를 무시하므로(`RegionSearch`) 붙여 쳐도 찾힙니다. 안드와 같은 규칙.
+    static func spaced(_ name: String) -> String {
+        name.replacingOccurrences(
+            of: "^(.+시)(.+구)$", with: "$1 $2", options: .regularExpression
+        )
     }
 
     static func loadShapes(_ resource: String) -> [GeoShape] {

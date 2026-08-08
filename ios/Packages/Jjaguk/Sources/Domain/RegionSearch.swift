@@ -29,12 +29,15 @@ public enum RegionSearch {
     }
 
     static func score(query: String, region: Region) -> Int? {
-        let name = region.name.lowercased()
-        let q = query.lowercased()
+        // 띄어쓰기는 무시하고 견줍니다 — 표시명은 "성남시 수정구" 인데
+        // 붙여 치는 사람이 많고, 그 반대도 있습니다. 안드로이드와 같은 규칙.
+        let name = region.name.lowercased().replacingOccurrences(of: " ", with: "")
+        let q = query.lowercased().replacingOccurrences(of: " ", with: "")
         if name == q { return 0 }
         if name.hasPrefix(q) { return 1 }
         if name.contains(q) { return 2 }
-        if let parent = region.parentName?.lowercased(), parent.contains(q) { return 3 }
+        if let parent = region.parentName?.lowercased()
+            .replacingOccurrences(of: " ", with: ""), parent.contains(q) { return 3 }
         return nil
     }
 
