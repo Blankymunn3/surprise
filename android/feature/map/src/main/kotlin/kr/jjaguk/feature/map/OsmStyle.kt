@@ -28,8 +28,21 @@ internal object OsmStyle {
      */
     const val LABELS_LAYER = "labels-anchor"
 
-    /** [proxyPort] 는 바탕 타일을 픽셀화해 주는 [TileProxy] 의 문. */
-    fun json(context: Context, proxyPort: Int): String =
-        context.assets.open("map_style.json").bufferedReader().use { it.readText() }
+    /**
+     * [proxyPort] 는 바탕 타일을 픽셀화해 주는 [TileProxy] 의 문.
+     * [dark] 면 밤 지도 — 배경·라벨 색만 뒤집습니다(타일은 프록시가 갈아 끼웁니다).
+     * 스타일 파일의 색 토큰(#EAE8E4·#1B1B1B·#FFFFFF)은 배경·라벨에만 쓰여
+     * 문자열 치환이 안전합니다 — 새 레이어를 넣을 때 이 색을 다른 데 쓰지 마세요.
+     */
+    fun json(context: Context, proxyPort: Int, dark: Boolean): String {
+        var style = context.assets.open("map_style.json").bufferedReader().use { it.readText() }
             .replace("{PROXY_PORT}", proxyPort.toString())
+        if (dark) {
+            style = style
+                .replace("#EAE8E4", "#2A2A2A")   // 바탕이 오기 전의 배경
+                .replace("#1B1B1B", "#E8E6E1")   // 라벨 글자 — 어두운 지도 위의 밝은 잉크
+                .replace("#FFFFFF", "#20201E")   // 라벨 테두리
+        }
+        return style
+    }
 }

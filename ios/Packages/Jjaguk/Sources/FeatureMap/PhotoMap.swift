@@ -31,6 +31,12 @@ struct PhotoMap: UIViewRepresentable {
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
+    /// 밤인가 — 19시부터 아침 7시 전까지. 안드로이드 `isNight()` 와 같은 경계.
+    static func isNight() -> Bool {
+        let hour = Calendar.current.component(.hour, from: Date())
+        return hour >= 19 || hour < 7
+    }
+
     func makeUIView(context: Context) -> MKMapView {
         let map = MKMapView()
         let setup = MKStandardMapConfiguration(elevationStyle: .flat)
@@ -39,13 +45,18 @@ struct PhotoMap: UIViewRepresentable {
         map.showsCompass = false
         map.delegate = context.coordinator
 
-        // **픽셀 지도** (2026-08-08 검수 시안 "라이트 96") — 바탕만 픽셀 타일로 갈고,
-        // **라벨은 애플 것을 그대로 씁니다.** 타일이 지도를 대체해도 애플의 벡터
-        // 라벨(지명·도로명)은 계속 그려지는데 이건 끌 방법이 없습니다 — 그 위에
-        // CARTO 라벨 타일을 얹었더니 두 벌이 겹쳐 보였습니다(실기기에서 확인).
-        // 애플 라벨이 한글이고 더 선명하므로 그쪽을 남깁니다.
+        // **픽셀 지도** — 바탕만 픽셀 타일로 갈고, **라벨은 애플 것을 그대로**
+        // 씁니다. 타일이 지도를 대체해도 애플의 벡터 라벨은 계속 그려지는데 이건
+        // 끌 방법이 없습니다 — CARTO 라벨을 얹으면 두 벌이 겹칩니다(실기기 확인).
         // 바탕 픽셀화는 안드로이드(`TileProxy`)와 같은 수식입니다.
-        map.addOverlay(PixelTileOverlay(), level: .aboveRoads)
+        //
+        // 밤(19~07시)에는 어두운 타일 + 애플 라벨도 다크로. 지도를 **여는 순간**
+        // 정합니다 — 보는 중에 갈아엎으면 타일이 통째로 다시 옵니다.
+        let night = Self.isNight()
+        if night {
+            map.overrideUserInterfaceStyle = .dark
+        }
+        map.addOverlay(PixelTileOverlay(dark: night), level: .aboveRoads)
 
         let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.tapped))
         map.addGestureRecognizer(tap)
@@ -304,20 +315,25 @@ final class MeMark: NSObject, MKAnnotation {
  */
 final class PixelTileOverlay: MKTileOverlay {
 
-    init() {
+    /// 밤 지도 — 어두운 타일을 받아 어두운 쪽 정보를 증폭합니다.
+    private let dark: Bool
+
+    init(dark: Bool = false) {
+        self.dark = dark
         super.init(urlTemplate: nil)
         canReplaceMapContent = true
         maximumZ = 19
     }
 
     override func loadTile(at path: MKTileOverlayPath) async throws -> Data {
+        let kind = dark ? "dark_nolabels" : "light_nolabels"
         let url = URL(string:
-            "https://basemaps.cartocdn.com/light_nolabels/\(path.z)/\(path.x)/\(path.y).png"
+            "https://basemaps.cartocdn.com/\(kind)/\(path.z)/\(path.x)/\(path.y).png"
         )!
         // URLSession 기본 캐시가 원본 타일을 물고 있습니다 — 같은 타일을 매번 다시 받지 않게.
         let (data, _) = try await URLSession.shared.data(from: url)
         guard let image = UIImage(data: data)?.cgImage,
-              let pixelated = Self.pixelate(image)
+              let pixelated = Self.pixelate(image, dark: dark)
         else { return data }
         return pixelated
     }
@@ -325,7 +341,7 @@ final class PixelTileOverlay: MKTileOverlay {
     private static let cells = 48
     private static let tile = 256
 
-    private static func pixelate(_ source: CGImage) -> Data? {
+    private static func pixelate(_ source: CGImage, dark: Bool) -> Data? {
         let space = CGColorSpaceCreateDeviceRGB()
         let info = CGImageAlphaInfo.premultipliedLast.rawValue
 
@@ -337,18 +353,24 @@ final class PixelTileOverlay: MKTileOverlay {
         small.interpolationQuality = .medium
         small.draw(source, in: CGRect(x: 0, y: 0, width: cells, height: cells))
 
-        // ② 옅음 증폭·포스터라이즈를 픽셀마다. 48×48 = 2,304칸이라 값싼 일입니다.
-        //    CARTO 라이트는 정보가 흰색 근처에 몰려 있어, 그대로 픽셀화하면
-        //    광역에서 도로가 통째로 사라집니다(실기기에서 확인). 흰색에서 먼 만큼을
-        //    3배로 벌리면 도로·강·공원이 살아납니다.
+        // ② 증폭·포스터라이즈를 픽셀마다. CARTO 타일은 정보가 배경색 근처에
+        //    몰려 있어 그대로 픽셀화하면 도로가 사라집니다(실기기에서 확인).
+        //    라이트는 흰색에서 먼 만큼(×3), 다크는 검정에서 먼 만큼(×4)을 벌립니다 —
+        //    안드로이드 `TileProxy` 와 같은 수식이어야 합니다.
         guard let buffer = small.data else { return nil }
         let pixels = buffer.bindMemory(to: UInt8.self, capacity: cells * cells * 4)
         for i in 0..<(cells * cells) {
             let at = i * 4
             var r = Int(pixels[at]), g = Int(pixels[at + 1]), b = Int(pixels[at + 2])
-            r = clamp(255 - (255 - r) * 3)
-            g = clamp(255 - (255 - g) * 3)
-            b = clamp(255 - (255 - b) * 3)
+            if dark {
+                r = clamp(r * 4)
+                g = clamp(g * 4)
+                b = clamp(b * 4)
+            } else {
+                r = clamp(255 - (255 - r) * 3)
+                g = clamp(255 - (255 - g) * 3)
+                b = clamp(255 - (255 - b) * 3)
+            }
             pixels[at] = UInt8(r & 0xF0)
             pixels[at + 1] = UInt8(g & 0xF0)
             pixels[at + 2] = UInt8(b & 0xF0)

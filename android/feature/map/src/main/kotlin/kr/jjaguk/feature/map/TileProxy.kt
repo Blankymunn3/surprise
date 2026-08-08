@@ -24,7 +24,8 @@ import java.util.concurrent.Executors
  * 검수된 시안(2026-08-08, "라이트 96")의 값입니다: 화면 512px 에 96칸
  * = 타일(256px)당 48칸.
  */
-internal class TileProxy : AutoCloseable {
+/** [dark] 면 밤 지도 — 어두운 타일을 받아 어두운 쪽 정보를 증폭합니다. */
+internal class TileProxy(private val dark: Boolean = false) : AutoCloseable {
 
     private val socket = ServerSocket(0)   // 빈 포트를 하나 받는다
     private val pool = Executors.newFixedThreadPool(4)
@@ -83,7 +84,8 @@ internal class TileProxy : AutoCloseable {
     }
 
     private fun pixelated(path: String): ByteArray? {
-        val upstream = URL("https://basemaps.cartocdn.com/light_nolabels$path.png")
+        val kind = if (dark) "dark_nolabels" else "light_nolabels"
+        val upstream = URL("https://basemaps.cartocdn.com/$kind$path.png")
         val connection = upstream.openConnection() as HttpURLConnection
         connection.connectTimeout = 10_000
         connection.readTimeout = 10_000
@@ -100,12 +102,19 @@ internal class TileProxy : AutoCloseable {
             var r = (p shr 16) and 0xFF
             var g = (p shr 8) and 0xFF
             var b = p and 0xFF
-            // **옅음 증폭** — CARTO 라이트는 정보가 흰색 근처에 몰려 있어, 그대로
-            // 픽셀화하면 광역에서 도로가 통째로 사라집니다(실기기에서 확인).
-            // 흰색에서 먼 만큼을 3배로 벌리면 도로·강·공원이 살아납니다.
-            r = clamp(255 - (255 - r) * AMPLIFY)
-            g = clamp(255 - (255 - g) * AMPLIFY)
-            b = clamp(255 - (255 - b) * AMPLIFY)
+            // **증폭** — CARTO 타일은 정보가 배경색 근처에 몰려 있어 그대로
+            // 픽셀화하면 도로가 통째로 사라집니다(실기기에서 확인). 라이트는
+            // 흰색에서 먼 만큼을(×3), 다크는 검정에서 먼 만큼을(×4) 벌립니다.
+            // 값들은 실물 타일 z11·z15 로 견줘 골랐습니다.
+            if (dark) {
+                r = clamp(r * AMPLIFY_DARK)
+                g = clamp(g * AMPLIFY_DARK)
+                b = clamp(b * AMPLIFY_DARK)
+            } else {
+                r = clamp(255 - (255 - r) * AMPLIFY)
+                g = clamp(255 - (255 - g) * AMPLIFY)
+                b = clamp(255 - (255 - b) * AMPLIFY)
+            }
             // 4비트 포스터라이즈 — 색을 16단계로 눌러야 픽셀아트 결이 남습니다.
             r = r and 0xF0; g = g and 0xF0; b = b and 0xF0
             pixels[i] = (0xFF shl 24) or (r shl 16) or (g shl 8) or b
@@ -139,5 +148,6 @@ internal class TileProxy : AutoCloseable {
         private const val TILE = 512
         private const val CELLS = 112
         private const val AMPLIFY = 3
+        private const val AMPLIFY_DARK = 4
     }
 }

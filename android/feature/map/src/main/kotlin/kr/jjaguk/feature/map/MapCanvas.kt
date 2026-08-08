@@ -71,8 +71,11 @@ internal fun MapCanvas(
         MapView(context)
     }
 
+    // 밤(19~07시)에는 어두운 지도. 지도를 **여는 순간** 정합니다 — 보고 있는
+    // 중에 갈아엎으면 타일이 통째로 다시 오느라 화면이 껌뻑입니다.
+    val night = remember { isNight() }
     // 바탕 타일을 픽셀화해 주는 서버. 지도가 사는 동안만 살립니다.
-    val tileProxy = remember { TileProxy() }
+    val tileProxy = remember { TileProxy(dark = night) }
     DisposableEffect(tileProxy) {
         onDispose { tileProxy.close() }
     }
@@ -169,7 +172,7 @@ internal fun MapCanvas(
 
             view.getMapAsync { map ->
                 // **픽셀 지도**입니다 — 바탕은 픽셀, 라벨은 원본(2026-08-08 검수 시안).
-                map.setStyle(Style.Builder().fromJson(OsmStyle.json(context, tileProxy.port))) { style ->
+                map.setStyle(Style.Builder().fromJson(OsmStyle.json(context, tileProxy.port, night))) { style ->
                     paintRegions(style, fills, covers)
                     drawOutline(style, outline)
                     // 내 자리는 칠보다 위입니다 — "지금 여기" 는 무엇에도 가리면 안 됩니다.
@@ -531,3 +534,5 @@ private const val ME_HALO_RADIUS = 20f
 private fun List<DoubleArray>.ring(): String =
     joinToString(",", "[", "]") { """[${it[0]},${it[1]}]""" }
 
+/** 밤인가 — 19시부터 아침 7시 전까지. 일출·일몰 계산까지는 이 앱엔 과합니다. */
+private fun isNight(): Boolean = java.time.LocalTime.now().hour.let { it >= 19 || it < 7 }
