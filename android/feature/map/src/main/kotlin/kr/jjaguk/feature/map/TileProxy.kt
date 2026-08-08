@@ -25,7 +25,15 @@ import java.util.concurrent.Executors
  * = 타일(256px)당 48칸.
  */
 /** [dark] 면 밤 지도 — 어두운 타일을 받아 어두운 쪽 정보를 증폭합니다. */
-internal class TileProxy(private val dark: Boolean = false) : AutoCloseable {
+internal class TileProxy(
+    private val dark: Boolean = false,
+    /**
+     * 라벨 글리프(PBF)를 읽어 주는 손 — `assets/glyphs/{범위}.pbf`. 지도 글씨를
+     * 갈무리로 바꾸며 생겼습니다(2026-08-09): MapLibre 는 라벨 서체를 글리프
+     * 파일로만 받는데, 그걸 CARTO 서버 대신 여기서 냅니다. 없으면 `null` → 404.
+     */
+    private val glyphs: (String) -> ByteArray? = { null },
+) : AutoCloseable {
 
     private val socket = ServerSocket(0)   // 빈 포트를 하나 받는다
     private val pool = Executors.newFixedThreadPool(4)
@@ -62,13 +70,17 @@ internal class TileProxy(private val dark: Boolean = false) : AutoCloseable {
                 val line = it.getInputStream().bufferedReader().readLine() ?: return
                 // "GET /15/27945/12696 HTTP/1.1" 에서 가운데 경로만
                 val path = line.split(" ").getOrNull(1) ?: return
-                val body = pixelated(path)
+                // "/glyphs/{스택}/{범위}.pbf" 는 라벨 글씨, 나머지는 타일.
+                // 스택 이름은 무시합니다 — 서체가 갈무리 하나뿐입니다.
+                val glyph = path.startsWith("/glyphs/")
+                val body = if (glyph) glyphs(path.substringAfterLast('/')) else pixelated(path)
                 val out = it.getOutputStream()
                 if (body == null) {
-                    out.write("HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\n\r\n".toByteArray())
+                    out.write("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n".toByteArray())
                 } else {
+                    val kind = if (glyph) "application/x-protobuf" else "image/png"
                     out.write(
-                        ("HTTP/1.1 200 OK\r\nContent-Type: image/png\r\n" +
+                        ("HTTP/1.1 200 OK\r\nContent-Type: $kind\r\n" +
                             // MapLibre 의 디스크 캐시가 이걸 보고 타일을 물고 있습니다 —
                             // 같은 타일을 매번 다시 픽셀화하지 않게.
                             "Cache-Control: max-age=604800\r\n" +

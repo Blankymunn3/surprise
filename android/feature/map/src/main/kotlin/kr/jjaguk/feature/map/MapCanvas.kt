@@ -75,7 +75,15 @@ internal fun MapCanvas(
     // 중에 갈아엎으면 타일이 통째로 다시 오느라 화면이 껌뻑입니다.
     val night = remember { isNight() }
     // 바탕 타일을 픽셀화해 주는 서버. 지도가 사는 동안만 살립니다.
-    val tileProxy = remember { TileProxy(dark = night) }
+    // 라벨 글리프(갈무리)도 여기서 냅니다 — assets/glyphs 를 읽어 주는 손만 쥐여 줍니다.
+    val tileProxy = remember {
+        TileProxy(
+            dark = night,
+            glyphs = { name ->
+                runCatching { context.assets.open("glyphs/$name").readBytes() }.getOrNull()
+            },
+        )
+    }
     DisposableEffect(tileProxy) {
         onDispose { tileProxy.close() }
     }
