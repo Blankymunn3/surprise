@@ -63,18 +63,7 @@
     "symbol-placement": "line",
     "symbol-spacing": 300,
     "symbol-avoid-edges": false,
-    "text-size": {
-     "stops": [
-      [
-       9,
-       10.4
-      ],
-      [
-       10,
-       11.7
-      ]
-     ]
-    },
+    "text-size": 11,
     "text-padding": 2,
     "text-pitch-alignment": "auto",
     "text-rotation-alignment": "auto",
@@ -139,22 +128,7 @@
    "layout": {
     "text-field": "{name}",
     "symbol-placement": "point",
-    "text-size": {
-     "stops": [
-      [
-       0,
-       16.9
-      ],
-      [
-       2,
-       18.2
-      ],
-      [
-       4,
-       23.4
-      ]
-     ]
-    },
+    "text-size": 11,
     "text-font": [
      "Galmuri11"
     ],
@@ -200,7 +174,7 @@
    "layout": {
     "text-field": "{name}",
     "symbol-placement": "point",
-    "text-size": 15.6,
+    "text-size": 11,
     "text-font": [
      "Galmuri11"
     ],
@@ -246,30 +220,7 @@
    "layout": {
     "text-field": "{name}",
     "symbol-placement": "point",
-    "text-size": {
-     "stops": [
-      [
-       13,
-       11.7
-      ],
-      [
-       14,
-       13.0
-      ],
-      [
-       15,
-       14.3
-      ],
-      [
-       16,
-       15.6
-      ],
-      [
-       17,
-       16.9
-      ]
-     ]
-    },
+    "text-size": 11,
     "text-font": [
      "Galmuri11"
     ],
@@ -312,22 +263,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": {
-     "stops": [
-      [
-       13,
-       10.4
-      ],
-      [
-       14,
-       13.0
-      ],
-      [
-       16,
-       14.3
-      ]
-     ]
-    },
+    "text-size": 11,
     "icon-image": "",
     "icon-offset": [
      16,
@@ -382,30 +318,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": {
-     "stops": [
-      [
-       12,
-       11.7
-      ],
-      [
-       13,
-       13.0
-      ],
-      [
-       14,
-       14.3
-      ],
-      [
-       15,
-       15.6
-      ],
-      [
-       16,
-       16.9
-      ]
-     ]
-    },
+    "text-size": 11,
     "icon-image": "",
     "icon-offset": [
      16,
@@ -460,30 +373,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": {
-     "stops": [
-      [
-       10,
-       11.7
-      ],
-      [
-       12,
-       13.0
-      ],
-      [
-       13,
-       14.3
-      ],
-      [
-       14,
-       15.6
-      ],
-      [
-       16,
-       16.9
-      ]
-     ]
-    },
+    "text-size": 11,
     "icon-image": "",
     "icon-offset": [
      16,
@@ -527,30 +417,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": {
-     "stops": [
-      [
-       8,
-       13.0
-      ],
-      [
-       9,
-       13.0
-      ],
-      [
-       10,
-       14.3
-      ],
-      [
-       13,
-       18.2
-      ],
-      [
-       14,
-       19.5
-      ]
-     ]
-    },
+    "text-size": 11,
     "icon-image": "",
     "icon-offset": [
      16,
@@ -603,30 +470,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": {
-     "stops": [
-      [
-       3,
-       13.0
-      ],
-      [
-       5,
-       14.3
-      ],
-      [
-       6,
-       15.6
-      ],
-      [
-       7,
-       16.9
-      ],
-      [
-       8,
-       18.2
-      ]
-     ]
-    },
+    "text-size": 11,
     "text-transform": "uppercase"
    },
    "paint": {
@@ -660,26 +504,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": {
-     "stops": [
-      [
-       3,
-       14.3
-      ],
-      [
-       4,
-       15.6
-      ],
-      [
-       5,
-       16.9
-      ],
-      [
-       6,
-       18.2
-      ]
-     ]
-    },
+    "text-size": 11,
     "text-transform": "uppercase",
     "text-max-width": {
      "stops": [
@@ -733,18 +558,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": {
-     "stops": [
-      [
-       5,
-       15.6
-      ],
-      [
-       7,
-       18.2
-      ]
-     ]
-    },
+    "text-size": 11,
     "text-transform": "uppercase",
     "text-max-width": 9
    },
@@ -779,30 +593,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": {
-     "stops": [
-      [
-       8,
-       15.6
-      ],
-      [
-       9,
-       16.9
-      ],
-      [
-       10,
-       18.2
-      ],
-      [
-       13,
-       22.1
-      ],
-      [
-       14,
-       26.0
-      ]
-     ]
-    },
+    "text-size": 11,
     "icon-image": "",
     "icon-offset": [
      16,
@@ -856,26 +647,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": {
-     "stops": [
-      [
-       8,
-       18.2
-      ],
-      [
-       10,
-       20.8
-      ],
-      [
-       13,
-       24.7
-      ],
-      [
-       14,
-       28.6
-      ]
-     ]
-    },
+    "text-size": 11,
     "icon-image": "",
     "icon-offset": [
      16,
@@ -924,7 +696,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": 15.6,
+    "text-size": 11,
     "icon-image": "circle-11",
     "icon-offset": [
      16,
@@ -972,7 +744,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": 15.6,
+    "text-size": 11,
     "icon-image": "circle-11",
     "icon-offset": [
      16,
@@ -1020,7 +792,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": 15.6,
+    "text-size": 11,
     "icon-image": "circle-11",
     "icon-offset": [
      16,
@@ -1068,7 +840,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": 15.6,
+    "text-size": 11,
     "icon-image": "circle-11",
     "icon-offset": [
      16,
@@ -1111,7 +883,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": 15.6,
+    "text-size": 11,
     "icon-image": "circle-11",
     "icon-offset": [
      16,
@@ -1155,7 +927,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": 11.7,
+    "text-size": 11,
     "text-field": "{name}",
     "symbol-avoid-edges": false,
     "symbol-spacing": 200,
@@ -1189,22 +961,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": {
-     "stops": [
-      [
-       15,
-       11.7
-      ],
-      [
-       16,
-       14.3
-      ],
-      [
-       18,
-       15.6
-      ]
-     ]
-    },
+    "text-size": 11,
     "text-field": "{name}",
     "symbol-avoid-edges": false,
     "symbol-spacing": 200,
@@ -1237,26 +994,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": {
-     "stops": [
-      [
-       14,
-       13.0
-      ],
-      [
-       15,
-       13.0
-      ],
-      [
-       16,
-       14.3
-      ],
-      [
-       18,
-       15.6
-      ]
-     ]
-    },
+    "text-size": 11,
     "text-field": "{name}",
     "symbol-avoid-edges": false,
     "symbol-spacing": {
@@ -1313,26 +1051,7 @@
     "text-font": [
      "Galmuri11"
     ],
-    "text-size": {
-     "stops": [
-      [
-       14,
-       13.0
-      ],
-      [
-       15,
-       13.0
-      ],
-      [
-       16,
-       14.3
-      ],
-      [
-       18,
-       15.6
-      ]
-     ]
-    },
+    "text-size": 11,
     "text-field": "{name}",
     "symbol-avoid-edges": false,
     "symbol-spacing": {
@@ -1399,22 +1118,7 @@
      "Galmuri11"
     ],
     "text-field": "{ref}",
-    "text-size": {
-     "stops": [
-      [
-       8,
-       10.0
-      ],
-      [
-       13,
-       11.0
-      ],
-      [
-       16,
-       12.0
-      ]
-     ]
-    },
+    "text-size": 11,
     "symbol-spacing": 300,
     "text-letter-spacing": 0.1,
     "text-pitch-alignment": "auto",
@@ -1456,18 +1160,7 @@
      "Galmuri11"
     ],
     "text-field": "{ref}",
-    "text-size": {
-     "stops": [
-      [
-       11,
-       10.0
-      ],
-      [
-       16,
-       11.5
-      ]
-     ]
-    },
+    "text-size": 11,
     "symbol-spacing": 300,
     "text-letter-spacing": 0.1,
     "text-pitch-alignment": "auto",
