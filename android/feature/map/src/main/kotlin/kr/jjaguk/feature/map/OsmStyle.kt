@@ -1,50 +1,35 @@
 package kr.jjaguk.feature.map
 
+import android.content.Context
+
 /**
- * 지도 스타일을 코드로 만듭니다. **두 겹**입니다:
+ * 지도 스타일. **두 겹**입니다:
  *
  * ```
- * 라벨   ← CARTO light_only_labels, 원본 그대로 (도로명·지명이 또렷해야 한다)
+ * 라벨   ← CARTO 벡터 타일 + 글리프 (지명·도로명이 화면 밀도와 무관하게 또렷)
  * 바탕   ← CARTO light_nolabels 를 TileProxy 가 픽셀화한 것
  * ```
  *
- * 라벨이 그림 안에 구워진 타일(OSM 기본)을 쓰면 픽셀화할 때 글자도 같이
- * 뭉개집니다. CARTO 는 바탕과 라벨을 따로 주기 때문에 **바탕만 픽셀**이 됩니다 —
- * 2026-08-08 검수된 시안("라이트 96")이 이 구성입니다.
+ * 라벨을 **벡터로 그리는 이유**: 라스터 라벨 타일은 고밀도 화면에서 흐릿하고
+ * 글자가 작아 실기기에서 읽기 힘들었습니다. iOS 는 애플의 벡터 라벨을 쓰므로,
+ * 안드로이드도 벡터로 그려야 두 앱이 같은 급으로 보입니다.
  *
- * 스타일 파일을 따로 두지 않는 이유: 주소 몇 줄이 전부라, 파일로 빼면
- * iOS(`PhotoMap`)와 어긋났을 때 알아채기 어려워집니다.
+ * 스타일 본문은 `assets/map_style.json` 입니다 — 라벨 레이어 22개는 CARTO 공식
+ * Positron GL 스타일에서 발췌한 것이라 코드 문자열에 담기엔 큽니다.
+ * 여기서는 읽어서 프록시 포트만 끼웁니다.
  *
  * CARTO 무료 타일은 **출처 표기가 조건**입니다 — attribution 을 지우지 마세요.
  */
 internal object OsmStyle {
 
-    const val LABELS_LAYER = "labels"
+    /**
+     * 사진 채움을 끼울 기준 — 이 레이어 **아래**가 "바탕 위, 라벨 아래" 입니다.
+     * `map_style.json` 의 투명 앵커 레이어와 이름이 같아야 합니다.
+     */
+    const val LABELS_LAYER = "labels-anchor"
 
     /** [proxyPort] 는 바탕 타일을 픽셀화해 주는 [TileProxy] 의 문. */
-    fun json(proxyPort: Int): String = """
-        {
-          "version": 8,
-          "sources": {
-            "base": {
-              "type": "raster",
-              "tiles": ["http://127.0.0.1:$proxyPort/{z}/{x}/{y}"],
-              "tileSize": 256,
-              "maxzoom": 19,
-              "attribution": "© OpenStreetMap contributors © CARTO"
-            },
-            "labels": {
-              "type": "raster",
-              "tiles": ["https://basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png"],
-              "tileSize": 256,
-              "maxzoom": 19
-            }
-          },
-          "layers": [
-            { "id": "background", "type": "background", "paint": { "background-color": "#EAE8E4" } },
-            { "id": "base", "type": "raster", "source": "base" },
-            { "id": "$LABELS_LAYER", "type": "raster", "source": "labels" }
-          ]
-        }
-    """.trimIndent()
+    fun json(context: Context, proxyPort: Int): String =
+        context.assets.open("map_style.json").bufferedReader().use { it.readText() }
+            .replace("{PROXY_PORT}", proxyPort.toString())
 }

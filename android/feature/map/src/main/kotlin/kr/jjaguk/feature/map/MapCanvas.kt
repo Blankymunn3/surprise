@@ -169,7 +169,7 @@ internal fun MapCanvas(
 
             view.getMapAsync { map ->
                 // **픽셀 지도**입니다 — 바탕은 픽셀, 라벨은 원본(2026-08-08 검수 시안).
-                map.setStyle(Style.Builder().fromJson(OsmStyle.json(tileProxy.port))) { style ->
+                map.setStyle(Style.Builder().fromJson(OsmStyle.json(context, tileProxy.port))) { style ->
                     paintRegions(style, fills, covers)
                     drawOutline(style, outline)
                     // 내 자리는 칠보다 위입니다 — "지금 여기" 는 무엇에도 가리면 안 됩니다.
