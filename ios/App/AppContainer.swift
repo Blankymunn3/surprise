@@ -35,9 +35,8 @@ final class AppContainer {
     /// 안드로이드의 flavor 와 같은 자리). 지금은 dev 전용 Firebase 프로젝트가 아직
     /// 없어 둘이 같은 값입니다 — dev 프로젝트를 만들면 `dev` 의 네 값만 바꾸면 됩니다.
     ///
-    /// ⚠️ dev 빌드는 번들이 `kr.jjaguk.app.dev` 라서, dev 프로젝트를 만들 때
-    /// 그 번들로 iOS 앱을 등록해야 구글 로그인이 됩니다. 그전까지 dev 빌드에서
-    /// 같이 쓰는 짜국의 로그인은 실패할 수 있습니다 — 혼자 짜국은 지금도 됩니다.
+    /// dev 번들(`kr.jjaguk.app.dev`)도 같은 프로젝트에 등록돼 있습니다(2026-08-08) —
+    /// 클라이언트 ID 만 번들마다 달라서 dev 는 제 것을 씁니다.
     private struct FirebaseEnv {
         let projectId: String
         let bucket: String
@@ -50,11 +49,17 @@ final class AppContainer {
             projectId: "our-surprise",
             bucket: "our-surprise.firebasestorage.app",
             apiKey: "AIzaSyBLC3qqFukg__VivJe2HkN23UI_X94ENEc",
-            googleClientID: "419812459548-4vruv826mfgfkfi3dppobg87c3du1vdr.apps.googleusercontent.com"
+            googleClientID: "419812459548-nsun9ha7faersg7hlp0gmp27gpj6em8j.apps.googleusercontent.com"
         )
 
-        /// 아직 prod 와 같다. dev 프로젝트가 생기면 여기만 바꾼다.
-        static let dev = prod
+        /// 서버는 prod 와 같고 **클라이언트 ID 만 dev 번들 것**입니다.
+        /// dev 전용 Firebase 프로젝트가 생기면 네 값을 다 바꾼다.
+        static let dev = FirebaseEnv(
+            projectId: prod.projectId,
+            bucket: prod.bucket,
+            apiKey: prod.apiKey,
+            googleClientID: "419812459548-5o4p7j8m1i6farj1m7klm61sfh8viaud.apps.googleusercontent.com"
+        )
 
         static var current: FirebaseEnv {
             #if DEV

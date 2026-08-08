@@ -69,7 +69,9 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.419812459548-4vruv826mfgfkfi3dppobg87c3du1vdr</string>
+				<string>com.googleusercontent.apps.419812459548-nsun9ha7faersg7hlp0gmp27gpj6em8j</string>
+				<!-- dev 빌드(kr.jjaguk.app.dev)의 리다이렉트. plist 는 구성 공용이라 둘 다 둔다. -->
+				<string>com.googleusercontent.apps.419812459548-5o4p7j8m1i6farj1m7klm61sfh8viaud</string>
 			</array>
 		</dict>
 	</array>
