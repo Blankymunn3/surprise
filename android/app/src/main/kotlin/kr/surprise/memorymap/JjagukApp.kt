@@ -16,7 +16,7 @@ import okhttp3.OkHttpClient
  * 받아 오기 때문에, 여기서 손대지 않으면 규칙을 조이는 순간 목록은 나오는데 사진만
  * 안 뜨는 상태가 됩니다 (`docs/app/AUTH.md`).
  */
-class MemoryMapApp : Application(), SingletonImageLoader.Factory {
+class JjagukApp : Application(), SingletonImageLoader.Factory {
     lateinit var container: AppContainer
         private set
 

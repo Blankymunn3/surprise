@@ -20,11 +20,11 @@ class MainActivity : ComponentActivity() {
         )
         super.onCreate(savedInstanceState)
 
-        val container = (application as MemoryMapApp).container
+        val container = (application as JjagukApp).container
 
         setContent {
             MemoryTheme {
-                MemoryMapNavHost(container = container)
+                JjagukNavHost(container = container)
             }
         }
     }

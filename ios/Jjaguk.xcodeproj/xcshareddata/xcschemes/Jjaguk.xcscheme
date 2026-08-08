@@ -15,15 +15,15 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "3288345CB1725006CD73F038"
-               BuildableName = "MemoryMap.app"
-               BlueprintName = "MemoryMap"
-               ReferencedContainer = "container:MemoryMap.xcodeproj">
+               BuildableName = "Jjaguk.app"
+               BlueprintName = "Jjaguk"
+               ReferencedContainer = "container:Jjaguk.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Debug-Dev"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
@@ -31,7 +31,7 @@
       </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Debug-Dev"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = ""
       selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
       launchStyle = "0"
@@ -45,14 +45,14 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "3288345CB1725006CD73F038"
-            BuildableName = "MemoryMap.app"
-            BlueprintName = "MemoryMap"
-            ReferencedContainer = "container:MemoryMap.xcodeproj">
+            BuildableName = "Jjaguk.app"
+            BlueprintName = "Jjaguk"
+            ReferencedContainer = "container:Jjaguk.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
-      buildConfiguration = "Release-Dev"
+      buildConfiguration = "Release"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
@@ -62,17 +62,17 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "3288345CB1725006CD73F038"
-            BuildableName = "MemoryMap.app"
-            BlueprintName = "MemoryMap"
-            ReferencedContainer = "container:MemoryMap.xcodeproj">
+            BuildableName = "Jjaguk.app"
+            BlueprintName = "Jjaguk"
+            ReferencedContainer = "container:Jjaguk.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
-      buildConfiguration = "Debug-Dev">
+      buildConfiguration = "Debug">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "Release-Dev"
+      buildConfiguration = "Release"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

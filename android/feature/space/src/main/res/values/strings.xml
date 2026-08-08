@@ -6,7 +6,7 @@
   모여서, 문구를 고칠 때 그 화면 것만 보면 됩니다.
 
   ⚠️ iOS 에는 같은 글이 Swift 코드에 그대로 박혀 있습니다. 여기 문구를 고치면
-  `ios/Packages/MemoryMap/Sources/FeatureSpace/` 쪽도 같이 고쳐야 두 앱이 같은 말을 합니다.
+  `ios/Packages/Jjaguk/Sources/FeatureSpace/` 쪽도 같이 고쳐야 두 앱이 같은 말을 합니다.
 -->
 <resources>
 

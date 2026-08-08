@@ -44,7 +44,7 @@ import kr.surprise.memorymap.domain.usecase.UploadPhotosUseCase
  * Firebase 프로젝트가 아직 없어 둘이 같은 값입니다 — dev 프로젝트를 만들면
  * [Dev] 의 네 값만 그 프로젝트 것으로 바꾸면 됩니다. 코드는 안 바뀝니다.
  *
- * ⚠️ dev 빌드는 패키지가 `kr.surprise.memorymap.dev` 라서, dev 프로젝트를 만들 때
+ * ⚠️ dev 빌드는 패키지가 `kr.jjaguk.app.dev` 라서, dev 프로젝트를 만들 때
  * 그 패키지(+ 디버그 SHA-1)로 안드로이드 앱을 등록해야 구글 로그인이 됩니다.
  * 그전까지 dev 빌드에서 같이 쓰는 짜국의 로그인은 실패할 수 있습니다 —
  * 혼자 쓰는 짜국은 서버를 안 쓰니 지금도 됩니다.

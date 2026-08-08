@@ -10,7 +10,7 @@ import PackageDescription
  앱 껍데기 쪽에 둡니다.
  */
 let package = Package(
-    name: "MemoryMap",
+    name: "Jjaguk",
     // 화면의 글을 Localizable.strings 로 뺐습니다. 이 값이 있어야 SwiftPM 이
     // `Resources/ko.lproj` 를 번역 파일로 알아봅니다 — 없으면 그냥 파일로 복사만 합니다.
     defaultLocalization: "ko",

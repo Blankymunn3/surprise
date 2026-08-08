@@ -31,11 +31,11 @@ final class AppContainer {
     /// 아닙니다** — 실제 보안은 규칙이 합니다. 파일을 읽지 않고 여기 적어 두는 이유는
     /// 조립하는 곳 한 군데만 보면 이 앱이 어디에 붙는지 알 수 있게 하려는 것입니다.
     ///
-    /// dev 와 prod 는 **빌드 구성이 고릅니다** (`MemoryMap-Dev` 스킴 = `DEV` 플래그,
+    /// dev 와 prod 는 **빌드 구성이 고릅니다** (`Jjaguk-Dev` 스킴 = `DEV` 플래그,
     /// 안드로이드의 flavor 와 같은 자리). 지금은 dev 전용 Firebase 프로젝트가 아직
     /// 없어 둘이 같은 값입니다 — dev 프로젝트를 만들면 `dev` 의 네 값만 바꾸면 됩니다.
     ///
-    /// ⚠️ dev 빌드는 번들이 `kr.surprise.memorymap.dev` 라서, dev 프로젝트를 만들 때
+    /// ⚠️ dev 빌드는 번들이 `kr.jjaguk.app.dev` 라서, dev 프로젝트를 만들 때
     /// 그 번들로 iOS 앱을 등록해야 구글 로그인이 됩니다. 그전까지 dev 빌드에서
     /// 같이 쓰는 짜국의 로그인은 실패할 수 있습니다 — 혼자 짜국은 지금도 됩니다.
     private struct FirebaseEnv {

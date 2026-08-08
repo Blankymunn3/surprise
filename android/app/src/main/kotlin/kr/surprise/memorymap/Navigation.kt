@@ -125,7 +125,7 @@ private val FADE = tween<Float>(200, easing = LinearEasing)
 private const val PARALLAX = 6
 
 @Composable
-fun MemoryMapNavHost(container: AppContainer) {
+fun JjagukNavHost(container: AppContainer) {
     val navController = rememberNavController()
 
     NavHost(

@@ -29,8 +29,8 @@
 
 /* Begin PBXFileReference section */
 		03BD3A80AC0D0DA57B0C203B /* pretendard_regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_regular.ttf; path = ../android/core/designsystem/src/main/res/font/pretendard_regular.ttf; sourceTree = "<group>"; };
-		1FB17298817DFBADB5742754 /* MemoryMap-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "MemoryMap-Info.plist"; sourceTree = "<group>"; };
-		29F285785C6D15FDD42F5D9A /* MemoryMap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MemoryMap.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1FB17298817DFBADB5742754 /* Jjaguk-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Jjaguk-Info.plist"; sourceTree = "<group>"; };
+		29F285785C6D15FDD42F5D9A /* Jjaguk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Jjaguk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD7E02C571198367730E50E3 /* pretendard_semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_semibold.ttf; path = ../android/core/designsystem/src/main/res/font/pretendard_semibold.ttf; sourceTree = "<group>"; };
 		C6D49719AD2289733043CB97 /* pretendard_medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_medium.ttf; path = ../android/core/designsystem/src/main/res/font/pretendard_medium.ttf; sourceTree = "<group>"; };
 		DBEC52726113CEE4966866F7 /* pretendard_bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_bold.ttf; path = ../android/core/designsystem/src/main/res/font/pretendard_bold.ttf; sourceTree = "<group>"; };
@@ -68,7 +68,7 @@
 		174F6EF85BAA9168B3CF6C0C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				29F285785C6D15FDD42F5D9A /* MemoryMap.app */,
+				29F285785C6D15FDD42F5D9A /* Jjaguk.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -78,7 +78,7 @@
 			children = (
 				3B4E8024C1CA35625FB0689C /* App */,
 				DB8EA493A86C9A653446861D /* Fonts */,
-				1FB17298817DFBADB5742754 /* MemoryMap-Info.plist */,
+				1FB17298817DFBADB5742754 /* Jjaguk-Info.plist */,
 				174F6EF85BAA9168B3CF6C0C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -97,9 +97,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		3288345CB1725006CD73F038 /* MemoryMap */ = {
+		3288345CB1725006CD73F038 /* Jjaguk */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DC852A14064A75B988091B82 /* Build configuration list for PBXNativeTarget "MemoryMap" */;
+			buildConfigurationList = DC852A14064A75B988091B82 /* Build configuration list for PBXNativeTarget "Jjaguk" */;
 			buildPhases = (
 				D1016E6F1A51392E046B1B0B /* Sources */,
 				1F2E5B53596CB54C1003EF6C /* Frameworks */,
@@ -112,7 +112,7 @@
 			fileSystemSynchronizedGroups = (
 				3B4E8024C1CA35625FB0689C /* App */,
 			);
-			name = MemoryMap;
+			name = Jjaguk;
 			packageProductDependencies = (
 				9A0E51C1F0B24D0A8C7E0002 /* GoogleSignIn */,
 				AFF0D399698FDD1287AA25EE /* CoreModel */,
@@ -129,8 +129,8 @@
 				764D403AA97D342B241AD041 /* FeatureCalendar */,
 				3E1B4FEA9CD8C438A715C619 /* FeatureUpload */,
 			);
-			productName = MemoryMap;
-			productReference = 29F285785C6D15FDD42F5D9A /* MemoryMap.app */;
+			productName = Jjaguk;
+			productReference = 29F285785C6D15FDD42F5D9A /* Jjaguk.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -148,7 +148,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 9A90925F3B8866294462F476 /* Build configuration list for PBXProject "MemoryMap" */;
+			buildConfigurationList = 9A90925F3B8866294462F476 /* Build configuration list for PBXProject "Jjaguk" */;
 			compatibilityVersion = "Xcode 15.0";
 			developmentRegion = ko;
 			hasScannedForEncodings = 0;
@@ -159,14 +159,14 @@
 			mainGroup = A5F8FF998DCD9CD73935B534;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				D920F27FFE40764D4C347036 /* XCLocalSwiftPackageReference "Packages/MemoryMap" */,
+				D920F27FFE40764D4C347036 /* XCLocalSwiftPackageReference "Packages/Jjaguk" */,
 				9A0E51C1F0B24D0A8C7E0003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			productRefGroup = 174F6EF85BAA9168B3CF6C0C /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				3288345CB1725006CD73F038 /* MemoryMap */,
+				3288345CB1725006CD73F038 /* Jjaguk */,
 			);
 		};
 /* End PBXProject section */
@@ -202,19 +202,19 @@
 				APP_DISPLAY_NAME = "짜국";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = MemoryMap.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Jjaguk.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M9F23L2TLX;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "MemoryMap-Info.plist";
+				INFOPLIST_FILE = "Jjaguk-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = kr.surprise.memorymap;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = kr.jjaguk.app;
+				PRODUCT_NAME = Jjaguk;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -226,19 +226,19 @@
 				APP_DISPLAY_NAME = "짜국";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = MemoryMap.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Jjaguk.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M9F23L2TLX;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "MemoryMap-Info.plist";
+				INFOPLIST_FILE = "Jjaguk-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = kr.surprise.memorymap;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = kr.jjaguk.app;
+				PRODUCT_NAME = Jjaguk;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -335,19 +335,19 @@
 				APP_DISPLAY_NAME = "짜국 Dev";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = MemoryMap.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Jjaguk.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M9F23L2TLX;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "MemoryMap-Info.plist";
+				INFOPLIST_FILE = "Jjaguk-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = kr.surprise.memorymap.dev;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = kr.jjaguk.app.dev;
+				PRODUCT_NAME = Jjaguk;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -359,19 +359,19 @@
 				APP_DISPLAY_NAME = "짜국 Dev";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = MemoryMap.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Jjaguk.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M9F23L2TLX;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "MemoryMap-Info.plist";
+				INFOPLIST_FILE = "Jjaguk-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = kr.surprise.memorymap.dev;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = kr.jjaguk.app.dev;
+				PRODUCT_NAME = Jjaguk;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -380,7 +380,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		9A90925F3B8866294462F476 /* Build configuration list for PBXProject "MemoryMap" */ = {
+		9A90925F3B8866294462F476 /* Build configuration list for PBXProject "Jjaguk" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D6D19B3D94C47E36DC8AAE67 /* Debug */,
@@ -391,7 +391,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DC852A14064A75B988091B82 /* Build configuration list for PBXNativeTarget "MemoryMap" */ = {
+		DC852A14064A75B988091B82 /* Build configuration list for PBXNativeTarget "Jjaguk" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				59D203CE66AF2B0772F7C88C /* Debug */,
@@ -405,9 +405,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		D920F27FFE40764D4C347036 /* XCLocalSwiftPackageReference "Packages/MemoryMap" */ = {
+		D920F27FFE40764D4C347036 /* XCLocalSwiftPackageReference "Packages/Jjaguk" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/MemoryMap;
+			relativePath = Packages/Jjaguk;
 		};
 /* End XCLocalSwiftPackageReference section */
 

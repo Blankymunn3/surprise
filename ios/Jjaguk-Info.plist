@@ -10,7 +10,7 @@
 	<string>ko</string>
 	<!-- 홈 화면에 보이는 이름. 값은 빌드 구성이 넣습니다(APP_DISPLAY_NAME) —
 	     dev 는 '짜국 Dev' 로 갈라 폰에 나란히 설치했을 때 어느 쪽인지 보이게 합니다.
-	     폴더·모듈 이름(MemoryMap)은 코드 안쪽이라 그대로 둡니다. -->
+	     코드 안쪽 이름은 로마자(Jjaguk)입니다 — 실행 파일에 한글을 쓰지 않습니다. -->
 	<key>CFBundleDisplayName</key>
 	<string>$(APP_DISPLAY_NAME)</string>
 	<key>CFBundleExecutable</key>
