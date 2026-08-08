@@ -16,7 +16,7 @@ internal object MapReducer {
         state.copy(query = value, results = results)
 
     fun queryCleared(state: MapState): MapState =
-        state.copy(query = "", results = emptyList(), sheet = null)
+        state.copy(query = "", results = emptyList(), sheet = null, outline = null)
 
     /**
      * 지역을 고르면 그 지역에 지도를 맞추고 아래에서 시트가 올라옵니다.
@@ -47,8 +47,9 @@ internal object MapReducer {
     fun coverChanged(state: MapState, id: PhotoId): MapState =
         state.copy(sheet = state.sheet?.copy(coverId = id))
 
+    // 테두리도 같이 지웁니다 — 시트만 닫히고 지도에 선이 남으면 "아직 골라져 있나?" 헷갈립니다.
     fun sheetDismissed(state: MapState): MapState =
-        state.copy(sheet = null, query = "", results = emptyList())
+        state.copy(sheet = null, query = "", results = emptyList(), outline = null)
 
     /**
      * 지금 자리로 지도를 옮깁니다.
