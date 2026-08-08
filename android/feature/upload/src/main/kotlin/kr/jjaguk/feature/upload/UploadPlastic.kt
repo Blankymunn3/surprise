@@ -36,7 +36,7 @@ import coil3.compose.AsyncImage
 import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
 import kr.jjaguk.core.designsystem.theme.PlasticSize
-import kr.jjaguk.core.designsystem.theme.Pretendard
+import kr.jjaguk.core.designsystem.theme.AppFont
 import kr.jjaguk.core.designsystem.theme.Space as Gap
 import kr.jjaguk.core.designsystem.theme.pressable
 import kr.jjaguk.core.designsystem.theme.raisedPlastic
@@ -104,7 +104,7 @@ internal fun PlasticUploadBody(
                 state.splitCounts()?.let { split ->
                     Text(
                         text = stringResource(R.string.upload_split_notice, split.places, split.days),
-                        fontFamily = Pretendard,
+                        fontFamily = AppFont,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 11.sp,
                         color = PlasticColors.OnPlateDim,
@@ -135,7 +135,7 @@ private fun Header(count: Int) {
     ) {
         Text(
             text = stringResource(R.string.upload_title),
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
             color = PlasticColors.Ink,
@@ -144,7 +144,7 @@ private fun Header(count: Int) {
         if (count > 0) {
             Text(
                 text = stringResource(R.string.upload_count, count),
-                fontFamily = Pretendard,
+                fontFamily = AppFont,
                 fontWeight = FontWeight.Bold,
                 fontSize = 11.sp,
                 letterSpacing = 0.8.sp,
@@ -235,7 +235,7 @@ private fun SlotField(
         )
         Text(
             text = label,
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.SemiBold,
             fontSize = 11.sp,
             color = PlasticColors.OnPlateDim,
@@ -243,7 +243,7 @@ private fun SlotField(
         )
         Text(
             text = value,
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.SemiBold,
             fontSize = 13.5.sp,
             color = if (dimmed) PlasticColors.OnPlateDim else PlasticColors.OnPlate,
@@ -254,7 +254,7 @@ private fun SlotField(
         if (auto) {
             Text(
                 text = stringResource(R.string.upload_auto_badge),
-                fontFamily = Pretendard,
+                fontFamily = AppFont,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 11.sp,
                 color = PlasticColors.OnPlateDim,
@@ -277,7 +277,7 @@ private fun FailurePlate(savedLocally: Boolean, onRetry: () -> Unit) {
         Column(Modifier.padding(start = Gap.s)) {
             Text(
                 text = stringResource(R.string.upload_failed_title),
-                fontFamily = Pretendard,
+                fontFamily = AppFont,
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.5.sp,
                 color = PlasticColors.RedHi,
@@ -286,7 +286,7 @@ private fun FailurePlate(savedLocally: Boolean, onRetry: () -> Unit) {
                 text = stringResource(
                     if (savedLocally) R.string.upload_failed_kept else R.string.upload_failed_plain
                 ),
-                fontFamily = Pretendard,
+                fontFamily = AppFont,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 11.sp,
                 color = PlasticColors.OnPlateDim,
@@ -294,7 +294,7 @@ private fun FailurePlate(savedLocally: Boolean, onRetry: () -> Unit) {
             )
             Text(
                 text = stringResource(R.string.upload_retry),
-                fontFamily = Pretendard,
+                fontFamily = AppFont,
                 fontWeight = FontWeight.Bold,
                 fontSize = 11.sp,
                 color = PlasticColors.OnRubber,
@@ -316,14 +316,14 @@ private fun EmptyPlate(onPickPhotos: () -> Unit) {
     ) {
         Text(
             text = stringResource(R.string.upload_empty_title),
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
             color = PlasticColors.OnPlate,
         )
         Text(
             text = stringResource(R.string.upload_empty_hint),
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.SemiBold,
             fontSize = 11.sp,
             color = PlasticColors.OnPlateDim,
@@ -331,7 +331,7 @@ private fun EmptyPlate(onPickPhotos: () -> Unit) {
         )
         Text(
             text = stringResource(R.string.upload_empty_pick),
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 13.5.sp,
             color = PlasticColors.OnRubber,
@@ -381,7 +381,7 @@ private fun Controls(
             ) {
                 Text(
                     text = uploadLabel ?: stringResource(R.string.upload_cancel),
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = PlasticColors.OnRubber,
@@ -404,7 +404,7 @@ private fun Controls(
             ) {
                 Text(
                     text = "↑",
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp,
                     color = if (canUpload) PlasticColors.OnRed else PlasticColors.OnButtonOff,
@@ -437,7 +437,7 @@ private fun ColumnScope.PlasticRegionPicker(state: UploadState, onIntent: (Uploa
         ) {
             Text(
                 text = "‹",
-                fontFamily = Pretendard,
+                fontFamily = AppFont,
                 fontWeight = FontWeight.Bold,
                 fontSize = 17.sp,
                 color = PlasticColors.OnRubber,
@@ -445,7 +445,7 @@ private fun ColumnScope.PlasticRegionPicker(state: UploadState, onIntent: (Uploa
         }
         Text(
             text = stringResource(R.string.upload_region_title),
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
             color = PlasticColors.Ink,
@@ -502,7 +502,7 @@ private fun ColumnScope.PlasticRegionPicker(state: UploadState, onIntent: (Uploa
                 region.parentName?.let {
                     Text(
                         text = it,
-                        fontFamily = Pretendard,
+                        fontFamily = AppFont,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 11.sp,
                         color = PlasticColors.OnPlateDim,
@@ -517,7 +517,7 @@ private fun ColumnScope.PlasticRegionPicker(state: UploadState, onIntent: (Uploa
 }
 
 private val pickerStyle = TextStyle(
-    fontFamily = Pretendard,
+    fontFamily = AppFont,
     fontWeight = FontWeight.SemiBold,
     fontSize = 15.sp,
 )

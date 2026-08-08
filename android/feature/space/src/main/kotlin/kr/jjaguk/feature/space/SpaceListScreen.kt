@@ -46,7 +46,7 @@ import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
 import kr.jjaguk.core.designsystem.theme.PlasticSize
 import kr.jjaguk.core.designsystem.theme.PressStart
-import kr.jjaguk.core.designsystem.theme.Pretendard
+import kr.jjaguk.core.designsystem.theme.AppFont
 import kr.jjaguk.core.designsystem.theme.Space as Gap
 import kr.jjaguk.core.designsystem.theme.raisedPlastic
 import kr.jjaguk.core.designsystem.theme.sunken

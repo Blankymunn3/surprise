@@ -24,7 +24,7 @@ import kr.jjaguk.core.designsystem.theme.MemoryShapes
 import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
 import kr.jjaguk.core.designsystem.theme.PlasticSize
-import kr.jjaguk.core.designsystem.theme.Pretendard
+import kr.jjaguk.core.designsystem.theme.AppFont
 import kr.jjaguk.core.designsystem.theme.pressable
 import kr.jjaguk.core.designsystem.theme.raisedPlastic
 
@@ -52,7 +52,7 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
         ) {
             Text(
                 text = text,
-                fontFamily = Pretendard,
+                fontFamily = AppFont,
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp,
                 color = if (enabled) PlasticColors.OnRed else PlasticColors.OnButtonOff,
@@ -77,7 +77,7 @@ fun SoftButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier)
         ) {
             Text(
                 text = text,
-                fontFamily = Pretendard,
+                fontFamily = AppFont,
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp,
                 color = PlasticColors.OnRubber,

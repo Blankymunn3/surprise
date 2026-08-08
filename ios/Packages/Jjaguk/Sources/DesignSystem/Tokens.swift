@@ -48,23 +48,20 @@ extension Color {
     }
 }
 
-/// **Pretendard 한 벌.** 굵기와 자간만으로 위계를 만듭니다.
+/// **갈무리11 한 벌.** 앱 전체 서체입니다 — 처음(2026-08-09 아침 시안)에는
+/// '기계 각인 자리'에만 쓰고 본문은 Pretendard 를 남겼는데, 같은 날 사용자가
+/// **"혼용이 별로"** 라고 해 전면 전환했습니다. `faceName` 한 곳만 고치면
+/// 앱 전체가 따라옵니다 — Pretendard 파일은 번들에 남아 있어 돌아올 수 있습니다.
 ///
-/// 디자인 문서는 라틴·숫자에 Archivo 를 섞지만, 우리는 Pretendard 한 벌로 갑니다
-/// (2026-08-04 결정). 서체 파일이 한 벌로 끝나고, 한글·라틴의 굵기가 한 줄 안에서
-/// 어긋나지 않습니다.
-///
-/// 굵기를 **PostScript 이름으로 직접** 고릅니다. `.custom("Pretendard").weight(.semibold)`
-/// 로 하지 않는 이유: 이 폰트 파일들은 Medium·SemiBold 가 각자 다른 패밀리로 들어 있어
-/// (`Pretendard Medium`, `Pretendard SemiBold`) `Pretendard` 패밀리 안에서는 찾지 못하고
-/// 시스템이 굵기를 **흉내 내 그립니다**. 이름을 직접 대면 그 얼굴이 그대로 나옵니다.
+/// 굵기를 **PostScript 이름으로 직접** 고릅니다 — 패밀리 이름으로 시키면
+/// 시스템이 굵기를 흉내 내 픽셀이 뭉개집니다.
 ///
 /// 앱 번들에 폰트가 없으면 시스템 서체로 떨어집니다 — 등록은 앱 껍데기가 합니다
 /// (`ios/App/Info.plist` 의 `UIAppFonts`).
 public enum MemoryFont {
-    static let family = "Pretendard"
-
     /// 여섯 단만 씁니다 — **한 화면에 세 단 이상 섞지 않습니다.**
+    /// 크기 단은 Pretendard 시절 그대로입니다 — 갈무리 배수(11·22)가 아닌
+    /// 크기에서는 픽셀이 살짝 무르지만, 위계를 흔들지 않는 쪽을 골랐습니다.
     public static let display = font(25, .bold)     // 화면 제목
     public static let title = font(17, .bold)       // 상단바
     public static let headline = font(15, .bold)    // 버튼 · 본문 강조
@@ -72,13 +69,14 @@ public enum MemoryFont {
     public static let label = font(12.5, .regular)  // 설명
     public static let micro = font(11, .semibold)   // 딱지 · 캡션
 
-    /// 안드로이드 `res/font` 에 있는 것과 **같은 네 벌**입니다.
+    /// 앱 전체 서체 = **갈무리11** (2026-08-09 "혼용이 별로" 피드백으로 전면 전환).
+    /// 여기 한 곳만 바꾸면 앱 전체가 따라옵니다 — Pretendard 로 돌아오려면
+    /// 예전 분기(`Pretendard-Bold` 꼴)로 되돌리면 됩니다. 갈무리는 굵기가
+    /// 둘뿐이라 Medium·SemiBold 는 Regular 로 갑니다(가짜 굵기 방지).
     static func faceName(_ weight: Font.Weight) -> String {
         switch weight {
-        case .bold, .heavy, .black: "\(family)-Bold"
-        case .semibold: "\(family)-SemiBold"
-        case .medium: "\(family)-Medium"
-        default: "\(family)-Regular"
+        case .bold, .heavy, .black: "Galmuri11-Bold"
+        default: "Galmuri11-Regular"
         }
     }
 

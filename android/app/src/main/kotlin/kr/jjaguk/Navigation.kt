@@ -76,7 +76,7 @@ import kr.jjaguk.core.designsystem.theme.MemoryType
 import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
 import kr.jjaguk.core.designsystem.theme.PlasticSize
-import kr.jjaguk.core.designsystem.theme.Pretendard
+import kr.jjaguk.core.designsystem.theme.AppFont
 import kr.jjaguk.core.model.Region
 import kr.jjaguk.core.model.SpaceId
 import kr.jjaguk.core.model.SpaceKind

@@ -45,7 +45,7 @@ import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
 import kr.jjaguk.core.designsystem.theme.PlasticSize
 import kr.jjaguk.core.designsystem.theme.Galmuri11
-import kr.jjaguk.core.designsystem.theme.Pretendard
+import kr.jjaguk.core.designsystem.theme.AppFont
 import kr.jjaguk.core.designsystem.theme.Space as Gap
 import kr.jjaguk.core.designsystem.theme.pressable
 import kr.jjaguk.core.designsystem.theme.raisedPlastic
@@ -144,7 +144,7 @@ private fun MonthBar(state: CalendarState, onIntent: (CalendarIntent) -> Unit) {
         // 연·월을 한 덩어리로. 지난 해를 넘겨 볼 때는 연도가 더 중요합니다.
         Text(
             text = stringResource(R.string.calendar_month, state.month.year, state.month.monthValue),
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
             color = PlasticColors.Ink,
@@ -167,7 +167,7 @@ private fun MonthNav(glyph: String, onClick: () -> Unit) {
     ) {
         Text(
             text = glyph,
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
             color = PlasticColors.OnRubber,
@@ -339,7 +339,7 @@ private fun PlasticDaySection(
                         group.date.dayOfMonth,
                         weekdays()[group.date.dayOfWeek.value % 7],
                     ),
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = PlasticColors.OnPlate,
@@ -349,7 +349,7 @@ private fun PlasticDaySection(
                         group.placeName,
                         stringResource(R.string.calendar_photo_count, group.photos.size),
                     ).joinToString(" · "),
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 11.sp,
                     color = PlasticColors.OnPlateDim,
@@ -386,7 +386,7 @@ private fun EmptyPlate() {
         Spacer(Modifier.height(Gap.m))
         Text(
             text = stringResource(R.string.calendar_empty),
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
             color = PlasticColors.OnPlate,
@@ -424,7 +424,7 @@ private fun Bottom(collapsed: Boolean, onToggle: () -> Unit, onAdd: () -> Unit) 
             ) {
                 Text(
                     text = stringResource(if (collapsed) R.string.calendar_expand else R.string.calendar_collapse),
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = PlasticColors.OnRubber,
@@ -443,7 +443,7 @@ private fun Bottom(collapsed: Boolean, onToggle: () -> Unit, onAdd: () -> Unit) 
             ) {
                 Text(
                     text = "＋",
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
                     color = PlasticColors.OnRed,

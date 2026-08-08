@@ -36,7 +36,7 @@ import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
 import kr.jjaguk.core.designsystem.theme.PlasticSize
 import kr.jjaguk.core.designsystem.theme.PressStart
-import kr.jjaguk.core.designsystem.theme.Pretendard
+import kr.jjaguk.core.designsystem.theme.AppFont
 import kr.jjaguk.core.designsystem.theme.Space as Gap
 import kr.jjaguk.core.designsystem.theme.pressable
 import kr.jjaguk.core.designsystem.theme.raisedPlastic
@@ -184,7 +184,7 @@ private fun PlasticCard(space: Space, onClick: () -> Unit) {
             Column(Modifier.weight(1f)) {
                 Text(
                     text = space.name,
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
                     color = PlasticColors.OnPlate,
@@ -267,7 +267,7 @@ private fun CrewChip(text: String, index: Int, filled: Boolean) {
     ) {
         Text(
             text = text,
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 11.sp,
             color = if (filled) PlasticColors.Body else PlasticColors.Plate,
@@ -308,7 +308,7 @@ private fun Controls(onCreate: () -> Unit, onJoin: () -> Unit) {
             ) {
                 Text(
                     text = stringResource(R.string.list_join),
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = PlasticColors.OnRubber,
@@ -331,7 +331,7 @@ private fun Controls(onCreate: () -> Unit, onJoin: () -> Unit) {
             ) {
                 Text(
                     text = "＋",
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
                     color = PlasticColors.OnRed,
@@ -346,7 +346,7 @@ private fun PlateHint(text: String) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
             text = text,
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.SemiBold,
             fontSize = 13.5.sp,
             color = PlasticColors.OnPlateDim,
@@ -364,7 +364,7 @@ private fun PlateEmpty() {
         Spacer(Modifier.height(Gap.l))
         Text(
             text = stringResource(R.string.list_empty_title),
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
             color = PlasticColors.OnPlate,
@@ -372,7 +372,7 @@ private fun PlateEmpty() {
         Spacer(Modifier.height(Gap.s))
         Text(
             text = stringResource(R.string.list_empty_hint),
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Normal,
             fontSize = 12.5.sp,
             color = PlasticColors.OnPlateDim,
