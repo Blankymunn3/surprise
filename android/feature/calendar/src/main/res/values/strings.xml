@@ -27,8 +27,7 @@
     <string name="calendar_next_month">다음 달</string>
 
     <!-- 접기 -->
-    <string name="calendar_collapse">달력 접기</string>
-    <string name="calendar_expand">달력 펴기</string>
+    <string name="calendar_add_photo">사진 올리기</string>
 
     <!-- 날짜 묶음 -->
     <string name="calendar_day_header">%1$d월 %2$d일 %3$s</string>

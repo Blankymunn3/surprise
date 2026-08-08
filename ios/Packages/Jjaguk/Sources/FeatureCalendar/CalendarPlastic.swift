@@ -44,17 +44,15 @@ struct PlasticCalendarBody: View {
 
     private var screen: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if !store.state.collapsed {
-                weekdayStrip
-                Spacer().frame(height: MemorySpace.xs)
-                grid
+            weekdayStrip
+            Spacer().frame(height: MemorySpace.xs)
+            grid
 
-                // 격자와 목록 사이의 홈. 판을 파낸 자국이라 두 층이 갈립니다.
-                RoundedRectangle(cornerRadius: PlasticRadius.chip, style: .continuous)
-                    .fill(PlasticColor.plateLo)
-                    .frame(height: 2)
-                    .padding(.vertical, MemorySpace.s)
-            }
+            // 격자와 목록 사이의 홈. 판을 파낸 자국이라 두 층이 갈립니다.
+            RoundedRectangle(cornerRadius: PlasticRadius.chip, style: .continuous)
+                .fill(PlasticColor.plateLo)
+                .frame(height: 2)
+                .padding(.vertical, MemorySpace.s)
 
             let groups = store.state.visibleDays
             if groups.isEmpty {
@@ -265,28 +263,18 @@ struct PlasticCalendarBody: View {
     // MARK: 몸통 위 — 조작부
 
     /**
-     왼쪽 접기(고무 알약), 오른쪽 사진 올리기(빨간 A 버튼).
+     가운데 사진 올리기(빨간 A 버튼) 하나.
 
-     지도의 조작부와 **오른쪽이 같습니다.** 두 탭에서 빨간 버튼이 같은 자리에서
-     같은 일을 해야 손이 기억합니다.
+     '달력 접기'는 뺐습니다(2026-08-09 피드백 — 쓸 일이 없는 버튼). ＋ 는 지도의
+     빨간 버튼과 같은 **아이콘**입니다 — 글자 ＋ 는 전각이라 원 안에서 중앙이
+     안 맞았고, 두 탭의 빨간 버튼이 같은 얼굴이어야 손이 기억합니다.
      */
     private var bottom: some View {
-        HStack(spacing: MemorySpace.m) {
-            Button { store.toggleCollapse() } label: {
-                Text(localized(store.state.collapsed ? "calendar_expand" : "calendar_collapse"))
-                    .font(MemoryFont.font(15, .bold))
-                    .foregroundStyle(PlasticColor.onRubber)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: PlasticSize.button)
-                    .background(Capsule().fill(PlasticColor.rubber))
-            }
-            .buttonStyle(.plasticPress)
-            .padding(PlasticSize.buttonInset)
-            .raisedPlastic()
-
+        HStack {
+            Spacer(minLength: 0)
             Button(action: onAddPhoto) {
-                Text("＋")
-                    .font(MemoryFont.font(24, .bold))
+                Image(systemName: "plus")
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(PlasticColor.onRed)
                     .frame(width: PlasticSize.button, height: PlasticSize.button)
                     .background(Circle().fill(PlasticColor.red))
@@ -295,6 +283,7 @@ struct PlasticCalendarBody: View {
             .accessibilityLabel(localized("calendar_add_photo"))
             .padding(PlasticSize.buttonInset)
             .raisedPlastic()
+            Spacer(minLength: 0)
         }
         .padding(.horizontal, MemorySpace.xs)
         .padding(.vertical, MemorySpace.m)

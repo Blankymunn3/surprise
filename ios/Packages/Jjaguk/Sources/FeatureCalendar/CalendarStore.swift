@@ -29,8 +29,6 @@ public struct CalendarState: Equatable, Sendable {
     public let today: CalendarDate
     public var cells: [DayCellUi] = []
     public var days: [DayGroup] = []
-    /// 접힘은 **기억합니다.** 다른 탭에 갔다 와도 접힌 채로 돌아와야 접는 의미가 있습니다.
-    public var collapsed = false
     public var selected: CalendarDate?
 
     public init(spaceId: SpaceId, today: CalendarDate) {
@@ -95,11 +93,6 @@ public enum CalendarReducer {
         return next
     }
 
-    public static func collapseToggled(_ state: CalendarState) -> CalendarState {
-        var next = state
-        next.collapsed.toggle()
-        return next
-    }
 }
 
 @MainActor
@@ -161,8 +154,6 @@ public final class CalendarStore {
     }
 
     public func select(_ date: CalendarDate) { state.selected = date }
-
-    public func toggleCollapse() { state = CalendarReducer.collapseToggled(state) }
 
     public func setCover(_ id: PhotoId, on date: CalendarDate) async {
         switch await setCoverPhoto(state.spaceId, .day(date), id) {
