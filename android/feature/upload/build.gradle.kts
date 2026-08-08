@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "kr.surprise.memorymap.feature.upload"
+    namespace = "kr.jjaguk.feature.upload"
     compileSdk = 36
 
     defaultConfig {
