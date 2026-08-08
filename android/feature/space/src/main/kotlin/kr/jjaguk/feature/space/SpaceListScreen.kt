@@ -72,7 +72,9 @@ fun SpaceListScreen(
     Box(
         modifier
             .fillMaxSize()
-            .background(MemoryColors.Paper)
+            // 상태바 뒤에도 이 색이 비칩니다 — 옛 종이색(Paper)이 남아 있어서
+            // 위 한 줄만 다른 색이었다(2026-08-09 피드백). 몸통과 같은 플라스틱으로.
+            .background(PlasticColors.Body)
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
         PlasticListBody(state, onIntent)
