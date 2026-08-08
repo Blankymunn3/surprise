@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +40,7 @@ import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kr.jjaguk.core.designsystem.component.FRAMES_RATIO
+import kr.jjaguk.core.designsystem.component.MemoryIcons
 import kr.jjaguk.core.designsystem.component.PhotoFramesScene
 import kr.jjaguk.core.designsystem.component.PhotoThumb
 import kr.jjaguk.core.designsystem.theme.PlasticColors
@@ -83,20 +85,18 @@ internal fun PlasticCalendarBody(state: CalendarState, onIntent: (CalendarIntent
                 .sunken(PlasticShapes.Screen)
                 .padding(Gap.s)
         ) {
-            if (!state.collapsed) {
-                WeekdayStrip()
-                Spacer(Modifier.height(Gap.xs))
-                PlasticGrid(state, onIntent)
-                // 격자와 목록 사이의 홈. 판을 파낸 자국이라 두 층이 갈립니다.
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = Gap.s)
-                        .height(2.dp)
-                        .clip(PlasticShapes.Chip)
-                        .background(PlasticColors.PlateLo)
-                )
-            }
+            WeekdayStrip()
+            Spacer(Modifier.height(Gap.xs))
+            PlasticGrid(state, onIntent)
+            // 격자와 목록 사이의 홈. 판을 파낸 자국이라 두 층이 갈립니다.
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = Gap.s)
+                    .height(2.dp)
+                    .clip(PlasticShapes.Chip)
+                    .background(PlasticColors.PlateLo)
+            )
 
             val groups = state.visibleDays()
             if (groups.isEmpty()) {
@@ -119,11 +119,7 @@ internal fun PlasticCalendarBody(state: CalendarState, onIntent: (CalendarIntent
             }
         }
 
-        Bottom(
-            collapsed = state.collapsed,
-            onToggle = { onIntent(CalendarIntent.CollapseToggled) },
-            onAdd = { onIntent(CalendarIntent.AddTapped) },
-        )
+        Bottom(onAdd = { onIntent(CalendarIntent.AddTapped) })
     }
 }
 
@@ -395,43 +391,18 @@ private fun EmptyPlate() {
 }
 
 /**
- * 아래 조작부 — 왼쪽 접기(고무 알약), 오른쪽 사진 올리기(빨간 A 버튼).
+ * 아래 조작부 — 가운데 사진 올리기(빨간 A 버튼) 하나.
  *
- * 지도의 [kr.jjaguk.feature.map.MapScreen] 조작부와 **오른쪽이 같습니다.**
- * 두 탭에서 빨간 버튼이 같은 자리에서 같은 일을 해야 손이 기억합니다.
+ * '달력 접기'는 뺐습니다(2026-08-09 피드백 — 쓸 일이 없는 버튼). ＋ 는 지도의
+ * 빨간 버튼과 같은 **아이콘**입니다 — 글자 ＋ 는 전각이라 원 안에서 중앙이
+ * 안 맞았고, 두 탭의 빨간 버튼이 같은 얼굴이어야 손이 기억합니다.
  */
 @Composable
-private fun Bottom(collapsed: Boolean, onToggle: () -> Unit, onAdd: () -> Unit) {
-    Row(
+private fun Bottom(onAdd: () -> Unit) {
+    Box(
         Modifier.fillMaxWidth().padding(horizontal = Gap.xs, vertical = Gap.m),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Gap.m),
+        contentAlignment = Alignment.Center,
     ) {
-        Box(
-            Modifier
-                .weight(1f)
-                .raisedPlastic(PlasticShapes.Housing)
-                .padding(PlasticSize.ButtonInset)
-        ) {
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(PlasticSize.Button)
-                    .clip(PlasticShapes.Pill)
-                    .background(PlasticColors.Rubber)
-                    .pressable(onClick = onToggle),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = stringResource(if (collapsed) R.string.calendar_expand else R.string.calendar_collapse),
-                    fontFamily = AppFont,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = PlasticColors.OnRubber,
-                )
-            }
-        }
-
         Box(Modifier.raisedPlastic(PlasticShapes.Housing).padding(PlasticSize.ButtonInset)) {
             Box(
                 Modifier
@@ -441,12 +412,11 @@ private fun Bottom(collapsed: Boolean, onToggle: () -> Unit, onAdd: () -> Unit) 
                     .pressable(onClick = onAdd),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text = "＋",
-                    fontFamily = AppFont,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = PlasticColors.OnRed,
+                Icon(
+                    MemoryIcons.Plus,
+                    contentDescription = stringResource(R.string.calendar_add_photo),
+                    tint = PlasticColors.OnRed,
+                    modifier = Modifier.size(18.dp),
                 )
             }
         }

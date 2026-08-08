@@ -51,9 +51,6 @@ internal object CalendarReducer {
 
     fun daySelected(state: CalendarState, date: LocalDate): CalendarState =
         state.copy(selected = date)
-
-    fun collapseToggled(state: CalendarState): CalendarState =
-        state.copy(collapsed = !state.collapsed)
 }
 
 /** 고른 날이 있으면 그 날만, 없으면 그달 전부. */
