@@ -14,6 +14,7 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { setGlobalOptions } = require("firebase-functions/v2");
+const { GoogleAuth } = require("google-auth-library");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
@@ -70,6 +71,70 @@ exports.joinSpace = onCall(async (request) => {
 
   return { spaceId };
 });
+
+/**
+ * GA4 사용 통계를 읽어 옵니다 — 대시보드 페이지(`stats/`)가 부릅니다.
+ *
+ * 페이지가 GA4 를 직접 못 읽는 이유: Data API 는 GA 속성에 초대된 계정만
+ * 받는데, 아무 구글 계정으로나 로그인하는 페이지에 그걸 요구할 수 없습니다.
+ * 그래서 **이 함수의 실행 계정(기본 컴퓨트 서비스 계정)에만** GA 뷰어를 주고,
+ * 페이지에는 "로그인했는가"만 물어봅니다 — 보고서 페이지와 같은 문턱입니다.
+ *
+ * ⚠️ 서비스 계정을 GA 속성에 초대하기 전에는 PERMISSION_DENIED 가 납니다 —
+ * GA 관리 > 속성 액세스 관리에서 `419812459548-compute@developer.gserviceaccount.com`
+ * 에 '뷰어'를 줘야 합니다. API 로는 못 합니다(GA 관리자 스코프 토큰이 필요).
+ */
+const GA_PROPERTY = "properties/547738617";
+
+exports.gaStats = onCall(
+  // 브라우저에서 부르므로 CORS 를 우리 사이트로 엽니다.
+  { cors: ["https://blankymunn3.github.io"] },
+  async (request) => {
+    if (!request.auth) throw new HttpsError("unauthenticated", "로그인해야 봅니다");
+
+    const days = Math.min(Math.max(Number(request.data && request.data.days) || 14, 1), 90);
+    const auth = new GoogleAuth({
+      scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
+    });
+    const client = await auth.getClient();
+    const url = `https://analyticsdata.googleapis.com/v1beta/${GA_PROPERTY}:runReport`;
+    const dateRanges = [{ startDate: `${days}daysAgo`, endDate: "today" }];
+
+    const run = (body) => client.request({ url, method: "POST", data: body });
+    let events;
+    let users;
+    try {
+      [events, users] = await Promise.all([
+        run({
+          dateRanges,
+          dimensions: [{ name: "date" }, { name: "eventName" }],
+          metrics: [{ name: "eventCount" }],
+          limit: 10000,
+        }),
+        run({
+          dateRanges,
+          dimensions: [{ name: "date" }],
+          metrics: [{ name: "activeUsers" }],
+          limit: 1000,
+        }),
+      ]);
+    } catch (error) {
+      if (error.response && error.response.status === 403) {
+        throw new HttpsError(
+          "permission-denied",
+          "서비스 계정에 GA 속성 뷰어 권한이 아직 없습니다 (위 주석의 콘솔 작업)."
+        );
+      }
+      throw new HttpsError("internal", "GA 조회 실패: " + error.message);
+    }
+
+    const rows = (r) => (r.data.rows || []).map((x) => ({
+      d: x.dimensionValues.map((v) => v.value),
+      m: x.metricValues.map((v) => v.value),
+    }));
+    return { events: rows(events), users: rows(users) };
+  }
+);
 
 /**
  * 사진이 올라오면 **다른 멤버들**에게 알립니다. 올린 사람은 뺍니다 — 자기가 방금 한
