@@ -196,11 +196,13 @@ struct SpaceDetailView: View {
         Button(action: action) {
             Image(systemName: symbol)
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(MemoryColor.ink)
+                .foregroundStyle(PlasticColor.ink)
                 .frame(width: 38, height: 38)
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        // 몸통 위 버튼이라 안드로이드(PlainIconButton 의 pressable)처럼
+        // 눌렀다 내려가는 느낌을 줍니다 — 이것만 없어서 만 것처럼 보였습니다.
+        .buttonStyle(.plasticPress)
         .accessibilityLabel(label)
     }
 }

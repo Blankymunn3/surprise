@@ -285,19 +285,19 @@ struct SpaceSheet: View {
                     UIPasteboard.general.string = code
                     #endif
                 }
+                // 옆의 '복사'(SoftButton)와 **같은 고무 알약**이어야 합니다 —
+                // ShareLink 는 자체 뷰라 컴포넌트를 못 쓰고 얼굴만 같게 그립니다.
                 ShareLink(item: code) {
                     Text(localized("invited_share"))
-                        .memoryBody()
-                        .foregroundStyle(MemoryColor.ink)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 13)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(MemoryColor.surface)
-                        .overlay(
-                            Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border)
-                        )
+                        .font(MemoryFont.font(15, .bold))
+                        .foregroundStyle(PlasticColor.onRubber)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: PlasticSize.button)
+                        .background(Capsule().fill(PlasticColor.rubber))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plasticPress)
+                .padding(PlasticSize.buttonInset)
+                .raisedPlastic()
             }
             .padding(.top, 10)
 
