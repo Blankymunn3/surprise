@@ -123,7 +123,12 @@ internal class TileProxy : AutoCloseable {
     private fun clamp(v: Int) = v.coerceIn(0, 255)
 
     companion object {
-        private const val TILE = 256
+        /**
+         * 512 인 이유: 고밀도 화면에서 MapLibre 는 256 규격 타일이면 **더 높은 줌의
+         * 타일**을 가져와 픽셀 칸이 잘게 보입니다(실기기에서 iOS 의 절반 크기).
+         * 512 규격으로 선언하면 한 줌 낮은 타일을 크게 그려서 칸이 iOS 와 비슷해집니다.
+         */
+        private const val TILE = 512
         private const val CELLS = 48
         private const val AMPLIFY = 3
     }
