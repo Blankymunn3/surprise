@@ -56,7 +56,7 @@
     ]
    ],
    "layout": {
-    "text-field": "{name_en}",
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Regular Italic",
      "Open Sans Italic",
@@ -256,18 +256,7 @@
     ]
    ],
    "layout": {
-    "text-field": {
-     "stops": [
-      [
-       8,
-       "{name_en}"
-      ],
-      [
-       13,
-       "{name}"
-      ]
-     ]
-    },
+    "text-field": "{name}",
     "symbol-placement": "point",
     "text-size": {
      "stops": [
@@ -335,18 +324,7 @@
     ]
    ],
    "layout": {
-    "text-field": {
-     "stops": [
-      [
-       8,
-       "{name_en}"
-      ],
-      [
-       14,
-       "{name}"
-      ]
-     ]
-    },
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Regular",
      "Open Sans Regular",
@@ -420,18 +398,7 @@
     ]
    ],
    "layout": {
-    "text-field": {
-     "stops": [
-      [
-       8,
-       "{name_en}"
-      ],
-      [
-       13,
-       "{name}"
-      ]
-     ]
-    },
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Regular",
      "Open Sans Regular",
@@ -513,18 +480,7 @@
     ]
    ],
    "layout": {
-    "text-field": {
-     "stops": [
-      [
-       8,
-       "{name_en}"
-      ],
-      [
-       13,
-       "{name}"
-      ]
-     ]
-    },
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Medium",
      "Open Sans Bold",
@@ -595,18 +551,7 @@
     ]
    ],
    "layout": {
-    "text-field": {
-     "stops": [
-      [
-       8,
-       "{name_en}"
-      ],
-      [
-       13,
-       "{name}"
-      ]
-     ]
-    },
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Medium",
      "Open Sans Bold",
@@ -686,7 +631,7 @@
     ]
    ],
    "layout": {
-    "text-field": "{name_en}",
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Medium",
      "Open Sans Bold",
@@ -747,7 +692,7 @@
     ]
    ],
    "layout": {
-    "text-field": "{name_en}",
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Medium",
      "Open Sans Bold",
@@ -824,7 +769,7 @@
     ]
    ],
    "layout": {
-    "text-field": "{name_en}",
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Medium",
      "Open Sans Bold",
@@ -874,18 +819,7 @@
     ]
    ],
    "layout": {
-    "text-field": {
-     "stops": [
-      [
-       8,
-       "{name_en}"
-      ],
-      [
-       13,
-       "{name}"
-      ]
-     ]
-    },
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Medium",
      "Open Sans Bold",
@@ -966,18 +900,7 @@
     ]
    ],
    "layout": {
-    "text-field": {
-     "stops": [
-      [
-       8,
-       "{name_en}"
-      ],
-      [
-       13,
-       "{name}"
-      ]
-     ]
-    },
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Medium",
      "Open Sans Bold",
@@ -1049,7 +972,7 @@
     ]
    ],
    "layout": {
-    "text-field": "{name_en}",
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Medium",
      "Open Sans Bold",
@@ -1101,7 +1024,7 @@
     ]
    ],
    "layout": {
-    "text-field": "{name_en}",
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Medium",
      "Open Sans Bold",
@@ -1153,7 +1076,7 @@
     ]
    ],
    "layout": {
-    "text-field": "{name_en}",
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Medium",
      "Open Sans Bold",
@@ -1205,7 +1128,7 @@
     ]
    ],
    "layout": {
-    "text-field": "{name_en}",
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Medium",
      "Open Sans Bold",
@@ -1252,7 +1175,7 @@
     ]
    ],
    "layout": {
-    "text-field": "{name_en}",
+    "text-field": "{name}",
     "text-font": [
      "Montserrat Medium",
      "Open Sans Bold",
