@@ -49,30 +49,36 @@ internal class TileProxy : AutoCloseable {
         pool.shutdownNow()
     }
 
+    /**
+     * ⚠️ **이 안의 어떤 예외도 밖으로 나가면 안 됩니다.** 여기는 스레드 풀이고,
+     * 풀 스레드의 미처리 예외는 앱 전체를 죽입니다. 실제로 그랬습니다 — 줌을 하면
+     * MapLibre 가 필요 없어진 타일 요청을 끊는데, 이미 닫힌 소켓에 응답을 쓰다
+     * Broken pipe 로 앱이 죽었습니다. 끊긴 요청은 실패가 아니라 **일상**입니다.
+     */
     private fun serve(client: Socket) {
-        client.use {
-            val line = it.getInputStream().bufferedReader().readLine() ?: return
-            // "GET /15/27945/12696 HTTP/1.1" 에서 가운데 경로만
-            val path = line.split(" ").getOrNull(1) ?: return
-            val body = try {
-                pixelated(path)
-            } catch (_: Exception) {
-                null
+        try {
+            client.use {
+                val line = it.getInputStream().bufferedReader().readLine() ?: return
+                // "GET /15/27945/12696 HTTP/1.1" 에서 가운데 경로만
+                val path = line.split(" ").getOrNull(1) ?: return
+                val body = pixelated(path)
+                val out = it.getOutputStream()
+                if (body == null) {
+                    out.write("HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\n\r\n".toByteArray())
+                } else {
+                    out.write(
+                        ("HTTP/1.1 200 OK\r\nContent-Type: image/png\r\n" +
+                            // MapLibre 의 디스크 캐시가 이걸 보고 타일을 물고 있습니다 —
+                            // 같은 타일을 매번 다시 픽셀화하지 않게.
+                            "Cache-Control: max-age=604800\r\n" +
+                            "Content-Length: ${body.size}\r\n\r\n").toByteArray()
+                    )
+                    out.write(body)
+                }
+                out.flush()
             }
-            val out = it.getOutputStream()
-            if (body == null) {
-                out.write("HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\n\r\n".toByteArray())
-            } else {
-                out.write(
-                    ("HTTP/1.1 200 OK\r\nContent-Type: image/png\r\n" +
-                        // MapLibre 의 디스크 캐시가 이걸 보고 타일을 물고 있습니다 —
-                        // 같은 타일을 매번 다시 픽셀화하지 않게.
-                        "Cache-Control: max-age=604800\r\n" +
-                        "Content-Length: ${body.size}\r\n\r\n").toByteArray()
-                )
-                out.write(body)
-            }
-            out.flush()
+        } catch (_: Exception) {
+            // 끊긴 소켓·못 받은 타일 — 그 요청 하나만 버립니다.
         }
     }
 
@@ -86,7 +92,7 @@ internal class TileProxy : AutoCloseable {
         val original = connection.inputStream.use { BitmapFactory.decodeStream(it) } ?: return null
         val small = Bitmap.createScaledBitmap(original, CELLS, CELLS, true)
 
-        // 채도·대비·포스터라이즈를 픽셀마다. 48×48 = 2,304칸이라 값싼 일입니다.
+        // 옅음 증폭·포스터라이즈를 픽셀마다. 48×48 = 2,304칸이라 값싼 일입니다.
         val pixels = IntArray(CELLS * CELLS)
         small.getPixels(pixels, 0, CELLS, 0, 0, CELLS, CELLS)
         for (i in pixels.indices) {
@@ -94,15 +100,12 @@ internal class TileProxy : AutoCloseable {
             var r = (p shr 16) and 0xFF
             var g = (p shr 8) and 0xFF
             var b = p and 0xFF
-            // CARTO 라이트는 색이 너무 옅어 그대로 픽셀화하면 밋밋합니다 —
-            // 검수된 시안이 이 값으로 만들어졌습니다.
-            val gray = (r * 30 + g * 59 + b * 11) / 100
-            r = clamp(gray + ((r - gray) * SATURATION) / 100)
-            g = clamp(gray + ((g - gray) * SATURATION) / 100)
-            b = clamp(gray + ((b - gray) * SATURATION) / 100)
-            r = clamp(((r - 128) * CONTRAST) / 100 + 128)
-            g = clamp(((g - 128) * CONTRAST) / 100 + 128)
-            b = clamp(((b - 128) * CONTRAST) / 100 + 128)
+            // **옅음 증폭** — CARTO 라이트는 정보가 흰색 근처에 몰려 있어, 그대로
+            // 픽셀화하면 광역에서 도로가 통째로 사라집니다(실기기에서 확인).
+            // 흰색에서 먼 만큼을 3배로 벌리면 도로·강·공원이 살아납니다.
+            r = clamp(255 - (255 - r) * AMPLIFY)
+            g = clamp(255 - (255 - g) * AMPLIFY)
+            b = clamp(255 - (255 - b) * AMPLIFY)
             // 4비트 포스터라이즈 — 색을 16단계로 눌러야 픽셀아트 결이 남습니다.
             r = r and 0xF0; g = g and 0xF0; b = b and 0xF0
             pixels[i] = (0xFF shl 24) or (r shl 16) or (g shl 8) or b
@@ -122,7 +125,6 @@ internal class TileProxy : AutoCloseable {
     companion object {
         private const val TILE = 256
         private const val CELLS = 48
-        private const val SATURATION = 170  // ×1.7 을 정수 연산으로
-        private const val CONTRAST = 118    // ×1.18
+        private const val AMPLIFY = 3
     }
 }

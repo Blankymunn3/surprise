@@ -39,17 +39,13 @@ struct PhotoMap: UIViewRepresentable {
         map.showsCompass = false
         map.delegate = context.coordinator
 
-        // **픽셀 지도** (2026-08-08 검수 시안 "라이트 96") — 두 겹입니다:
-        // 바탕은 라벨 없는 타일을 픽셀화한 것, 라벨은 원본 그대로.
-        // 라벨이 그림 안에 구워진 타일이면 픽셀화할 때 글자도 뭉개집니다 —
-        // CARTO 가 둘을 따로 주기 때문에 바탕만 픽셀이 됩니다.
-        // 안드로이드(`TileProxy` + `OsmStyle`)와 같은 구성, 같은 수식입니다.
+        // **픽셀 지도** (2026-08-08 검수 시안 "라이트 96") — 바탕만 픽셀 타일로 갈고,
+        // **라벨은 애플 것을 그대로 씁니다.** 타일이 지도를 대체해도 애플의 벡터
+        // 라벨(지명·도로명)은 계속 그려지는데 이건 끌 방법이 없습니다 — 그 위에
+        // CARTO 라벨 타일을 얹었더니 두 벌이 겹쳐 보였습니다(실기기에서 확인).
+        // 애플 라벨이 한글이고 더 선명하므로 그쪽을 남깁니다.
+        // 바탕 픽셀화는 안드로이드(`TileProxy`)와 같은 수식입니다.
         map.addOverlay(PixelTileOverlay(), level: .aboveRoads)
-        let labels = MKTileOverlay(
-            urlTemplate: "https://basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png"
-        )
-        // 라벨은 사진 채움(.aboveRoads)보다 위 — 채워진 지역에서도 지명이 읽혀야 합니다.
-        map.addOverlay(labels, level: .aboveLabels)
 
         let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.tapped))
         map.addGestureRecognizer(tap)
@@ -341,21 +337,18 @@ final class PixelTileOverlay: MKTileOverlay {
         small.interpolationQuality = .medium
         small.draw(source, in: CGRect(x: 0, y: 0, width: cells, height: cells))
 
-        // ② 채도·대비·포스터라이즈를 픽셀마다. 48×48 = 2,304칸이라 값싼 일입니다.
-        //    CARTO 라이트는 색이 너무 옅어 그대로 픽셀화하면 밋밋합니다 —
-        //    검수된 시안이 이 값(1.7 / 1.18)으로 만들어졌습니다.
+        // ② 옅음 증폭·포스터라이즈를 픽셀마다. 48×48 = 2,304칸이라 값싼 일입니다.
+        //    CARTO 라이트는 정보가 흰색 근처에 몰려 있어, 그대로 픽셀화하면
+        //    광역에서 도로가 통째로 사라집니다(실기기에서 확인). 흰색에서 먼 만큼을
+        //    3배로 벌리면 도로·강·공원이 살아납니다.
         guard let buffer = small.data else { return nil }
         let pixels = buffer.bindMemory(to: UInt8.self, capacity: cells * cells * 4)
         for i in 0..<(cells * cells) {
             let at = i * 4
             var r = Int(pixels[at]), g = Int(pixels[at + 1]), b = Int(pixels[at + 2])
-            let gray = (r * 30 + g * 59 + b * 11) / 100
-            r = clamp(gray + ((r - gray) * 170) / 100)
-            g = clamp(gray + ((g - gray) * 170) / 100)
-            b = clamp(gray + ((b - gray) * 170) / 100)
-            r = clamp(((r - 128) * 118) / 100 + 128)
-            g = clamp(((g - 128) * 118) / 100 + 128)
-            b = clamp(((b - 128) * 118) / 100 + 128)
+            r = clamp(255 - (255 - r) * 3)
+            g = clamp(255 - (255 - g) * 3)
+            b = clamp(255 - (255 - b) * 3)
             pixels[at] = UInt8(r & 0xF0)
             pixels[at + 1] = UInt8(g & 0xF0)
             pixels[at + 2] = UInt8(b & 0xF0)

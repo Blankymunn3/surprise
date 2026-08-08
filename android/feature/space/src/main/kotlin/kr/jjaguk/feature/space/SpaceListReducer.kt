@@ -33,8 +33,14 @@ internal object SpaceListReducer {
      * 로그인을 마치고 **원래 시트로 돌아올 때**. [sheetOpened] 와 달리 입력해 둔 것을
      * 지우지 않습니다 — 지우면 방금 적은 이름이 사라집니다.
      */
+    /**
+     * 로그인이 끝나고 하던 시트로 돌아올 때. **working 도 함께 풉니다** —
+     * 로그인 중에 켠 working 이 남아 있으면, 이어서 부르는 create/join 이
+     * `canCreate()`(!working 조건)에 걸려 **조용히 아무것도 안 하고**,
+     * 화면은 "만드는 중…" 에서 영영 멈춥니다. 실기기에서 실제로 그랬습니다.
+     */
     fun sheetOpenedKeepingInput(state: SpaceListState, sheet: SpaceListSheet): SpaceListState =
-        state.copy(sheet = sheet)
+        state.copy(sheet = sheet, working = false)
 
     fun sheetDismissed(state: SpaceListState): SpaceListState =
         state.copy(
