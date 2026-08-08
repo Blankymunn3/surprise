@@ -36,11 +36,20 @@ struct PhotoMap: UIViewRepresentable {
         let setup = MKStandardMapConfiguration(elevationStyle: .flat)
         setup.pointOfInterestFilter = .excludingAll
         map.preferredConfiguration = setup
-        // 어두운 지도. 검정 판에 끼운 화면 안에서 하얀 지도가 혼자 빛나면
-        // 화면이 아니라 구멍처럼 보입니다. 앱 전체가 아니라 지도만 어둡습니다.
-        map.overrideUserInterfaceStyle = .dark
         map.showsCompass = false
         map.delegate = context.coordinator
+
+        // **픽셀 지도** (2026-08-08 검수 시안 "라이트 96") — 두 겹입니다:
+        // 바탕은 라벨 없는 타일을 픽셀화한 것, 라벨은 원본 그대로.
+        // 라벨이 그림 안에 구워진 타일이면 픽셀화할 때 글자도 뭉개집니다 —
+        // CARTO 가 둘을 따로 주기 때문에 바탕만 픽셀이 됩니다.
+        // 안드로이드(`TileProxy` + `OsmStyle`)와 같은 구성, 같은 수식입니다.
+        map.addOverlay(PixelTileOverlay(), level: .aboveRoads)
+        let labels = MKTileOverlay(
+            urlTemplate: "https://basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png"
+        )
+        // 라벨은 사진 채움(.aboveRoads)보다 위 — 채워진 지역에서도 지명이 읽혀야 합니다.
+        map.addOverlay(labels, level: .aboveLabels)
 
         let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.tapped))
         map.addGestureRecognizer(tap)
@@ -143,6 +152,9 @@ struct PhotoMap: UIViewRepresentable {
         }
 
         func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+            if let tiles = overlay as? MKTileOverlay {
+                return MKTileOverlayRenderer(tileOverlay: tiles)
+            }
             if let fill = overlay as? PhotoFill {
                 return PhotoFillRenderer(fill: fill)
             }
@@ -283,4 +295,86 @@ final class MeMark: NSObject, MKAnnotation {
     let coordinate: CLLocationCoordinate2D
     init(coordinate: CLLocationCoordinate2D) { self.coordinate = coordinate }
 }
+/**
+ 바탕 타일 — 라벨 없는 지도를 받아 **픽셀 그림으로 바꿔서** 내놓습니다.
+
+ `canReplaceMapContent` 라서 애플 지도는 아예 그려지지 않습니다 — 이 타일이 지도의
+ 전부입니다. 덕에 두 앱(안드로이드는 MapLibre + `TileProxy`)이 **완전히 같은 지도**를
+ 보게 됐습니다.
+
+ **픽셀화는 안드로이드 `TileProxy` 와 같은 수식이어야 합니다** — 타일당 48칸,
+ 채도 1.7, 대비 1.18, 4비트 포스터라이즈, nearest 확대. 한쪽만 바꾸면 두 폰을
+ 나란히 놓았을 때 지도가 다르게 생겼습니다. (검수 시안 "라이트 96" = 타일당 48칸)
+ */
+final class PixelTileOverlay: MKTileOverlay {
+
+    init() {
+        super.init(urlTemplate: nil)
+        canReplaceMapContent = true
+        maximumZ = 19
+    }
+
+    override func loadTile(at path: MKTileOverlayPath) async throws -> Data {
+        let url = URL(string:
+            "https://basemaps.cartocdn.com/light_nolabels/\(path.z)/\(path.x)/\(path.y).png"
+        )!
+        // URLSession 기본 캐시가 원본 타일을 물고 있습니다 — 같은 타일을 매번 다시 받지 않게.
+        let (data, _) = try await URLSession.shared.data(from: url)
+        guard let image = UIImage(data: data)?.cgImage,
+              let pixelated = Self.pixelate(image)
+        else { return data }
+        return pixelated
+    }
+
+    private static let cells = 48
+    private static let tile = 256
+
+    private static func pixelate(_ source: CGImage) -> Data? {
+        let space = CGColorSpaceCreateDeviceRGB()
+        let info = CGImageAlphaInfo.premultipliedLast.rawValue
+
+        // ① 48칸으로 줄여서 (bilinear)
+        guard let small = CGContext(
+            data: nil, width: cells, height: cells, bitsPerComponent: 8,
+            bytesPerRow: cells * 4, space: space, bitmapInfo: info
+        ) else { return nil }
+        small.interpolationQuality = .medium
+        small.draw(source, in: CGRect(x: 0, y: 0, width: cells, height: cells))
+
+        // ② 채도·대비·포스터라이즈를 픽셀마다. 48×48 = 2,304칸이라 값싼 일입니다.
+        //    CARTO 라이트는 색이 너무 옅어 그대로 픽셀화하면 밋밋합니다 —
+        //    검수된 시안이 이 값(1.7 / 1.18)으로 만들어졌습니다.
+        guard let buffer = small.data else { return nil }
+        let pixels = buffer.bindMemory(to: UInt8.self, capacity: cells * cells * 4)
+        for i in 0..<(cells * cells) {
+            let at = i * 4
+            var r = Int(pixels[at]), g = Int(pixels[at + 1]), b = Int(pixels[at + 2])
+            let gray = (r * 30 + g * 59 + b * 11) / 100
+            r = clamp(gray + ((r - gray) * 170) / 100)
+            g = clamp(gray + ((g - gray) * 170) / 100)
+            b = clamp(gray + ((b - gray) * 170) / 100)
+            r = clamp(((r - 128) * 118) / 100 + 128)
+            g = clamp(((g - 128) * 118) / 100 + 128)
+            b = clamp(((b - 128) * 118) / 100 + 128)
+            pixels[at] = UInt8(r & 0xF0)
+            pixels[at + 1] = UInt8(g & 0xF0)
+            pixels[at + 2] = UInt8(b & 0xF0)
+        }
+
+        // ③ nearest 로 다시 키워야 픽셀의 모서리가 삽니다.
+        guard let shrunk = small.makeImage(),
+              let big = CGContext(
+                  data: nil, width: tile, height: tile, bitsPerComponent: 8,
+                  bytesPerRow: tile * 4, space: space, bitmapInfo: info
+              )
+        else { return nil }
+        big.interpolationQuality = .none
+        big.draw(shrunk, in: CGRect(x: 0, y: 0, width: tile, height: tile))
+        guard let out = big.makeImage() else { return nil }
+        return UIImage(cgImage: out).pngData()
+    }
+
+    private static func clamp(_ v: Int) -> Int { min(255, max(0, v)) }
+}
+
 #endif

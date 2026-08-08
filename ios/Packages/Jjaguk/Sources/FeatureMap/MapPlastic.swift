@@ -62,6 +62,16 @@ struct PlasticMapBody: View {
                     slotResults.padding(MemorySpace.s)
                 }
             }
+            .overlay(alignment: .bottomLeading) {
+                // 지도 타일의 출처 표기 — CARTO 무료 타일은 이것이 사용 조건입니다.
+                // 안드로이드는 MapLibre 의 attribution 버튼이 같은 일을 합니다.
+                Text(verbatim: "© OpenStreetMap © CARTO")
+                    .font(.system(size: 8))
+                    .foregroundStyle(.black.opacity(0.45))
+                    .padding(.leading, 6)
+                    .padding(.bottom, 3)
+                    .allowsHitTesting(false)
+            }
             .overlay(alignment: .bottom) {
                 if let sheet = store.state.sheet {
                     PlasticRegionSheet(sheet: sheet, store: store, onAddPhoto: onAddPhoto)

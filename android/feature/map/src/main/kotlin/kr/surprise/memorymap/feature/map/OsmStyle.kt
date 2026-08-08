@@ -1,66 +1,50 @@
 package kr.surprise.memorymap.feature.map
 
 /**
- * MapLibre 스타일을 코드로 만듭니다. **웹과 같은 OSM 타일**을 씁니다 —
- * API 키도, 결제 계정도 필요 없고 두 화면이 같은 지도를 보여 줍니다.
+ * 지도 스타일을 코드로 만듭니다. **두 겹**입니다:
  *
- * 스타일 파일을 따로 두지 않는 이유: 타일 주소 한 줄이 전부라, 파일로 빼면
- * 웹의 타일 주소와 어긋났을 때 알아채기 어려워집니다.
+ * ```
+ * 라벨   ← CARTO light_only_labels, 원본 그대로 (도로명·지명이 또렷해야 한다)
+ * 바탕   ← CARTO light_nolabels 를 TileProxy 가 픽셀화한 것
+ * ```
  *
- * **색을 눕히고 종이를 한 겹 덮습니다.** OSM 타일은 그림 파일이라 색을 직접 못 바꾸는데,
- * 채도를 낮추고 위에 종이색을 옅게 깔면 앱의 다른 화면과 같은 결이 됩니다
- * (`docs/app/design.html`). 지도 자체를 새로 그리려면 벡터 타일이 필요하고,
- * 그건 서버가 있어야 합니다.
+ * 라벨이 그림 안에 구워진 타일(OSM 기본)을 쓰면 픽셀화할 때 글자도 같이
+ * 뭉개집니다. CARTO 는 바탕과 라벨을 따로 주기 때문에 **바탕만 픽셀**이 됩니다 —
+ * 2026-08-08 검수된 시안("라이트 96")이 이 구성입니다.
+ *
+ * 스타일 파일을 따로 두지 않는 이유: 주소 몇 줄이 전부라, 파일로 빼면
+ * iOS(`PhotoMap`)와 어긋났을 때 알아채기 어려워집니다.
+ *
+ * CARTO 무료 타일은 **출처 표기가 조건**입니다 — attribution 을 지우지 마세요.
  */
 internal object OsmStyle {
 
-    const val TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+    const val LABELS_LAYER = "labels"
 
-    /**
-     * **어두운 지도**입니다. 지도는 검정 판에 끼운 화면이라, 그 안에서 하얀 지도가
-     * 혼자 빛나면 화면이 아니라 구멍처럼 보입니다.
-     *
-     * 그림 타일의 색을 바꾸는 방법이 하나뿐입니다 — **밝기를 뒤집는 것**
-     * (`brightness-min: 1`, `max: 0`). 흰 종이에 검은 길이던 것이 검은 판에 흰 길이
-     * 됩니다. 글자도 같이 뒤집혀 어두운 바탕에 밝은 글씨가 되므로 그대로 읽힙니다.
-     *
-     * 뒤집으면 색상이 보색으로 돌아갑니다(초록 공원 → 붉은 자국). 그래서 채도를
-     * 거의 다 뺍니다 — 어차피 이 앱의 화면은 잿빛 한 벌입니다.
-     */
-    fun json(): String = """
+    /** [proxyPort] 는 바탕 타일을 픽셀화해 주는 [TileProxy] 의 문. */
+    fun json(proxyPort: Int): String = """
         {
           "version": 8,
-          "sources": { ${source()} },
-          "layers": [
-            { "id": "background", "type": "background", "paint": { "background-color": "#2A2A2A" } },
-            {
-              "id": "osm",
+          "sources": {
+            "base": {
               "type": "raster",
-              "source": "osm",
-              "paint": {
-                "raster-saturation": -0.92,
-                "raster-contrast": -0.18,
-                "raster-brightness-min": 1,
-                "raster-brightness-max": 0,
-                "raster-opacity": 0.9
-              }
+              "tiles": ["http://127.0.0.1:$proxyPort/{z}/{x}/{y}"],
+              "tileSize": 256,
+              "maxzoom": 19,
+              "attribution": "© OpenStreetMap contributors © CARTO"
             },
-            {
-              "id": "paper",
-              "type": "background",
-              "paint": { "background-color": "#262626", "background-opacity": 0.22 }
+            "labels": {
+              "type": "raster",
+              "tiles": ["https://basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png"],
+              "tileSize": 256,
+              "maxzoom": 19
             }
+          },
+          "layers": [
+            { "id": "background", "type": "background", "paint": { "background-color": "#EAE8E4" } },
+            { "id": "base", "type": "raster", "source": "base" },
+            { "id": "$LABELS_LAYER", "type": "raster", "source": "labels" }
           ]
-        }
-    """.trimIndent()
-
-    private fun source(): String = """
-        "osm": {
-          "type": "raster",
-          "tiles": ["$TILE_URL"],
-          "tileSize": 256,
-          "maxzoom": 19,
-          "attribution": "© OpenStreetMap"
         }
     """.trimIndent()
 }

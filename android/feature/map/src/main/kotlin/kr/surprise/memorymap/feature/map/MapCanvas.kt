@@ -71,6 +71,12 @@ internal fun MapCanvas(
         MapView(context)
     }
 
+    // 바탕 타일을 픽셀화해 주는 서버. 지도가 사는 동안만 살립니다.
+    val tileProxy = remember { TileProxy() }
+    DisposableEffect(tileProxy) {
+        onDispose { tileProxy.close() }
+    }
+
     // 대표사진을 받아 둡니다. 지도 스타일에 넣으려면 주소가 아니라 **그림 자체**가
     // 있어야 해서, 화면 쪽에서 미리 받아 놓고 넘깁니다.
     var covers by remember { mutableStateOf<Map<String, Bitmap>>(emptyMap()) }
@@ -162,9 +168,8 @@ internal fun MapCanvas(
             val vertical = with(density) { EDGE_VERTICAL.roundToPx() }
 
             view.getMapAsync { map ->
-                // 패미컴 스타일에서는 **어두운 지도**입니다. 검정 판에 끼운 화면 안에서
-                // 하얀 지도가 혼자 빛나면 화면이 아니라 구멍처럼 보입니다.
-                map.setStyle(Style.Builder().fromJson(OsmStyle.json())) { style ->
+                // **픽셀 지도**입니다 — 바탕은 픽셀, 라벨은 원본(2026-08-08 검수 시안).
+                map.setStyle(Style.Builder().fromJson(OsmStyle.json(tileProxy.port))) { style ->
                     paintRegions(style, fills, covers)
                     drawOutline(style, outline)
                     // 내 자리는 칠보다 위입니다 — "지금 여기" 는 무엇에도 가리면 안 됩니다.
@@ -300,10 +305,10 @@ private const val FILL_SOURCE = "region-fill"
 private const val FILL_LAYER = "region-fill-area"
 
 /**
- * 지역을 칠한 사진의 불투명도. iOS 는 85% 인데 여기는 60% 입니다 —
- * 라벨이 사진 **뒤**에 깔리는 라스터 지도라, 이만큼 비쳐야 길·지명이 읽힙니다.
+ * 지역을 칠한 사진의 불투명도. iOS 와 **같은 85%** 입니다 — 라벨이 별도 타일이
+ * 되면서 사진 **위**에 그려지므로, 더 비치게 할 이유가 사라졌습니다.
  */
-private const val FILL_OPACITY = 0.6f
+private const val FILL_OPACITY = 0.85f
 
 private const val OUTLINE_SOURCE = "region-outline"
 private const val OUTLINE_LAYER = "region-outline-line"
@@ -384,9 +389,12 @@ private fun paintRegions(style: Style, fills: List<RegionFill>, covers: Map<Stri
                 cut,
             )
         )
-        style.addLayer(
+        // 라벨 레이어 **아래**에 끼웁니다 — 도로명·지명이 사진 위에 그대로 떠야
+        // 채워진 지역에서도 어디인지 읽힙니다. iOS 도 같은 순서입니다.
+        style.addLayerBelow(
             RasterLayer(FILL_LAYER + fill.code, sourceId)
-                .withProperties(PropertyFactory.rasterOpacity(FILL_OPACITY))
+                .withProperties(PropertyFactory.rasterOpacity(FILL_OPACITY)),
+            OsmStyle.LABELS_LAYER,
         )
     }
 }
