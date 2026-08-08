@@ -74,6 +74,10 @@ class AppContainer(context: Context) {
 
     private val appContext = context.applicationContext
 
+    /** 뷰모델들이 받는 기록 클로저. Firebase 는 여기서만 안다. */
+    val track: (String, Map<String, String>) -> Unit =
+        FirebaseTracker(appContext)::track
+
     private val env = FirebaseEnv.of(BuildConfig.FLAVOR)
 
     /**

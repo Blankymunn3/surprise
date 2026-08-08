@@ -20,8 +20,12 @@ class VmFactory(private val build: () -> ViewModel) : ViewModelProvider.Factory 
 }
 
 fun AppContainer.spaceListFactory() = VmFactory {
-    SpaceListViewModel(observeSpaces, refreshSpaces, createSpace, joinSpace, accounts)
+    SpaceListViewModel(observeSpaces, refreshSpaces, createSpace, joinSpace, accounts, track)
 }
+
+/** 짜국 종류를 아는 팩토리는 기록마다 `kind` 를 자동으로 얹는다. */
+private fun AppContainer.trackWith(kind: SpaceKind): (String, Map<String, String>) -> Unit =
+    { event, params -> track(event, params + ("kind" to kind.name)) }
 
 /**
  * 짜국의 **종류**를 같이 받습니다 — 혼자면 기기 안 사진, 같이 쓰면 서버 사진을 씁니다.
@@ -33,7 +37,7 @@ fun AppContainer.spaceMenuFactory(spaceId: SpaceId) = VmFactory {
 
 fun AppContainer.mapFactory(spaceId: SpaceId, kind: SpaceKind) = VmFactory {
     val photos = photoUseCases(kind)
-    MapViewModel(spaceId, photos.observeBoard, searchRegions, photos.setCover, regions)
+    MapViewModel(spaceId, photos.observeBoard, searchRegions, photos.setCover, regions, trackWith(kind))
 }
 
 fun AppContainer.calendarFactory(spaceId: SpaceId, kind: SpaceKind) = VmFactory {
@@ -43,6 +47,7 @@ fun AppContainer.calendarFactory(spaceId: SpaceId, kind: SpaceKind) = VmFactory 
         observeBoard = photos.observeBoard,
         setCover = photos.setCover,
         regionNames = { regions.all().associateBy { it.code.value } },
+        track = trackWith(kind),
     )
 }
 
@@ -57,5 +62,6 @@ fun AppContainer.uploadFactory(spaceId: SpaceId, kind: SpaceKind) = VmFactory {
         uploadPhotos = photoUseCases(kind).uploadPhotos,
         searchRegions = searchRegions,
         regions = regions,
+        track = trackWith(kind),
     )
 }

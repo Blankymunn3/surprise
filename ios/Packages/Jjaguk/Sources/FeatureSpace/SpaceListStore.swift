@@ -203,6 +203,9 @@ public final class SpaceListStore {
     /// 창을 닫으면 `nil` 이 돌아옵니다(실패가 아닙니다).
     private let presentGoogleSignIn: @MainActor @Sendable () async -> String?
     private let presentAppleSignIn: @MainActor @Sendable () async -> AppleSignInPayload?
+    /// 무슨 일이 있었는지 남기는 클로저. 어디로 가는지는 앱 껍데기가 정한다
+    /// (`AppContainer.track` — Analytics). 기본은 아무것도 안 하는 것 — 테스트가 조용하다.
+    private let track: @Sendable (String, [String: String]) -> Void
 
     public init(
         observeSpaces: ObserveSpaces,
@@ -211,7 +214,8 @@ public final class SpaceListStore {
         joinSpace: JoinSpace,
         accounts: any AuthRepository,
         presentGoogleSignIn: @escaping @MainActor @Sendable () async -> String?,
-        presentAppleSignIn: @escaping @MainActor @Sendable () async -> AppleSignInPayload?
+        presentAppleSignIn: @escaping @MainActor @Sendable () async -> AppleSignInPayload?,
+        track: @escaping @Sendable (String, [String: String]) -> Void = { _, _ in }
     ) {
         self.observeSpaces = observeSpaces
         self.refreshSpaces = refreshSpaces
@@ -219,6 +223,7 @@ public final class SpaceListStore {
         self.joinSpace = joinSpace
         self.accounts = accounts
         self.presentAppleSignIn = presentAppleSignIn
+        self.track = track
         self.presentGoogleSignIn = presentGoogleSignIn
     }
 
@@ -279,7 +284,7 @@ public final class SpaceListStore {
         case .googleTokenReceived(let idToken):
             let next: SignInNext? = if case .signIn(let value) = state.sheet { value } else { nil }
             state = SpaceListReducer.working(state)
-            await signedIn(await accounts.signInWithGoogle(idToken: idToken), thenContinue: next)
+            await signedIn(await accounts.signInWithGoogle(idToken: idToken), thenContinue: next, provider: "google")
 
         case .appleSignInTapped:
             guard let payload = await presentAppleSignIn() else { return }
@@ -292,7 +297,8 @@ public final class SpaceListStore {
                 await accounts.signInWithApple(
                     idToken: payload.idToken, nonce: payload.nonce, fallbackName: payload.displayName
                 ),
-                thenContinue: next
+                thenContinue: next,
+                provider: "apple"
             )
 
         case .signInGaveUp:
@@ -302,9 +308,12 @@ public final class SpaceListStore {
 
     /// 어느 문(구글·애플)으로 들어왔든 **로그인 뒤는 같습니다** —
     /// 로그인만 하고 멈추지 않고, 하던 일을 이어서 합니다.
-    private func signedIn(_ outcome: Outcome<Account>, thenContinue next: SignInNext?) async {
+    private func signedIn(
+        _ outcome: Outcome<Account>, thenContinue next: SignInNext?, provider: String
+    ) async {
         switch outcome {
         case .ok:
+            track("sign_in", ["provider": provider])
             state = SpaceListReducer.accountChanged(state, true)
             switch next {
             case .create:
@@ -317,6 +326,7 @@ public final class SpaceListStore {
                 state = SpaceListReducer.sheetDismissed(state)
             }
         case .fail(let reason):
+            track("sign_in_failed", ["provider": provider])
             state = SpaceListReducer.loadFailed(state, reason)
         }
     }
@@ -325,8 +335,10 @@ public final class SpaceListStore {
         state = SpaceListReducer.working(state)
         switch await createSpace(state.pendingName, state.pendingKind) {
         case .ok(let (space, invite)):
+            track("space_create", ["kind": state.pendingKind == .personal ? "Personal" : "Shared"])
             state = SpaceListReducer.created(state, space, invite?.code)
         case .fail(let reason):
+            track("space_create_failed", [:])
             state = SpaceListReducer.loadFailed(state, reason)
         }
     }
@@ -335,6 +347,7 @@ public final class SpaceListStore {
         state = SpaceListReducer.working(state)
         switch await joinSpace(state.pendingCode) {
         case .ok(let space):
+            track("space_join", [:])
             state = SpaceListReducer.joined(state, space)
         case .fail(let reason):
             state = SpaceListReducer.loadFailed(state, reason)

@@ -183,6 +183,9 @@ public final class UploadStore {
     private let searchRegions: SearchRegions
     private let catalog: any RegionCatalog
     private let today: CalendarDate
+    /// 무슨 일이 있었는지 남기는 클로저. 어디로 가는지는 앱 껍데기가 정한다
+    /// (`AppContainer.track` — Analytics). 기본은 아무것도 안 하는 것 — 테스트가 조용하다.
+    private let track: @Sendable (String, [String: String]) -> Void
     /// 지역 시트에서 열었을 때 미리 정해 둔 지역.
     private var preselected: Region?
 
@@ -193,7 +196,8 @@ public final class UploadStore {
         uploadPhotos: UploadPhotos,
         searchRegions: SearchRegions,
         catalog: any RegionCatalog,
-        today: CalendarDate
+        today: CalendarDate,
+        track: @escaping @Sendable (String, [String: String]) -> Void = { _, _ in }
     ) {
         self.state = UploadState(spaceId: spaceId)
         self.readHints = readHints
@@ -202,6 +206,7 @@ public final class UploadStore {
         self.searchRegions = searchRegions
         self.catalog = catalog
         self.today = today
+        self.track = track
     }
 
     public func pick(_ items: [PickedPhoto]) async {
@@ -285,14 +290,17 @@ public final class UploadStore {
         }
 
         guard !drafts.isEmpty else {
+            track("photos_unreadable", ["count": String(state.items.count)])
             state = UploadReducer.failed(state, savedLocally: true)
             return
         }
 
         switch await uploadPhotos(state.spaceId, drafts) {
         case .ok:
+            track("photos_upload", ["count": String(drafts.count)])
             state.step = .done
         case .fail:
+            track("photos_upload_failed", [:])
             // 사진을 잃지 않는 것이 먼저입니다
             state = UploadReducer.failed(state, savedLocally: true)
         }

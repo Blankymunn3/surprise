@@ -1,4 +1,5 @@
 import DesignSystem
+import FirebaseCore
 import SwiftUI
 
 /**
@@ -12,6 +13,15 @@ import SwiftUI
  */
 @main
 struct JjagukApp: App {
+    init() {
+        // 관측(크래시·사용 통계·성능)만 Firebase SDK 를 씁니다 — 크래시 캡처와
+        // 세션 관리는 REST 로 대신할 수 없는 일입니다. 데이터 경로(Firestore·
+        // Storage·Auth)는 여전히 REST 직접 호출입니다. dev 빌드는 prod 의
+        // GoogleService-Info.plist 로 붙습니다 — 번들 불일치 경고가 나지만
+        // 동작하고, dev 프로젝트가 생기면 plist 를 갈아 끼웁니다.
+        FirebaseApp.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()

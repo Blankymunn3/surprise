@@ -1,5 +1,7 @@
 import CoreModel
 import CoreNetwork
+import FirebaseAnalytics
+import FirebaseCrashlytics
 import DataAuth
 import DataPhoto
 import DataRegion
@@ -74,6 +76,22 @@ final class AppContainer {
 
     var googleClientID: String { env.googleClientID }
 
+    /**
+     스토어들이 받는 기록 클로저 — Analytics(GA4)로 흘러갑니다. Firebase 는
+     여기서만 압니다. 이벤트 이름이 `_failed` 로 끝나면 Crashlytics 에도
+     비치명으로 남깁니다 — 조용히 지나친 실패를 대시보드에서 셀 수 있어야 합니다.
+     안드로이드 `FirebaseTracker` 와 같은 규칙입니다.
+     */
+    nonisolated static let track: @Sendable (String, [String: String]) -> Void = { event, params in
+        Analytics.logEvent(event, parameters: params)
+        if event.hasSuffix("_failed") {
+            Crashlytics.crashlytics().log("\(event) \(params)")
+            Crashlytics.crashlytics().record(
+                error: NSError(domain: event, code: 0, userInfo: params)
+            )
+        }
+    }
+
     private let spaces: SharedSpaceRepository
     private let regions = AssetRegionCatalog()
     let accounts: FirebaseAuthRepository
@@ -124,7 +142,8 @@ final class AppContainer {
                 case .payload(let value): return value
                 case .cancelled, .failed: return nil
                 }
-            }
+            },
+            track: Self.track
         )
     }
 
@@ -144,7 +163,8 @@ final class AppContainer {
             observeBoard: ObservePhotoBoard(photos: photos),
             searchRegions: SearchRegions(catalog: regions),
             setCoverPhoto: SetCoverPhoto(photos: photos),
-            catalog: regions
+            catalog: regions,
+            track: Self.trackWith(kind)
         )
     }
 
@@ -167,7 +187,8 @@ final class AppContainer {
             uploadPhotos: UploadPhotos(photos: photos),
             searchRegions: SearchRegions(catalog: catalog),
             catalog: catalog,
-            today: .today
+            today: .today,
+            track: Self.trackWith(kind)
         )
     }
 
@@ -184,8 +205,18 @@ final class AppContainer {
             observeBoard: ObservePhotoBoard(photos: photos),
             refreshPhotos: RefreshPhotos(photos: photos),
             setCoverPhoto: SetCoverPhoto(photos: photos),
-            catalog: regions
+            catalog: regions,
+            track: Self.trackWith(kind)
         )
+    }
+
+    /// 짜국 종류를 아는 팩토리는 기록마다 `kind` 를 자동으로 얹는다 — 안드로이드와 같은 규칙.
+    nonisolated private static func trackWith(_ kind: SpaceKind) -> @Sendable (String, [String: String]) -> Void {
+        { event, params in
+            var merged = params
+            merged["kind"] = kind == .personal ? "Personal" : "Shared"
+            track(event, merged)
+        }
     }
 }
 

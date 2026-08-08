@@ -25,6 +25,7 @@ class UploadViewModel(
     private val searchRegions: SearchRegionsUseCase,
     private val regions: RegionCatalog,
     private val clock: Clock = Clock.systemDefaultZone(),
+    private val track: (String, Map<String, String>) -> Unit = { _, _ -> },
 ) : MviViewModel<UploadIntent, UploadState, UploadEffect>(UploadState(spaceId)) {
 
     /**
@@ -125,17 +126,20 @@ class UploadViewModel(
             }
 
             if (drafts.isEmpty()) {
+                track("photos_unreadable", mapOf("count" to state.items.size.toString()))
                 setState { UploadReducer.failed(this, savedLocally = true) }
                 sendEffect(UploadEffect.ShowMessage(UploadMessage.UnreadableKept))
                 return@launch
             }
 
-            when (uploadPhotos(state.spaceId, drafts)) {
+            when (val result = uploadPhotos(state.spaceId, drafts)) {
                 is Outcome.Ok -> {
+                    track("photos_upload", mapOf("count" to drafts.size.toString()))
                     setState { UploadReducer.uploaded(this) }
                     sendEffect(UploadEffect.Close)
                 }
                 is Outcome.Fail -> {
+                    track("photos_upload_failed", mapOf("reason" to result.reason.name))
                     // 사진을 잃지 않는 것이 먼저입니다
                     state.items.forEach { keepLocally(it.uri) }
                     setState { UploadReducer.failed(this, savedLocally = true) }

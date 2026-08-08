@@ -71,6 +71,14 @@
   #doc table b { color: inherit; }
   @media (max-width: 640px) { #doc { padding: 18px 14px; } .table-wrap { overflow-x: auto; } }
 </style>
+<!-- GA4 — 웹도 앱과 같은 GA 속성으로 흘러갑니다. 측정 ID 는 Firebase 웹 앱의 것. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SEGS9JV88D"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SEGS9JV88D');
+</script>
 </head>
 <body>
 <div class="shell">
