@@ -122,11 +122,13 @@ struct PlasticMapBody: View {
             .focused($searching)
 
             if !store.state.query.isEmpty {
+                // 누르는 영역은 글자보다 훨씬 넓게 — 글자 크기만큼만 열면 자꾸 빗나갑니다.
                 Button { Task { await store.search("") } } label: {
                     Text("×")
-                        .font(MemoryFont.font(17, .semibold))
+                        .font(MemoryFont.font(20, .semibold))
                         .foregroundStyle(PlasticColor.onPlateDim)
-                        .padding(.horizontal, MemorySpace.xs)
+                        .frame(width: 36, height: 36)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plasticPress)
                 .accessibilityLabel(localized("map_search_clear"))
@@ -462,7 +464,7 @@ private struct PlasticRegionSheet: View {
                 // 닫기는 검은 고무 버튼입니다 — 빨강은 주 동작에만.
                 Button { store.dismissSheet() } label: {
                     Text("×")
-                        .font(MemoryFont.font(17, .bold))
+                        .font(MemoryFont.font(20, .bold))
                         .foregroundStyle(PlasticColor.onRubber)
                         .frame(width: PlasticSize.sheetClose, height: PlasticSize.sheetClose)
                         .background(Circle().fill(PlasticColor.rubber))

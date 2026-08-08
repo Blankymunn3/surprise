@@ -116,7 +116,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
                 text = "×",
                 fontFamily = Pretendard,
                 fontWeight = FontWeight.Bold,
-                fontSize = 17.sp,
+                fontSize = 20.sp,
                 color = PlasticColors.OnRubber,
             )
         }

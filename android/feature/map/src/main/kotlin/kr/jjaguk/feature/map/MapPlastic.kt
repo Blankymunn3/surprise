@@ -192,11 +192,14 @@ private fun CartridgeSlot(query: String, onTyped: (String) -> Unit, onClear: () 
             )
         }
         if (query.isNotEmpty()) {
+            // 누르는 영역은 글자보다 훨씬 넓게 — 글자 크기만큼만 열면 자꾸 빗나갑니다.
             Text(
                 text = "×",
-                style = slotStyle.copy(fontSize = 17.sp),
+                style = slotStyle.copy(fontSize = 20.sp),
                 color = PlasticColors.OnPlateDim,
-                modifier = Modifier.pressable(onClick = onClear).padding(horizontal = Gap.xs),
+                modifier = Modifier
+                    .pressable(onClick = onClear)
+                    .padding(horizontal = Gap.s, vertical = Gap.xs),
             )
         }
     }
@@ -519,7 +522,7 @@ private fun PlasticRegionSheet(
                     text = "×",
                     fontFamily = Pretendard,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
+                    fontSize = 20.sp,
                     color = PlasticColors.OnRubber,
                 )
             }
