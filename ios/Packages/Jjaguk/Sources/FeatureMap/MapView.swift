@@ -50,6 +50,15 @@ public struct MapView: View {
         .task { await store.refresh() }
         .task(id: store.state.fills) { await loadCovers() }
         .onChange(of: store.state.focusCount) { _, _ in fitToFocus() }
+        // 시트가 닫히면 카메라 명령을 **지금 보이는 범위로** 바꿔 둡니다.
+        // `position` 에 남은 옛 지역이 어떤 경로로든 다시 적용되면 ✕ 를 누르는
+        // 순간 지도가 그 지역으로 되돌아갑니다(실기기에서 확인) — 보이는 범위로
+        // 덮어 두면 다시 적용돼도 그 자리 그대로라 아무 일도 없습니다.
+        .onChange(of: store.state.sheet) { _, sheet in
+            if sheet == nil, let visible = visibleRegion {
+                position = .region(visible)
+            }
+        }
     }
 
     /// 고른 지역이 **시트 위쪽 화면 안에** 다 들어오게 맞춥니다.

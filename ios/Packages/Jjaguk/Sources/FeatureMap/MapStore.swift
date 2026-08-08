@@ -241,5 +241,8 @@ public final class MapStore {
         state.results = []
         // 테두리도 같이 지웁니다. 남겨 두면 닫은 지역이 계속 표시된 채로 남습니다.
         state.outline = []
+        // focus 도 비웁니다 — 닫기는 "그 지역 보기"의 끝이라, 남겨 두면 어떤
+        // 경로로든 카메라가 옛 지역으로 되돌아갈 여지가 됩니다(안드와 같은 규칙).
+        state.focus = nil
     }
 }
