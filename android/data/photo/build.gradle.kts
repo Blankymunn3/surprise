@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "kr.surprise.memorymap.data.photo"
+    namespace = "kr.jjaguk.data.photo"
     compileSdk = 36
 
     defaultConfig {

@@ -1,11 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>419812459548-4vruv826mfgfkfi3dppobg87c3du1vdr.apps.googleusercontent.com</string>
+	<string>419812459548-nsun9ha7faersg7hlp0gmp27gpj6em8j.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.419812459548-4vruv826mfgfkfi3dppobg87c3du1vdr</string>
+	<string>com.googleusercontent.apps.419812459548-nsun9ha7faersg7hlp0gmp27gpj6em8j</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>419812459548-bef0l3gdmfu2f0nmdog153db5dhnsfjb.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
@@ -15,7 +14,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>kr.surprise.memorymap</string>
+	<string>kr.jjaguk.app</string>
 	<key>PROJECT_ID</key>
 	<string>our-surprise</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,6 +30,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:419812459548:ios:d2e5a8506cbaa89ffd4bd9</string>
+	<string>1:419812459548:ios:7da3fb2474a01607fd4bd9</string>
 </dict>
 </plist>

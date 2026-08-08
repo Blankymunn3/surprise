@@ -1,0 +1,486 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 70;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0E6864231FCCDE61389A5297 /* CoreNetwork in Frameworks */ = {isa = PBXBuildFile; productRef = CB933EC0B25274A34EB2A3AF /* CoreNetwork */; };
+		14B3F7AF3841FADA7BFED3DE /* FeatureSpace in Frameworks */ = {isa = PBXBuildFile; productRef = 3F058FA1B13BA9089F354830 /* FeatureSpace */; };
+		3B0769C9DF3F1FF456846988 /* FeatureMap in Frameworks */ = {isa = PBXBuildFile; productRef = 5F0294C80A10DB384E83587C /* FeatureMap */; };
+		4706375632C01D13DCF7D156 /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = 84765E591670663B50BD7481 /* Domain */; };
+		4E12C3A9B678996AA420305D /* CoreModel in Frameworks */ = {isa = PBXBuildFile; productRef = AFF0D399698FDD1287AA25EE /* CoreModel */; };
+		56FE4FB80EAFA8F18BD811C9 /* DataRegion in Frameworks */ = {isa = PBXBuildFile; productRef = 22E7645577B945935F19B293 /* DataRegion */; };
+		7841657A6581AFC813162778 /* DataPhoto in Frameworks */ = {isa = PBXBuildFile; productRef = E050AA3F162CCDC1C2B7AE0A /* DataPhoto */; };
+		83F6C5DE2D242686EFBA6958 /* CoreCommon in Frameworks */ = {isa = PBXBuildFile; productRef = 11CA26CF2FC0B40046F4D05E /* CoreCommon */; };
+		9A0E51C1F0B24D0A8C7E0001 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 9A0E51C1F0B24D0A8C7E0002 /* GoogleSignIn */; };
+		9A0E51C1F0B24D0A8C7E0004 /* DataAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 9A0E51C1F0B24D0A8C7E0005 /* DataAuth */; };
+		88FC64417B15DBA557E664BB /* pretendard_semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD7E02C571198367730E50E3 /* pretendard_semibold.ttf */; };
+		8B9633259C3E2A508D98C129 /* pretendard_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 03BD3A80AC0D0DA57B0C203B /* pretendard_regular.ttf */; };
+		8C983EA5067D21AEA1C35114 /* FeatureCalendar in Frameworks */ = {isa = PBXBuildFile; productRef = 764D403AA97D342B241AD041 /* FeatureCalendar */; };
+		8E95087C0F4232E1CB5AD54B /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = F3684779C5A4BA8F390AC418 /* DesignSystem */; };
+		C2349A3A554CABB63AF8DE25 /* pretendard_bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DBEC52726113CEE4966866F7 /* pretendard_bold.ttf */; };
+		C63C04185F7DF5F92C906B30 /* pretendard_medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C6D49719AD2289733043CB97 /* pretendard_medium.ttf */; };
+		DDF6AC523D04EC794E8945BD /* DataSpace in Frameworks */ = {isa = PBXBuildFile; productRef = 84E19CDDFAEE2F82788463D0 /* DataSpace */; };
+		E69A1936B4529F8D4814F087 /* FeatureUpload in Frameworks */ = {isa = PBXBuildFile; productRef = 3E1B4FEA9CD8C438A715C619 /* FeatureUpload */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		03BD3A80AC0D0DA57B0C203B /* pretendard_regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_regular.ttf; path = ../android/core/designsystem/src/main/res/font/pretendard_regular.ttf; sourceTree = "<group>"; };
+		1FB17298817DFBADB5742754 /* Jjaguk-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Jjaguk-Info.plist"; sourceTree = "<group>"; };
+		29F285785C6D15FDD42F5D9A /* Jjaguk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Jjaguk.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AD7E02C571198367730E50E3 /* pretendard_semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_semibold.ttf; path = ../android/core/designsystem/src/main/res/font/pretendard_semibold.ttf; sourceTree = "<group>"; };
+		C6D49719AD2289733043CB97 /* pretendard_medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_medium.ttf; path = ../android/core/designsystem/src/main/res/font/pretendard_medium.ttf; sourceTree = "<group>"; };
+		DBEC52726113CEE4966866F7 /* pretendard_bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_bold.ttf; path = ../android/core/designsystem/src/main/res/font/pretendard_bold.ttf; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		3B4E8024C1CA35625FB0689C /* App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = App; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1F2E5B53596CB54C1003EF6C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9A0E51C1F0B24D0A8C7E0001 /* GoogleSignIn in Frameworks */,
+				4E12C3A9B678996AA420305D /* CoreModel in Frameworks */,
+				83F6C5DE2D242686EFBA6958 /* CoreCommon in Frameworks */,
+				0E6864231FCCDE61389A5297 /* CoreNetwork in Frameworks */,
+				8E95087C0F4232E1CB5AD54B /* DesignSystem in Frameworks */,
+				4706375632C01D13DCF7D156 /* Domain in Frameworks */,
+				9A0E51C1F0B24D0A8C7E0004 /* DataAuth in Frameworks */,
+				7841657A6581AFC813162778 /* DataPhoto in Frameworks */,
+				DDF6AC523D04EC794E8945BD /* DataSpace in Frameworks */,
+				56FE4FB80EAFA8F18BD811C9 /* DataRegion in Frameworks */,
+				14B3F7AF3841FADA7BFED3DE /* FeatureSpace in Frameworks */,
+				3B0769C9DF3F1FF456846988 /* FeatureMap in Frameworks */,
+				8C983EA5067D21AEA1C35114 /* FeatureCalendar in Frameworks */,
+				E69A1936B4529F8D4814F087 /* FeatureUpload in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		174F6EF85BAA9168B3CF6C0C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				29F285785C6D15FDD42F5D9A /* Jjaguk.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A5F8FF998DCD9CD73935B534 = {
+			isa = PBXGroup;
+			children = (
+				3B4E8024C1CA35625FB0689C /* App */,
+				DB8EA493A86C9A653446861D /* Fonts */,
+				1FB17298817DFBADB5742754 /* Jjaguk-Info.plist */,
+				174F6EF85BAA9168B3CF6C0C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DB8EA493A86C9A653446861D /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				03BD3A80AC0D0DA57B0C203B /* pretendard_regular.ttf */,
+				C6D49719AD2289733043CB97 /* pretendard_medium.ttf */,
+				AD7E02C571198367730E50E3 /* pretendard_semibold.ttf */,
+				DBEC52726113CEE4966866F7 /* pretendard_bold.ttf */,
+			);
+			name = Fonts;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3288345CB1725006CD73F038 /* Jjaguk */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC852A14064A75B988091B82 /* Build configuration list for PBXNativeTarget "Jjaguk" */;
+			buildPhases = (
+				D1016E6F1A51392E046B1B0B /* Sources */,
+				1F2E5B53596CB54C1003EF6C /* Frameworks */,
+				267DDC42C966CF34C356DA7E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				3B4E8024C1CA35625FB0689C /* App */,
+			);
+			name = Jjaguk;
+			packageProductDependencies = (
+				9A0E51C1F0B24D0A8C7E0002 /* GoogleSignIn */,
+				AFF0D399698FDD1287AA25EE /* CoreModel */,
+				11CA26CF2FC0B40046F4D05E /* CoreCommon */,
+				CB933EC0B25274A34EB2A3AF /* CoreNetwork */,
+				F3684779C5A4BA8F390AC418 /* DesignSystem */,
+				84765E591670663B50BD7481 /* Domain */,
+				9A0E51C1F0B24D0A8C7E0005 /* DataAuth */,
+				E050AA3F162CCDC1C2B7AE0A /* DataPhoto */,
+				84E19CDDFAEE2F82788463D0 /* DataSpace */,
+				22E7645577B945935F19B293 /* DataRegion */,
+				3F058FA1B13BA9089F354830 /* FeatureSpace */,
+				5F0294C80A10DB384E83587C /* FeatureMap */,
+				764D403AA97D342B241AD041 /* FeatureCalendar */,
+				3E1B4FEA9CD8C438A715C619 /* FeatureUpload */,
+			);
+			productName = Jjaguk;
+			productReference = 29F285785C6D15FDD42F5D9A /* Jjaguk.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FF26F320DC9004255231CD42 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					3288345CB1725006CD73F038 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = 9A90925F3B8866294462F476 /* Build configuration list for PBXProject "Jjaguk" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = ko;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				ko,
+				Base,
+			);
+			mainGroup = A5F8FF998DCD9CD73935B534;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D920F27FFE40764D4C347036 /* XCLocalSwiftPackageReference "Packages/Jjaguk" */,
+				9A0E51C1F0B24D0A8C7E0003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+			);
+			productRefGroup = 174F6EF85BAA9168B3CF6C0C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3288345CB1725006CD73F038 /* Jjaguk */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		267DDC42C966CF34C356DA7E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8B9633259C3E2A508D98C129 /* pretendard_regular.ttf in Resources */,
+				C63C04185F7DF5F92C906B30 /* pretendard_medium.ttf in Resources */,
+				88FC64417B15DBA557E664BB /* pretendard_semibold.ttf in Resources */,
+				C2349A3A554CABB63AF8DE25 /* pretendard_bold.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D1016E6F1A51392E046B1B0B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		59D203CE66AF2B0772F7C88C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_DISPLAY_NAME = "짜국";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Jjaguk.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M9F23L2TLX;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Jjaguk-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = kr.jjaguk.app;
+				PRODUCT_NAME = Jjaguk;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5BFB9FF696687A54ECAAC0A6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_DISPLAY_NAME = "짜국";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Jjaguk.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M9F23L2TLX;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Jjaguk-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = kr.jjaguk.app;
+				PRODUCT_NAME = Jjaguk;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		91A576C05E0941FFD3530405 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		D6D19B3D94C47E36DC8AAE67 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		DE0DE0DE0DE0DE0DE0DE0001 /* Debug-Dev */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG DEV $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = "Debug-Dev";
+		};
+		DE0DE0DE0DE0DE0DE0DE0002 /* Release-Dev */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEV $(inherited)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = "Release-Dev";
+		};
+		DE0DE0DE0DE0DE0DE0DE0003 /* Debug-Dev */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_DISPLAY_NAME = "짜국 Dev";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Jjaguk.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M9F23L2TLX;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Jjaguk-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = kr.jjaguk.app.dev;
+				PRODUCT_NAME = Jjaguk;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Debug-Dev";
+		};
+		DE0DE0DE0DE0DE0DE0DE0004 /* Release-Dev */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_DISPLAY_NAME = "짜국 Dev";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Jjaguk.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M9F23L2TLX;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Jjaguk-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = kr.jjaguk.app.dev;
+				PRODUCT_NAME = Jjaguk;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Release-Dev";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9A90925F3B8866294462F476 /* Build configuration list for PBXProject "Jjaguk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D6D19B3D94C47E36DC8AAE67 /* Debug */,
+				91A576C05E0941FFD3530405 /* Release */,
+				DE0DE0DE0DE0DE0DE0DE0001 /* Debug-Dev */,
+				DE0DE0DE0DE0DE0DE0DE0002 /* Release-Dev */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC852A14064A75B988091B82 /* Build configuration list for PBXNativeTarget "Jjaguk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				59D203CE66AF2B0772F7C88C /* Debug */,
+				5BFB9FF696687A54ECAAC0A6 /* Release */,
+				DE0DE0DE0DE0DE0DE0DE0003 /* Debug-Dev */,
+				DE0DE0DE0DE0DE0DE0DE0004 /* Release-Dev */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		D920F27FFE40764D4C347036 /* XCLocalSwiftPackageReference "Packages/Jjaguk" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Jjaguk;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9A0E51C1F0B24D0A8C7E0003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9A0E51C1F0B24D0A8C7E0005 /* DataAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DataAuth;
+		};
+		9A0E51C1F0B24D0A8C7E0002 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9A0E51C1F0B24D0A8C7E0003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		11CA26CF2FC0B40046F4D05E /* CoreCommon */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CoreCommon;
+		};
+		22E7645577B945935F19B293 /* DataRegion */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DataRegion;
+		};
+		3E1B4FEA9CD8C438A715C619 /* FeatureUpload */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FeatureUpload;
+		};
+		3F058FA1B13BA9089F354830 /* FeatureSpace */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FeatureSpace;
+		};
+		5F0294C80A10DB384E83587C /* FeatureMap */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FeatureMap;
+		};
+		764D403AA97D342B241AD041 /* FeatureCalendar */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FeatureCalendar;
+		};
+		84765E591670663B50BD7481 /* Domain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Domain;
+		};
+		84E19CDDFAEE2F82788463D0 /* DataSpace */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DataSpace;
+		};
+		AFF0D399698FDD1287AA25EE /* CoreModel */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CoreModel;
+		};
+		CB933EC0B25274A34EB2A3AF /* CoreNetwork */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CoreNetwork;
+		};
+		E050AA3F162CCDC1C2B7AE0A /* DataPhoto */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DataPhoto;
+		};
+		F3684779C5A4BA8F390AC418 /* DesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DesignSystem;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = FF26F320DC9004255231CD42 /* Project object */;
+}

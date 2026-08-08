@@ -5,7 +5,7 @@
       웹에서 color-scheme: only light 로 막아둔 것과 같은 규칙입니다.
       forceDarkAllowed 를 끄지 않으면 시스템이 흰 배경을 임의로 뒤집습니다.
     -->
-    <style name="Theme.MemoryMap" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.Jjaguk" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:forceDarkAllowed">false</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>

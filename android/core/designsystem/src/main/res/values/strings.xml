@@ -4,7 +4,7 @@
   그 화면 모듈의 strings.xml 에 둡니다.
 
   ⚠️ iOS 에는 같은 글이 Swift 코드에 그대로 박혀 있습니다
-  (`ios/Packages/MemoryMap/Sources/DesignSystem/`). 여기 문구를 고치면 그쪽도 같이.
+  (`ios/Packages/Jjaguk/Sources/DesignSystem/`). 여기 문구를 고치면 그쪽도 같이.
 -->
 <resources>
 

@@ -70,6 +70,14 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // 개발 문서(아키텍처 보고서 등). 페이지(report/)가 구글 로그인 뒤에 읽습니다 —
+    // 정적 호스팅(GitHub Pages)에는 문을 달 수 없어서, 내용물을 여기 두고
+    // **로그인해야 읽히게** 하는 것입니다. 쓰는 길은 없습니다 — 콘솔·CLI 로만 넣습니다.
+    match /reports/{id} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
     // 위에 적지 않은 것은 전부 막습니다.
     match /{document=**} {
       allow read, write: if false;

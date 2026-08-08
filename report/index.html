@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>짜국 — 시스템 조사 보고서</title>
+<!--
+  이 페이지는 껍데기만 공개입니다. 보고서 본문은 Firestore `reports/architecture` 문서에
+  있고, 규칙이 "로그인해야 읽기"를 강제합니다 (firestore.rules 의 /reports).
+  정적 호스팅(GitHub Pages)에는 문을 달 수 없어서, 내용물을 서버 뒤에 두는 것입니다 —
+  이 앱의 보안 모델("규칙이 보안의 전부")과 같은 방식입니다.
+
+  로그인은 구글(GIS) → identitytoolkit 토큰 교환 → Firestore REST 읽기.
+  앱과 같은 프로젝트(our-surprise)의 웹 클라이언트를 씁니다.
+
+  ⚠️ 구글 로그인 버튼이 안 뜨거나 origin 오류가 나면: Google Cloud 콘솔 →
+  API 및 서비스 → 사용자 인증 정보 → 웹 클라이언트의 "승인된 JavaScript 출처"에
+  https://blankymunn3.github.io 를 추가해야 합니다 (콘솔에서 한 번만).
+-->
+<style>
+  :root {
+    --body: #DCD9D3; --body-lo: #BEBBB4;
+    --plate: #3B3B3B; --plate-hi: #4A4A4A;
+    --ink: #1B1B1B; --on-plate: #DCD9D3; --on-plate-dim: #9E9B96;
+    --red: #D8342A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--body); color: var(--ink);
+    font-family: "Pretendard", "Apple SD Gothic Neo", system-ui, sans-serif;
+    line-height: 1.65;
+  }
+  .shell { max-width: 860px; margin: 0 auto; padding: 20px 16px 60px; }
+  .slot {
+    background: var(--plate); color: var(--on-plate); border-radius: 6px;
+    padding: 14px 18px; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.45);
+  }
+  .slot .notch { width: 3px; height: 14px; background: var(--ink); border-radius: 2px; }
+  .slot h1 { font-size: 15px; font-weight: 700; margin: 0; flex: 1; }
+  .slot .who { font-size: 12.5px; color: var(--on-plate-dim); }
+  #gate {
+    background: var(--plate); color: var(--on-plate); border-radius: 6px;
+    padding: 48px 24px; text-align: center;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.45);
+  }
+  #gate p { color: var(--on-plate-dim); font-size: 14px; margin: 0 0 20px; }
+  #signin { display: inline-block; min-height: 44px; }
+  #error { color: #E85A4C; font-size: 13px; margin-top: 16px; white-space: pre-wrap; }
+  #doc { display: none; background: #fff; border: 1px solid var(--body-lo);
+         border-radius: 6px; padding: 28px 26px; }
+  #doc h1 { font-size: 22px; margin: 0 0 4px; }
+  #doc h2 { font-size: 17px; margin: 34px 0 10px; padding-top: 14px; border-top: 2px solid var(--ink); }
+  #doc h3 { font-size: 14.5px; margin: 20px 0 8px; }
+  #doc p, #doc li { font-size: 14px; }
+  #doc .meta { color: #7D7979; font-size: 12.5px; }
+  #doc table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
+  #doc th, #doc td { border: 1px solid var(--body-lo); padding: 7px 9px; text-align: left; vertical-align: top;
+                     overflow-wrap: anywhere; }
+  #doc th { background: var(--body); }
+  /* URL·경로가 긴 code 가 줄바꿈 없이 열 폭을 밀어내면 옆 열이 짜부라집니다 —
+     넘칠 때는 아무 데서나 접게 둡니다. */
+  #doc code { background: var(--body); padding: 1px 5px; border-radius: 3px; font-size: 12px;
+              overflow-wrap: anywhere; }
+  #doc pre { background: var(--plate); color: var(--on-plate); padding: 14px; border-radius: 6px;
+             overflow-x: auto; font-size: 12px; line-height: 1.5; }
+  #doc pre code { background: none; color: inherit; }
+  #doc b { color: var(--red); }
+  #doc table b { color: inherit; }
+  @media (max-width: 640px) { #doc { padding: 18px 14px; } .table-wrap { overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="slot">
+    <span class="notch"></span>
+    <h1>짜국 — 시스템 조사 보고서</h1>
+    <span class="who" id="who"></span>
+  </div>
+
+  <div id="gate">
+    <p>이 문서는 구글 로그인 뒤에만 열립니다.<br>내용은 서버(Firestore 규칙) 뒤에 있어 로그인 없이는 받아지지 않습니다.</p>
+    <div id="signin"></div>
+    <div id="error"></div>
+  </div>
+
+  <article id="doc"></article>
+</div>
+
+<script>
+(function () {
+  // 앱과 같은 프로젝트. 값은 비밀이 아닙니다 — 문은 규칙이 지킵니다.
+  var API_KEY = 'AIzaSyAvDJkTuNWs6PqoEvMT0w1BmyFZT_gZNXs';
+  var WEB_CLIENT_ID = '419812459548-ldmh2hi0vb5lmjase8jpctqei4sk4mbp.apps.googleusercontent.com';
+  var DOC_URL = 'https://firestore.googleapis.com/v1/projects/our-surprise/databases/(default)/documents/reports/architecture';
+
+  function fail(message) {
+    document.getElementById('error').textContent = message;
+  }
+
+  // ① 구글 로그인(GIS) → 구글 ID 토큰
+  window.onGoogleReady = function () {
+    google.accounts.id.initialize({
+      client_id: WEB_CLIENT_ID,
+      callback: function (response) { exchange(response.credential); },
+    });
+    google.accounts.id.renderButton(document.getElementById('signin'), {
+      theme: 'filled_black', size: 'large', text: 'signin_with', locale: 'ko',
+    });
+  };
+
+  // ② 구글 토큰 → Firebase 토큰 (앱의 signInWithIdp 와 같은 길)
+  function exchange(credential) {
+    fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=' + API_KEY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        postBody: 'id_token=' + credential + '&providerId=google.com',
+        requestUri: location.origin,
+        returnSecureToken: true,
+      }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.idToken) throw new Error(data.error && data.error.message || '토큰 교환 실패');
+        document.getElementById('who').textContent = data.email || '';
+        load(data.idToken);
+      })
+      .catch(function (e) { fail('로그인은 됐지만 토큰 교환에 실패했습니다.\n' + e.message); });
+  }
+
+  // ③ Firebase 토큰으로 문서 읽기 — 규칙이 여기서 문을 지킵니다
+  function load(idToken) {
+    fetch(DOC_URL, { headers: { Authorization: 'Bearer ' + idToken } })
+      .then(function (r) {
+        if (r.status === 403) throw new Error('규칙이 거부했습니다 (403).');
+        if (!r.ok) throw new Error('문서를 못 받았습니다 (' + r.status + ').');
+        return r.json();
+      })
+      .then(function (doc) {
+        var html = doc.fields && doc.fields.html && doc.fields.html.stringValue;
+        if (!html) throw new Error('문서에 본문이 없습니다.');
+        document.getElementById('gate').style.display = 'none';
+        var article = document.getElementById('doc');
+        article.innerHTML = html;
+        article.style.display = 'block';
+      })
+      .catch(function (e) { fail(e.message); });
+  }
+})();
+</script>
+<!-- ⚠️ `?onload=` 쿼리는 GIS 가 안 부릅니다(옛 platform.js 방식) —
+     버튼이 조용히 안 그려집니다. 스크립트 태그의 onload 속성이어야 합니다. -->
+<script src="https://accounts.google.com/gsi/client" async defer onload="onGoogleReady()"></script>
+</body>
+</html>

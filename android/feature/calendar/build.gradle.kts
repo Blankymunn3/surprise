@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "kr.surprise.memorymap.feature.calendar"
+    namespace = "kr.jjaguk.feature.calendar"
     compileSdk = 36
 
     defaultConfig {

@@ -20,7 +20,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "memorymap"
+rootProject.name = "jjaguk"
 
 include(":app")
 include(":core:model")
