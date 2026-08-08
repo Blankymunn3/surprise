@@ -134,18 +134,23 @@ public final class MapStore {
     private let searchRegions: SearchRegions
     private let setCoverPhoto: SetCoverPhoto
     private let catalog: any RegionCatalog
+    /// 무슨 일이 있었는지 남기는 클로저. 어디로 가는지는 앱 껍데기가 정한다
+    /// (`AppContainer.track` — Analytics). 기본은 아무것도 안 하는 것 — 테스트가 조용하다.
+    private let track: @Sendable (String, [String: String]) -> Void
 
     private var board: PhotoBoard = .empty
 
     public init(
         spaceId: SpaceId, observeBoard: ObservePhotoBoard, searchRegions: SearchRegions,
-        setCoverPhoto: SetCoverPhoto, catalog: any RegionCatalog
+        setCoverPhoto: SetCoverPhoto, catalog: any RegionCatalog,
+        track: @escaping @Sendable (String, [String: String]) -> Void = { _, _ in }
     ) {
         self.state = MapState(spaceId: spaceId)
         self.observeBoard = observeBoard
         self.searchRegions = searchRegions
         self.setCoverPhoto = setCoverPhoto
         self.catalog = catalog
+        self.track = track
     }
 
     public func refresh() async {
@@ -185,6 +190,7 @@ public final class MapStore {
      배율을 정해 세웁니다 — 맞출 넓이가 없으니까요.
      */
     public func open(_ region: Region) async {
+        track("region_open", ["code": region.code.value])
         let polygons = await catalog.shape(of: region.code)
         state.query = region.displayName
         state.results = []
@@ -217,7 +223,13 @@ public final class MapStore {
     /// 아무 일도 없습니다 — 같은 값을 서버에 다시 쓸 까닭이 없습니다.
     public func setCover(_ id: PhotoId) async {
         guard let sheet = state.sheet, sheet.coverId != id else { return }
-        _ = await setCoverPhoto(state.spaceId, .region(sheet.region.code), id)
+        switch await setCoverPhoto(state.spaceId, .region(sheet.region.code), id) {
+        case .ok:
+            track("cover_set_region", [:])
+        case .fail:
+            // 안드로이드는 실패를 알리는데 여기는 조용했다 — 우선 기록만 남긴다.
+            track("cover_set_region_failed", [:])
+        }
         var next = sheet
         next.coverId = id
         state.sheet = next
@@ -229,5 +241,8 @@ public final class MapStore {
         state.results = []
         // 테두리도 같이 지웁니다. 남겨 두면 닫은 지역이 계속 표시된 채로 남습니다.
         state.outline = []
+        // focus 도 비웁니다 — 닫기는 "그 지역 보기"의 끝이라, 남겨 두면 어떤
+        // 경로로든 카메라가 옛 지역으로 되돌아갈 여지가 됩니다(안드와 같은 규칙).
+        state.focus = nil
     }
 }

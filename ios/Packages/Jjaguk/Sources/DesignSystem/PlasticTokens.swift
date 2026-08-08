@@ -113,7 +113,8 @@ public enum PlasticSize {
     public static let dotCore: CGFloat = 8
 
     /// 지역 시트의 닫기 버튼
-    public static let sheetClose: CGFloat = 32
+    /// 32 였는데 실기기에서 누르기 작다는 피드백(2026-08-09)으로 키웠다.
+    public static let sheetClose: CGFloat = 40
     /// 지역 시트 안의 사진. 화면에 끼워 넣느라 좁아진 만큼 `photo` 보다 작습니다.
     public static let sheetPhoto: CGFloat = 84
 

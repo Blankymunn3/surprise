@@ -45,7 +45,8 @@ import kr.jjaguk.core.designsystem.theme.MemoryType
 import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
 import kr.jjaguk.core.designsystem.theme.PlasticSize
-import kr.jjaguk.core.designsystem.theme.Pretendard
+import kr.jjaguk.core.designsystem.theme.PressStart
+import kr.jjaguk.core.designsystem.theme.AppFont
 import kr.jjaguk.core.designsystem.theme.Space as Gap
 import kr.jjaguk.core.designsystem.theme.raisedPlastic
 import kr.jjaguk.core.designsystem.theme.sunken
@@ -71,7 +72,9 @@ fun SpaceListScreen(
     Box(
         modifier
             .fillMaxSize()
-            .background(MemoryColors.Paper)
+            // 상태바 뒤에도 이 색이 비칩니다 — 옛 종이색(Paper)이 남아 있어서
+            // 위 한 줄만 다른 색이었다(2026-08-09 피드백). 몸통과 같은 플라스틱으로.
+            .background(PlasticColors.Body)
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
         PlasticListBody(state, onIntent)
@@ -507,13 +510,13 @@ private fun InvitedSheet(sheet: SpaceListSheet.Invited, onIntent: (SpaceListInte
                 .padding(horizontal = Gap.xl, vertical = 18.dp),
         ) {
             // 코드는 글자 단 밖입니다 — UI 글이 아니라 화면의 주인공(콘텐츠)이라서요.
-            // 자간을 넓게 벌려 한 글자씩 옮겨 적기 쉽게 합니다.
+            // 카트리지 뒷면 시리얼처럼 PS2P 로 새깁니다 (2026-08-09 검수 시안,
+            // 코드 글자표가 라틴·숫자뿐이라 이 서체로 다 찍힙니다). 크기는 8의 배수.
             Text(
                 text = sheet.code,
-                fontFamily = Pretendard,
-                fontWeight = FontWeight.Bold,
-                fontSize = 32.sp,
-                letterSpacing = 8.sp,
+                fontFamily = PressStart,
+                fontSize = 24.sp,
+                letterSpacing = 6.sp,
                 color = PlasticColors.OnPlate,
             )
         }

@@ -111,6 +111,9 @@ public final class CalendarStore {
     private let refreshPhotos: RefreshPhotos
     private let setCoverPhoto: SetCoverPhoto
     private let catalog: any RegionCatalog
+    /// 무슨 일이 있었는지 남기는 클로저. 어디로 가는지는 앱 껍데기가 정한다
+    /// (`AppContainer.track` — Analytics). 기본은 아무것도 안 하는 것 — 테스트가 조용하다.
+    private let track: @Sendable (String, [String: String]) -> Void
 
     private var board: PhotoBoard = .empty
     private var names: [String: Region] = [:]
@@ -118,13 +121,15 @@ public final class CalendarStore {
     public init(
         spaceId: SpaceId, today: CalendarDate,
         observeBoard: ObservePhotoBoard, refreshPhotos: RefreshPhotos,
-        setCoverPhoto: SetCoverPhoto, catalog: any RegionCatalog
+        setCoverPhoto: SetCoverPhoto, catalog: any RegionCatalog,
+        track: @escaping @Sendable (String, [String: String]) -> Void = { _, _ in }
     ) {
         self.state = CalendarState(spaceId: spaceId, today: today)
         self.observeBoard = observeBoard
         self.refreshPhotos = refreshPhotos
         self.setCoverPhoto = setCoverPhoto
         self.catalog = catalog
+        self.track = track
     }
 
     public func refresh() async {
@@ -160,7 +165,10 @@ public final class CalendarStore {
     public func toggleCollapse() { state = CalendarReducer.collapseToggled(state) }
 
     public func setCover(_ id: PhotoId, on date: CalendarDate) async {
-        _ = await setCoverPhoto(state.spaceId, .day(date), id)
+        switch await setCoverPhoto(state.spaceId, .day(date), id) {
+        case .ok: track("cover_set_day", [:])
+        case .fail: track("cover_set_day_failed", [:])
+        }
         await refresh()
     }
 }

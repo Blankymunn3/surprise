@@ -2,6 +2,12 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    // 관측(크래시·사용 통계·성능)만 SDK 를 씁니다 — 크래시 캡처와 세션 관리는
+    // REST 로 대신할 수 없는 일입니다. 데이터 경로(Firestore·Storage·Auth)는
+    // 여전히 REST 직접 호출입니다 (`docs/app/ARCHITECTURE.md` 의 결정은 유효).
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.firebase.perf)
 }
 
 android {
@@ -97,6 +103,18 @@ dependencies {
     implementation(libs.googleid)
 
     implementation(libs.okhttp)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.perf)
+    implementation(libs.firebase.config)
+    implementation(libs.firebase.messaging)
+    // 앱 위조 판별. 디버그 빌드는 Play 를 안 거치므로 디버그 제공자를 씁니다.
+    // 디버그 제공자도 implementation 인 이유: 고르는 곳이 main 소스(JjagukApp)라
+    // debugImplementation 이면 release 컴파일이 깨집니다. release 에서는 안 심으니 죽은 짐일 뿐.
+    implementation(libs.firebase.appcheck.playintegrity)
+    implementation(libs.firebase.appcheck.debug)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
 

@@ -17,12 +17,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import kr.jjaguk.core.designsystem.R
 import kr.jjaguk.core.designsystem.theme.MemoryShapes
 import kr.jjaguk.core.designsystem.theme.MemoryType
 import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
+import kr.jjaguk.core.designsystem.theme.PressStart
 
 /**
  * 사진 썸네일. 비율 1:1 고정 — 세로 사진도 가운데를 잘라 씁니다.
@@ -75,7 +77,12 @@ fun PhotoThumb(
             )
             Text(
                 text = dateLabel,
-                style = MemoryType.Micro,
+                // 날짜 배지는 각인 — PS2P 8 (2026-08-09 검수 시안). 내용이 "7.27" 꼴
+                // 숫자뿐이라 라틴 전용 서체로 충분합니다.
+                style = MemoryType.Micro.copy(
+                    fontFamily = PressStart,
+                    fontSize = 8.sp,
+                ),
                 color = Color.White,
                 modifier = Modifier.align(Alignment.BottomStart).padding(start = 8.dp, bottom = 6.dp),
             )

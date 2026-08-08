@@ -27,14 +27,37 @@ struct PhotoMap: UIViewRepresentable {
     let covers: [String: CGImage]
     let outline: [[GeoPoint]]
     let me: CLLocationCoordinate2D?
+    /// 카메라 명령을 따를 때 **아래쪽에서 비워 둘 높이**(pt). 지역 시트가 지도
+    /// 위를 덮고 있어서, 0 이면 고른 지역의 아래쪽이 시트에 가립니다.
+    let fitInsetBottom: CGFloat
     let onTap: (Double, Double) -> Void
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
-    /// 밤인가 — 19시부터 아침 7시 전까지. 안드로이드 `isNight()` 와 같은 경계.
+    /// 밤인가 — 기본은 19시부터 아침 7시 전까지. 안드로이드 `isNight()` 와 같은 경계이고,
+    /// 시각 경계는 [MapTuning] 이라 Remote Config 로 돌릴 수 있습니다.
     static func isNight() -> Bool {
         let hour = Calendar.current.component(.hour, from: Date())
-        return hour >= 19 || hour < 7
+        return hour >= MapTuning.nightStartHour || hour < MapTuning.nightEndHour
+    }
+
+    /// `MKCoordinateRegion` 을 `MKMapRect` 로 — `setVisibleMapRect(edgePadding:)` 이
+    /// 사각형만 받아서 필요합니다.
+    private static func mapRect(of region: MKCoordinateRegion) -> MKMapRect {
+        let topLeft = MKMapPoint(CLLocationCoordinate2D(
+            latitude: region.center.latitude + region.span.latitudeDelta / 2,
+            longitude: region.center.longitude - region.span.longitudeDelta / 2
+        ))
+        let bottomRight = MKMapPoint(CLLocationCoordinate2D(
+            latitude: region.center.latitude - region.span.latitudeDelta / 2,
+            longitude: region.center.longitude + region.span.longitudeDelta / 2
+        ))
+        return MKMapRect(
+            x: min(topLeft.x, bottomRight.x),
+            y: min(topLeft.y, bottomRight.y),
+            width: abs(topLeft.x - bottomRight.x),
+            height: abs(topLeft.y - bottomRight.y)
+        )
     }
 
     func makeUIView(context: Context) -> MKMapView {
@@ -72,7 +95,19 @@ struct PhotoMap: UIViewRepresentable {
         if let region = position.region, coordinator.lastApplied != Camera(region) {
             coordinator.lastApplied = Camera(region)
             coordinator.applying = true
-            map.setRegion(region, animated: true)
+            if fitInsetBottom > 0 {
+                // 시트가 덮는 만큼 아래를 비우고 맞춥니다 — 테두리가 시트 밑으로
+                // 들어가지 않게 (2026-08-09 실기기 피드백).
+                map.setVisibleMapRect(
+                    Self.mapRect(of: region),
+                    edgePadding: UIEdgeInsets(
+                        top: 12, left: 12, bottom: fitInsetBottom + 12, right: 12
+                    ),
+                    animated: true
+                )
+            } else {
+                map.setRegion(region, animated: true)
+            }
         }
 
         // 지역 채우기. 서명이 같으면 손대지 않습니다 — 경계 점이 수천 개라
@@ -333,17 +368,35 @@ final class PixelTileOverlay: MKTileOverlay {
         // URLSession 기본 캐시가 원본 타일을 물고 있습니다 — 같은 타일을 매번 다시 받지 않게.
         let (data, _) = try await URLSession.shared.data(from: url)
         guard let image = UIImage(data: data)?.cgImage,
-              let pixelated = Self.pixelate(image, dark: dark)
+              let pixelated = Self.pixelate(image, dark: dark, zoom: path.z)
         else { return data }
         return pixelated
     }
 
-    private static let cells = 48
     private static let tile = 256
+    /// 여기까지는 칸이 가장 잘다(×1.5) — 나라·세계가 보이는 범위.
+    private static let fineZoomMax = 7
+    /// 여기부터는 검수값 그대로 — 동네가 보이는 범위.
+    private static let baseZoomMin = 14
 
-    private static func pixelate(_ source: CGImage, dark: Bool) -> Data? {
+    /// 줌에 따라 칸수를 **서서히** 바꿉니다: z≤7 은 ×1.5, z≥14 는 검수값,
+    /// 사이(도·시)는 직선으로 줄어듭니다. 시 단위 줌에서 픽셀이 아쉽고
+    /// 단계가 튀지 않게 "부드럽게" 라는 피드백(2026-08-09)의 답입니다 —
+    /// 큰 형태(해안선·시가지)일수록 잘게 쪼개야 뭉개지지 않습니다.
+    /// 안드로이드(TileProxy.cellsFor)와 같은 규칙.
+    private static func cellsFor(zoom: Int, base: Int) -> Int {
+        if zoom <= fineZoomMax { return base * 3 / 2 }
+        if zoom >= baseZoomMin { return base }
+        return base + base * (baseZoomMin - zoom) / (2 * (baseZoomMin - fineZoomMax))
+    }
+
+    private static func pixelate(_ source: CGImage, dark: Bool, zoom: Int) -> Data? {
         let space = CGColorSpaceCreateDeviceRGB()
         let info = CGImageAlphaInfo.premultipliedLast.rawValue
+
+        // 칸수는 [MapTuning] — 한 타일 안에서는 한 값만 씁니다(도중에 RC 가
+        // 덮으면 버퍼 크기가 어긋납니다).
+        let cells = cellsFor(zoom: zoom, base: MapTuning.pixelCells)
 
         // ① 48칸으로 줄여서 (bilinear)
         guard let small = CGContext(

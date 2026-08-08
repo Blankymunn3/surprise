@@ -10,58 +10,71 @@ import androidx.compose.ui.unit.sp
 import kr.jjaguk.core.designsystem.R
 
 /**
- * **Pretendard 한 벌.** 굵기와 자간만으로 위계를 만듭니다.
- * 서체를 섞지 않는 것이 이 앱 디자인의 첫 번째 규칙입니다 (`docs/app/design.html`).
+ * 갈무리11 — **앱 전체 서체**이자 각인 서체입니다 (갈무리 = OFL, 한글 11,172자 전부).
  *
- * 폰트 파일은 한글·라틴만 남기고 잘라 넣었습니다 (네 굵기 합쳐 약 5MB).
- * 공간 이름은 사용자가 직접 쓰므로 한글 전체(11,172자)를 덜어내면 안 됩니다.
+ * 처음(2026-08-09 아침 시안)에는 '기계 각인 자리'에만 쓰고 본문은 Pretendard 를
+ * 남겼는데, 같은 날 사용자가 **"혼용이 별로"** 라고 해 전면 전환했습니다.
+ * 굵기는 둘뿐이라 Medium·SemiBold 자리도 Regular 파일로 갑니다 —
+ * 시스템이 굵기를 흉내 내 픽셀을 뭉개는 것보다 낫습니다.
  */
-val Pretendard = FontFamily(
-    Font(R.font.pretendard_regular, FontWeight.Normal),
-    Font(R.font.pretendard_medium, FontWeight.Medium),
-    Font(R.font.pretendard_semibold, FontWeight.SemiBold),
-    Font(R.font.pretendard_bold, FontWeight.Bold),
+val Galmuri11 = FontFamily(
+    Font(R.font.galmuri11, FontWeight.Normal),
+    Font(R.font.galmuri11, FontWeight.Medium),
+    Font(R.font.galmuri11, FontWeight.SemiBold),
+    Font(R.font.galmuri11_bold, FontWeight.Bold),
 )
+
+/**
+ * 화면 전체가 쓰는 이름. 갈무리11 의 별칭입니다 — 서체를 다시 바꾸게 되면
+ * 여기 한 줄만 고칩니다. Pretendard 파일(`pretendard_*.ttf`)은 돌아올 길로
+ * 남겨 뒀습니다.
+ */
+val AppFont = Galmuri11
+
+/** 아주 작은 각인(딱지 등)용. 9px 그리드라 9·18 크기로만. */
+val Galmuri9 = FontFamily(Font(R.font.galmuri9))
+
+/** 라틴·숫자 전용(Press Start 2P, OFL) — 한글이 오면 시스템 글꼴로 떨어지니
+ *  숫자·영문 자리에만. 크기는 8의 배수. */
+val PressStart = FontFamily(Font(R.font.press_start_2p))
 
 /**
  * 여섯 단만 씁니다 — **한 화면에 세 단 이상 섞지 않습니다** (`docs/app/design.html`).
  *
- * 굵기가 800(ExtraBold)인 자리가 많은 것이 이 서체 체계의 특징입니다. 잉크 선과
- * 흰 면만으로 만든 화면이라, 글자가 굵어야 위계가 섭니다.
- *
- * 디자인 문서는 라틴·숫자에 Archivo 를 섞지만, **우리는 Pretendard 한 벌로 갑니다**
- * (2026-08-04 결정). 숫자와 영문의 인상이 시안과 조금 다른 대신, 서체 파일이
- * 한 벌로 끝나고 한글·라틴의 굵기가 한 줄 안에서 어긋나지 않습니다.
+ * 크기 단(25/17/15/13.5/12.5/11)은 Pretendard 시절 그대로입니다. 갈무리11 의
+ * 배수(11·22)가 아니라 어중간한 크기에서는 픽셀이 살짝 무릅니다 — 전면 전환
+ * 직후라 **위계를 흔들지 않는 쪽**을 골랐고, 실기기에서 거슬리는 단이 나오면
+ * 그 단만 배수로 옮깁니다.
  */
 object MemoryType {
     /** 25 / 800 — 화면 제목 ("짜국") */
     val Display = TextStyle(
-        fontFamily = Pretendard, fontWeight = FontWeight.Bold,
+        fontFamily = AppFont, fontWeight = FontWeight.Bold,
         fontSize = 25.sp, lineHeight = 30.sp, letterSpacing = (-0.02).em,
     )
     /** 17 / 800 — 상단바 */
     val Title = TextStyle(
-        fontFamily = Pretendard, fontWeight = FontWeight.Bold,
+        fontFamily = AppFont, fontWeight = FontWeight.Bold,
         fontSize = 17.sp, lineHeight = 22.sp, letterSpacing = (-0.02).em,
     )
     /** 15 / 800 — 버튼 · 본문 강조 */
     val Headline = TextStyle(
-        fontFamily = Pretendard, fontWeight = FontWeight.Bold,
+        fontFamily = AppFont, fontWeight = FontWeight.Bold,
         fontSize = 15.sp, lineHeight = 20.sp, letterSpacing = (-0.01).em,
     )
     /** 13.5 / 700 — 보조 버튼 · 필드값 */
     val Body = TextStyle(
-        fontFamily = Pretendard, fontWeight = FontWeight.SemiBold,
+        fontFamily = AppFont, fontWeight = FontWeight.SemiBold,
         fontSize = 13.5.sp, lineHeight = 19.sp, letterSpacing = (-0.01).em,
     )
     /** 12.5 / 400 — 설명 */
     val Label = TextStyle(
-        fontFamily = Pretendard, fontWeight = FontWeight.Normal,
+        fontFamily = AppFont, fontWeight = FontWeight.Normal,
         fontSize = 12.5.sp, lineHeight = 20.sp,
     )
     /** 11 / 700 — 딱지 · 캡션 */
     val Micro = TextStyle(
-        fontFamily = Pretendard, fontWeight = FontWeight.SemiBold,
+        fontFamily = AppFont, fontWeight = FontWeight.SemiBold,
         fontSize = 11.sp, lineHeight = 15.sp,
     )
 

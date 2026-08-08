@@ -269,9 +269,11 @@ struct SpaceSheet: View {
             // 자간을 넓게 벌려 한 글자씩 옮겨 적기 쉽게 합니다.
             // 패미컴 스타일에서는 코드를 **화면에 띄웁니다.** 검정 판은 "기기가
             // 보여 주는 것" 이고, 이 코드야말로 기기가 방금 만들어 낸 값입니다.
+            // 카트리지 뒷면 시리얼처럼 PS2P 로 새깁니다 (2026-08-09 검수 시안,
+            // 코드 글자표가 라틴·숫자뿐이라 이 서체로 다 찍힙니다). 크기는 8의 배수.
             Text(code)
-                .font(MemoryFont.font(32, .bold))
-                .tracking(8)
+                .font(MemoryFont.pressStart(24))
+                .tracking(6)
                 .foregroundStyle(PlasticColor.onPlate)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, MemorySpace.xl)
@@ -285,19 +287,19 @@ struct SpaceSheet: View {
                     UIPasteboard.general.string = code
                     #endif
                 }
+                // 옆의 '복사'(SoftButton)와 **같은 고무 알약**이어야 합니다 —
+                // ShareLink 는 자체 뷰라 컴포넌트를 못 쓰고 얼굴만 같게 그립니다.
                 ShareLink(item: code) {
                     Text(localized("invited_share"))
-                        .memoryBody()
-                        .foregroundStyle(MemoryColor.ink)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 13)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(MemoryColor.surface)
-                        .overlay(
-                            Rectangle().strokeBorder(MemoryColor.line, lineWidth: MemoryStroke.border)
-                        )
+                        .font(MemoryFont.font(15, .bold))
+                        .foregroundStyle(PlasticColor.onRubber)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: PlasticSize.button)
+                        .background(Capsule().fill(PlasticColor.rubber))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plasticPress)
+                .padding(PlasticSize.buttonInset)
+                .raisedPlastic()
             }
             .padding(.top, 10)
 

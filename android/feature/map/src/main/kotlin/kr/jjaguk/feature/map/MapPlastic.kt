@@ -53,7 +53,8 @@ import kr.jjaguk.core.designsystem.component.PhotoThumb
 import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
 import kr.jjaguk.core.designsystem.theme.PlasticSize
-import kr.jjaguk.core.designsystem.theme.Pretendard
+import kr.jjaguk.core.designsystem.theme.Galmuri11
+import kr.jjaguk.core.designsystem.theme.AppFont
 import kr.jjaguk.core.designsystem.theme.Space as Gap
 import kr.jjaguk.core.designsystem.theme.pressable
 import kr.jjaguk.core.designsystem.theme.raisedPlastic
@@ -192,18 +193,21 @@ private fun CartridgeSlot(query: String, onTyped: (String) -> Unit, onClear: () 
             )
         }
         if (query.isNotEmpty()) {
+            // 누르는 영역은 글자보다 훨씬 넓게 — 글자 크기만큼만 열면 자꾸 빗나갑니다.
             Text(
                 text = "×",
-                style = slotStyle.copy(fontSize = 17.sp),
+                style = slotStyle.copy(fontSize = 20.sp),
                 color = PlasticColors.OnPlateDim,
-                modifier = Modifier.pressable(onClick = onClear).padding(horizontal = Gap.xs),
+                modifier = Modifier
+                    .pressable(onClick = onClear)
+                    .padding(horizontal = Gap.s, vertical = Gap.xs),
             )
         }
     }
 }
 
 private val slotStyle = TextStyle(
-    fontFamily = Pretendard,
+    fontFamily = AppFont,
     fontWeight = FontWeight.SemiBold,
     fontSize = 15.sp,
 )
@@ -235,7 +239,7 @@ private fun SlotResults(
                     region.parentName?.let {
                         Text(
                             text = it,
-                            fontFamily = Pretendard,
+                            fontFamily = AppFont,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 12.5.sp,
                             color = PlasticColors.OnPlateDim,
@@ -479,7 +483,7 @@ private fun PlasticRegionSheet(
                 ) {
                     Text(
                         text = sheet.region.name,
-                        fontFamily = Pretendard,
+                        fontFamily = AppFont,
                         fontWeight = FontWeight.Bold,
                         fontSize = 17.sp,
                         color = PlasticColors.OnPlate,
@@ -489,7 +493,7 @@ private fun PlasticRegionSheet(
                     sheet.region.parentName?.let {
                         Text(
                             text = it,
-                            fontFamily = Pretendard,
+                            fontFamily = AppFont,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 12.5.sp,
                             color = PlasticColors.OnPlateDim,
@@ -498,8 +502,8 @@ private fun PlasticRegionSheet(
                 }
                 Text(
                     text = stringResource(R.string.map_sheet_count_and_hint, sheet.photos.size),
-                    fontFamily = Pretendard,
-                    fontWeight = FontWeight.SemiBold,
+                    // 안내 한 줄은 각인 — 갈무리11 (2026-08-09 검수 시안)
+                    fontFamily = Galmuri11,
                     fontSize = 11.sp,
                     color = PlasticColors.OnPlateDim,
                     modifier = Modifier.padding(top = 2.dp),
@@ -517,9 +521,9 @@ private fun PlasticRegionSheet(
             ) {
                 Text(
                     text = "×",
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
+                    fontSize = 20.sp,
                     color = PlasticColors.OnRubber,
                 )
             }

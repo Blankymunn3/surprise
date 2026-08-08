@@ -58,6 +58,10 @@
 		<string>pretendard_medium.ttf</string>
 		<string>pretendard_semibold.ttf</string>
 		<string>pretendard_bold.ttf</string>
+		<string>galmuri11.ttf</string>
+		<string>galmuri11_bold.ttf</string>
+		<string>galmuri9.ttf</string>
+		<string>press_start_2p.ttf</string>
 	</array>
 	<!--
 	  구글 로그인 창이 **앱으로 돌아오는 문**입니다. 이 값은

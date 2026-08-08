@@ -59,7 +59,7 @@ struct PlasticSpaceMenu: View {
             Spacer(minLength: 0)
             Button(action: onClose) {
                 Text("×")
-                    .font(MemoryFont.font(17, .bold))
+                    .font(MemoryFont.font(20, .bold))
                     .foregroundStyle(PlasticColor.onRubber)
                     .frame(width: PlasticSize.sheetClose, height: PlasticSize.sheetClose)
                     .background(Circle().fill(PlasticColor.rubber))

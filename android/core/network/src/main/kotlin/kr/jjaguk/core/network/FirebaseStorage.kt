@@ -37,14 +37,18 @@ class FirebaseStorage(
      * 매 요청마다 부릅니다. 낡은 토큰을 새로 받는 일은 부르는 쪽(`AuthRepository`)이 합니다.
      */
     private val token: suspend () -> String? = { null },
+    /** App Check 토큰. `Firestore` 와 같은 규칙 — 없으면 없이 보냅니다. */
+    private val appCheck: suspend () -> String? = { null },
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
     data class Item(val fullPath: String, val name: String)
 
     /** 토큰이 있으면 헤더를 얹습니다. 없으면 그대로 보냅니다. */
-    private suspend fun Request.Builder.authorized(): Request.Builder =
-        token()?.let { header("Authorization", "Bearer $it") } ?: this
+    private suspend fun Request.Builder.authorized(): Request.Builder = apply {
+        token()?.let { header("Authorization", "Bearer $it") }
+        appCheck()?.let { header("X-Firebase-AppCheck", it) }
+    }
 
     suspend fun list(prefix: String): Outcome<List<Item>> = withContext(Dispatchers.IO) {
         val url = base() + "?prefix=" + enc(prefix) +

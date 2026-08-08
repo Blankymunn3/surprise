@@ -19,15 +19,19 @@ public actor FirebaseStorage {
     ///
     /// 매 요청마다 부릅니다. 낡은 토큰을 새로 받는 일은 부르는 쪽(`AuthRepository`)이 합니다.
     private let token: @Sendable () async -> String?
+    /// App Check 토큰. `Firestore` 와 같은 규칙 — 없으면 없이 보냅니다.
+    private let appCheck: @Sendable () async -> String?
 
     public init(
         bucket: String,
         session: URLSession = .shared,
-        token: @escaping @Sendable () async -> String? = { nil }
+        token: @escaping @Sendable () async -> String? = { nil },
+        appCheck: @escaping @Sendable () async -> String? = { nil }
     ) {
         self.bucket = bucket
         self.session = session
         self.token = token
+        self.appCheck = appCheck
     }
 
     public func list(prefix: String) async -> Outcome<[Item]> {
@@ -104,6 +108,9 @@ public actor FirebaseStorage {
         // 그 요청만 조용히 403 이 됩니다.
         if let token = await token() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        if let proof = await appCheck() {
+            request.setValue(proof, forHTTPHeaderField: "X-Firebase-AppCheck")
         }
         do {
             let (data, response) = try await session.data(for: request)

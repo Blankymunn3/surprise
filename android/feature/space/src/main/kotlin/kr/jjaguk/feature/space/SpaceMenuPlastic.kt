@@ -29,7 +29,7 @@ import kr.jjaguk.core.designsystem.theme.MemoryType
 import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
 import kr.jjaguk.core.designsystem.theme.PlasticSize
-import kr.jjaguk.core.designsystem.theme.Pretendard
+import kr.jjaguk.core.designsystem.theme.AppFont
 import kr.jjaguk.core.designsystem.theme.Space as Gap
 import kr.jjaguk.core.designsystem.theme.pressable
 import kr.jjaguk.core.designsystem.theme.sunken
@@ -96,7 +96,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
     ) {
         Text(
             text = state.space?.name.orEmpty(),
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
             color = PlasticColors.Ink,
@@ -114,9 +114,9 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
         ) {
             Text(
                 text = "×",
-                fontFamily = Pretendard,
+                fontFamily = AppFont,
                 fontWeight = FontWeight.Bold,
-                fontSize = 17.sp,
+                fontSize = 20.sp,
                 color = PlasticColors.OnRubber,
             )
         }
@@ -141,7 +141,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
                     ) {
                         Text(
                             text = member.initial,
-                            fontFamily = Pretendard,
+                            fontFamily = AppFont,
                             fontWeight = FontWeight.Bold,
                             fontSize = 11.sp,
                             color = PlasticColors.Plate,
@@ -149,7 +149,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
                     }
                     Text(
                         text = member.displayName,
-                        fontFamily = Pretendard,
+                        fontFamily = AppFont,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 13.5.sp,
                         color = PlasticColors.OnPlate,
@@ -160,7 +160,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
                     if (member.role == MemberRole.Owner) {
                         Text(
                             text = stringResource(R.string.menu_owner),
-                            fontFamily = Pretendard,
+                            fontFamily = AppFont,
                             fontWeight = FontWeight.Bold,
                             fontSize = 11.sp,
                             color = PlasticColors.OnPlateDim,
@@ -177,7 +177,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
             ) {
                 Text(
                     text = state.code ?: stringResource(R.string.menu_invite_code_making),
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     letterSpacing = if (state.code != null) 4.sp else 0.sp,
@@ -187,7 +187,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
                 state.code?.let { code ->
                     Text(
                         text = stringResource(R.string.menu_copy),
-                        fontFamily = Pretendard,
+                        fontFamily = AppFont,
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.sp,
                         color = PlasticColors.OnRubber,
@@ -220,7 +220,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
         ) {
             Text(
                 text = stringResource(R.string.menu_rename),
-                fontFamily = Pretendard,
+                fontFamily = AppFont,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 13.5.sp,
                 color = PlasticColors.OnPlate,
@@ -228,7 +228,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
             )
             Text(
                 text = "›",
-                fontFamily = Pretendard,
+                fontFamily = AppFont,
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp,
                 color = PlasticColors.OnPlateDim,
@@ -241,7 +241,7 @@ private fun PlasticMenuBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -
 private fun PlasticRenameBody(state: SpaceMenuState, onIntent: (SpaceMenuIntent) -> Unit) {
     Text(
         text = stringResource(R.string.menu_rename),
-        fontFamily = Pretendard,
+        fontFamily = AppFont,
         fontWeight = FontWeight.Bold,
         fontSize = 17.sp,
         color = PlasticColors.Ink,

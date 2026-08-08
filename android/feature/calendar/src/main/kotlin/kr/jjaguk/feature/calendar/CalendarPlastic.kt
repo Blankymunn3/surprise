@@ -44,7 +44,8 @@ import kr.jjaguk.core.designsystem.component.PhotoThumb
 import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
 import kr.jjaguk.core.designsystem.theme.PlasticSize
-import kr.jjaguk.core.designsystem.theme.Pretendard
+import kr.jjaguk.core.designsystem.theme.Galmuri11
+import kr.jjaguk.core.designsystem.theme.AppFont
 import kr.jjaguk.core.designsystem.theme.Space as Gap
 import kr.jjaguk.core.designsystem.theme.pressable
 import kr.jjaguk.core.designsystem.theme.raisedPlastic
@@ -143,7 +144,7 @@ private fun MonthBar(state: CalendarState, onIntent: (CalendarIntent) -> Unit) {
         // 연·월을 한 덩어리로. 지난 해를 넘겨 볼 때는 연도가 더 중요합니다.
         Text(
             text = stringResource(R.string.calendar_month, state.month.year, state.month.monthValue),
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
             color = PlasticColors.Ink,
@@ -166,7 +167,7 @@ private fun MonthNav(glyph: String, onClick: () -> Unit) {
     ) {
         Text(
             text = glyph,
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
             color = PlasticColors.OnRubber,
@@ -180,8 +181,8 @@ private fun WeekdayStrip() {
         weekdays().forEachIndexed { index, label ->
             Text(
                 text = label,
-                fontFamily = Pretendard,
-                fontWeight = FontWeight.Bold,
+                // 요일 줄은 각인 — 갈무리11 (2026-08-09 검수 시안)
+                fontFamily = Galmuri11,
                 fontSize = 11.sp,
                 // 일요일만 빨강입니다. 이 판에서 빨강은 주 동작 색이 아니라
                 // 몸통 위에서만 그렇고, 검정 화면 안에서는 그냥 잘 보이는 색입니다.
@@ -292,9 +293,9 @@ private fun PlasticDayCell(
 
         Text(
             text = date.dayOfMonth.toString(),
-            fontFamily = Pretendard,
-            fontWeight = FontWeight.Bold,
-            fontSize = 12.5.sp,
+            // 달력 숫자는 A안(갈무리11) — 2026-08-09 검수. 크기는 11의 배수.
+            fontFamily = Galmuri11,
+            fontSize = 11.sp,
             color = when {
                 cell.isToday -> PlasticColors.RedHi
                 cell.isSunday -> PlasticColors.RedLo
@@ -338,7 +339,7 @@ private fun PlasticDaySection(
                         group.date.dayOfMonth,
                         weekdays()[group.date.dayOfWeek.value % 7],
                     ),
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = PlasticColors.OnPlate,
@@ -348,7 +349,7 @@ private fun PlasticDaySection(
                         group.placeName,
                         stringResource(R.string.calendar_photo_count, group.photos.size),
                     ).joinToString(" · "),
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 11.sp,
                     color = PlasticColors.OnPlateDim,
@@ -385,7 +386,7 @@ private fun EmptyPlate() {
         Spacer(Modifier.height(Gap.m))
         Text(
             text = stringResource(R.string.calendar_empty),
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
             color = PlasticColors.OnPlate,
@@ -423,7 +424,7 @@ private fun Bottom(collapsed: Boolean, onToggle: () -> Unit, onAdd: () -> Unit) 
             ) {
                 Text(
                     text = stringResource(if (collapsed) R.string.calendar_expand else R.string.calendar_collapse),
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = PlasticColors.OnRubber,
@@ -442,7 +443,7 @@ private fun Bottom(collapsed: Boolean, onToggle: () -> Unit, onAdd: () -> Unit) 
             ) {
                 Text(
                     text = "＋",
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
                     color = PlasticColors.OnRed,

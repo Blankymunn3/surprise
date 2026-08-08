@@ -30,10 +30,13 @@ import coil3.compose.AsyncImage
 import kr.jjaguk.core.designsystem.R as DesignR
 import kr.jjaguk.core.designsystem.component.FRAMES_RATIO
 import kr.jjaguk.core.designsystem.component.PhotoFramesScene
+import kr.jjaguk.core.designsystem.theme.Galmuri11
+import kr.jjaguk.core.designsystem.theme.Galmuri9
 import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
 import kr.jjaguk.core.designsystem.theme.PlasticSize
-import kr.jjaguk.core.designsystem.theme.Pretendard
+import kr.jjaguk.core.designsystem.theme.PressStart
+import kr.jjaguk.core.designsystem.theme.AppFont
 import kr.jjaguk.core.designsystem.theme.Space as Gap
 import kr.jjaguk.core.designsystem.theme.pressable
 import kr.jjaguk.core.designsystem.theme.raisedPlastic
@@ -101,7 +104,7 @@ internal fun PlasticListBody(state: SpaceListState, onIntent: (SpaceListIntent) 
     }
 }
 
-/** 로고 자리. 기울임은 쓰지 않습니다 — Pretendard 에 진짜 이탤릭이 없어 흉내만 나옵니다. */
+/** 로고 자리 — 몸통에 찍힌 **각인**이라 갈무리입니다 (2026-08-09 검수 시안). */
 @Composable
 private fun Brand() {
     Row(
@@ -110,18 +113,16 @@ private fun Brand() {
     ) {
         Text(
             text = stringResource(R.string.list_title),
-            fontFamily = Pretendard,
+            fontFamily = Galmuri11,
             fontWeight = FontWeight.Bold,
-            fontSize = 25.sp,
-            letterSpacing = (-0.5).sp,
+            fontSize = 22.sp,
             color = PlasticColors.Red,
         )
         Spacer(Modifier.weight(1f))
         Text(
             text = "MAP & CALENDAR",
-            fontFamily = Pretendard,
-            fontWeight = FontWeight.Bold,
-            fontSize = 11.sp,
+            fontFamily = PressStart,
+            fontSize = 8.sp,
             letterSpacing = 1.2.sp,
             color = PlasticColors.TrimLo,
             modifier = Modifier.padding(bottom = Gap.xs),
@@ -183,44 +184,56 @@ private fun PlasticCard(space: Space, onClick: () -> Unit) {
             Column(Modifier.weight(1f)) {
                 Text(
                     text = space.name,
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
                     color = PlasticColors.OnPlate,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Text(
-                    text = space.metaShort(),
-                    fontFamily = Pretendard,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 12.5.sp,
-                    color = PlasticColors.OnPlateDim,
-                )
+                // 몰드된 라벨 = 갈무리11, 날짜 숫자만 PS2P (2026-08-09 검수 시안)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = space.metaShort(),
+                        fontFamily = Galmuri11,
+                        fontSize = 11.sp,
+                        color = PlasticColors.OnPlateDim,
+                    )
+                    space.lastPhotoOn?.takeIf { space.photoCount > 0 }?.let { on ->
+                        Text(
+                            text = " · ",
+                            fontFamily = Galmuri11,
+                            fontSize = 11.sp,
+                            color = PlasticColors.OnPlateDim,
+                        )
+                        Text(
+                            text = "${on.monthValue}.${on.dayOfMonth}",
+                            fontFamily = PressStart,
+                            fontSize = 8.sp,
+                            color = PlasticColors.OnPlateDim,
+                        )
+                    }
+                }
             }
             Crew(space.members.map { it.initial })
         }
     }
 }
 
-/** "사진 13 · 8곳 · 7.27" — 몰드된 라벨처럼 짧게 끊습니다. */
+/** "사진 13 · 8곳" — 몰드된 라벨처럼 짧게. 날짜는 부르는 쪽이 PS2P 로 따로 붙입니다. */
 @Composable
 private fun Space.metaShort(): String {
     if (photoCount == 0) return stringResource(R.string.card_meta_short_empty)
-    val on = lastPhotoOn ?: return stringResource(R.string.card_meta_short, photoCount, regionCount)
-    return stringResource(
-        R.string.card_meta_short_dated,
-        photoCount, regionCount, on.monthValue, on.dayOfMonth,
-    )
+    return stringResource(R.string.card_meta_short, photoCount, regionCount)
 }
 
 @Composable
 private fun OnlyHere(modifier: Modifier = Modifier) {
     Text(
         text = stringResource(DesignR.string.component_only_on_this_phone),
-        fontFamily = Pretendard,
-        fontWeight = FontWeight.Bold,
-        fontSize = 11.sp,
+        // 딱지는 몰드된 각인 — 갈무리9 (2026-08-09 검수 시안)
+        fontFamily = Galmuri9,
+        fontSize = 9.sp,
         letterSpacing = 0.4.sp,
         color = PlasticColors.Plate,
         modifier = modifier
@@ -254,7 +267,7 @@ private fun CrewChip(text: String, index: Int, filled: Boolean) {
     ) {
         Text(
             text = text,
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 11.sp,
             color = if (filled) PlasticColors.Body else PlasticColors.Plate,
@@ -295,7 +308,7 @@ private fun Controls(onCreate: () -> Unit, onJoin: () -> Unit) {
             ) {
                 Text(
                     text = stringResource(R.string.list_join),
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = PlasticColors.OnRubber,
@@ -318,7 +331,7 @@ private fun Controls(onCreate: () -> Unit, onJoin: () -> Unit) {
             ) {
                 Text(
                     text = "＋",
-                    fontFamily = Pretendard,
+                    fontFamily = AppFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
                     color = PlasticColors.OnRed,
@@ -333,7 +346,7 @@ private fun PlateHint(text: String) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
             text = text,
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.SemiBold,
             fontSize = 13.5.sp,
             color = PlasticColors.OnPlateDim,
@@ -351,7 +364,7 @@ private fun PlateEmpty() {
         Spacer(Modifier.height(Gap.l))
         Text(
             text = stringResource(R.string.list_empty_title),
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
             color = PlasticColors.OnPlate,
@@ -359,7 +372,7 @@ private fun PlateEmpty() {
         Spacer(Modifier.height(Gap.s))
         Text(
             text = stringResource(R.string.list_empty_hint),
-            fontFamily = Pretendard,
+            fontFamily = AppFont,
             fontWeight = FontWeight.Normal,
             fontSize = 12.5.sp,
             color = PlasticColors.OnPlateDim,

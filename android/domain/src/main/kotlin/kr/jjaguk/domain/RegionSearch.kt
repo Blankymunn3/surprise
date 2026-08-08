@@ -35,12 +35,16 @@ object RegionSearch {
     }
 
     private fun score(query: String, region: Region): Int? {
-        val name = region.name
+        // 띄어쓰기는 무시하고 견줍니다 — 표시명은 "성남시 수정구" 인데
+        // 붙여 치는 사람이 많고, 그 반대도 있습니다.
+        val name = region.name.replace(" ", "")
+        val q = query.replace(" ", "")
         return when {
-            name.equals(query, ignoreCase = true) -> 0
-            name.startsWith(query, ignoreCase = true) -> 1
-            name.contains(query, ignoreCase = true) -> 2
-            region.parentName?.contains(query, ignoreCase = true) == true -> 3
+            name.equals(q, ignoreCase = true) -> 0
+            name.startsWith(q, ignoreCase = true) -> 1
+            name.contains(q, ignoreCase = true) -> 2
+            region.parentName?.replace(" ", "")
+                ?.contains(q, ignoreCase = true) == true -> 3
             else -> null
         }
     }

@@ -138,7 +138,9 @@ public struct PhotoThumb: View {
         .overlay(alignment: .bottomLeading) {
             if let dateLabel {
                 Text(dateLabel)
-                    .memoryMicro()
+                    // 날짜 배지는 각인 — PS2P 8 (2026-08-09 검수 시안). 내용이
+                    // "7.27" 꼴 숫자뿐이라 라틴 전용 서체로 충분합니다.
+                    .font(MemoryFont.pressStart(8))
                     .foregroundStyle(.white)
                     .shadow(color: MemoryColor.ink.opacity(0.7), radius: 3)
                     .padding(.leading, 8)

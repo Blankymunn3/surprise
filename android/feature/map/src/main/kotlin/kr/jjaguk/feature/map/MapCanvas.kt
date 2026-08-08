@@ -535,4 +535,6 @@ private fun List<DoubleArray>.ring(): String =
     joinToString(",", "[", "]") { """[${it[0]},${it[1]}]""" }
 
 /** 밤인가 — 19시부터 아침 7시 전까지. 일출·일몰 계산까지는 이 앱엔 과합니다. */
-private fun isNight(): Boolean = java.time.LocalTime.now().hour.let { it >= 19 || it < 7 }
+private fun isNight(): Boolean = java.time.LocalTime.now().hour.let {
+    it >= MapTuning.nightStartHour || it < MapTuning.nightEndHour
+}

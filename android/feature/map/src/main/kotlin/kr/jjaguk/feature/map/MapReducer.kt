@@ -16,7 +16,7 @@ internal object MapReducer {
         state.copy(query = value, results = results)
 
     fun queryCleared(state: MapState): MapState =
-        state.copy(query = "", results = emptyList(), sheet = null)
+        state.copy(query = "", results = emptyList(), sheet = null, outline = null, focus = null)
 
     /**
      * 지역을 고르면 그 지역에 지도를 맞추고 아래에서 시트가 올라옵니다.
@@ -47,8 +47,12 @@ internal object MapReducer {
     fun coverChanged(state: MapState, id: PhotoId): MapState =
         state.copy(sheet = state.sheet?.copy(coverId = id))
 
+    // 테두리도 같이 지웁니다 — 시트만 닫히고 지도에 선이 남으면 "아직 골라져 있나?" 헷갈립니다.
+    // focus 도 같이 비웁니다 — 캔버스는 **지도 크기가 바뀌어도** 다시 맞추는데
+    // (시트가 늦게 열릴 때를 위해), 시트가 닫히는 것도 크기 변화라 focus 가 남아
+    // 있으면 닫는 순간 옛 지역으로 도로 날아갑니다(실기기에서 확인).
     fun sheetDismissed(state: MapState): MapState =
-        state.copy(sheet = null, query = "", results = emptyList())
+        state.copy(sheet = null, query = "", results = emptyList(), outline = null, focus = null)
 
     /**
      * 지금 자리로 지도를 옮깁니다.

@@ -20,6 +20,7 @@ class SpaceListViewModel(
     private val createSpace: CreateSpaceUseCase,
     private val joinSpace: JoinSpaceUseCase,
     private val accounts: AuthRepository,
+    private val track: (String, Map<String, String>) -> Unit = { _, _ -> },
 ) : MviViewModel<SpaceListIntent, SpaceListState, SpaceListEffect>(SpaceListState()) {
 
     init {
@@ -97,7 +98,9 @@ class SpaceListViewModel(
 
         viewModelScope.launch {
             when (val result = accounts.signInWithGoogle(idToken)) {
-                is Outcome.Ok -> when (next) {
+                is Outcome.Ok -> {
+                    track("sign_in", mapOf("provider" to "google"))
+                    when (next) {
                     // 로그인만 하고 멈추지 않습니다 — 하던 일을 이어서 합니다.
                     SpaceListSheet.Next.Create -> {
                         setState { SpaceListReducer.sheetOpenedKeepingInput(this, SpaceListSheet.Create) }
@@ -108,8 +111,10 @@ class SpaceListViewModel(
                         join()
                     }
                     null -> setState { SpaceListReducer.sheetDismissed(this) }
+                    }
                 }
                 is Outcome.Fail -> {
+                    track("sign_in_failed", mapOf("provider" to "google"))
                     setState { SpaceListReducer.failedAction(this) }
                     sendEffect(SpaceListEffect.ShowMessage(SpaceListMessage.SignInFailed))
                 }
@@ -136,9 +141,11 @@ class SpaceListViewModel(
             when (val result = createSpace(name, kind)) {
                 is Outcome.Ok -> {
                     val (space, invite) = result.value
+                    track("space_create", mapOf("kind" to kind.name))
                     setState { SpaceListReducer.created(this, space, invite?.code) }
                 }
                 is Outcome.Fail -> {
+                    track("space_create_failed", mapOf("reason" to result.reason.name))
                     setState { SpaceListReducer.failedAction(this) }
                     sendEffect(SpaceListEffect.ShowMessage(SpaceListMessage.Failed(result.reason)))
                 }
@@ -153,8 +160,12 @@ class SpaceListViewModel(
 
         viewModelScope.launch {
             when (val result = joinSpace(code)) {
-                is Outcome.Ok -> setState { SpaceListReducer.joined(this, result.value) }
+                is Outcome.Ok -> {
+                    track("space_join", emptyMap())
+                    setState { SpaceListReducer.joined(this, result.value) }
+                }
                 is Outcome.Fail -> {
+                    track("space_join_failed", mapOf("reason" to result.reason.name))
                     setState { SpaceListReducer.failedAction(this) }
                     // 코드를 못 찾은 것은 흔한 일이라 따로 말합니다 —
                     // "찾을 수 없어요" 만 뜨면 무엇을 못 찾았다는 건지 알 수 없습니다.

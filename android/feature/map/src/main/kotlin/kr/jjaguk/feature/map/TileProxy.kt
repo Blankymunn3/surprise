@@ -92,11 +92,14 @@ internal class TileProxy(private val dark: Boolean = false) : AutoCloseable {
         connection.setRequestProperty("User-Agent", "jjaguk-android")
 
         val original = connection.inputStream.use { BitmapFactory.decodeStream(it) } ?: return null
-        val small = Bitmap.createScaledBitmap(original, CELLS, CELLS, true)
+        // 요청 하나 안에서는 한 값만 씁니다 — 도중에 RC 가 덮으면 배열 크기가 어긋납니다.
+        val zoom = path.split('/').getOrNull(1)?.toIntOrNull() ?: 15
+        val cells = cellsFor(zoom, MapTuning.pixelCells)
+        val small = Bitmap.createScaledBitmap(original, cells, cells, true)
 
-        // 옅음 증폭·포스터라이즈를 픽셀마다. 48×48 = 2,304칸이라 값싼 일입니다.
-        val pixels = IntArray(CELLS * CELLS)
-        small.getPixels(pixels, 0, CELLS, 0, 0, CELLS, CELLS)
+        // 옅음 증폭·포스터라이즈를 픽셀마다. 112×112 = 12,544칸이라 값싼 일입니다.
+        val pixels = IntArray(cells * cells)
+        small.getPixels(pixels, 0, cells, 0, 0, cells, cells)
         for (i in pixels.indices) {
             val p = pixels[i]
             var r = (p shr 16) and 0xFF
@@ -119,7 +122,7 @@ internal class TileProxy(private val dark: Boolean = false) : AutoCloseable {
             r = r and 0xF0; g = g and 0xF0; b = b and 0xF0
             pixels[i] = (0xFF shl 24) or (r shl 16) or (g shl 8) or b
         }
-        small.setPixels(pixels, 0, CELLS, 0, 0, CELLS, CELLS)
+        small.setPixels(pixels, 0, cells, 0, 0, cells, cells)
 
         // filter=false 가 nearest 확대 — 픽셀의 모서리가 살아야 합니다.
         val big = Bitmap.createScaledBitmap(small, TILE, TILE, false)
@@ -143,11 +146,31 @@ internal class TileProxy(private val dark: Boolean = false) : AutoCloseable {
          *
          * 96 → 112 는 사용자 요청("아주 조금만 더") — 디테일이 살짝 늘고
          * 픽셀 질감은 유지되는 선. iOS 와 칸 크기가 미세하게 달라지는 것은
-         * 감수한 선택이다.
+         * 감수한 선택이다. 칸수는 [MapTuning.pixelCells] 로 옮겨 RC 로 돌릴 수
+         * 있게 했다 — 여기 512 규격과의 조합 제약은 그대로다.
          */
         private const val TILE = 512
-        private const val CELLS = 112
         private const val AMPLIFY = 3
         private const val AMPLIFY_DARK = 4
+
+        /** 여기까지는 칸이 가장 잘다(×1.5) — 나라·세계가 보이는 범위. */
+        private const val FINE_ZOOM_MAX = 7
+
+        /** 여기부터는 검수값 그대로 — 동네가 보이는 범위. */
+        private const val BASE_ZOOM_MIN = 14
+
+        /**
+         * 줌에 따라 칸수를 **서서히** 바꿉니다: z≤7 은 ×1.5, z≥14 는 검수값,
+         * 사이(도·시)는 직선으로 줄어듭니다. 시 단위 줌에서 픽셀이 아쉽고
+         * 단계가 튀지 않게 "부드럽게" 라는 피드백(2026-08-09)의 답입니다 —
+         * 큰 형태(해안선·시가지)일수록 잘게 쪼개야 뭉개지지 않습니다.
+         * iOS(PixelTileOverlay.cellsFor)와 같은 규칙.
+         */
+        internal fun cellsFor(zoom: Int, base: Int): Int = when {
+            zoom <= FINE_ZOOM_MAX -> base * 3 / 2
+            zoom >= BASE_ZOOM_MIN -> base
+            else -> base + base * (BASE_ZOOM_MIN - zoom) /
+                (2 * (BASE_ZOOM_MIN - FINE_ZOOM_MAX))
+        }
     }
 }

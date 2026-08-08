@@ -21,6 +21,7 @@ class CalendarViewModel(
     observeBoard: ObservePhotoBoardUseCase,
     private val setCover: SetCoverPhotoUseCase,
     private val regionNames: suspend () -> Map<String, Region>,
+    private val track: (String, Map<String, String>) -> Unit = { _, _ -> },
     clock: Clock = Clock.systemDefaultZone(),
 ) : MviViewModel<CalendarIntent, CalendarState, CalendarEffect>(
     CalendarState(
@@ -55,8 +56,12 @@ class CalendarViewModel(
             CalendarIntent.AddTapped -> sendEffect(CalendarEffect.OpenUpload)
             is CalendarIntent.PhotoLongPressed -> viewModelScope.launch {
                 val result = setCover(currentState().spaceId, CoverKey.ForDay(intent.date), intent.id)
-                if (result is Outcome.Fail) {
-                    sendEffect(CalendarEffect.ShowMessage(CalendarMessage.CoverFailed))
+                when (result) {
+                    is Outcome.Ok -> track("cover_set_day", emptyMap())
+                    is Outcome.Fail -> {
+                        track("cover_set_day_failed", emptyMap())
+                        sendEffect(CalendarEffect.ShowMessage(CalendarMessage.CoverFailed))
+                    }
                 }
             }
         }

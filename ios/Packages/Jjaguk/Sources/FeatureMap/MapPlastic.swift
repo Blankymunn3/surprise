@@ -19,6 +19,11 @@ import SwiftUI
  손해라, 이 스타일을 채택할지 정할 때 가장 크게 저울질할 대목입니다.
  */
 struct PlasticMapBody: View {
+    /// 지역 시트가 지도 위를 덮는 높이(대략): 제목·안내 줄·사진 84pt·여백.
+    /// 지역을 맞출 때 이만큼 아래를 비웁니다 — 정확히 재려면 GeometryReader 를
+    /// 돌려야 하는데, 시트 내용이 고정이라 상수로 충분합니다.
+    static let sheetObscures: CGFloat = 180
+
     let store: MapStore
     let onAddPhoto: (Region?) -> Void
 
@@ -122,11 +127,13 @@ struct PlasticMapBody: View {
             .focused($searching)
 
             if !store.state.query.isEmpty {
+                // 누르는 영역은 글자보다 훨씬 넓게 — 글자 크기만큼만 열면 자꾸 빗나갑니다.
                 Button { Task { await store.search("") } } label: {
                     Text("×")
-                        .font(MemoryFont.font(17, .semibold))
+                        .font(MemoryFont.font(20, .semibold))
                         .foregroundStyle(PlasticColor.onPlateDim)
-                        .padding(.horizontal, MemorySpace.xs)
+                        .frame(width: 36, height: 36)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plasticPress)
                 .accessibilityLabel(localized("map_search_clear"))
@@ -184,6 +191,9 @@ struct PlasticMapBody: View {
             covers: covers,
             outline: store.state.outline,
             me: me,
+            // 시트가 열려 있으면 그만큼 아래를 비우고 맞춥니다 — 테두리가
+            // 시트 밑으로 들어가지 않게 (2026-08-09 실기기 피드백).
+            fitInsetBottom: store.state.sheet == nil ? 0 : Self.sheetObscures,
             onTap: { latitude, longitude in
                 searching = false
                 Task { await store.tapMap(latitude: latitude, longitude: longitude) }
@@ -454,7 +464,8 @@ private struct PlasticRegionSheet: View {
                         }
                     }
                     Text(localized("map_sheet_count_and_hint", sheet.photos.count))
-                        .font(MemoryFont.font(11, .semibold))
+                        // 안내 한 줄은 각인 — 갈무리11 (2026-08-09 검수 시안)
+                        .font(MemoryFont.galmuri11(11))
                         .foregroundStyle(PlasticColor.onPlateDim)
                 }
                 Spacer(minLength: 0)
@@ -462,7 +473,7 @@ private struct PlasticRegionSheet: View {
                 // 닫기는 검은 고무 버튼입니다 — 빨강은 주 동작에만.
                 Button { store.dismissSheet() } label: {
                     Text("×")
-                        .font(MemoryFont.font(17, .bold))
+                        .font(MemoryFont.font(20, .bold))
                         .foregroundStyle(PlasticColor.onRubber)
                         .frame(width: PlasticSize.sheetClose, height: PlasticSize.sheetClose)
                         .background(Circle().fill(PlasticColor.rubber))

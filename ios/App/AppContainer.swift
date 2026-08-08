@@ -1,5 +1,8 @@
 import CoreModel
 import CoreNetwork
+import FirebaseAnalytics
+import FirebaseAppCheck
+import FirebaseCrashlytics
 import DataAuth
 import DataPhoto
 import DataRegion
@@ -44,12 +47,15 @@ final class AppContainer {
         /// iOS 는 **자기 클라이언트 ID** 를 씁니다. 안드로이드가 web 클라이언트를
         /// 쓰는 것과 다릅니다 — 자주 헷갈리는 곳입니다.
         let googleClientID: String
+        /// Cloud Functions 가 사는 곳. 함수는 `joinSpace` 하나입니다 (`functions/index.js`).
+        let functionsOrigin: String
 
         static let prod = FirebaseEnv(
             projectId: "our-surprise",
             bucket: "our-surprise.firebasestorage.app",
             apiKey: "AIzaSyBLC3qqFukg__VivJe2HkN23UI_X94ENEc",
-            googleClientID: "419812459548-nsun9ha7faersg7hlp0gmp27gpj6em8j.apps.googleusercontent.com"
+            googleClientID: "419812459548-nsun9ha7faersg7hlp0gmp27gpj6em8j.apps.googleusercontent.com",
+            functionsOrigin: "https://asia-northeast3-our-surprise.cloudfunctions.net"
         )
 
         /// 서버는 prod 와 같고 **클라이언트 ID 만 dev 번들 것**입니다.
@@ -58,7 +64,8 @@ final class AppContainer {
             projectId: prod.projectId,
             bucket: prod.bucket,
             apiKey: prod.apiKey,
-            googleClientID: "419812459548-5o4p7j8m1i6farj1m7klm61sfh8viaud.apps.googleusercontent.com"
+            googleClientID: "419812459548-5o4p7j8m1i6farj1m7klm61sfh8viaud.apps.googleusercontent.com",
+            functionsOrigin: prod.functionsOrigin
         )
 
         static var current: FirebaseEnv {
@@ -74,9 +81,28 @@ final class AppContainer {
 
     var googleClientID: String { env.googleClientID }
 
+    /**
+     스토어들이 받는 기록 클로저 — Analytics(GA4)로 흘러갑니다. Firebase 는
+     여기서만 압니다. 이벤트 이름이 `_failed` 로 끝나면 Crashlytics 에도
+     비치명으로 남깁니다 — 조용히 지나친 실패를 대시보드에서 셀 수 있어야 합니다.
+     안드로이드 `FirebaseTracker` 와 같은 규칙입니다.
+     */
+    nonisolated static let track: @Sendable (String, [String: String]) -> Void = { event, params in
+        Analytics.logEvent(event, parameters: params)
+        if event.hasSuffix("_failed") {
+            Crashlytics.crashlytics().log("\(event) \(params)")
+            Crashlytics.crashlytics().record(
+                error: NSError(domain: event, code: 0, userInfo: params)
+            )
+        }
+    }
+
     private let spaces: SharedSpaceRepository
     private let regions = AssetRegionCatalog()
     let accounts: FirebaseAuthRepository
+
+    /// 알림 받을 기기 등록. FCM 토큰이 나올 때마다 `PushDelegate` 가 부릅니다.
+    let pushTokens: PushTokens
 
     /// 사진 저장소가 **둘**입니다. 혼자 짜국은 기기 안, 같이 쓰는 짜국은 서버 —
     /// 어느 쪽을 쓸지는 **여기서만** 정합니다. 화면과 도메인은 어느 쪽인지 모릅니다.
@@ -87,13 +113,32 @@ final class AppContainer {
         let env = FirebaseEnv.current
         let accounts = FirebaseAuthRepository(auth: FirebaseAuth(apiKey: env.apiKey))
         self.accounts = accounts
+
+        // App Check 토큰. "진짜 우리 앱인가"의 증명이라 모든 REST 요청에 얹습니다.
+        // **못 받으면 `nil`** — 증명이 없다고 데이터 길이 막히면 안 됩니다
+        // (강제는 콘솔에서 따로 켭니다. 그전까지는 지표만 쌓입니다).
+        let appCheckToken: @Sendable () async -> String? = {
+            (try? await AppCheck.appCheck().token(forcingRefresh: false))?.token
+        }
+
         storage = FirebaseStorage(
             bucket: env.bucket,
-            token: { await accounts.idToken() }
+            token: { await accounts.idToken() },
+            appCheck: appCheckToken
         )
         // 멤버 판정이 사는 곳. 규칙이 여기를 봅니다 (`firestore.rules`).
-        let firestore = Firestore(projectId: env.projectId, token: { await accounts.idToken() })
-        spaces = SharedSpaceRepository(firestore: firestore, accounts: accounts)
+        let firestore = Firestore(
+            projectId: env.projectId,
+            token: { await accounts.idToken() },
+            appCheck: appCheckToken
+        )
+        let functions = Functions(
+            origin: env.functionsOrigin,
+            token: { await accounts.idToken() },
+            appCheck: appCheckToken
+        )
+        spaces = SharedSpaceRepository(firestore: firestore, functions: functions, accounts: accounts)
+        pushTokens = PushTokens(firestore: firestore, accounts: accounts)
         remotePhotos = FirebasePhotoRepository(
             storage: storage, firestore: firestore, accounts: accounts
         )
@@ -124,7 +169,8 @@ final class AppContainer {
                 case .payload(let value): return value
                 case .cancelled, .failed: return nil
                 }
-            }
+            },
+            track: Self.track
         )
     }
 
@@ -144,7 +190,8 @@ final class AppContainer {
             observeBoard: ObservePhotoBoard(photos: photos),
             searchRegions: SearchRegions(catalog: regions),
             setCoverPhoto: SetCoverPhoto(photos: photos),
-            catalog: regions
+            catalog: regions,
+            track: Self.trackWith(kind)
         )
     }
 
@@ -167,7 +214,8 @@ final class AppContainer {
             uploadPhotos: UploadPhotos(photos: photos),
             searchRegions: SearchRegions(catalog: catalog),
             catalog: catalog,
-            today: .today
+            today: .today,
+            track: Self.trackWith(kind)
         )
     }
 
@@ -184,8 +232,18 @@ final class AppContainer {
             observeBoard: ObservePhotoBoard(photos: photos),
             refreshPhotos: RefreshPhotos(photos: photos),
             setCoverPhoto: SetCoverPhoto(photos: photos),
-            catalog: regions
+            catalog: regions,
+            track: Self.trackWith(kind)
         )
+    }
+
+    /// 짜국 종류를 아는 팩토리는 기록마다 `kind` 를 자동으로 얹는다 — 안드로이드와 같은 규칙.
+    nonisolated private static func trackWith(_ kind: SpaceKind) -> @Sendable (String, [String: String]) -> Void {
+        { event, params in
+            var merged = params
+            merged["kind"] = kind == .personal ? "Personal" : "Shared"
+            track(event, merged)
+        }
     }
 }
 

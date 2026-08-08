@@ -125,7 +125,8 @@ object PlasticSize {
     val DotCore = 8.dp
 
     /** 지역 시트의 닫기 버튼 */
-    val SheetClose = 32.dp
+    // 32 였는데 실기기에서 누르기 작다는 피드백(2026-08-09)으로 키웠다.
+    val SheetClose = 40.dp
     /** 지역 시트 안의 사진. 화면에 끼워 넣느라 좁아진 만큼 [Photo] 보다 작습니다. */
     val SheetPhoto = 84.dp
 

@@ -1,12 +1,15 @@
 package kr.jjaguk
 
 import android.content.Context
+import com.google.firebase.appcheck.FirebaseAppCheck
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kr.jjaguk.core.common.Outcome
 import kr.jjaguk.core.model.SpaceId
 import kr.jjaguk.core.model.SpaceKind
 import kr.jjaguk.core.network.FirebaseAuth
 import kr.jjaguk.core.network.FirebaseStorage
 import kr.jjaguk.core.network.Firestore
+import kr.jjaguk.core.network.Functions
 import kr.jjaguk.data.auth.FirebaseAuthRepository
 import kr.jjaguk.data.photo.ExifReader
 import kr.jjaguk.data.photo.FirebasePhotoRepository
@@ -54,6 +57,8 @@ private class FirebaseEnv(
     /** ⚠️ **web 클라이언트(type 3)** 입니다. android 클라이언트(type 1)를 주면
      *  ID 토큰이 안 나옵니다 — 자주 틀리는 곳이라 `docs/app/AUTH.md` 에도 적어 뒀습니다. */
     val webClientId: String,
+    /** Cloud Functions 가 사는 곳. 함수는 `joinSpace` 하나입니다 (`functions/index.js`). */
+    val functionsOrigin: String,
 ) {
     companion object {
         val Prod = FirebaseEnv(
@@ -61,6 +66,7 @@ private class FirebaseEnv(
             bucket = "our-surprise.firebasestorage.app",
             apiKey = "AIzaSyBMg1m08msg7_xPISuEwx5gwImi5MVz-1Q",
             webClientId = "419812459548-ldmh2hi0vb5lmjase8jpctqei4sk4mbp.apps.googleusercontent.com",
+            functionsOrigin = "https://asia-northeast3-our-surprise.cloudfunctions.net",
         )
 
         /** 아직 prod 와 같다. dev 프로젝트가 생기면 여기만 바꾼다. */
@@ -74,6 +80,10 @@ class AppContainer(context: Context) {
 
     private val appContext = context.applicationContext
 
+    /** 뷰모델들이 받는 기록 클로저. Firebase 는 여기서만 안다. */
+    val track: (String, Map<String, String>) -> Unit =
+        FirebaseTracker(appContext)::track
+
     private val env = FirebaseEnv.of(BuildConfig.FLAVOR)
 
     /**
@@ -82,9 +92,25 @@ class AppContainer(context: Context) {
      * 토큰을 **함수로** 넘기는 이유: 저장소가 만들어지는 시점에는 아직 로그인 전입니다.
      * 요청할 때마다 물어봐야 그때의 토큰(필요하면 갱신된 것)이 실립니다.
      */
+    /**
+     * App Check 토큰. "진짜 우리 앱인가"의 증명이라 모든 REST 요청에 얹습니다.
+     * **못 받으면 `null`** — 증명이 없다고 데이터 길이 막히면 안 됩니다
+     * (강제는 콘솔에서 따로 켭니다. 그전까지는 지표만 쌓입니다).
+     */
+    private val appCheckToken: suspend () -> String? = {
+        suspendCancellableCoroutine { cont ->
+            FirebaseAppCheck.getInstance()
+                .getAppCheckToken(false)
+                .addOnCompleteListener { task ->
+                    cont.resume(if (task.isSuccessful) task.result.token else null) {}
+                }
+        }
+    }
+
     private val storage = FirebaseStorage(
         bucket = env.bucket,
         token = { accounts.idToken() },
+        appCheck = appCheckToken,
     )
 
     private val auth = FirebaseAuth(apiKey = env.apiKey)
@@ -94,10 +120,23 @@ class AppContainer(context: Context) {
     val accounts = FirebaseAuthRepository(appContext, auth)
 
     /** 멤버 판정이 사는 곳. 규칙이 여기를 봅니다 (`firestore.rules`). */
-    private val firestore = Firestore(projectId = env.projectId, token = { accounts.idToken() })
+    private val firestore = Firestore(
+        projectId = env.projectId,
+        token = { accounts.idToken() },
+        appCheck = appCheckToken,
+    )
+
+    private val functions = Functions(
+        origin = env.functionsOrigin,
+        token = { accounts.idToken() },
+        appCheck = appCheckToken,
+    )
 
     val regions = AssetRegionCatalog(appContext)
-    val spaces = SharedSpaceRepository(appContext, firestore, accounts)
+    val spaces = SharedSpaceRepository(appContext, firestore, functions, accounts)
+
+    /** 알림 받을 기기 등록. 앱을 열 때와 토큰이 돌 때 부릅니다. */
+    val pushTokens = PushTokens(firestore, accounts)
 
     val exif = ExifReader(appContext, regions)
     val downscaler = ImageDownscaler(appContext)

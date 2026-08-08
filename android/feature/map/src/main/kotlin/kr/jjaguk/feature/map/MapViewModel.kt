@@ -21,6 +21,7 @@ class MapViewModel(
     private val searchRegions: SearchRegionsUseCase,
     private val setCover: SetCoverPhotoUseCase,
     private val regions: RegionCatalog,
+    private val track: (String, Map<String, String>) -> Unit = { _, _ -> },
 ) : MviViewModel<MapIntent, MapState, MapEffect>(MapState(spaceId)) {
 
     private var board: PhotoBoard = PhotoBoard.Empty
@@ -43,6 +44,7 @@ class MapViewModel(
         val outline = RegionOutline(region.code.value, polygons)
         val focus = boundsOf(polygons)
             ?: regions.centerOf(region.code)?.let { MapFocus.Spot(it[0], it[1]) }
+        track("region_open", mapOf("code" to region.code.value))
         setState { MapReducer.regionOpened(this, region, board, focus, outline) }
     }
 
@@ -78,8 +80,14 @@ class MapViewModel(
                 viewModelScope.launch {
                     val result = setCover(state.spaceId, CoverKey.ForRegion(sheet.region.code), intent.id)
                     when (result) {
-                        is Outcome.Ok -> setState { MapReducer.coverChanged(this, intent.id) }
-                        is Outcome.Fail -> sendEffect(MapEffect.ShowMessage(MapMessage.CoverFailed))
+                        is Outcome.Ok -> {
+                            track("cover_set_region", emptyMap())
+                            setState { MapReducer.coverChanged(this, intent.id) }
+                        }
+                        is Outcome.Fail -> {
+                            track("cover_set_region_failed", emptyMap())
+                            sendEffect(MapEffect.ShowMessage(MapMessage.CoverFailed))
+                        }
                     }
                 }
             }
@@ -87,7 +95,10 @@ class MapViewModel(
             MapIntent.AddPhotoTapped ->
                 sendEffect(MapEffect.OpenUpload(currentState().sheet?.region))
             MapIntent.SheetDismissed -> setState { MapReducer.sheetDismissed(this) }
-            MapIntent.MyLocationTapped -> sendEffect(MapEffect.AskMyLocation)
+            MapIntent.MyLocationTapped -> {
+                track("my_location", emptyMap())
+                sendEffect(MapEffect.AskMyLocation)
+            }
             is MapIntent.MyLocationFound ->
                 setState { MapReducer.movedToMyLocation(this, intent.latitude, intent.longitude) }
         }
