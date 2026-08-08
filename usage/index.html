@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>짜국 — 사용 통계</title>
+<!--
+  GA4 대시보드. 껍데기만 공개고 숫자는 서버 뒤에 있습니다 — 보고서(report/)와
+  같은 문턱(구글 로그인)이고, 데이터는 Cloud Functions `gaStats` 가 GA4 Data API 에서
+  받아 옵니다. 페이지가 GA 를 직접 못 읽는 이유와 서비스 계정 권한 이야기는
+  functions/index.js 의 gaStats 주석에 있습니다.
+-->
+<style>
+  :root {
+    --body: #DCD9D3; --body-lo: #BEBBB4;
+    --plate: #3B3B3B; --plate-hi: #4A4A4A; --plate-lo: #262626;
+    --ink: #1B1B1B; --on-plate: #DCD9D3; --on-plate-dim: #9E9B96;
+    --red: #D8342A; --red-hi: #E85A4C;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--body); color: var(--ink);
+    font-family: "Pretendard", "Apple SD Gothic Neo", system-ui, sans-serif;
+    line-height: 1.6;
+  }
+  .shell { max-width: 860px; margin: 0 auto; padding: 20px 16px 60px; }
+  .slot {
+    background: var(--plate); color: var(--on-plate); border-radius: 6px;
+    padding: 14px 18px; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.45);
+  }
+  .slot .notch { width: 3px; height: 14px; background: var(--ink); border-radius: 2px; }
+  .slot h1 { font-size: 15px; font-weight: 700; margin: 0; flex: 1; }
+  .slot .who { font-size: 12.5px; color: var(--on-plate-dim); }
+  #gate {
+    background: var(--plate); color: var(--on-plate); border-radius: 6px;
+    padding: 48px 24px; text-align: center;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.45);
+  }
+  #gate p { color: var(--on-plate-dim); font-size: 14px; margin: 0 0 20px; }
+  #signin { display: inline-block; min-height: 44px; }
+  #error { color: var(--red-hi); font-size: 13px; margin-top: 16px; white-space: pre-wrap; }
+  #board { display: none; }
+  .range { display: flex; gap: 6px; }
+  .range button {
+    font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer;
+    border: 0; border-radius: 50px; padding: 5px 12px;
+    background: var(--plate-hi); color: var(--on-plate-dim);
+  }
+  .range button.on { background: var(--red); color: #fff; }
+  .panel {
+    background: var(--plate); color: var(--on-plate); border-radius: 6px;
+    padding: 16px 18px 12px; margin-bottom: 16px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.45);
+  }
+  .panel h2 { font-size: 13.5px; margin: 0 0 10px; color: var(--on-plate-dim); font-weight: 700; }
+  .panel h2 b { color: var(--on-plate); }
+  .chart { width: 100%; height: auto; display: block; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; color: var(--on-plate); }
+  th, td { border-bottom: 1px solid var(--plate-hi); padding: 6px 8px; text-align: left; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  th { color: var(--on-plate-dim); font-weight: 700; font-size: 12px; }
+  .hint { color: var(--on-plate-dim); font-size: 12px; margin: 6px 2px 0; }
+</style>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SEGS9JV88D"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SEGS9JV88D');
+</script>
+</head>
+<body>
+<div class="shell">
+  <div class="slot">
+    <span class="notch"></span>
+    <h1>짜국 — 사용 통계</h1>
+    <span class="who" id="who"></span>
+  </div>
+
+  <div id="gate">
+    <p>이 대시보드는 구글 로그인 뒤에만 열립니다.<br>숫자는 서버(Cloud Functions) 뒤에 있어 로그인 없이는 받아지지 않습니다.</p>
+    <div id="signin"></div>
+    <div id="error"></div>
+  </div>
+
+  <div id="board">
+    <div class="slot" style="justify-content:flex-end">
+      <div class="range" id="range">
+        <button data-days="7">7일</button>
+        <button data-days="14" class="on">14일</button>
+        <button data-days="30">30일</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>일별 활성 사용자 <b id="userTotal"></b></h2>
+      <svg id="userChart" class="chart"></svg>
+    </div>
+
+    <div class="panel">
+      <h2>일별 이벤트 수 <b id="eventTotal"></b></h2>
+      <svg id="eventChart" class="chart"></svg>
+    </div>
+
+    <div class="panel">
+      <h2>이벤트별 합계</h2>
+      <table>
+        <thead><tr><th>이벤트</th><th style="text-align:right">횟수</th></tr></thead>
+        <tbody id="eventTable"></tbody>
+      </table>
+      <p class="hint">앱 자동 수집(session_start 등)과 우리가 심은 이벤트(sign_in, photos_upload, region_open …)가 함께 보입니다.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // 앱과 같은 프로젝트. 값은 비밀이 아닙니다 — 문은 함수(로그인 검사)가 지킵니다.
+  var API_KEY = 'AIzaSyAvDJkTuNWs6PqoEvMT0w1BmyFZT_gZNXs';
+  var WEB_CLIENT_ID = '419812459548-ldmh2hi0vb5lmjase8jpctqei4sk4mbp.apps.googleusercontent.com';
+  var FN_URL = 'https://asia-northeast3-our-surprise.cloudfunctions.net/gaStats';
+
+  var idToken = null;
+  var days = 14;
+
+  function fail(message) {
+    document.getElementById('error').textContent = message;
+  }
+
+  // ① 구글 로그인(GIS) → 구글 ID 토큰
+  window.onGoogleReady = function () {
+    google.accounts.id.initialize({
+      client_id: WEB_CLIENT_ID,
+      callback: function (response) { exchange(response.credential); },
+    });
+    google.accounts.id.renderButton(document.getElementById('signin'), {
+      theme: 'filled_black', size: 'large', text: 'signin_with', locale: 'ko',
+    });
+  };
+
+  // ② 구글 토큰 → Firebase 토큰 (앱의 signInWithIdp 와 같은 길)
+  function exchange(credential) {
+    fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=' + API_KEY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        postBody: 'id_token=' + credential + '&providerId=google.com',
+        requestUri: location.origin,
+        returnSecureToken: true,
+      }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.idToken) throw new Error(data.error && data.error.message || '토큰 교환 실패');
+        idToken = data.idToken;
+        document.getElementById('who').textContent = data.email || '';
+        load();
+      })
+      .catch(function (e) { fail('로그인은 됐지만 토큰 교환에 실패했습니다.\n' + e.message); });
+  }
+
+  // ③ Firebase 토큰으로 함수(gaStats) 호출 — callable 규약(POST {"data": ...})
+  function load() {
+    fetch(FN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + idToken },
+      body: JSON.stringify({ data: { days: days } }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (body) {
+        if (body.error) throw new Error(body.error.message || '조회 실패');
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('board').style.display = 'block';
+        render(body.result);
+      })
+      .catch(function (e) { fail(e.message); });
+  }
+
+  document.getElementById('range').addEventListener('click', function (e) {
+    var button = e.target.closest('button');
+    if (!button || !idToken) return;
+    days = Number(button.dataset.days);
+    this.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b === button); });
+    load();
+  });
+
+  // ── 그리기 ──────────────────────────────────────────────
+
+  /** "20260809" → "8.9" */
+  function dayLabel(d) { return Number(d.slice(4, 6)) + '.' + Number(d.slice(6, 8)); }
+
+  function bars(svgId, byDay) {
+    var svg = document.getElementById(svgId);
+    var dates = Object.keys(byDay).sort();
+    var W = 820, H = 150, PAD = 4, LABEL = 18;
+    var max = 1;
+    dates.forEach(function (d) { if (byDay[d] > max) max = byDay[d]; });
+    var bw = (W - PAD * 2) / Math.max(dates.length, 1);
+    var out = '';
+    dates.forEach(function (d, i) {
+      var v = byDay[d];
+      var h = Math.round((H - LABEL - 14) * v / max);
+      var x = PAD + i * bw;
+      out += '<rect x="' + (x + 2) + '" y="' + (H - LABEL - h) + '" width="' + Math.max(bw - 4, 2) +
+             '" height="' + h + '" rx="2" fill="var(--red)"></rect>';
+      if (v > 0) {
+        out += '<text x="' + (x + bw / 2) + '" y="' + (H - LABEL - h - 4) +
+               '" font-size="10" fill="var(--on-plate)" text-anchor="middle">' + v + '</text>';
+      }
+      // 라벨은 겹치지 않게 걸러 찍습니다
+      if (dates.length <= 16 || i % Math.ceil(dates.length / 16) === 0) {
+        out += '<text x="' + (x + bw / 2) + '" y="' + (H - 4) +
+               '" font-size="9.5" fill="var(--on-plate-dim)" text-anchor="middle">' + dayLabel(d) + '</text>';
+      }
+    });
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.innerHTML = out;
+  }
+
+  function render(result) {
+    // 일별 활성 사용자
+    var usersByDay = {};
+    var userSum = 0;
+    (result.users || []).forEach(function (row) {
+      usersByDay[row.d[0]] = Number(row.m[0]);
+      userSum += Number(row.m[0]);
+    });
+    bars('userChart', usersByDay);
+    document.getElementById('userTotal').textContent = '— 합계 ' + userSum;
+
+    // 일별 이벤트 총량 + 이벤트별 합계
+    var eventsByDay = {};
+    var byName = {};
+    var eventSum = 0;
+    (result.events || []).forEach(function (row) {
+      var date = row.d[0], name = row.d[1], count = Number(row.m[0]);
+      eventsByDay[date] = (eventsByDay[date] || 0) + count;
+      byName[name] = (byName[name] || 0) + count;
+      eventSum += count;
+    });
+    bars('eventChart', eventsByDay);
+    document.getElementById('eventTotal').textContent = '— 합계 ' + eventSum;
+
+    var rows = Object.keys(byName)
+      .sort(function (a, b) { return byName[b] - byName[a]; })
+      .map(function (name) {
+        return '<tr><td><code>' + name + '</code></td><td class="num">' + byName[name] + '</td></tr>';
+      });
+    document.getElementById('eventTable').innerHTML =
+      rows.join('') || '<tr><td colspan="2">아직 수집된 이벤트가 없어요</td></tr>';
+  }
+})();
+</script>
+<!-- ⚠️ `?onload=` 쿼리는 GIS 가 안 부릅니다(옛 platform.js 방식) —
+     버튼이 조용히 안 그려집니다. 스크립트 태그의 onload 속성이어야 합니다. -->
+<script src="https://accounts.google.com/gsi/client" async defer onload="onGoogleReady()"></script>
+</body>
+</html>
