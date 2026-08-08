@@ -27,6 +27,8 @@ import Foundation
 public actor SharedSpaceRepository: SpaceRepository {
 
     private let firestore: Firestore
+    /// 참여 한 걸음만 서버를 거칩니다 — 코드 검증과 멤버 등록이 한 손에 있어야 해서.
+    private let functions: Functions
     private let accounts: any AuthRepository
     private let now: @Sendable () -> Int
     /// 짜국 ID 는 **초대 코드보다 깁니다** — 찍어서 맞힐 수 없어야 합니다.
@@ -43,6 +45,7 @@ public actor SharedSpaceRepository: SpaceRepository {
 
     public init(
         firestore: Firestore,
+        functions: Functions,
         accounts: any AuthRepository,
         now: @escaping @Sendable () -> Int = { Int(Date().timeIntervalSince1970) },
         newSpaceId: @escaping @Sendable () -> String = {
@@ -50,6 +53,7 @@ public actor SharedSpaceRepository: SpaceRepository {
         }
     ) {
         self.firestore = firestore
+        self.functions = functions
         self.accounts = accounts
         self.now = now
         self.newSpaceId = newSpaceId
@@ -178,25 +182,18 @@ public actor SharedSpaceRepository: SpaceRepository {
 
     public func join(code: String) async -> Outcome<Space> {
         guard let normalized = InviteCode.normalize(code) else { return .fail(.notFound) }
-        guard let account = await accounts.account() else { return .fail(.denied) }
+        guard await accounts.account() != nil else { return .fail(.denied) }
 
-        let invite: Firestore.Document
-        switch await firestore.get("invites/\(normalized)") {
+        // 검증과 등록은 서버(`joinSpace` 함수)가 합니다. 예전엔 여기서 멤버 문서를
+        // 직접 썼는데, 그 길이 열려 있으면 코드 없이 짜국 ID 만 알아도 들어와집니다 —
+        // 규칙이 직접 쓰기를 막고, 이 호출만 남았습니다.
+        let joined: [String: String]
+        switch await functions.call("joinSpace", data: ["code": normalized]) {
         case .fail(let reason): return .fail(reason)
-        case .ok(let document):
-            guard let document else { return .fail(.notFound) }
-            invite = document
+        case .ok(let result): joined = result
         }
-        guard let rawId = invite.text("spaceId") else { return .fail(.notFound) }
+        guard let rawId = joined["spaceId"] else { return .fail(.unknown) }
         let id = SpaceId(rawId)
-
-        // 나를 멤버로 넣습니다. 규칙이 **자기 자신만** 넣게 해 둬서 남을 끌어들일 수 없습니다.
-        if case .fail(let reason) = await firestore.set(
-            "spaces/\(id.value)/members/\(account.uid)",
-            fields: memberFields(account, owner: false)
-        ) { return .fail(reason) }
-
-        await rememberMembership(uid: account.uid, id: id)
 
         guard let space = await fetchSpace(id) else { return .fail(.notFound) }
         cached.removeAll { $0.spaceId == id }

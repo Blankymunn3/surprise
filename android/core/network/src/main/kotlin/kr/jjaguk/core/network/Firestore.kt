@@ -36,6 +36,12 @@ class Firestore(
     private val projectId: String,
     private val client: OkHttpClient = defaultClient(),
     private val token: suspend () -> String? = { null },
+    /**
+     * App Check 토큰. "진짜 우리 앱에서 온 요청인가" 를 서버가 가릴 수 있게 얹습니다.
+     * `null` 이면 없이 보냅니다 — 못 받았다고 데이터 길이 막히면 안 됩니다
+     * (콘솔에서 강제를 켜기 전까지는 지표만 쌓입니다).
+     */
+    private val appCheck: suspend () -> String? = { null },
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -130,6 +136,7 @@ class Firestore(
 
     private suspend fun call(builder: Request.Builder): Outcome<String> {
         token()?.let { builder.header("Authorization", "Bearer $it") }
+        appCheck()?.let { builder.header("X-Firebase-AppCheck", it) }
         return try {
             client.newBuilder()
                 .callTimeout(Limits.LIST_TIMEOUT_MS, TimeUnit.MILLISECONDS)

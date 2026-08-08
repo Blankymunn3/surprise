@@ -31,10 +31,11 @@ struct PhotoMap: UIViewRepresentable {
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
-    /// 밤인가 — 19시부터 아침 7시 전까지. 안드로이드 `isNight()` 와 같은 경계.
+    /// 밤인가 — 기본은 19시부터 아침 7시 전까지. 안드로이드 `isNight()` 와 같은 경계이고,
+    /// 시각 경계는 [MapTuning] 이라 Remote Config 로 돌릴 수 있습니다.
     static func isNight() -> Bool {
         let hour = Calendar.current.component(.hour, from: Date())
-        return hour >= 19 || hour < 7
+        return hour >= MapTuning.nightStartHour || hour < MapTuning.nightEndHour
     }
 
     func makeUIView(context: Context) -> MKMapView {
@@ -338,12 +339,15 @@ final class PixelTileOverlay: MKTileOverlay {
         return pixelated
     }
 
-    private static let cells = 48
     private static let tile = 256
 
     private static func pixelate(_ source: CGImage, dark: Bool) -> Data? {
         let space = CGColorSpaceCreateDeviceRGB()
         let info = CGImageAlphaInfo.premultipliedLast.rawValue
+
+        // 칸수는 [MapTuning] — 한 타일 안에서는 한 값만 씁니다(도중에 RC 가
+        // 덮으면 버퍼 크기가 어긋납니다).
+        let cells = MapTuning.pixelCells
 
         // ① 48칸으로 줄여서 (bilinear)
         guard let small = CGContext(

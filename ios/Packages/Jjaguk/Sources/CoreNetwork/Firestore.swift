@@ -44,15 +44,21 @@ public struct Firestore: Sendable {
     private let projectId: String
     private let session: URLSession
     private let token: @Sendable () async -> String?
+    /// App Check 토큰. "진짜 우리 앱에서 온 요청인가" 를 서버가 가릴 수 있게 얹습니다.
+    /// `nil` 이면 없이 보냅니다 — 못 받았다고 데이터 길이 막히면 안 됩니다
+    /// (콘솔에서 강제를 켜기 전까지는 지표만 쌓입니다).
+    private let appCheck: @Sendable () async -> String?
 
     public init(
         projectId: String,
         session: URLSession = .shared,
-        token: @escaping @Sendable () async -> String? = { nil }
+        token: @escaping @Sendable () async -> String? = { nil },
+        appCheck: @escaping @Sendable () async -> String? = { nil }
     ) {
         self.projectId = projectId
         self.session = session
         self.token = token
+        self.appCheck = appCheck
     }
 
     /// 없는 문서는 실패가 아니라 `nil` 입니다 — 처음 들어가는 짜국이 그렇습니다.
@@ -163,6 +169,9 @@ public struct Firestore: Sendable {
         request.timeoutInterval = Limits.listTimeout
         if let token = await token() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        if let proof = await appCheck() {
+            request.setValue(proof, forHTTPHeaderField: "X-Firebase-AppCheck")
         }
         do {
             let (data, response) = try await session.data(for: request)

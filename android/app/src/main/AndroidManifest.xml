@@ -3,6 +3,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- 새 사진 알림. 안드로이드 13+ 는 물어봐야 띄울 수 있습니다 (MainActivity). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".JjagukApp"
@@ -31,5 +33,19 @@
                 <data android:scheme="memorymap" android:host="join" />
             </intent-filter>
         </activity>
+
+        <!-- 토큰이 돌 때 서버에 다시 알리는 것뿐 — 알림 표시는 시스템이 합니다. -->
+        <service
+            android:name=".JjagukMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- 서버가 채널을 안 적어 보내도 알림이 이 채널에 앉습니다 (JjagukApp 이 만듭니다). -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="photos" />
     </application>
 </manifest>

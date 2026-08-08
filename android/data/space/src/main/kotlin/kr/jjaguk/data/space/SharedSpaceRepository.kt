@@ -19,6 +19,7 @@ import kr.jjaguk.core.model.Space
 import kr.jjaguk.core.model.SpaceId
 import kr.jjaguk.core.model.SpaceKind
 import kr.jjaguk.core.network.Firestore
+import kr.jjaguk.core.network.Functions
 import kr.jjaguk.domain.repository.AuthRepository
 import kr.jjaguk.domain.repository.SpaceRepository
 import java.io.File
@@ -49,6 +50,8 @@ import java.util.UUID
 class SharedSpaceRepository(
     context: Context,
     private val firestore: Firestore,
+    /** 참여 한 걸음만 서버를 거칩니다 — 코드 검증과 멤버 등록이 한 손에 있어야 해서. */
+    private val functions: Functions,
     private val accounts: AuthRepository,
     private val now: () -> Long = { System.currentTimeMillis() / 1000 },
     /** 짜국 ID 는 **초대 코드보다 깁니다** — 찍어서 맞힐 수 없어야 합니다. */
@@ -139,18 +142,16 @@ class SharedSpaceRepository(
 
     override suspend fun join(code: String): Outcome<Space> {
         val normalized = InviteCode.normalize(code) ?: return Outcome.Fail(Failure.NotFound)
-        val account = accounts.account() ?: return Outcome.Fail(Failure.Denied)
+        if (accounts.account() == null) return Outcome.Fail(Failure.Denied)
 
-        val invite = when (val found = firestore.get("invites/$normalized")) {
-            is Outcome.Fail -> return found
-            is Outcome.Ok -> found.value ?: return Outcome.Fail(Failure.NotFound)
+        // 검증과 등록은 서버(`joinSpace` 함수)가 합니다. 예전엔 여기서 멤버 문서를
+        // 직접 썼는데, 그 길이 열려 있으면 코드 없이 짜국 ID 만 알아도 들어와집니다 —
+        // 규칙이 직접 쓰기를 막고, 이 호출만 남았습니다.
+        val joined = when (val called = functions.call("joinSpace", mapOf("code" to normalized))) {
+            is Outcome.Fail -> return called
+            is Outcome.Ok -> called.value
         }
-        val id = SpaceId(invite.text("spaceId") ?: return Outcome.Fail(Failure.NotFound))
-
-        // 나를 멤버로 넣습니다. 규칙이 **자기 자신만** 넣게 해 둬서 남을 끌어들일 수 없습니다.
-        firestore.set("spaces/${id.value}/members/${account.uid}", memberFields(account, owner = false))
-            .orReturn { return it }
-        rememberMembership(account.uid, id)
+        val id = SpaceId(joined["spaceId"] ?: return Outcome.Fail(Failure.Unknown))
 
         val space = fetchSpace(id) ?: return Outcome.Fail(Failure.NotFound)
         spaces.value = spaces.value.filterNot { it.id == id } + space

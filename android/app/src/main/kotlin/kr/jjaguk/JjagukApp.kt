@@ -1,11 +1,16 @@
 package kr.jjaguk
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import com.google.firebase.appcheck.FirebaseAppCheck
+import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 
@@ -22,7 +27,27 @@ class JjagukApp : Application(), SingletonImageLoader.Factory {
 
     override fun onCreate() {
         super.onCreate()
+
+        // App Check 제공자는 **조립보다 먼저** 심습니다 — 조립부의 토큰 클로저가
+        // 제공자를 전제합니다. 디버그 빌드는 Play 를 안 거치므로 디버그 제공자
+        // (콘솔에 등록한 토큰으로 통과)를 씁니다.
+        FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
+            if (BuildConfig.DEBUG) DebugAppCheckProviderFactory.getInstance()
+            else PlayIntegrityAppCheckProviderFactory.getInstance()
+        )
+
         container = AppContainer(this)
+        RemoteTuning.start()
+
+        // 서버(notifyPhoto)가 보내는 알림이 앉을 채널. 만들어 두지 않으면
+        // 안드로이드 8+ 에서 알림이 조용히 버려집니다.
+        getSystemService(NotificationManager::class.java).createNotificationChannel(
+            NotificationChannel(
+                PHOTO_CHANNEL_ID,
+                getString(R.string.notif_channel_photos),
+                NotificationManager.IMPORTANCE_DEFAULT,
+            )
+        )
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader =
@@ -32,7 +57,9 @@ class JjagukApp : Application(), SingletonImageLoader.Factory {
             }
             .build()
 
-    private companion object {
+    companion object {
+        /** 매니페스트의 `default_notification_channel_id` 와 같아야 합니다. */
+        const val PHOTO_CHANNEL_ID = "photos"
         /**
          * 우리 버킷으로 나가는 요청에만 토큰을 답니다. 지도 타일처럼 남의 서버로 가는
          * 요청에 우리 토큰을 실어 보내면 안 됩니다.
@@ -41,7 +68,7 @@ class JjagukApp : Application(), SingletonImageLoader.Factory {
          * 살아 있으면 파일을 한 번 읽는 정도라 짧고, 갱신이 필요할 때만 네트워크를 탑니다.
          * Coil 의 가져오기는 이미 IO 스레드에서 돕니다.
          */
-        fun authorizedClient(container: AppContainer): OkHttpClient =
+        private fun authorizedClient(container: AppContainer): OkHttpClient =
             OkHttpClient.Builder()
                 .addInterceptor { chain ->
                     val request = chain.request()

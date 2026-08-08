@@ -24,6 +24,8 @@
     <string name="invite_share_chooser">초대 코드 보내기</string>
 
     <!-- 알림 -->
+    <!-- 푸시 채널 이름. 폰 설정의 알림 목록에 이 이름으로 보입니다. -->
+    <string name="notif_channel_photos">새 사진</string>
     <string name="google_sign_in_failed">구글 계정을 가져오지 못했어요.</string>
     <!-- 내 위치를 못 찾았을 때. 왜 못 찾았는지를 갈라서 말합니다 —
          눌렀는데 아무 일이 없으면 고장 난 것으로 보입니다. -->

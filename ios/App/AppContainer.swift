@@ -1,6 +1,7 @@
 import CoreModel
 import CoreNetwork
 import FirebaseAnalytics
+import FirebaseAppCheck
 import FirebaseCrashlytics
 import DataAuth
 import DataPhoto
@@ -46,12 +47,15 @@ final class AppContainer {
         /// iOS 는 **자기 클라이언트 ID** 를 씁니다. 안드로이드가 web 클라이언트를
         /// 쓰는 것과 다릅니다 — 자주 헷갈리는 곳입니다.
         let googleClientID: String
+        /// Cloud Functions 가 사는 곳. 함수는 `joinSpace` 하나입니다 (`functions/index.js`).
+        let functionsOrigin: String
 
         static let prod = FirebaseEnv(
             projectId: "our-surprise",
             bucket: "our-surprise.firebasestorage.app",
             apiKey: "AIzaSyBLC3qqFukg__VivJe2HkN23UI_X94ENEc",
-            googleClientID: "419812459548-nsun9ha7faersg7hlp0gmp27gpj6em8j.apps.googleusercontent.com"
+            googleClientID: "419812459548-nsun9ha7faersg7hlp0gmp27gpj6em8j.apps.googleusercontent.com",
+            functionsOrigin: "https://asia-northeast3-our-surprise.cloudfunctions.net"
         )
 
         /// 서버는 prod 와 같고 **클라이언트 ID 만 dev 번들 것**입니다.
@@ -60,7 +64,8 @@ final class AppContainer {
             projectId: prod.projectId,
             bucket: prod.bucket,
             apiKey: prod.apiKey,
-            googleClientID: "419812459548-5o4p7j8m1i6farj1m7klm61sfh8viaud.apps.googleusercontent.com"
+            googleClientID: "419812459548-5o4p7j8m1i6farj1m7klm61sfh8viaud.apps.googleusercontent.com",
+            functionsOrigin: prod.functionsOrigin
         )
 
         static var current: FirebaseEnv {
@@ -96,6 +101,9 @@ final class AppContainer {
     private let regions = AssetRegionCatalog()
     let accounts: FirebaseAuthRepository
 
+    /// 알림 받을 기기 등록. FCM 토큰이 나올 때마다 `PushDelegate` 가 부릅니다.
+    let pushTokens: PushTokens
+
     /// 사진 저장소가 **둘**입니다. 혼자 짜국은 기기 안, 같이 쓰는 짜국은 서버 —
     /// 어느 쪽을 쓸지는 **여기서만** 정합니다. 화면과 도메인은 어느 쪽인지 모릅니다.
     private let remotePhotos: FirebasePhotoRepository
@@ -105,13 +113,32 @@ final class AppContainer {
         let env = FirebaseEnv.current
         let accounts = FirebaseAuthRepository(auth: FirebaseAuth(apiKey: env.apiKey))
         self.accounts = accounts
+
+        // App Check 토큰. "진짜 우리 앱인가"의 증명이라 모든 REST 요청에 얹습니다.
+        // **못 받으면 `nil`** — 증명이 없다고 데이터 길이 막히면 안 됩니다
+        // (강제는 콘솔에서 따로 켭니다. 그전까지는 지표만 쌓입니다).
+        let appCheckToken: @Sendable () async -> String? = {
+            (try? await AppCheck.appCheck().token(forcingRefresh: false))?.token
+        }
+
         storage = FirebaseStorage(
             bucket: env.bucket,
-            token: { await accounts.idToken() }
+            token: { await accounts.idToken() },
+            appCheck: appCheckToken
         )
         // 멤버 판정이 사는 곳. 규칙이 여기를 봅니다 (`firestore.rules`).
-        let firestore = Firestore(projectId: env.projectId, token: { await accounts.idToken() })
-        spaces = SharedSpaceRepository(firestore: firestore, accounts: accounts)
+        let firestore = Firestore(
+            projectId: env.projectId,
+            token: { await accounts.idToken() },
+            appCheck: appCheckToken
+        )
+        let functions = Functions(
+            origin: env.functionsOrigin,
+            token: { await accounts.idToken() },
+            appCheck: appCheckToken
+        )
+        spaces = SharedSpaceRepository(firestore: firestore, functions: functions, accounts: accounts)
+        pushTokens = PushTokens(firestore: firestore, accounts: accounts)
         remotePhotos = FirebasePhotoRepository(
             storage: storage, firestore: firestore, accounts: accounts
         )
