@@ -22,8 +22,6 @@
 "calendar_next_month" = "다음 달";
 
 /* 접기 */
-"calendar_collapse" = "달력 접기";
-"calendar_expand" = "달력 펴기";
 
 /* 날짜 묶음 */
 "calendar_day_header" = "%1$d월 %2$d일";

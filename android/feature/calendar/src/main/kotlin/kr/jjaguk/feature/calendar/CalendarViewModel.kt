@@ -52,7 +52,6 @@ class CalendarViewModel(
                 setState { CalendarReducer.monthSelected(this, intent.month) }; rebuild()
             }
             is CalendarIntent.DayTapped -> setState { CalendarReducer.daySelected(this, intent.date) }
-            CalendarIntent.CollapseToggled -> setState { CalendarReducer.collapseToggled(this) }
             CalendarIntent.AddTapped -> sendEffect(CalendarEffect.OpenUpload)
             is CalendarIntent.PhotoLongPressed -> viewModelScope.launch {
                 val result = setCover(currentState().spaceId, CoverKey.ForDay(intent.date), intent.id)
