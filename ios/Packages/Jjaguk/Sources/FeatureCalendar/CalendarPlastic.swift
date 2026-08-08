@@ -115,7 +115,8 @@ struct PlasticCalendarBody: View {
         HStack(spacing: 0) {
             ForEach(weekdays.indices, id: \.self) { index in
                 Text(weekdays[index])
-                    .font(MemoryFont.font(11, .bold))
+                    // 요일 줄은 각인 — 갈무리11 (2026-08-09 검수 시안)
+                    .font(MemoryFont.galmuri11(11))
                     // 일요일만 빨강입니다. 이 판에서 빨강은 주 동작 색이 아니라
                     // 몸통 위에서만 그렇고, 검정 화면 안에서는 그냥 잘 보이는 색입니다.
                     .foregroundStyle(index == 0 ? PlasticColor.redHi : PlasticColor.onPlateDim)
@@ -318,7 +319,8 @@ private struct PlasticDayCell: View {
         ZStack(alignment: .topLeading) {
             photo
             Text("\(date.day)")
-                .font(MemoryFont.font(12.5, .bold))
+                // 달력 숫자는 A안(갈무리11) — 2026-08-09 검수. 크기는 11의 배수.
+                .font(MemoryFont.galmuri11(11))
                 .foregroundStyle(numberColor)
                 .padding(.horizontal, 4)
                 .padding(.vertical, 2)

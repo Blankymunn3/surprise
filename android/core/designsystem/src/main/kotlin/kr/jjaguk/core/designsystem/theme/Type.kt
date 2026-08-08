@@ -12,6 +12,7 @@ import kr.jjaguk.core.designsystem.R
 /**
  * **Pretendard 한 벌.** 굵기와 자간만으로 위계를 만듭니다.
  * 서체를 섞지 않는 것이 이 앱 디자인의 첫 번째 규칙입니다 (`docs/app/design.html`).
+ * 예외는 아래 '각인' 두 벌뿐입니다 — 2026-08-09 검수된 시안의 결정.
  *
  * 폰트 파일은 한글·라틴만 남기고 잘라 넣었습니다 (네 굵기 합쳐 약 5MB).
  * 공간 이름은 사용자가 직접 쓰므로 한글 전체(11,172자)를 덜어내면 안 됩니다.
@@ -22,6 +23,25 @@ val Pretendard = FontFamily(
     Font(R.font.pretendard_semibold, FontWeight.SemiBold),
     Font(R.font.pretendard_bold, FontWeight.Bold),
 )
+
+/**
+ * 패미컴 **각인** 서체 — 기계에 새겨진 글자 자리에만 씁니다: 로고 · 탭 ·
+ * 딱지 · 초대 코드 · 날짜 배지 · 달력 숫자. **읽는 글(본문·이름·버튼)에는
+ * 쓰지 않습니다** — 그쪽은 여전히 Pretendard 입니다.
+ *
+ * 비트맵 계열이라 **크기를 배수로만** 씁니다: 갈무리11 → 11·22,
+ * 갈무리9 → 9·18, Press Start 2P → 8·16·24. 어중간하면 픽셀이 뭉개집니다.
+ * (갈무리 = OFL, 한글 전부 · Press Start 2P = OFL, 라틴·숫자만)
+ */
+val Galmuri11 = FontFamily(
+    Font(R.font.galmuri11, FontWeight.Normal),
+    Font(R.font.galmuri11_bold, FontWeight.Bold),
+)
+
+val Galmuri9 = FontFamily(Font(R.font.galmuri9))
+
+/** 라틴·숫자 전용 — 한글이 오면 시스템 글꼴로 떨어지니 숫자·영문 자리에만. */
+val PressStart = FontFamily(Font(R.font.press_start_2p))
 
 /**
  * 여섯 단만 씁니다 — **한 화면에 세 단 이상 섞지 않습니다** (`docs/app/design.html`).

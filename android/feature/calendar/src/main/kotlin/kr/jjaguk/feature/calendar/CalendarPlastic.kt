@@ -44,6 +44,7 @@ import kr.jjaguk.core.designsystem.component.PhotoThumb
 import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
 import kr.jjaguk.core.designsystem.theme.PlasticSize
+import kr.jjaguk.core.designsystem.theme.Galmuri11
 import kr.jjaguk.core.designsystem.theme.Pretendard
 import kr.jjaguk.core.designsystem.theme.Space as Gap
 import kr.jjaguk.core.designsystem.theme.pressable
@@ -180,8 +181,8 @@ private fun WeekdayStrip() {
         weekdays().forEachIndexed { index, label ->
             Text(
                 text = label,
-                fontFamily = Pretendard,
-                fontWeight = FontWeight.Bold,
+                // 요일 줄은 각인 — 갈무리11 (2026-08-09 검수 시안)
+                fontFamily = Galmuri11,
                 fontSize = 11.sp,
                 // 일요일만 빨강입니다. 이 판에서 빨강은 주 동작 색이 아니라
                 // 몸통 위에서만 그렇고, 검정 화면 안에서는 그냥 잘 보이는 색입니다.
@@ -292,9 +293,9 @@ private fun PlasticDayCell(
 
         Text(
             text = date.dayOfMonth.toString(),
-            fontFamily = Pretendard,
-            fontWeight = FontWeight.Bold,
-            fontSize = 12.5.sp,
+            // 달력 숫자는 A안(갈무리11) — 2026-08-09 검수. 크기는 11의 배수.
+            fontFamily = Galmuri11,
+            fontSize = 11.sp,
             color = when {
                 cell.isToday -> PlasticColors.RedHi
                 cell.isSunday -> PlasticColors.RedLo

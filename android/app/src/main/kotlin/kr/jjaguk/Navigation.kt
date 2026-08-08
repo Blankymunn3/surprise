@@ -70,6 +70,8 @@ import kr.jjaguk.core.designsystem.component.MemoryIcons
 import kr.jjaguk.core.designsystem.component.MemoryToast
 import kr.jjaguk.core.designsystem.component.PlainIconButton
 import kr.jjaguk.core.designsystem.component.PrimaryButton
+import kr.jjaguk.core.designsystem.theme.Galmuri11
+import kr.jjaguk.core.designsystem.theme.Galmuri9
 import kr.jjaguk.core.designsystem.theme.MemoryType
 import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
@@ -538,9 +540,9 @@ private fun TopBar(
             // 플라스틱 위에서 종이를 붙인 것처럼 떠 보입니다.
             Text(
                 text = stringResource(DesignR.string.component_only_on_this_phone),
-                fontFamily = Pretendard,
-                fontWeight = FontWeight.Bold,
-                fontSize = 11.sp,
+                // 딱지는 몰드된 각인 — 갈무리9 (2026-08-09 검수 시안)
+                fontFamily = Galmuri9,
+                fontSize = 9.sp,
                 color = PlasticColors.OnPlateDim,
                 modifier = Modifier
                     .clip(PlasticShapes.Chip)
@@ -583,9 +585,10 @@ private fun PlasticTabs(selectedIndex: Int, onSelect: (Int) -> Unit) {
             ) {
                 Text(
                     text = label,
-                    fontFamily = Pretendard,
+                    // 스위치에 새긴 라벨 — 갈무리11 (2026-08-09 검수 시안). 크기는 11의 배수.
+                    fontFamily = Galmuri11,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
+                    fontSize = 11.sp,
                     color = if (chosen) PlasticColors.OnRed else PlasticColors.OnRubber,
                 )
             }

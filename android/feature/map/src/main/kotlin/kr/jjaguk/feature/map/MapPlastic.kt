@@ -53,6 +53,7 @@ import kr.jjaguk.core.designsystem.component.PhotoThumb
 import kr.jjaguk.core.designsystem.theme.PlasticColors
 import kr.jjaguk.core.designsystem.theme.PlasticShapes
 import kr.jjaguk.core.designsystem.theme.PlasticSize
+import kr.jjaguk.core.designsystem.theme.Galmuri11
 import kr.jjaguk.core.designsystem.theme.Pretendard
 import kr.jjaguk.core.designsystem.theme.Space as Gap
 import kr.jjaguk.core.designsystem.theme.pressable
@@ -501,8 +502,8 @@ private fun PlasticRegionSheet(
                 }
                 Text(
                     text = stringResource(R.string.map_sheet_count_and_hint, sheet.photos.size),
-                    fontFamily = Pretendard,
-                    fontWeight = FontWeight.SemiBold,
+                    // 안내 한 줄은 각인 — 갈무리11 (2026-08-09 검수 시안)
+                    fontFamily = Galmuri11,
                     fontSize = 11.sp,
                     color = PlasticColors.OnPlateDim,
                     modifier = Modifier.padding(top = 2.dp),

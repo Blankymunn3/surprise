@@ -131,7 +131,8 @@ struct SpaceDetailView: View {
             ForEach(Array(["지도", "달력"].enumerated()), id: \.offset) { index, label in
                 Button { tab = index } label: {
                     Text(label)
-                        .font(MemoryFont.font(15, .bold))
+                        // 스위치에 새긴 라벨 — 갈무리11 (2026-08-09 검수 시안). 크기는 11의 배수.
+                        .font(MemoryFont.galmuri11(11, bold: true))
                         .foregroundStyle(tab == index ? PlasticColor.onRed : PlasticColor.onRubber)
                         .frame(maxWidth: .infinity)
                         .frame(height: 34)
@@ -174,7 +175,8 @@ struct SpaceDetailView: View {
                 // 이 딱지는 몸통 위에서 **파인 자리**로 그립니다. 흰 면에 잉크 선은
                 // 플라스틱 위에서 종이를 붙인 것처럼 떠 보입니다.
                 Text(SharedText.onlyOnThisPhone)
-                    .font(MemoryFont.font(11, .bold))
+                    // 딱지는 몰드된 각인 — 갈무리9 (2026-08-09 검수 시안)
+                    .font(MemoryFont.galmuri9(9))
                     .foregroundStyle(PlasticColor.onPlateDim)
                     .padding(.horizontal, 7)
                     .padding(.vertical, 3)

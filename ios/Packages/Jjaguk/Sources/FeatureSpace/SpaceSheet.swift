@@ -269,9 +269,11 @@ struct SpaceSheet: View {
             // 자간을 넓게 벌려 한 글자씩 옮겨 적기 쉽게 합니다.
             // 패미컴 스타일에서는 코드를 **화면에 띄웁니다.** 검정 판은 "기기가
             // 보여 주는 것" 이고, 이 코드야말로 기기가 방금 만들어 낸 값입니다.
+            // 카트리지 뒷면 시리얼처럼 PS2P 로 새깁니다 (2026-08-09 검수 시안,
+            // 코드 글자표가 라틴·숫자뿐이라 이 서체로 다 찍힙니다). 크기는 8의 배수.
             Text(code)
-                .font(MemoryFont.font(32, .bold))
-                .tracking(8)
+                .font(MemoryFont.pressStart(24))
+                .tracking(6)
                 .foregroundStyle(PlasticColor.onPlate)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, MemorySpace.xl)

@@ -87,6 +87,24 @@ public enum MemoryFont {
     public static func font(_ size: CGFloat, _ weight: Font.Weight) -> Font {
         .custom(faceName(weight), size: size)
     }
+
+    /// 패미컴 **각인** 서체 — 기계에 새겨진 글자 자리에만 씁니다: 로고 · 탭 ·
+    /// 딱지 · 초대 코드 · 날짜 배지 · 달력 숫자 (2026-08-09 검수 시안).
+    /// **읽는 글에는 쓰지 않습니다** — 그쪽은 여전히 Pretendard 입니다.
+    /// 비트맵 계열이라 크기는 **배수로만**: 갈무리11 → 11·22, 갈무리9 → 9·18,
+    /// Press Start 2P → 8·16·24. 안드로이드 `Type.kt` 와 같은 규칙.
+    public static func galmuri11(_ size: CGFloat, bold: Bool = false) -> Font {
+        .custom(bold ? "Galmuri11-Bold" : "Galmuri11-Regular", size: size)
+    }
+
+    public static func galmuri9(_ size: CGFloat) -> Font {
+        .custom("Galmuri9-Regular", size: size)
+    }
+
+    /// 라틴·숫자 전용 — 한글이 오면 시스템 서체로 떨어지니 숫자·영문 자리에만.
+    public static func pressStart(_ size: CGFloat) -> Font {
+        .custom("PressStart2P-Regular", size: size)
+    }
 }
 
 /// 큰 글자일수록 자간을 좁힙니다 — 한글은 그대로 두면 헐거워 보입니다.

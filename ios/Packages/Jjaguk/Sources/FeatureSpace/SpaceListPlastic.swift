@@ -62,16 +62,15 @@ struct PlasticListBody: View {
         }
     }
 
-    /// 로고 자리. 기울임은 쓰지 않습니다 — Pretendard 에 진짜 이탤릭이 없어 흉내만 나옵니다.
+    /// 로고 자리 — 몸통에 찍힌 **각인**이라 갈무리입니다 (2026-08-09 검수 시안).
     private var brand: some View {
         HStack(alignment: .lastTextBaseline, spacing: 0) {
             Text(localized("list_title"))
-                .font(MemoryFont.font(25, .bold))
-                .tracking(-0.5)
+                .font(MemoryFont.galmuri11(22, bold: true))
                 .foregroundStyle(PlasticColor.red)
             Spacer(minLength: 0)
             Text("MAP & CALENDAR")
-                .font(MemoryFont.font(11, .bold))
+                .font(MemoryFont.pressStart(8))
                 .tracking(1.2)
                 .foregroundStyle(PlasticColor.trimLo)
         }
@@ -178,9 +177,18 @@ private struct PlasticCard: View {
                             .font(MemoryFont.font(17, .bold))
                             .foregroundStyle(PlasticColor.onPlate)
                             .lineLimit(1)
-                        Text(metaShort)
-                            .font(MemoryFont.font(12.5, .semibold))
-                            .foregroundStyle(PlasticColor.onPlateDim)
+                        // 몰드된 라벨 = 갈무리11, 날짜 숫자만 PS2P (2026-08-09 검수 시안)
+                        HStack(spacing: 0) {
+                            Text(metaShort)
+                                .font(MemoryFont.galmuri11(11))
+                            if space.photoCount > 0, let last = space.lastPhotoOn {
+                                Text(" · ")
+                                    .font(MemoryFont.galmuri11(11))
+                                Text("\(last.month).\(last.day)")
+                                    .font(MemoryFont.pressStart(8))
+                            }
+                        }
+                        .foregroundStyle(PlasticColor.onPlateDim)
                     }
                     Spacer(minLength: 0)
                     crew
@@ -202,7 +210,8 @@ private struct PlasticCard: View {
 
     private var onlyHere: some View {
         Text(SharedText.onlyOnThisPhone)
-            .font(MemoryFont.font(11, .bold))
+            // 딱지는 몰드된 각인 — 갈무리9 (2026-08-09 검수 시안)
+            .font(MemoryFont.galmuri9(9))
             .tracking(0.4)
             .foregroundStyle(PlasticColor.plate)
             .padding(.horizontal, MemorySpace.s)
@@ -236,15 +245,9 @@ private struct PlasticCard: View {
             )
     }
 
-    /// "13 · 8곳 · 7.27" — 몰드된 라벨처럼 짧게 끊습니다.
+    /// "13 · 8곳" — 몰드된 라벨처럼 짧게. 날짜는 부르는 쪽이 PS2P 로 따로 붙입니다.
     private var metaShort: String {
         guard space.photoCount > 0 else { return localized("card_meta_short_empty") }
-        guard let last = space.lastPhotoOn else {
-            return localized("card_meta_short", space.photoCount, space.regionCount)
-        }
-        return localized(
-            "card_meta_short_dated",
-            space.photoCount, space.regionCount, last.month, last.day
-        )
+        return localized("card_meta_short", space.photoCount, space.regionCount)
     }
 }

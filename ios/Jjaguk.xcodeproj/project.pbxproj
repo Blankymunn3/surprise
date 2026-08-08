@@ -23,6 +23,10 @@
 		9A0E51C1F0B24D0A8C7E0004 /* DataAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 9A0E51C1F0B24D0A8C7E0005 /* DataAuth */; };
 		C2349A3A554CABB63AF8DE25 /* pretendard_bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DBEC52726113CEE4966866F7 /* pretendard_bold.ttf */; };
 		C63C04185F7DF5F92C906B30 /* pretendard_medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C6D49719AD2289733043CB97 /* pretendard_medium.ttf */; };
+		FA0FA0FA0FA0FA0FA0FA0005 /* galmuri11.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FA0FA0FA0FA0FA0FA0FA0001 /* galmuri11.ttf */; };
+		FA0FA0FA0FA0FA0FA0FA0006 /* galmuri11_bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FA0FA0FA0FA0FA0FA0FA0002 /* galmuri11_bold.ttf */; };
+		FA0FA0FA0FA0FA0FA0FA0007 /* galmuri9.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FA0FA0FA0FA0FA0FA0FA0003 /* galmuri9.ttf */; };
+		FA0FA0FA0FA0FA0FA0FA0008 /* press_start_2p.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FA0FA0FA0FA0FA0FA0FA0004 /* press_start_2p.ttf */; };
 		DDF6AC523D04EC794E8945BD /* DataSpace in Frameworks */ = {isa = PBXBuildFile; productRef = 84E19CDDFAEE2F82788463D0 /* DataSpace */; };
 		E69A1936B4529F8D4814F087 /* FeatureUpload in Frameworks */ = {isa = PBXBuildFile; productRef = 3E1B4FEA9CD8C438A715C619 /* FeatureUpload */; };
 		FB0FB0FB0FB0FB0FB0FB0005 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = FB0FB0FB0FB0FB0FB0FB0002 /* FirebaseAnalytics */; };
@@ -40,6 +44,10 @@
 		AD7E02C571198367730E50E3 /* pretendard_semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_semibold.ttf; path = ../android/core/designsystem/src/main/res/font/pretendard_semibold.ttf; sourceTree = "<group>"; };
 		C6D49719AD2289733043CB97 /* pretendard_medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_medium.ttf; path = ../android/core/designsystem/src/main/res/font/pretendard_medium.ttf; sourceTree = "<group>"; };
 		DBEC52726113CEE4966866F7 /* pretendard_bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pretendard_bold.ttf; path = ../android/core/designsystem/src/main/res/font/pretendard_bold.ttf; sourceTree = "<group>"; };
+		FA0FA0FA0FA0FA0FA0FA0001 /* galmuri11.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = galmuri11.ttf; path = ../android/core/designsystem/src/main/res/font/galmuri11.ttf; sourceTree = "<group>"; };
+		FA0FA0FA0FA0FA0FA0FA0002 /* galmuri11_bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = galmuri11_bold.ttf; path = ../android/core/designsystem/src/main/res/font/galmuri11_bold.ttf; sourceTree = "<group>"; };
+		FA0FA0FA0FA0FA0FA0FA0003 /* galmuri9.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = galmuri9.ttf; path = ../android/core/designsystem/src/main/res/font/galmuri9.ttf; sourceTree = "<group>"; };
+		FA0FA0FA0FA0FA0FA0FA0004 /* press_start_2p.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = press_start_2p.ttf; path = ../android/core/designsystem/src/main/res/font/press_start_2p.ttf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -102,6 +110,10 @@
 				C6D49719AD2289733043CB97 /* pretendard_medium.ttf */,
 				AD7E02C571198367730E50E3 /* pretendard_semibold.ttf */,
 				DBEC52726113CEE4966866F7 /* pretendard_bold.ttf */,
+				FA0FA0FA0FA0FA0FA0FA0001 /* galmuri11.ttf */,
+				FA0FA0FA0FA0FA0FA0FA0002 /* galmuri11_bold.ttf */,
+				FA0FA0FA0FA0FA0FA0FA0003 /* galmuri9.ttf */,
+				FA0FA0FA0FA0FA0FA0FA0004 /* press_start_2p.ttf */,
 			);
 			name = Fonts;
 			sourceTree = "<group>";
@@ -199,6 +211,10 @@
 				C63C04185F7DF5F92C906B30 /* pretendard_medium.ttf in Resources */,
 				88FC64417B15DBA557E664BB /* pretendard_semibold.ttf in Resources */,
 				C2349A3A554CABB63AF8DE25 /* pretendard_bold.ttf in Resources */,
+				FA0FA0FA0FA0FA0FA0FA0005 /* galmuri11.ttf in Resources */,
+				FA0FA0FA0FA0FA0FA0FA0006 /* galmuri11_bold.ttf in Resources */,
+				FA0FA0FA0FA0FA0FA0FA0007 /* galmuri9.ttf in Resources */,
+				FA0FA0FA0FA0FA0FA0FA0008 /* press_start_2p.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
