@@ -7,6 +7,94 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:419812459548:android:a3a0d738bc9ecbeafd4bd9",
+        "android_client_info": {
+          "package_name": "kr.jjaguk.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "419812459548-e49viemk4qb9e9vi5ubcresa4a1jpre8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kr.jjaguk.app",
+            "certificate_hash": "dfdffbefd0ea6040461a88cb88ab0f8dc331cc5b"
+          }
+        },
+        {
+          "client_id": "419812459548-ldmh2hi0vb5lmjase8jpctqei4sk4mbp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMg1m08msg7_xPISuEwx5gwImi5MVz-1Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "419812459548-ldmh2hi0vb5lmjase8jpctqei4sk4mbp.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "419812459548-4vruv826mfgfkfi3dppobg87c3du1vdr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "kr.surprise.memorymap"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:419812459548:android:0cd6baf1377cef3afd4bd9",
+        "android_client_info": {
+          "package_name": "kr.jjaguk.app.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "419812459548-p2h6nu09rpqosfv0ufj2tg0nt9m2o31h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kr.jjaguk.app.dev",
+            "certificate_hash": "dfdffbefd0ea6040461a88cb88ab0f8dc331cc5b"
+          }
+        },
+        {
+          "client_id": "419812459548-ldmh2hi0vb5lmjase8jpctqei4sk4mbp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMg1m08msg7_xPISuEwx5gwImi5MVz-1Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "419812459548-ldmh2hi0vb5lmjase8jpctqei4sk4mbp.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "419812459548-4vruv826mfgfkfi3dppobg87c3du1vdr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "kr.surprise.memorymap"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:419812459548:android:ccab28c6f8dce6eefd4bd9",
         "android_client_info": {
           "package_name": "kr.surprise.memorymap"

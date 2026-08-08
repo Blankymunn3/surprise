@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "kr.surprise.memorymap.data.auth"
+    namespace = "kr.jjaguk.data.auth"
     compileSdk = 36
 
     defaultConfig {

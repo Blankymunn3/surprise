@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "kr.surprise.memorymap.feature.map"
+    namespace = "kr.jjaguk.feature.map"
     compileSdk = 36
 
     defaultConfig {

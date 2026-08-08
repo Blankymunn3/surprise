@@ -24,11 +24,11 @@ jobs:
         run: swift --version
 
       - name: 패키지 빌드
-        working-directory: ios/Packages/MemoryMap
+        working-directory: ios/Packages/Jjaguk
         run: swift build
 
       - name: 패키지 테스트
-        working-directory: ios/Packages/MemoryMap
+        working-directory: ios/Packages/Jjaguk
         run: swift test
 
       # 이 저장소의 작업 컨테이너에는 Xcode 가 없어서 앱 껍데기는 **여기서만** 확인됩니다.
@@ -38,8 +38,8 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild build \
-            -project MemoryMap.xcodeproj \
-            -scheme MemoryMap \
+            -project Jjaguk.xcodeproj \
+            -scheme Jjaguk \
             -destination 'generic/platform=iOS Simulator' \
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO \

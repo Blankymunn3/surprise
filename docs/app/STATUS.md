@@ -21,7 +21,7 @@
 | Firebase Storage REST | ✅ | ✅ |
 | 실제 지도 | ✅ MapLibre | ✅ MapKit (iOS 기본 제공) |
 | 지역을 대표사진으로 칠하기 | ✅ | ✅ |
-| 앱 껍데기 (설치되는 앱) | ✅ | ✅ Xcode 프로젝트 (`ios/MemoryMap.xcodeproj`) |
+| 앱 껍데기 (설치되는 앱) | ✅ | ✅ Xcode 프로젝트 (`ios/Jjaguk.xcodeproj`) |
 
 ## 지금 방식과 목표 방식이 다른 곳
 
@@ -70,7 +70,7 @@ Firestore 를 쓰려면 로그인이 필요합니다. 지금은 사진 문서를
 ## 확인 방법
 
 - 안드로이드: `cd android && ./gradlew test assembleDebug` (CI: `.github/workflows/android.yml`)
-- iOS: `cd ios/Packages/MemoryMap && swift build && swift test` (CI: `.github/workflows/ios.yml`)
+- iOS: `cd ios/Packages/Jjaguk && swift build && swift test` (CI: `.github/workflows/ios.yml`)
 
 이 저장소의 작업 컨테이너에서는 `dl.google.com` 이 막혀 있어 **안드로이드는 로컬에서
 컴파일되지 않습니다.** 순수 코틀린 모듈(`core/model`, `core/common`, `domain`)만

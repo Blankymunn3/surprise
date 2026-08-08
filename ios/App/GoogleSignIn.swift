@@ -6,7 +6,7 @@ import UIKit
 /// `FirebaseAuthRepository` 가 합니다 (`docs/app/AUTH.md`).
 ///
 /// **앱 껍데기에 있는 이유**: 로그인 창을 띄우려면 `UIViewController` 가 필요합니다.
-/// `Packages/MemoryMap` 은 맥에서도 빌드돼야 해서 UIKit 을 쓰지 않습니다 — 창을 띄우는
+/// `Packages/Jjaguk` 은 맥에서도 빌드돼야 해서 UIKit 을 쓰지 않습니다 — 창을 띄우는
 /// 여기까지만 앱이 맡고, 아래로는 문자열 하나만 내려보냅니다.
 /// 안드로이드 `GoogleSignIn.kt` 와 같은 역할입니다.
 enum GoogleSignInBridge {

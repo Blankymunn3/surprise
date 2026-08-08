@@ -6,7 +6,7 @@
   모여서, 문구를 고칠 때 그 화면 것만 보면 됩니다.
 
   ⚠️ iOS 에는 같은 글이 Swift 코드에 그대로 박혀 있습니다. 여기 문구를 고치면
-  `ios/Packages/MemoryMap/Sources/FeatureSpace/` 쪽도 같이 고쳐야 두 앱이 같은 말을 합니다.
+  `ios/Packages/Jjaguk/Sources/FeatureSpace/` 쪽도 같이 고쳐야 두 앱이 같은 말을 합니다.
 -->
 <resources>
 
@@ -21,7 +21,6 @@
     <string name="list_empty_hint">아래 빨간 버튼으로 하나 만들어 보세요.</string>
     <string name="card_meta_short_empty">아직 비어 있어요</string>
     <string name="card_meta_short">%1$d · %2$d곳</string>
-    <string name="card_meta_short_dated">%1$d · %2$d곳 · %3$d.%4$d</string>
 
     <string name="list_create">새 짜국 만들기</string>
     <string name="list_join">초대 코드로 참여</string>

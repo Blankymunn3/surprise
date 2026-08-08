@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "kr.surprise.memorymap.core.ui"
+    namespace = "kr.jjaguk.core.ui"
     compileSdk = 36
     defaultConfig {
         minSdk = 26

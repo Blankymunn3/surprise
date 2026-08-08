@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "kr.surprise.memorymap.data.region"
+    namespace = "kr.jjaguk.data.region"
     compileSdk = 36
 
     defaultConfig {

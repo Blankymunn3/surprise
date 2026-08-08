@@ -131,7 +131,8 @@ struct SpaceDetailView: View {
             ForEach(Array(["지도", "달력"].enumerated()), id: \.offset) { index, label in
                 Button { tab = index } label: {
                     Text(label)
-                        .font(MemoryFont.font(15, .bold))
+                        // 스위치에 새긴 라벨 — 갈무리11 (2026-08-09 검수 시안). 크기는 11의 배수.
+                        .font(MemoryFont.galmuri11(11, bold: true))
                         .foregroundStyle(tab == index ? PlasticColor.onRed : PlasticColor.onRubber)
                         .frame(maxWidth: .infinity)
                         .frame(height: 34)
@@ -174,7 +175,8 @@ struct SpaceDetailView: View {
                 // 이 딱지는 몸통 위에서 **파인 자리**로 그립니다. 흰 면에 잉크 선은
                 // 플라스틱 위에서 종이를 붙인 것처럼 떠 보입니다.
                 Text(SharedText.onlyOnThisPhone)
-                    .font(MemoryFont.font(11, .bold))
+                    // 딱지는 몰드된 각인 — 갈무리9 (2026-08-09 검수 시안)
+                    .font(MemoryFont.galmuri9(9))
                     .foregroundStyle(PlasticColor.onPlateDim)
                     .padding(.horizontal, 7)
                     .padding(.vertical, 3)
@@ -196,11 +198,13 @@ struct SpaceDetailView: View {
         Button(action: action) {
             Image(systemName: symbol)
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(MemoryColor.ink)
+                .foregroundStyle(PlasticColor.ink)
                 .frame(width: 38, height: 38)
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        // 몸통 위 버튼이라 안드로이드(PlainIconButton 의 pressable)처럼
+        // 눌렀다 내려가는 느낌을 줍니다 — 이것만 없어서 만 것처럼 보였습니다.
+        .buttonStyle(.plasticPress)
         .accessibilityLabel(label)
     }
 }

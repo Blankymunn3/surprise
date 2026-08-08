@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- 애플 로그인. 자동 서명이 이 파일을 보고 App ID 에 capability 를 등록합니다. -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
+	<!-- 푸시(새 사진 알림). development 는 디버그 빌드용이고, 스토어 제출 빌드에서는
+	     서명이 production 으로 바꿔 넣습니다. APNs 키를 Firebase 콘솔에 올려야
+	     실제로 도착합니다 — 그건 Apple Developer 계정에서만 됩니다. -->
+	<key>aps-environment</key>
+	<string>development</string>
+</dict>
+</plist>

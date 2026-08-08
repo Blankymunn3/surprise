@@ -3,10 +3,10 @@
 ## 여는 법
 
 ```bash
-open ios/MemoryMap.xcodeproj
+open ios/Jjaguk.xcodeproj
 ```
 
-Xcode 16 이상이 필요합니다. 열면 `Packages/MemoryMap` 이 **로컬 패키지**로 딸려 옵니다.
+Xcode 16 이상이 필요합니다. 열면 `Packages/Jjaguk` 이 **로컬 패키지**로 딸려 옵니다.
 
 **처음 열 때는 인터넷이 필요합니다** — 구글 로그인(`GoogleSignIn-iOS`)이 원격 패키지라
 Xcode 가 한 번 받아옵니다. 받고 나면 그다음부터는 오프라인으로도 빌드됩니다.
@@ -29,10 +29,10 @@ Xcode 가 한 번 받아옵니다. 받고 나면 그다음부터는 오프라인
 
 ```
 ios/
-  MemoryMap.xcodeproj      앱 껍데기 (이 파일만 Xcode 전용)
+  Jjaguk.xcodeproj      앱 껍데기 (이 파일만 Xcode 전용)
   MemoryMap-Info.plist     앱 이름·권한 문구·글꼴 등록
   App/                     @main · 조립(AppContainer) · 첫 화면
-  Packages/MemoryMap/      화면과 규칙 전부 (SwiftPM, 순수 스위프트)
+  Packages/Jjaguk/      화면과 규칙 전부 (SwiftPM, 순수 스위프트)
 ```
 
 **App/ 은 얇게 둡니다.** 화면·상태·저장소는 전부 패키지 안에 있고, 껍데기는 조립과
@@ -50,7 +50,7 @@ iOS 전용인 것(글꼴 등록, 사진 고르기)만 맡습니다. 안드로이
 Xcode 없이도 됩니다 (맥/리눅스 공통):
 
 ```bash
-cd ios/Packages/MemoryMap
+cd ios/Packages/Jjaguk
 swift build
 swift test
 ```

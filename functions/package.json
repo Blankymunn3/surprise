@@ -1,0 +1,10 @@
+{
+  "name": "jjaguk-functions",
+  "description": "짜국의 서버 조각 — 초대 참여 검증과 사진 알림",
+  "engines": { "node": "20" },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.1.0"
+  }
+}

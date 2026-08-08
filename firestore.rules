@@ -28,8 +28,13 @@ service cloud.firestore {
 
       match /members/{uid} {
         allow read: if isMember(spaceId);
-        // **자기 자신만** 넣고 뺍니다. 남을 강제로 멤버로 만들 수 없습니다.
-        allow create: if signedIn() && uid == request.auth.uid;
+        // 만들 수 있는 건 **짜국을 만든 사람의 첫 멤버 문서**뿐입니다. 참여는
+        // `joinSpace` 함수(서버)가 합니다 — 규칙은 초대 코드가 맞는지 대조할 수
+        // 없어서, 여기를 열어 두면 코드 없이 짜국 ID 만 알아도 들어와집니다.
+        allow create: if signedIn() && uid == request.auth.uid &&
+                         get(/databases/$(db)/documents/spaces/$(spaceId))
+                           .data.ownerUid == request.auth.uid;
+        // 나가는 것과 내 이름을 고치는 것은 여전히 내 일입니다.
         allow delete: if signedIn() && uid == request.auth.uid;
         allow update: if signedIn() && uid == request.auth.uid;
       }
@@ -59,6 +64,12 @@ service cloud.firestore {
     // 자기 것만 읽고 씁니다. 남의 목록을 들여다보면 그 사람이 어느 짜국에 있는지
     // 알게 되므로 열지 않습니다.
     match /users/{uid}/spaces/{spaceId} {
+      allow read, write: if signedIn() && uid == request.auth.uid;
+    }
+
+    // 알림을 받을 기기. 문서 ID 가 곧 FCM 토큰이라 같은 기기는 몇 번을 등록해도
+    // 문서 하나입니다. 서버(notifyPhoto)가 읽고, 죽은 토큰도 서버가 지웁니다.
+    match /users/{uid}/fcmTokens/{token} {
       allow read, write: if signedIn() && uid == request.auth.uid;
     }
 
