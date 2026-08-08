@@ -334,20 +334,35 @@ final class PixelTileOverlay: MKTileOverlay {
         // URLSession 기본 캐시가 원본 타일을 물고 있습니다 — 같은 타일을 매번 다시 받지 않게.
         let (data, _) = try await URLSession.shared.data(from: url)
         guard let image = UIImage(data: data)?.cgImage,
-              let pixelated = Self.pixelate(image, dark: dark)
+              let pixelated = Self.pixelate(image, dark: dark, zoom: path.z)
         else { return data }
         return pixelated
     }
 
     private static let tile = 256
+    /// 여기까지는 칸이 가장 잘다(×1.5) — 나라·세계가 보이는 범위.
+    private static let fineZoomMax = 7
+    /// 여기부터는 검수값 그대로 — 동네가 보이는 범위.
+    private static let baseZoomMin = 14
 
-    private static func pixelate(_ source: CGImage, dark: Bool) -> Data? {
+    /// 줌에 따라 칸수를 **서서히** 바꿉니다: z≤7 은 ×1.5, z≥14 는 검수값,
+    /// 사이(도·시)는 직선으로 줄어듭니다. 시 단위 줌에서 픽셀이 아쉽고
+    /// 단계가 튀지 않게 "부드럽게" 라는 피드백(2026-08-09)의 답입니다 —
+    /// 큰 형태(해안선·시가지)일수록 잘게 쪼개야 뭉개지지 않습니다.
+    /// 안드로이드(TileProxy.cellsFor)와 같은 규칙.
+    private static func cellsFor(zoom: Int, base: Int) -> Int {
+        if zoom <= fineZoomMax { return base * 3 / 2 }
+        if zoom >= baseZoomMin { return base }
+        return base + base * (baseZoomMin - zoom) / (2 * (baseZoomMin - fineZoomMax))
+    }
+
+    private static func pixelate(_ source: CGImage, dark: Bool, zoom: Int) -> Data? {
         let space = CGColorSpaceCreateDeviceRGB()
         let info = CGImageAlphaInfo.premultipliedLast.rawValue
 
         // 칸수는 [MapTuning] — 한 타일 안에서는 한 값만 씁니다(도중에 RC 가
         // 덮으면 버퍼 크기가 어긋납니다).
-        let cells = MapTuning.pixelCells
+        let cells = cellsFor(zoom: zoom, base: MapTuning.pixelCells)
 
         // ① 48칸으로 줄여서 (bilinear)
         guard let small = CGContext(

@@ -93,7 +93,8 @@ internal class TileProxy(private val dark: Boolean = false) : AutoCloseable {
 
         val original = connection.inputStream.use { BitmapFactory.decodeStream(it) } ?: return null
         // 요청 하나 안에서는 한 값만 씁니다 — 도중에 RC 가 덮으면 배열 크기가 어긋납니다.
-        val cells = MapTuning.pixelCells
+        val zoom = path.split('/').getOrNull(1)?.toIntOrNull() ?: 15
+        val cells = cellsFor(zoom, MapTuning.pixelCells)
         val small = Bitmap.createScaledBitmap(original, cells, cells, true)
 
         // 옅음 증폭·포스터라이즈를 픽셀마다. 112×112 = 12,544칸이라 값싼 일입니다.
@@ -151,5 +152,25 @@ internal class TileProxy(private val dark: Boolean = false) : AutoCloseable {
         private const val TILE = 512
         private const val AMPLIFY = 3
         private const val AMPLIFY_DARK = 4
+
+        /** 여기까지는 칸이 가장 잘다(×1.5) — 나라·세계가 보이는 범위. */
+        private const val FINE_ZOOM_MAX = 7
+
+        /** 여기부터는 검수값 그대로 — 동네가 보이는 범위. */
+        private const val BASE_ZOOM_MIN = 14
+
+        /**
+         * 줌에 따라 칸수를 **서서히** 바꿉니다: z≤7 은 ×1.5, z≥14 는 검수값,
+         * 사이(도·시)는 직선으로 줄어듭니다. 시 단위 줌에서 픽셀이 아쉽고
+         * 단계가 튀지 않게 "부드럽게" 라는 피드백(2026-08-09)의 답입니다 —
+         * 큰 형태(해안선·시가지)일수록 잘게 쪼개야 뭉개지지 않습니다.
+         * iOS(PixelTileOverlay.cellsFor)와 같은 규칙.
+         */
+        internal fun cellsFor(zoom: Int, base: Int): Int = when {
+            zoom <= FINE_ZOOM_MAX -> base * 3 / 2
+            zoom >= BASE_ZOOM_MIN -> base
+            else -> base + base * (BASE_ZOOM_MIN - zoom) /
+                (2 * (BASE_ZOOM_MIN - FINE_ZOOM_MAX))
+        }
     }
 }
