@@ -131,9 +131,13 @@ internal class TileProxy : AutoCloseable {
          * - 512 규격 + 48칸: 칸은 커졌는데 **정보 밀도가 절반**이라 가는 도로가
          *   칸 하나를 못 채워 통째로 사라짐 (실기기에서 확인)
          * - 512 규격 + 96칸: 칸 크기 512/96 = iOS 의 256/48 과 동일, 정보도 동일
+         *
+         * 96 → 112 는 사용자 요청("아주 조금만 더") — 디테일이 살짝 늘고
+         * 픽셀 질감은 유지되는 선. iOS 와 칸 크기가 미세하게 달라지는 것은
+         * 감수한 선택이다.
          */
         private const val TILE = 512
-        private const val CELLS = 96
+        private const val CELLS = 112
         private const val AMPLIFY = 3
     }
 }
