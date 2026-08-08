@@ -27,6 +27,9 @@ struct PhotoMap: UIViewRepresentable {
     let covers: [String: CGImage]
     let outline: [[GeoPoint]]
     let me: CLLocationCoordinate2D?
+    /// 카메라 명령을 따를 때 **아래쪽에서 비워 둘 높이**(pt). 지역 시트가 지도
+    /// 위를 덮고 있어서, 0 이면 고른 지역의 아래쪽이 시트에 가립니다.
+    let fitInsetBottom: CGFloat
     let onTap: (Double, Double) -> Void
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
@@ -36,6 +39,25 @@ struct PhotoMap: UIViewRepresentable {
     static func isNight() -> Bool {
         let hour = Calendar.current.component(.hour, from: Date())
         return hour >= MapTuning.nightStartHour || hour < MapTuning.nightEndHour
+    }
+
+    /// `MKCoordinateRegion` 을 `MKMapRect` 로 — `setVisibleMapRect(edgePadding:)` 이
+    /// 사각형만 받아서 필요합니다.
+    private static func mapRect(of region: MKCoordinateRegion) -> MKMapRect {
+        let topLeft = MKMapPoint(CLLocationCoordinate2D(
+            latitude: region.center.latitude + region.span.latitudeDelta / 2,
+            longitude: region.center.longitude - region.span.longitudeDelta / 2
+        ))
+        let bottomRight = MKMapPoint(CLLocationCoordinate2D(
+            latitude: region.center.latitude - region.span.latitudeDelta / 2,
+            longitude: region.center.longitude + region.span.longitudeDelta / 2
+        ))
+        return MKMapRect(
+            x: min(topLeft.x, bottomRight.x),
+            y: min(topLeft.y, bottomRight.y),
+            width: abs(topLeft.x - bottomRight.x),
+            height: abs(topLeft.y - bottomRight.y)
+        )
     }
 
     func makeUIView(context: Context) -> MKMapView {
@@ -73,7 +95,19 @@ struct PhotoMap: UIViewRepresentable {
         if let region = position.region, coordinator.lastApplied != Camera(region) {
             coordinator.lastApplied = Camera(region)
             coordinator.applying = true
-            map.setRegion(region, animated: true)
+            if fitInsetBottom > 0 {
+                // 시트가 덮는 만큼 아래를 비우고 맞춥니다 — 테두리가 시트 밑으로
+                // 들어가지 않게 (2026-08-09 실기기 피드백).
+                map.setVisibleMapRect(
+                    Self.mapRect(of: region),
+                    edgePadding: UIEdgeInsets(
+                        top: 12, left: 12, bottom: fitInsetBottom + 12, right: 12
+                    ),
+                    animated: true
+                )
+            } else {
+                map.setRegion(region, animated: true)
+            }
         }
 
         // 지역 채우기. 서명이 같으면 손대지 않습니다 — 경계 점이 수천 개라
